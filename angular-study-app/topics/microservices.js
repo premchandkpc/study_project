@@ -1122,7 +1122,199 @@ func main() {
     }
   };
 
+  const umls = {
+    "ms-api-gateway": {
+      title: "UML: gateway protects an order lookup",
+      scenario: "Example: a browser calls GET /orders/42 through one edge entry point.",
+      actors: [
+        { id: "browser", label: "Browser", hint: "web client" },
+        { id: "gateway", label: "Gateway", hint: "edge proxy" },
+        { id: "auth", label: "Auth", hint: "JWT/JWKS" },
+        { id: "limit", label: "Rate Limit", hint: "Redis bucket" },
+        { id: "orders", label: "Order Service", hint: "REST/gRPC" },
+        { id: "db", label: "Orders DB", hint: "private" },
+        { id: "otel", label: "Telemetry", hint: "trace/log" }
+      ],
+      messages: [
+        { from: "browser", to: "gateway", label: "GET /orders/42", detail: "The public client only knows the gateway URL, not private service addresses." },
+        { from: "gateway", to: "auth", label: "Validate bearer token", detail: "The gateway validates signature, expiry, scopes, and tenant before routing." },
+        { from: "auth", to: "gateway", label: "Principal + scopes", detail: "Identity is returned as trusted claims; downstream services can still enforce domain authorization." },
+        { from: "gateway", to: "limit", label: "Consume token", detail: "Rate limiting happens before the request burns service threads or database connections." },
+        { from: "gateway", to: "orders", label: "Forward with trace id", detail: "The gateway injects client id, trace id, and normalized headers." },
+        { from: "orders", to: "db", label: "Load order", detail: "The service owns business logic and persistence; gateway stays infrastructure-only." },
+        { from: "orders", to: "otel", label: "Emit span + logs", type: "async", detail: "Trace and log correlation make the request visible across layers." },
+        { from: "gateway", to: "browser", label: "200 order JSON", detail: "The gateway returns the response, often adding cache, security, and correlation headers." }
+      ]
+    },
+    "ms-kafka-event-driven": {
+      title: "UML: order-created event pipeline",
+      scenario: "Example: checkout writes an order, publishes an event, and updates inventory asynchronously.",
+      actors: [
+        { id: "api", label: "Order API", hint: "producer" },
+        { id: "ordersdb", label: "Orders DB", hint: "outbox row" },
+        { id: "relay", label: "Outbox Relay", hint: "publisher" },
+        { id: "kafka", label: "Kafka", hint: "orders.events" },
+        { id: "inventory", label: "Inventory Consumer", hint: "group member" },
+        { id: "invdb", label: "Inventory DB", hint: "projection" },
+        { id: "dlq", label: "DLQ", hint: "poison event" },
+        { id: "metrics", label: "Metrics", hint: "lag/offset" }
+      ],
+      messages: [
+        { from: "api", to: "ordersdb", label: "TX: order + outbox", detail: "The order row and outbox event commit atomically in the same database transaction." },
+        { from: "relay", to: "ordersdb", label: "Poll unsent events", detail: "The relay reads pending outbox rows and can safely retry after crashes." },
+        { from: "relay", to: "kafka", label: "Publish ORDER_CREATED", type: "async", detail: "The event is keyed by order id or customer id so ordering is stable where it matters." },
+        { from: "kafka", to: "inventory", label: "Deliver partition record", type: "async", detail: "A partition is assigned to one consumer in the group, giving parallelism without duplicate processing." },
+        { from: "inventory", to: "invdb", label: "Reserve stock idempotently", detail: "The consumer stores processed event ids or uses natural keys so retries are harmless." },
+        { from: "inventory", to: "kafka", label: "Commit offset", detail: "Offsets are committed after the side effect succeeds, giving at-least-once processing." },
+        { from: "inventory", to: "dlq", label: "Send fatal message", type: "async", detail: "Validation or schema poison pills move to DLQ with context instead of blocking the partition forever." },
+        { from: "inventory", to: "metrics", label: "Report lag", type: "async", detail: "Lag, retry count, and DLQ count tell you whether consumers are keeping up." }
+      ]
+    },
+    "ms-saga-distributed-tx": {
+      title: "UML: checkout saga with compensation",
+      scenario: "Example: create order, reserve inventory, charge payment, then compensate on failure.",
+      actors: [
+        { id: "client", label: "Client", hint: "checkout" },
+        { id: "orderapi", label: "Order API", hint: "command" },
+        { id: "saga", label: "Saga Engine", hint: "Temporal" },
+        { id: "inventory", label: "Inventory", hint: "reserve/cancel" },
+        { id: "payment", label: "Payment", hint: "charge/refund" },
+        { id: "shipping", label: "Shipping", hint: "fulfill" },
+        { id: "notify", label: "Notify", hint: "email/event" }
+      ],
+      messages: [
+        { from: "client", to: "orderapi", label: "POST /checkout", detail: "The client receives a fast accepted response while the durable workflow completes." },
+        { from: "orderapi", to: "saga", label: "Start OrderSaga", detail: "The saga id becomes the idempotency key for every downstream command." },
+        { from: "saga", to: "inventory", label: "Reserve items", detail: "Inventory commits a local transaction and returns a reservation id." },
+        { from: "saga", to: "payment", label: "Charge card", detail: "Payment commits separately; this avoids distributed locks across databases." },
+        { from: "saga", to: "shipping", label: "Create shipment", detail: "On the happy path, the saga advances once each local transaction succeeds." },
+        { from: "shipping", to: "saga", label: "Shipment failed", detail: "A failed downstream step makes intermediate state visible until compensation finishes." },
+        { from: "saga", to: "payment", label: "Refund charge", detail: "Compensation runs in reverse order and must be safe to retry." },
+        { from: "saga", to: "inventory", label: "Cancel reservation", detail: "The reservation is released even if the saga worker crashes and resumes later." },
+        { from: "saga", to: "notify", label: "Publish final state", type: "async", detail: "Users and support see ORDER_FAILED or ORDER_CONFIRMED as the workflow result." }
+      ]
+    },
+    "ms-circuit-breaker-resilience": {
+      title: "UML: protected payment dependency call",
+      scenario: "Example: order service calls payment without letting payment latency take down checkout.",
+      actors: [
+        { id: "order", label: "Order Service", hint: "caller" },
+        { id: "timeout", label: "TimeLimiter", hint: "500 ms" },
+        { id: "circuit", label: "CircuitBreaker", hint: "failure rate" },
+        { id: "retry", label: "Retry", hint: "jitter" },
+        { id: "bulkhead", label: "Bulkhead", hint: "20 calls" },
+        { id: "payment", label: "Payment API", hint: "remote" },
+        { id: "fallback", label: "Fallback Queue", hint: "degraded" }
+      ],
+      messages: [
+        { from: "order", to: "timeout", label: "charge(order)", detail: "The request gets a strict deadline so checkout p99 stays bounded." },
+        { from: "timeout", to: "circuit", label: "Ask circuit state", detail: "Open circuit returns immediately and avoids hammering a dependency already known to be sick." },
+        { from: "circuit", to: "retry", label: "Permit attempt", detail: "Only transient exceptions are retried; validation failures should fail fast." },
+        { from: "retry", to: "bulkhead", label: "Acquire slot", detail: "Bulkhead isolation caps concurrent payment calls and preserves threads for healthy dependencies." },
+        { from: "bulkhead", to: "payment", label: "HTTP POST /charge", detail: "The real network call happens only after policy checks pass." },
+        { from: "payment", to: "retry", label: "Timeout/503", detail: "Retry backoff spreads repeat attempts and avoids synchronized load spikes." },
+        { from: "circuit", to: "fallback", label: "Open -> queue payment", detail: "Sustained failure shifts to degraded behavior such as PENDING_PAYMENT." },
+        { from: "fallback", to: "order", label: "Return pending state", detail: "The user journey continues with an honest, recoverable state instead of a total outage." }
+      ]
+    },
+    "ms-grpc-protobuf": {
+      title: "UML: gRPC create-order call",
+      scenario: "Example: generated client sends a typed protobuf request through HTTP/2.",
+      actors: [
+        { id: "client", label: "Go Client", hint: "caller" },
+        { id: "stub", label: "Generated Stub", hint: "proto" },
+        { id: "envoy", label: "Envoy", hint: "LB/mTLS" },
+        { id: "interceptor", label: "Interceptor", hint: "auth/trace" },
+        { id: "service", label: "OrderService", hint: "server impl" },
+        { id: "stream", label: "Stream", hint: "HTTP/2" },
+        { id: "status", label: "Status", hint: "codes" }
+      ],
+      messages: [
+        { from: "client", to: "stub", label: "CreateOrder(req)", detail: "The caller uses generated types instead of hand-built JSON dictionaries." },
+        { from: "stub", to: "envoy", label: "Serialize protobuf", detail: "The request becomes compact binary frames over a reused HTTP/2 connection." },
+        { from: "envoy", to: "interceptor", label: "Route + mTLS", detail: "Envoy handles load balancing, identity, retries, and connection health." },
+        { from: "interceptor", to: "service", label: "Attach auth + trace", detail: "Server middleware validates metadata and records metrics before business logic runs." },
+        { from: "service", to: "stream", label: "Send order events", type: "async", detail: "For server streaming, the handler can keep pushing updates under the same RPC." },
+        { from: "service", to: "status", label: "Return OK or INVALID_ARGUMENT", detail: "Errors are typed status codes that clients can branch on." },
+        { from: "status", to: "client", label: "Typed response/error", detail: "The client receives generated response fields or a machine-readable gRPC status." }
+      ]
+    },
+    "ms-service-discovery-lb": {
+      title: "UML: service discovery and pod readiness",
+      scenario: "Example: a service caller reaches only ready pods while a deployment rolls forward.",
+      actors: [
+        { id: "caller", label: "Caller", hint: "service A" },
+        { id: "dns", label: "Cluster DNS", hint: "stable name" },
+        { id: "svc", label: "Service/LB", hint: "virtual IP" },
+        { id: "slice", label: "EndpointSlice", hint: "ready pods" },
+        { id: "poda", label: "Pod A", hint: "old" },
+        { id: "podb", label: "Pod B", hint: "new" },
+        { id: "probe", label: "Readiness", hint: "health gate" },
+        { id: "drain", label: "Drain", hint: "SIGTERM" }
+      ],
+      messages: [
+        { from: "caller", to: "dns", label: "Resolve orders.svc", detail: "Clients use DNS or sidecar discovery rather than changing pod IPs." },
+        { from: "dns", to: "svc", label: "Return service address", detail: "The virtual service address stays stable across rollouts and reschedules." },
+        { from: "svc", to: "slice", label: "Read ready endpoints", detail: "EndpointSlice data is continuously updated from pod readiness." },
+        { from: "slice", to: "poda", label: "Route request", detail: "The load balancer sends traffic only to endpoints currently marked ready." },
+        { from: "podb", to: "probe", label: "Readiness passes", detail: "A new pod joins traffic only after startup, dependencies, and warmup are complete." },
+        { from: "probe", to: "slice", label: "Add Pod B endpoint", type: "async", detail: "Once ready, the new pod appears in endpoint lists." },
+        { from: "drain", to: "poda", label: "SIGTERM old pod", detail: "The old pod flips readiness false and finishes in-flight requests before exit." },
+        { from: "slice", to: "podb", label: "Shift new traffic", detail: "Traffic moves to ready replacements without callers changing configuration." }
+      ]
+    },
+    "ms-cqrs-event-sourcing": {
+      title: "UML: command to projection loop",
+      scenario: "Example: place order command appends events and updates query models asynchronously.",
+      actors: [
+        { id: "user", label: "User", hint: "checkout" },
+        { id: "command", label: "Command API", hint: "writes" },
+        { id: "aggregate", label: "Aggregate", hint: "rules" },
+        { id: "store", label: "Event Store", hint: "append log" },
+        { id: "bus", label: "Event Bus", hint: "fan out" },
+        { id: "projection", label: "Projection", hint: "consumer" },
+        { id: "read", label: "Read DB", hint: "view" },
+        { id: "query", label: "Query API", hint: "reads" }
+      ],
+      messages: [
+        { from: "user", to: "command", label: "PlaceOrder command", detail: "Commands express intent and are routed to the write model." },
+        { from: "command", to: "aggregate", label: "Load aggregate history", detail: "The aggregate rehydrates from prior events and checks invariants." },
+        { from: "aggregate", to: "store", label: "Append OrderPlaced", detail: "The event store records immutable facts with optimistic concurrency." },
+        { from: "store", to: "bus", label: "Publish new event", type: "async", detail: "Downstream models update without slowing the command response." },
+        { from: "bus", to: "projection", label: "Consume in order", type: "async", detail: "Projection handlers are idempotent and track offsets or sequence numbers." },
+        { from: "projection", to: "read", label: "Upsert order summary", detail: "The read model is denormalized for the screen or report it serves." },
+        { from: "user", to: "query", label: "GET order summary", detail: "The user-facing query path is simple and fast, but eventually consistent." },
+        { from: "query", to: "read", label: "Read precomputed view", detail: "No expensive joins or aggregate replay happen on the read path." }
+      ]
+    },
+    "ms-kubernetes-deployment": {
+      title: "UML: deployment rollout and autoscaling",
+      scenario: "Example: applying a manifest creates pods, exposes them, and scales with traffic.",
+      actors: [
+        { id: "dev", label: "Developer", hint: "kubectl" },
+        { id: "api", label: "API Server", hint: "desired state" },
+        { id: "deploy", label: "Deployment Ctrl", hint: "rollout" },
+        { id: "rs", label: "ReplicaSet", hint: "replicas" },
+        { id: "sched", label: "Scheduler", hint: "placement" },
+        { id: "node", label: "Kubelet", hint: "node" },
+        { id: "svc", label: "Service", hint: "traffic" },
+        { id: "scale", label: "HPA/PDB", hint: "scale/safety" }
+      ],
+      messages: [
+        { from: "dev", to: "api", label: "kubectl apply -f deploy.yaml", detail: "The API server stores desired state; controllers do the real reconciliation." },
+        { from: "api", to: "deploy", label: "Watch Deployment spec", type: "async", detail: "The deployment controller notices a new template or replica count." },
+        { from: "deploy", to: "rs", label: "Create new ReplicaSet", detail: "Rolling-update settings control surge and unavailable pods during rollout." },
+        { from: "rs", to: "sched", label: "Create Pod objects", detail: "Pending pods wait for the scheduler to pick nodes with enough resources." },
+        { from: "sched", to: "node", label: "Bind pod to node", detail: "The kubelet pulls images, mounts config/secrets, and starts containers." },
+        { from: "node", to: "svc", label: "Ready endpoint appears", type: "async", detail: "Readiness gates prevent cold pods from receiving traffic too early." },
+        { from: "scale", to: "deploy", label: "Adjust replicas", detail: "HPA changes desired replicas from metrics; PDB constrains voluntary disruptions." },
+        { from: "svc", to: "node", label: "Route live traffic", detail: "Only ready pods behind the service receive production requests." }
+      ]
+    }
+  };
+
   window.MICRO_TOPICS.forEach(topic => {
     if (flows[topic.id]) topic.flow = flows[topic.id];
+    if (umls[topic.id]) topic.uml = umls[topic.id];
   });
 })();

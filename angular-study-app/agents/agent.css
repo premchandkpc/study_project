@@ -1,79 +1,200 @@
-/* agents/agent.css */
-.agent-widget {
+/* ============================================================
+   Study Agent Widget — Premium dark glassmorphism UI
+   ============================================================ */
+
+/* ── FAB toggle button ─────────────────────────────────────── */
+.agent-fab {
   position: fixed;
-  bottom: 80px;
-  right: 20px;
-  width: 320px;
-  max-height: 400px;
-  background: rgba(21, 27, 38, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
+  bottom: 24px;
+  right: 24px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-size: 22px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(79, 140, 255, 0.45);
+  display: grid;
+  place-items: center;
+  transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
+  z-index: 9999;
+}
+.agent-fab:hover {
+  transform: scale(1.12);
+  box-shadow: 0 6px 28px rgba(79, 140, 255, 0.65);
+}
+.agent-fab.active {
+  transform: rotate(20deg) scale(1.08);
+}
+
+/* ── Chat panel ────────────────────────────────────────────── */
+.agent-panel {
+  position: fixed;
+  bottom: 88px;
+  right: 24px;
+  width: 340px;
+  height: 480px;
+  background: rgba(17, 24, 39, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(79, 140, 255, 0.22);
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-  font-family: var(--font-family, "Inter", sans-serif);
-  color: var(--text);
+  z-index: 9998;
+  transition: opacity 0.3s ease, transform 0.35s cubic-bezier(.22,1,.36,1);
 }
-.agent-widget.hidden {
+.agent-panel.hidden {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(18px) scale(0.97);
   pointer-events: none;
 }
-.agent-header {
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  padding: 8px 12px;
+
+/* ── Header ────────────────────────────────────────────────── */
+.agent-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: linear-gradient(90deg, rgba(79,140,255,0.18), rgba(124,92,255,0.18));
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.agent-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 600;
-  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text, #e6edf3);
+}
+.agent-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2bd17e;
+  box-shadow: 0 0 6px #2bd17e;
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.agent-badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent, #4f8cff), var(--accent-2, #7c5cff));
   color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.05em;
 }
-.agent-messages {
+.agent-close-btn {
+  background: none;
+  border: none;
+  color: var(--muted, #8b97a7);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+.agent-close-btn:hover {
+  color: var(--text, #e6edf3);
+  background: rgba(255,255,255,0.08);
+}
+
+/* ── Messages ──────────────────────────────────────────────── */
+.agent-panel-body {
   flex: 1;
-  padding: 8px 12px;
   overflow-y: auto;
-  font-size: 0.94rem;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(79,140,255,0.3) transparent;
 }
-.agent-message {
-  margin-bottom: 6px;
-  line-height: 1.4;
+.agent-panel-body::-webkit-scrollbar { width: 4px; }
+.agent-panel-body::-webkit-scrollbar-thumb { background: rgba(79,140,255,0.3); border-radius: 4px; }
+
+.agent-msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  animation: msg-in 0.25s ease-out;
 }
-.agent-message.user {
-  text-align: right;
-  color: var(--accent);
+.agent-msg.user {
+  flex-direction: row-reverse;
 }
-.agent-message.bot {
-  text-align: left;
-  color: var(--text);
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.agent-avatar {
+  font-size: 18px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.agent-bubble {
+  max-width: 75%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: rgba(255,255,255,0.06);
+  color: var(--text, #e6edf3);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.user-bubble {
+  background: linear-gradient(135deg, rgba(79,140,255,0.28), rgba(124,92,255,0.28));
+  border-color: rgba(79,140,255,0.35);
+  color: #d0e4ff;
+}
+
+/* ── Input footer ──────────────────────────────────────────── */
+.agent-panel-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  background: rgba(0,0,0,0.2);
 }
 .agent-input {
-  display: flex;
-  border-top: 1px solid var(--border);
-  padding: 6px 8px;
-  background: var(--panel);
-}
-.agent-input input {
   flex: 1;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  padding: 4px 8px;
-  font-size: 0.94rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text, #e6edf3);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
 }
-.agent-input input::placeholder {
-  color: var(--muted);
+.agent-input:focus {
+  border-color: var(--accent, #4f8cff);
+  background: rgba(79,140,255,0.07);
 }
-.agent-input button {
-  background: var(--accent);
+.agent-input::placeholder { color: var(--muted, #8b97a7); }
+.agent-send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent, #4f8cff), var(--accent-2, #7c5cff));
   border: none;
   color: #fff;
-  padding: 4px 10px;
-  margin-left: 6px;
-  border-radius: 4px;
+  font-size: 15px;
   cursor: pointer;
-  transition: background 0.2s;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: transform 0.2s, opacity 0.2s;
 }
-.agent-input button:hover {
-  background: var(--accent-2);
-}
+.agent-send-btn:hover { transform: scale(1.08); }
+.agent-send-btn:active { transform: scale(0.95); opacity: 0.8; }
