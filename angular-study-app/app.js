@@ -33,7 +33,8 @@
       .concat(window.JAVA_TOPICS || [])
       .concat(window.GO_TOPICS || [])
       .concat(window.PYTHON_TOPICS || [])
-      .concat(window.MICRO_TOPICS || []);
+      .concat(window.MICRO_TOPICS || [])
+      .concat(window.SYSDESIGN_TOPICS || []);
     return {
       all,
       byId: (id) => all.find(t => t.id === id),
@@ -293,7 +294,8 @@
       { key: "java",          label: "Java" },
       { key: "golang",        label: "Golang" },
       { key: "python",        label: "Python" },
-      { key: "microservices", label: "Microservices · System Design" }
+      { key: "microservices", label: "Microservices · System Design" },
+      { key: "sysdesign",    label: "⬡ System Design · Architecture" }
     ];
 
     function render() {
@@ -597,7 +599,7 @@
         return;
       }
 
-      const areaLabel = ({ java:"Java", golang:"Go", python:"Python", microservices:"Microservices" })[topic.area];
+      const areaLabel = ({ java:"Java", golang:"Go", python:"Python", microservices:"Microservices", sysdesign:"System Design" })[topic.area] || topic.area;
       const done = progress.isDone(topic.id);
       const isTopicChange = topic.id !== lastTopicId;
 
@@ -632,6 +634,7 @@
         ${renderFlowLab(topic)}
         ${renderUmlLab(topic)}
         ${renderArchitectureLab(topic)}
+        ${topic.visual ? `<div class="section visual-section"><h2>0.3 · Live Canvas Diagram</h2><div class="viz-mount"></div></div>` : ""}
 
         <div class="section concept">
           <h2>1 · Concept</h2>
@@ -677,6 +680,10 @@
       setupFlowLab(topic);
       setupUmlLab(topic);
       setupArchitectureLab(topic);
+      if (topic.visual) {
+        const mount = host.querySelector(".viz-mount");
+        if (mount) { try { topic.visual(mount); } catch(e) { console.warn("viz error", e); } }
+      }
 
       // Trigger Prism highlight after content is in the DOM
       if (window.Prism) Prism.highlightAllUnder(host);

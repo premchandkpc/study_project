@@ -16,6 +16,7 @@
   --golang: #00add8;
   --python: #ffd43b;
   --micro: #a162e8;
+  --sysdesign: #00e5ff;
   --code-bg: #0d1320;
   --shadow: 0 8px 30px rgba(0,0,0,.35);
 }
@@ -59,6 +60,7 @@ code, pre { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, 
 .area-title .count { margin-left:auto; background: var(--panel-2); color: var(--muted); padding: 1px 7px; border-radius: 999px; font-size: 10px; }
 .dot.java { background: var(--java); } .dot.golang { background: var(--golang); }
 .dot.python { background: var(--python); } .dot.microservices { background: var(--micro); }
+.dot.sysdesign { background: var(--sysdesign); }
 
 .topic-list { list-style:none; padding:0; margin: 4px 0 8px; }
 .topic-item {
@@ -88,6 +90,9 @@ h1.topic-title { font-size: 28px; margin: 0; letter-spacing: -0.2px; }
 .tag.area-golang { color:#03212a; background: linear-gradient(135deg,#00add8,#7be0ff); border-color: transparent; }
 .tag.area-python { color:#2a2300; background: linear-gradient(135deg,#ffd43b,#fff099); border-color: transparent; }
 .tag.area-microservices { color:#fff; background: linear-gradient(135deg,#7541c4,#a162e8); border-color: transparent; }
+.tag.area-sysdesign { color:#001a20; background: linear-gradient(135deg,#00b8d4,#00e5ff); border-color: transparent; }
+.section.visual-section h2::before { background: linear-gradient(90deg,var(--sysdesign),var(--accent)); }
+.viz-mount { min-height: 40px; overflow: hidden; border-radius: 8px; }
 
 .section {
   background: var(--panel); border:1px solid var(--border); border-radius: 12px;
