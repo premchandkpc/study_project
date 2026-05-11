@@ -164,6 +164,64 @@
       </div>`;
   }
 
+  function renderUmlLab(topic) {
+    const uml = topic.uml;
+    if (!uml || !uml.actors || !uml.actors.length || !uml.messages || !uml.messages.length) return "";
+
+    const actorIndex = new Map(uml.actors.map((actor, index) => [actor.id, index]));
+    const firstMessage = uml.messages[0];
+    const actors = uml.actors.map(actor => `
+      <button type="button" class="uml-actor" data-uml-actor="${esc(actor.id)}">
+        <span>${esc(actor.label)}</span>
+        ${actor.hint ? `<small>${esc(actor.hint)}</small>` : ""}
+      </button>`
+    ).join("");
+    const rows = uml.messages.map((message, index) => {
+      const from = actorIndex.has(message.from) ? actorIndex.get(message.from) : 0;
+      const to = actorIndex.has(message.to) ? actorIndex.get(message.to) : from;
+      const start = Math.min(from, to) + 1;
+      const end = Math.max(from, to) + 2;
+      const reverse = from > to ? " reverse" : "";
+      const async = message.type === "async" ? " async" : "";
+      return `
+        <div class="uml-row" data-uml-row="${index}">
+          ${uml.actors.map(actor => `<span class="uml-lifeline" data-uml-life="${esc(actor.id)}"></span>`).join("")}
+          <button
+            type="button"
+            class="uml-message${reverse}${async}"
+            data-uml-message="${index}"
+            style="grid-column:${start} / ${end}">
+            <span>${index + 1}. ${esc(message.label)}</span>
+          </button>
+        </div>`;
+    }).join("");
+
+    return `
+      <div class="section uml-section">
+        <h2>0.1 · UML sequence simulation</h2>
+        <div class="uml-lab" data-uml-lab>
+          <div class="uml-title">
+            <strong>${esc(uml.title || topic.title)}</strong>
+            ${uml.scenario ? `<span>${esc(uml.scenario)}</span>` : ""}
+          </div>
+          <div class="uml-board" style="--uml-cols:${uml.actors.length}">
+            <div class="uml-actors">${actors}</div>
+            <div class="uml-timeline">${rows}</div>
+          </div>
+          <div class="flow-controls">
+            <button class="flow-btn" type="button" data-uml-prev>Prev</button>
+            <button class="flow-btn primary" type="button" data-uml-play>Pause</button>
+            <button class="flow-btn" type="button" data-uml-next>Next</button>
+            <div class="flow-progress" aria-hidden="true"><div data-uml-progress></div></div>
+          </div>
+          <div class="uml-readout">
+            <strong data-uml-label>${esc(firstMessage.label || "Message 1")}</strong>
+            <span data-uml-detail>${esc(firstMessage.detail || "")}</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
   /* ---------- Components ------------------------------------------------- */
 
   // SidebarComponent
@@ -244,6 +302,7 @@
     const progress = ProgressService;
     const router = Router;
     let flowTimer = null;
+    let umlTimer = null;
     let lastTopicId = null;
 
     function setupFlowLab(topic) {
@@ -330,10 +389,92 @@
       startFlow();
     }
 
+    function setupUmlLab(topic) {
+      const lab = host.querySelector("[data-uml-lab]");
+      if (!lab || !topic.uml || !topic.uml.messages || !topic.uml.messages.length) return;
+
+      const messages = topic.uml.messages;
+      const actors = Array.from(lab.querySelectorAll("[data-uml-actor]"));
+      const lives = Array.from(lab.querySelectorAll("[data-uml-life]"));
+      const rows = Array.from(lab.querySelectorAll("[data-uml-row]"));
+      const messageEls = Array.from(lab.querySelectorAll("[data-uml-message]"));
+      const label = lab.querySelector("[data-uml-label]");
+      const detail = lab.querySelector("[data-uml-detail]");
+      const progressEl = lab.querySelector("[data-uml-progress]");
+      const playBtn = lab.querySelector("[data-uml-play]");
+      let index = 0;
+      let playing = true;
+
+      function activateMessage(nextIndex) {
+        index = (nextIndex + messages.length) % messages.length;
+        const message = messages[index];
+        const activeActors = new Set([message.from, message.to]);
+
+        actors.forEach(actor => {
+          actor.classList.toggle("active", activeActors.has(actor.dataset.umlActor));
+          actor.classList.toggle("source", actor.dataset.umlActor === message.from);
+          actor.classList.toggle("target", actor.dataset.umlActor === message.to);
+        });
+        lives.forEach(life => life.classList.toggle("active", activeActors.has(life.dataset.umlLife)));
+        rows.forEach(row => row.classList.toggle("active", Number(row.dataset.umlRow) === index));
+        messageEls.forEach(el => el.classList.toggle("active", Number(el.dataset.umlMessage) === index));
+
+        label.textContent = message.label || `Message ${index + 1}`;
+        detail.textContent = message.detail || "";
+        progressEl.style.width = `${((index + 1) / messages.length) * 100}%`;
+      }
+
+      function stopUml() {
+        playing = false;
+        playBtn.textContent = "Play";
+        if (umlTimer) clearInterval(umlTimer);
+        umlTimer = null;
+      }
+
+      function startUml() {
+        playing = true;
+        playBtn.textContent = "Pause";
+        if (umlTimer) clearInterval(umlTimer);
+        umlTimer = setInterval(() => activateMessage(index + 1), 2300);
+      }
+
+      lab.querySelector("[data-uml-prev]").addEventListener("click", () => {
+        stopUml();
+        activateMessage(index - 1);
+      });
+      lab.querySelector("[data-uml-next]").addEventListener("click", () => {
+        stopUml();
+        activateMessage(index + 1);
+      });
+      playBtn.addEventListener("click", () => playing ? stopUml() : startUml());
+      messageEls.forEach(el => {
+        el.addEventListener("click", () => {
+          stopUml();
+          activateMessage(Number(el.dataset.umlMessage));
+        });
+      });
+      actors.forEach(actor => {
+        actor.addEventListener("click", () => {
+          const nextIndex = messages.findIndex(message =>
+            message.from === actor.dataset.umlActor || message.to === actor.dataset.umlActor
+          );
+          stopUml();
+          activateMessage(nextIndex >= 0 ? nextIndex : 0);
+        });
+      });
+
+      activateMessage(0);
+      startUml();
+    }
+
     function render() {
       if (flowTimer) {
         clearInterval(flowTimer);
         flowTimer = null;
+      }
+      if (umlTimer) {
+        clearInterval(umlTimer);
+        umlTimer = null;
       }
 
       const id = router.current().path.replace(/^\//, "");
@@ -383,6 +524,7 @@
         </div>
 
         ${renderFlowLab(topic)}
+        ${renderUmlLab(topic)}
 
         <div class="section concept">
           <h2>1 · Concept</h2>
@@ -426,6 +568,7 @@
       const markBtn = host.querySelector("[data-mark]");
       if (markBtn) markBtn.addEventListener("click", () => progress.toggle(topic.id));
       setupFlowLab(topic);
+      setupUmlLab(topic);
 
       // Trigger Prism highlight after content is in the DOM
       if (window.Prism) Prism.highlightAllUnder(host);
