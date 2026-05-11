@@ -964,7 +964,7 @@ Core patterns:
 - **Natural unique constraints**: enforce business uniqueness at the database boundary, not only in application memory.
 - **TTL and replay policy**: keys cannot live forever; choose retention based on retry windows, refunds, and audit needs.`,
     why:
-`"Exactly once" is usually an interface promise built from **at-least-once delivery plus idempotent handlers**. Without idempotency, a timeout after a successful payment can lead the client to retry and charge twice. Without outbox, an order can commit but its event can be lost. Without inbox, one Kafka redelivery can reserve stock twice. These are the production bugs that make microservices feel haunted during incidents.`,
+`"Exactly once" is usually an interface promise built from **at-least-once delivery plus idempotent handlers**. Without idempotency, a timeout after a successful payment can lead the client to retry and charge twice. Without outbox, an order can commit but its event can be lost. Without inbox, one Kafka redelivery can reserve stock twice. These are the production bugs that make microservices painful during incidents.`,
     example: {
       language: "python",
       code:
@@ -1663,11 +1663,531 @@ spec:
         { from: "scale", to: "deploy", label: "Adjust replicas", detail: "HPA changes desired replicas from metrics; PDB constrains voluntary disruptions." },
         { from: "svc", to: "node", label: "Route live traffic", detail: "Only ready pods behind the service receive production requests." }
       ]
+    },
+    "ms-idempotency-outbox-inbox": {
+      title: "UML: duplicate checkout request handled safely",
+      scenario: "Example: the first request succeeds, the retry returns the same order, and the consumer ignores duplicate delivery.",
+      actors: [
+        { id: "client", label: "Client", hint: "timeout retry" },
+        { id: "api", label: "Order API", hint: "FastAPI" },
+        { id: "keys", label: "Idempotency Table", hint: "unique key" },
+        { id: "orders", label: "Orders DB", hint: "business row" },
+        { id: "outbox", label: "Outbox", hint: "event row" },
+        { id: "relay", label: "Relay", hint: "publisher" },
+        { id: "kafka", label: "Kafka", hint: "redelivery" },
+        { id: "inventory", label: "Inventory", hint: "inbox" }
+      ],
+      messages: [
+        { from: "client", to: "api", label: "POST /orders + key", detail: "The key identifies the business intent, not just one HTTP attempt." },
+        { from: "api", to: "keys", label: "Insert PROCESSING", detail: "Unique(client_key) lets exactly one request claim the command." },
+        { from: "api", to: "orders", label: "Insert order", detail: "The business state is written once inside the same transaction." },
+        { from: "api", to: "outbox", label: "Insert ORDER_CREATED", detail: "The event is durable before the API returns." },
+        { from: "api", to: "keys", label: "Store 201 response", detail: "Later retries can return the original response body without new side effects." },
+        { from: "client", to: "api", label: "Retry same key", detail: "A timeout retry reads the stored response instead of creating a second order." },
+        { from: "relay", to: "outbox", label: "Poll unsent", detail: "Workers use for update skip locked to divide relay work." },
+        { from: "relay", to: "kafka", label: "Publish event", type: "async", detail: "If the relay crashes before marking sent, this publish may happen again." },
+        { from: "kafka", to: "inventory", label: "Deliver event twice", type: "async", detail: "The consumer inbox records event_id and ignores the second delivery." }
+      ]
+    },
+    "ms-service-mesh-observability": {
+      title: "UML: mTLS request with mesh telemetry",
+      scenario: "Example: order-service calls payment-service through Envoy proxies and mesh policy.",
+      actors: [
+        { id: "order", label: "Order Service", hint: "caller app" },
+        { id: "envoya", label: "Envoy A", hint: "outbound" },
+        { id: "control", label: "Control Plane", hint: "xDS/certs" },
+        { id: "envoyb", label: "Envoy B", hint: "inbound" },
+        { id: "payment", label: "Payment Service", hint: "target app" },
+        { id: "otel", label: "OTel Collector", hint: "traces" },
+        { id: "prom", label: "Prometheus", hint: "metrics" }
+      ],
+      messages: [
+        { from: "control", to: "envoya", label: "Push route + cert", type: "async", detail: "The proxy receives destination subsets, retry rules, authz policy, and workload identity material." },
+        { from: "control", to: "envoyb", label: "Push inbound policy", type: "async", detail: "The target proxy knows who may call which method or path." },
+        { from: "order", to: "envoya", label: "POST /v1/charges", detail: "The application issues a normal service call with a deadline and trace context." },
+        { from: "envoya", to: "envoyb", label: "mTLS + route", detail: "Envoy establishes encrypted workload identity and applies retry/timeout policy." },
+        { from: "envoyb", to: "payment", label: "Forward if authorized", detail: "Inbound policy allows order-service service account to call payment charge only." },
+        { from: "payment", to: "envoyb", label: "200 or 5xx", detail: "Response status feeds outlier detection, retry decisions, and SLO metrics." },
+        { from: "envoya", to: "otel", label: "Export spans", type: "async", detail: "Trace spans connect caller proxy, target proxy, and application spans." },
+        { from: "envoya", to: "prom", label: "Expose RED metrics", type: "async", detail: "Rate, errors, and duration become alertable service-level signals." }
+      ]
+    }
+  };
+
+  const architectures = {
+    "ms-api-gateway": {
+      title: "Production gateway topology",
+      caption: "North-south traffic enters through a small edge stack before reaching private services.",
+      lanes: [
+        {
+          label: "Clients",
+          hint: "public callers",
+          nodes: [
+            { id: "web", label: "Web/Mobile", badge: "public", hint: "HTTPS clients", detail: "Clients know only the public gateway URL and receive a normalized API surface." },
+            { id: "partner", label: "Partner API", hint: "external integrations", detail: "Partner clients usually need stronger quotas, audit logs, and scoped credentials." }
+          ]
+        },
+        {
+          label: "Edge",
+          hint: "shared controls",
+          nodes: [
+            { id: "gateway", label: "API Gateway", badge: "entry", hint: "routing + TLS", detail: "Terminates TLS, normalizes headers, routes traffic, and injects trace context." },
+            { id: "waf", label: "WAF / Rate Limit", hint: "abuse shield", detail: "Blocks obvious attack traffic and rejects noisy clients before they consume service capacity." }
+          ]
+        },
+        {
+          label: "Platform",
+          hint: "identity and policy",
+          nodes: [
+            { id: "auth", label: "Auth Provider", hint: "JWT/JWKS", detail: "Validates token signature, expiry, tenant, scopes, and audience." },
+            { id: "config", label: "Route Config", hint: "canary rules", detail: "Holds upstream routes, weights, transformations, and feature-specific policies." }
+          ]
+        },
+        {
+          label: "Private services",
+          hint: "domain APIs",
+          nodes: [
+            { id: "orders", label: "Order Service", hint: "business logic", detail: "Owns domain rules and private persistence; it should not duplicate edge auth logic." },
+            { id: "otel", label: "Telemetry", hint: "logs/traces", detail: "Receives access logs, spans, and RED metrics from edge and services." }
+          ]
+        }
+      ],
+      links: [
+        { from: "web", to: "gateway", label: "HTTPS request", detail: "All public traffic enters through one controlled edge." },
+        { from: "gateway", to: "auth", label: "Token validation", detail: "The gateway rejects bad credentials before service routing." },
+        { from: "gateway", to: "waf", label: "Quota check", detail: "Rate limiting protects downstream thread pools and databases." },
+        { from: "config", to: "gateway", label: "Route/canary policy", type: "async", detail: "Platform config changes routing behavior without redeploying services." },
+        { from: "gateway", to: "orders", label: "Forward internal call", detail: "The service receives trusted identity and trace headers." },
+        { from: "gateway", to: "otel", label: "Emit edge telemetry", type: "async", detail: "Gateway spans and access logs make edge behavior debuggable." }
+      ]
+    },
+    "ms-kafka-event-driven": {
+      title: "Kafka event pipeline topology",
+      caption: "Producers append facts once; many independent consumers build their own views.",
+      lanes: [
+        {
+          label: "Write side",
+          hint: "domain transaction",
+          nodes: [
+            { id: "api", label: "Order API", hint: "producer", detail: "Creates business state and decides which domain event should exist." },
+            { id: "outbox", label: "Outbox Table", badge: "atomic", hint: "same DB tx", detail: "Stores publish intent in the same transaction as the order write." }
+          ]
+        },
+        {
+          label: "Kafka",
+          hint: "durable log",
+          nodes: [
+            { id: "topic", label: "orders.events", hint: "topic", detail: "A durable append-only log that can be replayed by new or recovering consumers." },
+            { id: "partition", label: "Partitions", hint: "ordering lanes", detail: "Ordering is guaranteed only inside a partition, usually by aggregate key." }
+          ]
+        },
+        {
+          label: "Consumers",
+          hint: "independent groups",
+          nodes: [
+            { id: "inventory", label: "Inventory Group", hint: "reserve stock", detail: "Consumes events at its own pace and commits offsets after side effects succeed." },
+            { id: "email", label: "Email Group", hint: "notifications", detail: "A separate group can replay or lag without affecting inventory." }
+          ]
+        },
+        {
+          label: "Operations",
+          hint: "safety rails",
+          nodes: [
+            { id: "dlq", label: "DLQ", hint: "poison events", detail: "Captures events that cannot be processed after retries so a partition is not blocked forever." },
+            { id: "lag", label: "Lag Metrics", hint: "Prometheus", detail: "Consumer lag shows whether processing is keeping up with production rate." }
+          ]
+        }
+      ],
+      links: [
+        { from: "api", to: "outbox", label: "Write event intent", detail: "The event cannot be lost after the business row commits." },
+        { from: "outbox", to: "topic", label: "Relay publish", type: "async", detail: "A relay turns rows into Kafka records with retryable semantics." },
+        { from: "topic", to: "partition", label: "Keyed ordering", detail: "Aggregate key chooses the partition and therefore the ordering lane." },
+        { from: "partition", to: "inventory", label: "Consumer assignment", type: "async", detail: "Only one group member handles a partition at a time." },
+        { from: "inventory", to: "dlq", label: "Fatal failure path", type: "async", detail: "Invalid events are isolated with replay context." },
+        { from: "inventory", to: "lag", label: "Report offsets", type: "async", detail: "Lag and retry counts are first-class production signals." }
+      ]
+    },
+    "ms-saga-distributed-tx": {
+      title: "Saga workflow topology",
+      caption: "A durable workflow coordinates local transactions and compensations.",
+      lanes: [
+        {
+          label: "Entry",
+          hint: "user intent",
+          nodes: [
+            { id: "client", label: "Checkout Client", hint: "command", detail: "Submits one business intent and receives an accepted or final order status." },
+            { id: "orderapi", label: "Order API", hint: "starts saga", detail: "Creates an order in PENDING state and starts the workflow with an idempotency key." }
+          ]
+        },
+        {
+          label: "Workflow",
+          hint: "durable control",
+          nodes: [
+            { id: "orchestrator", label: "Saga Engine", badge: "stateful", hint: "Temporal/Conductor", detail: "Persists step state, retries, timers, and compensation history." },
+            { id: "history", label: "Workflow History", hint: "audit trail", detail: "Stores every command/result so a crashed worker can resume precisely." }
+          ]
+        },
+        {
+          label: "Participants",
+          hint: "local tx only",
+          nodes: [
+            { id: "inventory", label: "Inventory", hint: "reserve/cancel", detail: "Commits a local reservation and exposes an idempotent cancellation command." },
+            { id: "payment", label: "Payment", hint: "charge/refund", detail: "Commits a local charge and exposes an idempotent refund command." },
+            { id: "shipping", label: "Shipping", hint: "create/cancel", detail: "Creates fulfillment only after prior steps have durable success." }
+          ]
+        },
+        {
+          label: "Visibility",
+          hint: "operators",
+          nodes: [
+            { id: "status", label: "Order Status", hint: "PENDING/FAILED", detail: "Users and support see semantic workflow states instead of hidden partial commits." },
+            { id: "alerts", label: "Manual Queue", hint: "dirty state", detail: "Escalates compensation failures that cannot be resolved automatically." }
+          ]
+        }
+      ],
+      links: [
+        { from: "client", to: "orderapi", label: "Create order", detail: "The command is accepted without opening a distributed database transaction." },
+        { from: "orderapi", to: "orchestrator", label: "Start workflow", detail: "The saga ID becomes the retry identity for all participant calls." },
+        { from: "orchestrator", to: "inventory", label: "Reserve", detail: "A local transaction returns a reservation ID for compensation." },
+        { from: "orchestrator", to: "payment", label: "Charge", detail: "Payment runs after inventory succeeds and is retried safely." },
+        { from: "orchestrator", to: "shipping", label: "Ship", detail: "The happy path moves forward one committed local step at a time." },
+        { from: "orchestrator", to: "alerts", label: "Compensation failure", type: "async", detail: "Failed undo actions retry and eventually alert humans with full context." }
+      ]
+    },
+    "ms-circuit-breaker-resilience": {
+      title: "Resilience policy topology",
+      caption: "Synchronous calls are wrapped with budgets, isolation, state, and degraded behavior.",
+      lanes: [
+        {
+          label: "Caller",
+          hint: "request path",
+          nodes: [
+            { id: "order", label: "Order Service", hint: "checkout", detail: "Owns the user-facing deadline and decides what degraded state is acceptable." },
+            { id: "budget", label: "Timeout Budget", badge: "SLO", hint: "500-800 ms", detail: "Prevents one dependency from consuming the entire request latency budget." }
+          ]
+        },
+        {
+          label: "Policies",
+          hint: "resilience4j/envoy",
+          nodes: [
+            { id: "circuit", label: "Circuit Breaker", hint: "open/half-open", detail: "Stops calls when recent failures suggest the dependency is unhealthy." },
+            { id: "retry", label: "Retry + Jitter", hint: "transient only", detail: "Retries short-lived failures without synchronizing traffic spikes." },
+            { id: "bulkhead", label: "Bulkhead", hint: "bounded slots", detail: "Limits concurrent calls so one dependency cannot exhaust all caller resources." }
+          ]
+        },
+        {
+          label: "Dependency",
+          hint: "remote system",
+          nodes: [
+            { id: "payment", label: "Payment API", hint: "external call", detail: "A slow or failing dependency that must not take down checkout." },
+            { id: "fallback", label: "Fallback Queue", hint: "pending work", detail: "Stores recoverable work for later processing or returns a partial response." }
+          ]
+        },
+        {
+          label: "Signals",
+          hint: "tuning inputs",
+          nodes: [
+            { id: "metrics", label: "Failure Metrics", hint: "rate + p99", detail: "Circuit thresholds and retry budgets should be tuned from real latency and error data." }
+          ]
+        }
+      ],
+      links: [
+        { from: "order", to: "budget", label: "Set deadline", detail: "Every dependency call starts with a time budget." },
+        { from: "budget", to: "circuit", label: "Check health", detail: "Open circuits fail fast without using network resources." },
+        { from: "circuit", to: "retry", label: "Permit attempts", detail: "Retries happen only for errors that are likely transient and idempotent." },
+        { from: "retry", to: "bulkhead", label: "Acquire capacity", detail: "Bulkhead slots protect the caller from resource exhaustion." },
+        { from: "bulkhead", to: "payment", label: "Call dependency", detail: "The remote call is now bounded by policy." },
+        { from: "circuit", to: "fallback", label: "Degraded mode", detail: "Open circuit or timeout returns a recoverable business state." },
+        { from: "payment", to: "metrics", label: "Feed policy", type: "async", detail: "Error rate and latency update resilience decisions." }
+      ]
+    },
+    "ms-grpc-protobuf": {
+      title: "gRPC contract topology",
+      caption: "A proto contract becomes typed clients, HTTP/2 traffic, and machine-readable errors.",
+      lanes: [
+        {
+          label: "Contract",
+          hint: "schema first",
+          nodes: [
+            { id: "proto", label: ".proto File", badge: "IDL", hint: "field numbers", detail: "Defines service methods, messages, and compatibility rules." },
+            { id: "registry", label: "Schema Review", hint: "CI checks", detail: "Prevents unsafe field reuse or breaking changes before deployment." }
+          ]
+        },
+        {
+          label: "Client",
+          hint: "generated code",
+          nodes: [
+            { id: "stub", label: "Generated Stub", hint: "Go/Java/Python", detail: "Gives callers typed request and response objects." },
+            { id: "deadline", label: "Deadline Metadata", hint: "context", detail: "Carries timeout, auth, and trace metadata with the RPC." }
+          ]
+        },
+        {
+          label: "Transport",
+          hint: "HTTP/2",
+          nodes: [
+            { id: "envoy", label: "Envoy / LB", hint: "mTLS + routing", detail: "Balances long-lived HTTP/2 connections and can enforce service policy." },
+            { id: "stream", label: "Stream", hint: "multiplexed", detail: "Supports unary, server-streaming, client-streaming, and bidirectional calls." }
+          ]
+        },
+        {
+          label: "Server",
+          hint: "handler",
+          nodes: [
+            { id: "interceptor", label: "Interceptors", hint: "auth/trace", detail: "Middleware for auth, logging, metrics, and tracing around service methods." },
+            { id: "handler", label: "Service Impl", hint: "domain code", detail: "Executes business logic and returns typed responses or status errors." }
+          ]
+        }
+      ],
+      links: [
+        { from: "proto", to: "registry", label: "Compatibility check", detail: "CI enforces safe protobuf evolution rules." },
+        { from: "proto", to: "stub", label: "Generate client", type: "async", detail: "Teams consume the same contract in their language." },
+        { from: "stub", to: "deadline", label: "Attach metadata", detail: "Deadlines and trace context move with the call." },
+        { from: "deadline", to: "envoy", label: "HTTP/2 frames", detail: "Binary protobuf travels over multiplexed transport." },
+        { from: "envoy", to: "interceptor", label: "Route to server", detail: "The server receives a typed RPC after transport policy." },
+        { from: "interceptor", to: "handler", label: "Invoke method", detail: "Business code returns a response or a status code." }
+      ]
+    },
+    "ms-service-discovery-lb": {
+      title: "Discovery and endpoint topology",
+      caption: "Stable names point to changing healthy instances.",
+      lanes: [
+        {
+          label: "Caller",
+          hint: "service A",
+          nodes: [
+            { id: "client", label: "Service Client", hint: "HTTP/gRPC", detail: "Calls a stable name and should honor timeouts, DNS refresh, and connection pooling." },
+            { id: "dns", label: "Cluster DNS", hint: "stable name", detail: "Resolves service names without hardcoded pod IPs." }
+          ]
+        },
+        {
+          label: "Routing",
+          hint: "load balancing",
+          nodes: [
+            { id: "service", label: "Service / LB", badge: "virtual", hint: "VIP or proxy", detail: "Maps stable service identity to live endpoints." },
+            { id: "slice", label: "EndpointSlice", hint: "ready pods", detail: "Stores current pod IPs and readiness state for routing." }
+          ]
+        },
+        {
+          label: "Instances",
+          hint: "pods",
+          nodes: [
+            { id: "pod-a", label: "Pod A", hint: "ready", detail: "Receives traffic while readiness remains true." },
+            { id: "pod-b", label: "Pod B", hint: "starting", detail: "Joins routing only after probes pass." }
+          ]
+        },
+        {
+          label: "Lifecycle",
+          hint: "probes + drain",
+          nodes: [
+            { id: "probe", label: "Readiness Probe", hint: "traffic gate", detail: "Controls whether an instance should receive new requests." },
+            { id: "drain", label: "Graceful Drain", hint: "SIGTERM", detail: "Removes a pod from routing before shutdown to finish in-flight work." }
+          ]
+        }
+      ],
+      links: [
+        { from: "client", to: "dns", label: "Resolve name", detail: "The caller starts with a stable service name." },
+        { from: "dns", to: "service", label: "Return route target", detail: "DNS points to a virtual service or a list of pod IPs." },
+        { from: "service", to: "slice", label: "Read endpoints", detail: "Routing uses only currently registered endpoints." },
+        { from: "slice", to: "pod-a", label: "Send request", detail: "Ready pods receive traffic." },
+        { from: "pod-b", to: "probe", label: "Pass readiness", type: "async", detail: "A new pod becomes eligible only after warmup succeeds." },
+        { from: "drain", to: "slice", label: "Remove endpoint", type: "async", detail: "Draining pods stop receiving new traffic before exit." }
+      ]
+    },
+    "ms-cqrs-event-sourcing": {
+      title: "CQRS/event-sourcing topology",
+      caption: "The write model protects invariants while read models optimize queries.",
+      lanes: [
+        {
+          label: "Write path",
+          hint: "commands",
+          nodes: [
+            { id: "command", label: "Command API", hint: "intent", detail: "Accepts commands and routes them to the correct aggregate." },
+            { id: "aggregate", label: "Aggregate", badge: "rules", hint: "invariants", detail: "Rehydrates from history and decides which events are valid." }
+          ]
+        },
+        {
+          label: "Facts",
+          hint: "source of truth",
+          nodes: [
+            { id: "eventstore", label: "Event Store", hint: "append-only", detail: "Stores immutable events with optimistic concurrency." },
+            { id: "snapshot", label: "Snapshots", hint: "replay speed", detail: "Caches aggregate state to avoid replaying long histories every time." }
+          ]
+        },
+        {
+          label: "Read side",
+          hint: "projections",
+          nodes: [
+            { id: "projector", label: "Projector", hint: "consumer", detail: "Applies events idempotently and tracks offsets or sequence numbers." },
+            { id: "readmodel", label: "Read Model", hint: "denormalized", detail: "Stores query-shaped data for screens, reports, search, or analytics." }
+          ]
+        },
+        {
+          label: "Queries",
+          hint: "fast reads",
+          nodes: [
+            { id: "query", label: "Query API", hint: "read only", detail: "Serves low-latency reads while accepting eventual consistency." },
+            { id: "replay", label: "Replay Tooling", hint: "repair", detail: "Rebuilds projections after bugs, schema changes, or new feature needs." }
+          ]
+        }
+      ],
+      links: [
+        { from: "command", to: "aggregate", label: "Validate command", detail: "The write model checks invariants before facts are created." },
+        { from: "aggregate", to: "eventstore", label: "Append events", detail: "State changes are durable immutable facts." },
+        { from: "eventstore", to: "projector", label: "Publish/consume", type: "async", detail: "Projections update after the command commits." },
+        { from: "projector", to: "readmodel", label: "Update view", detail: "The read side is shaped for query ergonomics." },
+        { from: "query", to: "readmodel", label: "Fetch precomputed data", detail: "Reads avoid aggregate replay and complex joins." },
+        { from: "replay", to: "projector", label: "Rebuild projection", type: "async", detail: "Events can be replayed to repair or create views." }
+      ]
+    },
+    "ms-kubernetes-deployment": {
+      title: "Kubernetes service runtime topology",
+      caption: "Controllers turn manifests into scheduled, healthy, scalable pods.",
+      lanes: [
+        {
+          label: "Desired state",
+          hint: "API objects",
+          nodes: [
+            { id: "manifest", label: "Manifest", hint: "YAML", detail: "Declares replicas, resources, probes, rollout strategy, and configuration." },
+            { id: "api", label: "API Server", badge: "source", hint: "stored spec", detail: "Stores desired state and exposes watch streams to controllers." }
+          ]
+        },
+        {
+          label: "Controllers",
+          hint: "reconciliation",
+          nodes: [
+            { id: "deploy", label: "Deployment", hint: "rollout", detail: "Creates and scales ReplicaSets according to rollout strategy." },
+            { id: "hpa", label: "HPA", hint: "autoscale", detail: "Adjusts replica count from CPU, memory, queue depth, or custom metrics." },
+            { id: "pdb", label: "PDB", hint: "availability", detail: "Limits voluntary disruptions so too many pods do not disappear at once." }
+          ]
+        },
+        {
+          label: "Runtime",
+          hint: "pods",
+          nodes: [
+            { id: "rs", label: "ReplicaSet", hint: "pod owner", detail: "Ensures the desired number of pod replicas exist." },
+            { id: "pod", label: "Pod", hint: "container", detail: "Runs the app with configured resources, probes, secrets, and config." }
+          ]
+        },
+        {
+          label: "Traffic",
+          hint: "serving",
+          nodes: [
+            { id: "service", label: "Service", hint: "ready endpoints", detail: "Routes traffic only to pods that pass readiness." },
+            { id: "metrics", label: "Metrics", hint: "top/scrape", detail: "Feeds autoscaling and operational tuning." }
+          ]
+        }
+      ],
+      links: [
+        { from: "manifest", to: "api", label: "Apply spec", detail: "Desired state is persisted before controllers act." },
+        { from: "api", to: "deploy", label: "Watch deployment", type: "async", detail: "The deployment controller reacts to spec changes." },
+        { from: "deploy", to: "rs", label: "Create ReplicaSet", detail: "New pod templates produce new ReplicaSets during rollout." },
+        { from: "rs", to: "pod", label: "Maintain replicas", detail: "Pods are recreated when they fail or during scaling." },
+        { from: "pod", to: "service", label: "Ready endpoint", type: "async", detail: "Readiness gates traffic membership." },
+        { from: "metrics", to: "hpa", label: "Scale signal", type: "async", detail: "Autoscaling reacts to observed demand." },
+        { from: "pdb", to: "pod", label: "Disruption guard", detail: "Node drains respect minimum availability." }
+      ]
+    },
+    "ms-idempotency-outbox-inbox": {
+      title: "Idempotent messaging topology",
+      caption: "A retry-safe command uses a durable key, atomic outbox, and deduping consumers.",
+      lanes: [
+        {
+          label: "Command",
+          hint: "HTTP boundary",
+          nodes: [
+            { id: "client", label: "Retrying Client", hint: "same key", detail: "Retries the same business intent with the same Idempotency-Key header." },
+            { id: "api", label: "Order API", badge: "FastAPI", hint: "command handler", detail: "Serializes duplicate attempts and returns the stored result after success." }
+          ]
+        },
+        {
+          label: "Atomic state",
+          hint: "one transaction",
+          nodes: [
+            { id: "keys", label: "Idempotency Keys", hint: "unique key", detail: "Stores PROCESSING/SUCCEEDED plus the response payload for safe replay." },
+            { id: "orders", label: "Orders Table", hint: "business row", detail: "Holds the single committed business result protected by DB constraints." },
+            { id: "outbox", label: "Outbox Events", hint: "publish intent", detail: "Records the event to publish in the same transaction." }
+          ]
+        },
+        {
+          label: "Delivery",
+          hint: "at least once",
+          nodes: [
+            { id: "relay", label: "Outbox Relay", hint: "skip locked", detail: "Publishes pending events and may safely retry after crashes." },
+            { id: "broker", label: "Kafka/SQS", hint: "redelivery", detail: "May deliver duplicates; consumers must treat that as normal." }
+          ]
+        },
+        {
+          label: "Consumer",
+          hint: "dedupe",
+          nodes: [
+            { id: "inbox", label: "Inbox Table", badge: "dedupe", hint: "event IDs", detail: "Records processed event IDs before side effects." },
+            { id: "stock", label: "Inventory Stock", hint: "side effect", detail: "Stock is reserved once even when a message is delivered multiple times." }
+          ]
+        }
+      ],
+      links: [
+        { from: "client", to: "api", label: "POST with key", detail: "The key identifies intent across retries." },
+        { from: "api", to: "keys", label: "Reserve or replay", detail: "The API either claims the key or returns the stored response." },
+        { from: "api", to: "orders", label: "Create once", detail: "The order row is inserted only by the winning request." },
+        { from: "orders", to: "outbox", label: "Store event intent", detail: "The event is atomic with the business state." },
+        { from: "outbox", to: "relay", label: "Poll pending rows", type: "async", detail: "Multiple relays can divide work with skip locked." },
+        { from: "relay", to: "broker", label: "Publish event", type: "async", detail: "Duplicate publishing is allowed and handled downstream." },
+        { from: "broker", to: "inbox", label: "Dedupe delivery", type: "async", detail: "The consumer exits early when event_id was already processed." },
+        { from: "inbox", to: "stock", label: "Reserve once", detail: "The side effect happens only after dedupe succeeds." }
+      ]
+    },
+    "ms-service-mesh-observability": {
+      title: "Service mesh observability topology",
+      caption: "App-to-app calls are secured and measured by proxies coordinated from one control plane.",
+      lanes: [
+        {
+          label: "Caller pod",
+          hint: "source workload",
+          nodes: [
+            { id: "order", label: "Order App", hint: "business code", detail: "Owns domain behavior, deadlines, and user-facing error semantics." },
+            { id: "envoy-a", label: "Outbound Proxy", badge: "Envoy", hint: "sidecar", detail: "Applies route, retry, timeout, and mTLS policy before traffic leaves the pod." }
+          ]
+        },
+        {
+          label: "Control plane",
+          hint: "platform policy",
+          nodes: [
+            { id: "istiod", label: "Mesh Control Plane", hint: "xDS/certs", detail: "Distributes routes, certificates, authorization policy, and telemetry providers." },
+            { id: "policy", label: "Authz + Traffic Policy", hint: "YAML", detail: "Defines who can call whom, canary weights, retries, timeouts, and outlier detection." }
+          ]
+        },
+        {
+          label: "Target pod",
+          hint: "destination workload",
+          nodes: [
+            { id: "envoy-b", label: "Inbound Proxy", badge: "mTLS", hint: "identity check", detail: "Verifies caller identity and enforces inbound authorization." },
+            { id: "payment", label: "Payment App", hint: "handler", detail: "Receives only authorized traffic and returns business success or failure." }
+          ]
+        },
+        {
+          label: "Telemetry",
+          hint: "incident loop",
+          nodes: [
+            { id: "otel", label: "OTel Collector", hint: "traces/logs", detail: "Collects spans and correlated logs for request-level investigation." },
+            { id: "prom", label: "Prometheus", hint: "RED metrics", detail: "Scrapes rate, error, and duration metrics used by alerts and dashboards." }
+          ]
+        }
+      ],
+      links: [
+        { from: "istiod", to: "envoy-a", label: "Push outbound config", type: "async", detail: "The source proxy receives route, retry, mTLS, and telemetry config." },
+        { from: "istiod", to: "envoy-b", label: "Push inbound policy", type: "async", detail: "The target proxy receives identity and authorization rules." },
+        { from: "order", to: "envoy-a", label: "Call payment", detail: "The app makes a normal service call with a deadline and trace context." },
+        { from: "envoy-a", to: "envoy-b", label: "mTLS tunnel", detail: "The mesh proves workload identity and encrypts east-west traffic." },
+        { from: "envoy-b", to: "payment", label: "Forward if allowed", detail: "Inbound policy gates traffic before the target handler executes." },
+        { from: "envoy-a", to: "otel", label: "Export spans", type: "async", detail: "Proxy and app spans combine into an end-to-end trace." },
+        { from: "envoy-a", to: "prom", label: "Expose RED metrics", type: "async", detail: "Metrics reveal rate, errors, and latency for SLOs." }
+      ]
     }
   };
 
   window.MICRO_TOPICS.forEach(topic => {
     if (flows[topic.id]) topic.flow = flows[topic.id];
     if (umls[topic.id]) topic.uml = umls[topic.id];
+    if (architectures[topic.id]) topic.architecture = architectures[topic.id];
   });
 })();
