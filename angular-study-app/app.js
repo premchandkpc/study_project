@@ -222,6 +222,64 @@
       </div>`;
   }
 
+  function renderArchitectureLab(topic) {
+    const arch = topic.architecture;
+    if (!arch || !arch.lanes || !arch.lanes.length) return "";
+
+    const links = arch.links || [];
+    const firstNode = arch.lanes.flatMap(lane => lane.nodes || [])[0] || {};
+    const lanes = arch.lanes.map((lane, laneIndex) => `
+      <div class="arch-lane" style="--lane:${laneIndex}">
+        <div class="arch-lane-title">
+          <span>${esc(lane.label || `Lane ${laneIndex + 1}`)}</span>
+          ${lane.hint ? `<small>${esc(lane.hint)}</small>` : ""}
+        </div>
+        <div class="arch-node-stack">
+          ${(lane.nodes || []).map(node => `
+            <button type="button" class="arch-node" data-arch-node="${esc(node.id)}">
+              <span class="arch-node-label">${esc(node.label)}</span>
+              ${node.badge ? `<span class="arch-badge">${esc(node.badge)}</span>` : ""}
+              ${node.hint ? `<small>${esc(node.hint)}</small>` : ""}
+            </button>`).join("")}
+        </div>
+      </div>`).join("");
+
+    const linkItems = links.map((link, index) => `
+      <button
+        type="button"
+        class="arch-link ${link.type === "async" ? "async" : "sync"}"
+        data-arch-link="${index}"
+        data-arch-from="${esc(link.from)}"
+        data-arch-to="${esc(link.to)}">
+        <span>${esc(link.label || `${link.from} to ${link.to}`)}</span>
+        <small>${esc(link.type === "async" ? "event/async" : "request/sync")}</small>
+      </button>`).join("");
+
+    return `
+      <div class="section arch-section">
+        <h2>0.2 · Architecture map</h2>
+        <div class="arch-lab" data-arch-lab>
+          <div class="arch-title">
+            <strong>${esc(arch.title || topic.title)}</strong>
+            ${arch.caption ? `<span>${esc(arch.caption)}</span>` : ""}
+          </div>
+          <div class="arch-board">
+            <div class="arch-lanes" role="group" aria-label="${esc(arch.title || topic.title)}">
+              ${lanes}
+            </div>
+            <div class="arch-links">
+              <strong>Paths</strong>
+              ${linkItems || `<span class="arch-empty">No paths configured.</span>`}
+            </div>
+          </div>
+          <div class="arch-readout">
+            <strong data-arch-label>${esc(firstNode.label || "Architecture node")}</strong>
+            <span data-arch-detail>${esc(firstNode.detail || firstNode.hint || "Click a node or path to inspect the production responsibility.")}</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
   /* ---------- Components ------------------------------------------------- */
 
   // SidebarComponent
@@ -467,6 +525,54 @@
       startUml();
     }
 
+    function setupArchitectureLab(topic) {
+      const lab = host.querySelector("[data-arch-lab]");
+      if (!lab || !topic.architecture || !topic.architecture.lanes) return;
+
+      const nodes = Array.from(lab.querySelectorAll("[data-arch-node]"));
+      const links = Array.from(lab.querySelectorAll("[data-arch-link]"));
+      const label = lab.querySelector("[data-arch-label]");
+      const detail = lab.querySelector("[data-arch-detail]");
+      const nodeData = new Map();
+      topic.architecture.lanes.forEach(lane => {
+        (lane.nodes || []).forEach(node => nodeData.set(node.id, node));
+      });
+
+      function setReadout(title, body) {
+        label.textContent = title || "Architecture detail";
+        detail.textContent = body || "";
+      }
+
+      function activateNode(nodeId) {
+        const node = nodeData.get(nodeId) || {};
+        nodes.forEach(el => el.classList.toggle("active", el.dataset.archNode === nodeId));
+        links.forEach(el => {
+          const active = el.dataset.archFrom === nodeId || el.dataset.archTo === nodeId;
+          el.classList.toggle("active", active);
+          el.classList.toggle("connected", active);
+        });
+        setReadout(node.label, node.detail || node.hint || "This component participates in the selected production flow.");
+      }
+
+      function activateLink(index) {
+        const link = (topic.architecture.links || [])[index] || {};
+        nodes.forEach(el => el.classList.toggle(
+          "active",
+          el.dataset.archNode === link.from || el.dataset.archNode === link.to
+        ));
+        links.forEach(el => {
+          const active = Number(el.dataset.archLink) === index;
+          el.classList.toggle("active", active);
+          el.classList.toggle("connected", false);
+        });
+        setReadout(link.label, link.detail || "This path shows how data or control moves between components.");
+      }
+
+      nodes.forEach(node => node.addEventListener("click", () => activateNode(node.dataset.archNode)));
+      links.forEach(link => link.addEventListener("click", () => activateLink(Number(link.dataset.archLink))));
+      if (nodes[0]) activateNode(nodes[0].dataset.archNode);
+    }
+
     function render() {
       if (flowTimer) {
         clearInterval(flowTimer);
@@ -525,6 +631,7 @@
 
         ${renderFlowLab(topic)}
         ${renderUmlLab(topic)}
+        ${renderArchitectureLab(topic)}
 
         <div class="section concept">
           <h2>1 · Concept</h2>
@@ -569,6 +676,7 @@
       if (markBtn) markBtn.addEventListener("click", () => progress.toggle(topic.id));
       setupFlowLab(topic);
       setupUmlLab(topic);
+      setupArchitectureLab(topic);
 
       // Trigger Prism highlight after content is in the DOM
       if (window.Prism) Prism.highlightAllUnder(host);
