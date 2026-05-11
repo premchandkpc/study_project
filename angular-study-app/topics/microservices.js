@@ -1428,6 +1428,50 @@ spec:
         { path: ["service", "hpa"], label: "Autoscaler watches demand", detail: "CPU, memory, queue depth, or custom metrics adjust replica count inside safe bounds." },
         { path: ["hpa", "pdb"], label: "Availability is protected", detail: "A PodDisruptionBudget keeps enough replicas running during voluntary node drains and maintenance." }
       ]
+    },
+    "ms-idempotency-outbox-inbox": {
+      title: "Retry-safe command path",
+      caption: "A command can be repeated without duplicate business side effects.",
+      nodes: [
+        { id: "client", label: "Client", hint: "retrying caller" },
+        { id: "key", label: "Idempotency Key", hint: "intent identity" },
+        { id: "command", label: "Command Handler", hint: "FastAPI/Spring" },
+        { id: "db", label: "Database Tx", hint: "atomic write" },
+        { id: "outbox", label: "Outbox", hint: "pending event" },
+        { id: "relay", label: "Relay", hint: "publishes" },
+        { id: "broker", label: "Broker", hint: "at least once" },
+        { id: "inbox", label: "Inbox", hint: "consumer dedupe" }
+      ],
+      steps: [
+        { path: ["client", "key"], label: "Caller names the intent", detail: "Every retry carries the same key, so the server can distinguish duplicate attempts from new business commands." },
+        { path: ["key", "command"], label: "Handler reserves the key", detail: "A unique constraint lets one request become the winner while concurrent retries wait or receive the stored result." },
+        { path: ["command", "db"], label: "Business row commits once", detail: "The order, payment request, or provisioning command is protected by database uniqueness." },
+        { path: ["db", "outbox"], label: "Event is stored atomically", detail: "The event row commits in the same transaction as the business change, removing the dual-write gap." },
+        { path: ["outbox", "relay"], label: "Relay publishes later", detail: "A background worker can crash and retry without losing the fact that the event must be published." },
+        { path: ["relay", "broker"], label: "Broker may redeliver", detail: "At-least-once delivery is accepted; duplicates are part of the contract." },
+        { path: ["broker", "inbox"], label: "Consumer dedupes before side effects", detail: "An inbox table or idempotent upsert prevents duplicate stock reservation, email, charge, or shipment work." }
+      ]
+    },
+    "ms-service-mesh-observability": {
+      title: "Mesh-controlled east-west traffic",
+      caption: "Workload identity, policy, retries, and telemetry wrap service calls.",
+      nodes: [
+        { id: "caller", label: "Caller Service", hint: "business code" },
+        { id: "sidecar-a", label: "Local Proxy", hint: "Envoy" },
+        { id: "policy", label: "Control Plane", hint: "xDS/policy" },
+        { id: "mtls", label: "mTLS", hint: "identity" },
+        { id: "sidecar-b", label: "Remote Proxy", hint: "Envoy" },
+        { id: "service", label: "Target Service", hint: "handler" },
+        { id: "telemetry", label: "Telemetry", hint: "metrics/traces" }
+      ],
+      steps: [
+        { path: ["caller", "sidecar-a"], label: "Application calls a service name", detail: "The app issues a normal HTTP/gRPC call while the proxy owns transport policy." },
+        { path: ["sidecar-a", "policy"], label: "Proxy receives config", detail: "The control plane distributes routes, certificates, retry policy, and authorization rules." },
+        { path: ["sidecar-a", "mtls"], label: "Identity is proven", detail: "mTLS uses workload certificates so services authenticate each other before application code runs." },
+        { path: ["mtls", "sidecar-b"], label: "Traffic reaches the target proxy", detail: "The remote proxy enforces inbound policy and records request-level telemetry." },
+        { path: ["sidecar-b", "service"], label: "Target handler executes", detail: "Business code stays focused on domain behavior, not connection security or rollout mechanics." },
+        { path: ["service", "telemetry"], label: "Observability is emitted", detail: "Metrics, traces, and access logs connect the two services into an inspectable graph." }
+      ]
     }
   };
 
