@@ -102,6 +102,7 @@ h1.topic-title { font-size: 28px; margin: 0; letter-spacing: -0.2px; }
 .section.code h2::before { background: var(--ok); }
 .section.interview h2::before { background: var(--accent-2); }
 .section.tradeoffs h2::before { background: var(--bad); }
+.section.flow-section h2::before { background: var(--micro); }
 
 .prose p { margin: 8px 0; }
 .prose ul { margin: 6px 0 6px 18px; padding: 0; }
@@ -153,9 +154,74 @@ pre[class*="language-"] {
 .progress-bar { height: 4px; background: var(--panel-2); border-radius: 3px; overflow:hidden; margin: 8px 0 16px; }
 .progress-bar > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .25s; }
 
+/* Microservices interactive flow lab */
+.flow-lab { display: grid; gap: 12px; }
+.flow-title { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; color:#fff; }
+.flow-title strong { font-size: 14px; }
+.flow-title span { color: var(--muted); font-size: 12.5px; }
+.flow-stage {
+  display:flex; align-items:center; gap:0; min-height: 130px; overflow-x:auto;
+  padding: 12px; border:1px solid var(--border); border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.01));
+}
+.flow-node {
+  flex: 0 0 136px; min-height: 86px; display:grid; align-content:start; gap: 5px;
+  text-align:left; color: var(--text); background: var(--panel-2); border:1px solid var(--border);
+  border-radius: 8px; padding: 10px; cursor:pointer; transition: transform .18s, border-color .18s, background .18s;
+}
+.flow-node:hover { transform: translateY(-1px); border-color: rgba(79,140,255,.55); }
+.flow-node.active-path { border-color: rgba(43,209,126,.65); background: rgba(43,209,126,.09); }
+.flow-node.active-source { box-shadow: inset 0 0 0 1px rgba(79,140,255,.45); }
+.flow-node.active-target { box-shadow: inset 0 0 0 1px rgba(43,209,126,.55), 0 0 18px rgba(43,209,126,.12); }
+.node-index {
+  width: 22px; height: 22px; display:grid; place-items:center; border-radius: 50%;
+  background: rgba(79,140,255,.18); color:#d6e0ff; font-size: 11px; font-weight: 800;
+}
+.node-label { font-size: 13px; font-weight: 700; line-height: 1.25; }
+.node-hint { color: var(--muted); font-size: 11.5px; line-height: 1.25; }
+.flow-edge {
+  flex: 0 0 52px; height: 42px; position:relative; display:flex; align-items:center; justify-content:center;
+}
+.flow-edge::before {
+  content:""; width:100%; height:3px; border-radius: 999px; background: var(--border);
+}
+.flow-edge::after {
+  content:""; position:absolute; right: 2px; width: 8px; height: 8px;
+  border-top: 2px solid var(--border); border-right: 2px solid var(--border); transform: rotate(45deg);
+}
+.flow-edge span {
+  position:absolute; width:9px; height:9px; border-radius:50%; background: var(--ok);
+  opacity:0; box-shadow: 0 0 14px rgba(43,209,126,.75);
+}
+.flow-edge.active::before { background: linear-gradient(90deg, var(--accent), var(--ok)); }
+.flow-edge.active::after { border-color: var(--ok); }
+.flow-edge.active span { opacity:1; animation: flow-dot 1.2s linear infinite; }
+.flow-controls { display:grid; grid-template-columns: auto auto auto minmax(120px, 1fr); align-items:center; gap:8px; }
+.flow-btn {
+  background: var(--panel-2); color: var(--text); border:1px solid var(--border);
+  border-radius: 8px; min-width: 58px; padding: 6px 10px; cursor:pointer; font-size: 12.5px;
+}
+.flow-btn:hover { border-color: var(--accent); }
+.flow-btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); border-color: transparent; }
+.flow-progress { height: 5px; background: var(--panel-2); border-radius: 999px; overflow:hidden; }
+.flow-progress > div { height:100%; width:0; background: linear-gradient(90deg, var(--accent), var(--ok)); transition: width .2s; }
+.flow-readout {
+  min-height: 58px; padding: 9px 11px; border-left: 3px solid var(--ok);
+  background: rgba(43,209,126,.06); border-radius: 0 8px 8px 0;
+}
+.flow-readout strong { display:block; color:#fff; font-size: 13.5px; margin-bottom: 3px; }
+.flow-readout span { color: #d3dcea; font-size: 13px; }
+
+@keyframes flow-dot {
+  from { transform: translateX(-24px); }
+  to { transform: translateX(24px); }
+}
+
 @media (max-width: 880px) {
   .app-shell { grid-template-columns: 1fr; }
   .sidebar { height: auto; position: relative; }
   .main { padding: 18px 16px 60px; }
   .tradeoff-grid { grid-template-columns: 1fr; }
+  .flow-controls { grid-template-columns: repeat(3, auto); }
+  .flow-progress { grid-column: 1 / -1; }
 }

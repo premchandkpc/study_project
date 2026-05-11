@@ -948,3 +948,181 @@ func main() {
     }
   }
 ];
+
+(function attachMicroserviceFlows() {
+  const flows = {
+    "ms-api-gateway": {
+      title: "Gateway request path",
+      caption: "Edge concerns are handled before domain service code runs.",
+      nodes: [
+        { id: "client", label: "Client", hint: "web/mobile" },
+        { id: "gateway", label: "API Gateway", hint: "TLS + entry" },
+        { id: "auth", label: "Auth", hint: "JWT/OAuth2" },
+        { id: "limit", label: "Rate Limit", hint: "token bucket" },
+        { id: "router", label: "Router", hint: "path/host rules" },
+        { id: "service", label: "Service", hint: "business API" },
+        { id: "trace", label: "Telemetry", hint: "logs/traces" }
+      ],
+      steps: [
+        { path: ["client", "gateway"], label: "Request enters the edge", detail: "The client sends HTTPS traffic to one public entry point instead of discovering every service." },
+        { path: ["gateway", "auth"], label: "Token is validated once", detail: "The gateway verifies signature, expiry, scopes, tenant, and forwards identity as trusted headers." },
+        { path: ["auth", "limit"], label: "Abuse is stopped early", detail: "A rate limiter rejects noisy clients before they consume downstream threads or database connections." },
+        { path: ["limit", "router"], label: "Route is selected", detail: "Host, path, method, headers, or canary weights choose the right upstream service instance." },
+        { path: ["router", "service"], label: "Service receives a clean request", detail: "The service focuses on domain logic while the edge owns cross-cutting concerns." },
+        { path: ["service", "trace"], label: "Telemetry is stitched", detail: "Trace IDs, access logs, and latency metrics make the north-south request observable end to end." }
+      ]
+    },
+    "ms-kafka-event-driven": {
+      title: "Event-driven write path",
+      caption: "The durable log decouples producers from every downstream consumer.",
+      nodes: [
+        { id: "producer", label: "Producer", hint: "order API" },
+        { id: "outbox", label: "Outbox", hint: "same DB tx" },
+        { id: "broker", label: "Kafka Broker", hint: "commit log" },
+        { id: "partition", label: "Partition", hint: "ordered key" },
+        { id: "consumer", label: "Consumer Group", hint: "parallel readers" },
+        { id: "handler", label: "Handler", hint: "idempotent" },
+        { id: "store", label: "State Store", hint: "read model" },
+        { id: "dlq", label: "DLQ", hint: "fatal events" }
+      ],
+      steps: [
+        { path: ["producer", "outbox"], label: "Write event with the business row", detail: "The outbox removes the dual-write gap between the database commit and Kafka publish." },
+        { path: ["outbox", "broker"], label: "Relay publishes safely", detail: "A relay reads pending rows, publishes to Kafka, and marks them sent with retryable semantics." },
+        { path: ["broker", "partition"], label: "Key chooses ordering lane", detail: "All events for one aggregate use the same key, so Kafka preserves their order inside one partition." },
+        { path: ["partition", "consumer"], label: "Group scales work", detail: "Kafka assigns each partition to one consumer in the group; adding consumers increases throughput up to partition count." },
+        { path: ["consumer", "handler"], label: "Handler processes idempotently", detail: "The consumer commits offsets only after side effects succeed, so retries do not corrupt state." },
+        { path: ["handler", "store"], label: "Projection is updated", detail: "Read models, caches, search indexes, or analytics tables catch up asynchronously." },
+        { path: ["handler", "store", "dlq"], label: "Bad events are isolated", detail: "Fatal messages go to a dead-letter topic with enough context for replay after a fix." }
+      ]
+    },
+    "ms-saga-distributed-tx": {
+      title: "Saga orchestration path",
+      caption: "Local transactions move forward; compensations repair completed steps on failure.",
+      nodes: [
+        { id: "api", label: "Order API", hint: "create request" },
+        { id: "saga", label: "Orchestrator", hint: "durable state" },
+        { id: "inventory", label: "Inventory", hint: "reserve" },
+        { id: "payment", label: "Payment", hint: "charge" },
+        { id: "shipping", label: "Shipping", hint: "fulfill" },
+        { id: "compensation", label: "Compensation", hint: "undo safely" }
+      ],
+      steps: [
+        { path: ["api", "saga"], label: "Workflow starts", detail: "The API records intent and hands control to a durable saga instead of holding a distributed lock." },
+        { path: ["saga", "inventory"], label: "Inventory reserves locally", detail: "Inventory commits its own database transaction and returns a reservation ID for possible cancellation." },
+        { path: ["inventory", "payment"], label: "Payment charges after reserve", detail: "The next local transaction runs only after the previous one has a retryable, durable result." },
+        { path: ["payment", "shipping"], label: "Success path continues", detail: "When payment succeeds, the saga can confirm the order and create the shipping task." },
+        { path: ["payment", "compensation"], label: "Failure path compensates", detail: "If payment or shipping fails, completed steps are undone in reverse order with idempotent commands." },
+        { path: ["saga", "compensation"], label: "Retries stay visible", detail: "The orchestrator persists retries, backoff, and manual-intervention state instead of losing the workflow on crash." }
+      ]
+    },
+    "ms-circuit-breaker-resilience": {
+      title: "Resilient synchronous call",
+      caption: "Every outbound dependency call gets a timeout, isolation, retry policy, and fallback.",
+      nodes: [
+        { id: "caller", label: "Caller", hint: "request thread" },
+        { id: "timeout", label: "Timeout", hint: "budget" },
+        { id: "circuit", label: "Circuit", hint: "fail fast" },
+        { id: "retry", label: "Retry", hint: "backoff+jitter" },
+        { id: "bulkhead", label: "Bulkhead", hint: "isolation" },
+        { id: "dependency", label: "Dependency", hint: "remote service" },
+        { id: "fallback", label: "Fallback", hint: "degraded mode" }
+      ],
+      steps: [
+        { path: ["caller", "timeout"], label: "Set a time budget", detail: "The caller decides how long the dependency is allowed to spend before the user-facing SLO is at risk." },
+        { path: ["timeout", "circuit"], label: "Circuit checks health", detail: "If recent failures crossed the threshold, the call fails immediately instead of waiting for another timeout." },
+        { path: ["circuit", "retry"], label: "Retry only transient failures", detail: "Backoff and jitter absorb short blips without creating a synchronized traffic spike." },
+        { path: ["retry", "bulkhead"], label: "Bulkhead limits concurrency", detail: "The remote dependency gets a bounded pool or semaphore so it cannot exhaust the whole service." },
+        { path: ["bulkhead", "dependency"], label: "Dependency call executes", detail: "Healthy calls pass through; failures feed metrics back into retry and circuit-breaker decisions." },
+        { path: ["dependency", "fallback"], label: "Fallback protects the user journey", detail: "On sustained failure, return cached, partial, or queued work instead of taking the whole request down." }
+      ]
+    },
+    "ms-grpc-protobuf": {
+      title: "gRPC service contract flow",
+      caption: "A typed proto contract drives generated clients, HTTP/2 calls, and status-aware errors.",
+      nodes: [
+        { id: "proto", label: ".proto Contract", hint: "IDL" },
+        { id: "stub", label: "Client Stub", hint: "generated" },
+        { id: "http2", label: "HTTP/2", hint: "multiplexed" },
+        { id: "interceptor", label: "Interceptor", hint: "auth/trace" },
+        { id: "service", label: "Service Impl", hint: "handler" },
+        { id: "stream", label: "Stream", hint: "optional" },
+        { id: "status", label: "Status Code", hint: "typed error" }
+      ],
+      steps: [
+        { path: ["proto", "stub"], label: "Generate typed clients", detail: "The proto file creates language-native request and response types for every team." },
+        { path: ["stub", "http2"], label: "Call travels over HTTP/2", detail: "Binary protobuf frames share one multiplexed connection with flow control and keepalive." },
+        { path: ["http2", "interceptor"], label: "Cross-cutting logic runs", detail: "Interceptors attach auth, deadlines, trace context, metrics, and logging around the handler." },
+        { path: ["interceptor", "service"], label: "Handler executes domain logic", detail: "The server receives a typed message and returns either a typed response or a typed status error." },
+        { path: ["service", "stream"], label: "Streaming keeps the pipe open", detail: "For watch or realtime flows, either side can send multiple messages under the same RPC." },
+        { path: ["service", "status"], label: "Errors stay machine-readable", detail: "Clients branch on codes like INVALID_ARGUMENT, UNAVAILABLE, or DEADLINE_EXCEEDED instead of parsing text." }
+      ]
+    },
+    "ms-service-discovery-lb": {
+      title: "Discovery and readiness flow",
+      caption: "Traffic follows healthy endpoints; deployment lifecycle controls when pods join or leave.",
+      nodes: [
+        { id: "client", label: "Client", hint: "service caller" },
+        { id: "dns", label: "DNS Name", hint: "stable address" },
+        { id: "service", label: "Service/LB", hint: "virtual IP" },
+        { id: "endpoints", label: "Endpoints", hint: "healthy pods" },
+        { id: "pod", label: "Pod", hint: "instance" },
+        { id: "readiness", label: "Readiness", hint: "traffic gate" },
+        { id: "drain", label: "Graceful Drain", hint: "SIGTERM" }
+      ],
+      steps: [
+        { path: ["client", "dns"], label: "Caller uses a stable name", detail: "The client never pins pod IPs; it resolves a service DNS name or calls a sidecar/load balancer." },
+        { path: ["dns", "service"], label: "Service owns virtual routing", detail: "Kubernetes, Envoy, or an external load balancer maps the stable address to current endpoints." },
+        { path: ["service", "endpoints"], label: "Only ready endpoints receive traffic", detail: "Endpoint lists are continuously updated from health and readiness state." },
+        { path: ["endpoints", "pod"], label: "Request lands on one pod", detail: "The load balancer picks an instance according to its algorithm and connection state." },
+        { path: ["pod", "readiness"], label: "Readiness changes membership", detail: "A pod fails readiness while starting, overloaded, or draining, so it stops receiving new traffic." },
+        { path: ["readiness", "drain"], label: "Shutdown drains in-flight work", detail: "On SIGTERM the pod flips readiness, finishes active requests, then exits before the grace period ends." }
+      ]
+    },
+    "ms-cqrs-event-sourcing": {
+      title: "CQRS and event-sourcing loop",
+      caption: "Commands append facts; projections build query-optimized views.",
+      nodes: [
+        { id: "command", label: "Command API", hint: "write model" },
+        { id: "aggregate", label: "Aggregate", hint: "invariants" },
+        { id: "eventstore", label: "Event Store", hint: "append only" },
+        { id: "bus", label: "Event Bus", hint: "fan out" },
+        { id: "projection", label: "Projection", hint: "consumer" },
+        { id: "readmodel", label: "Read Model", hint: "query table" },
+        { id: "query", label: "Query API", hint: "fast reads" }
+      ],
+      steps: [
+        { path: ["command", "aggregate"], label: "Command checks invariants", detail: "The write model validates business rules and decides which domain events should exist." },
+        { path: ["aggregate", "eventstore"], label: "Facts are appended", detail: "State changes are stored as immutable events, not overwritten rows." },
+        { path: ["eventstore", "bus"], label: "Events fan out", detail: "Consumers subscribe independently without forcing the command path to wait for every read model." },
+        { path: ["bus", "projection"], label: "Projection consumes in order", detail: "A projector applies events idempotently and tracks offsets so it can resume after failure." },
+        { path: ["projection", "readmodel"], label: "Read model is shaped for queries", detail: "The read side denormalizes data for screens, search, analytics, or reporting." },
+        { path: ["readmodel", "query"], label: "Queries stay simple and fast", detail: "The query API reads precomputed views while callers accept eventual consistency." }
+      ]
+    },
+    "ms-kubernetes-deployment": {
+      title: "Kubernetes rollout and scaling path",
+      caption: "Declarative desired state becomes pods, traffic, autoscaling, and disruption protection.",
+      nodes: [
+        { id: "manifest", label: "Manifest", hint: "desired state" },
+        { id: "deployment", label: "Deployment", hint: "rollout" },
+        { id: "replicaset", label: "ReplicaSet", hint: "replicas" },
+        { id: "pod", label: "Pod", hint: "container" },
+        { id: "service", label: "Service", hint: "traffic" },
+        { id: "hpa", label: "HPA", hint: "scale signal" },
+        { id: "pdb", label: "PDB", hint: "availability" }
+      ],
+      steps: [
+        { path: ["manifest", "deployment"], label: "Apply desired state", detail: "The API server stores the deployment spec and controllers reconcile actual cluster state toward it." },
+        { path: ["deployment", "replicaset"], label: "Rollout creates ReplicaSets", detail: "New versions get new ReplicaSets while rolling-update settings control surge and unavailable pods." },
+        { path: ["replicaset", "pod"], label: "Pods start with resources", detail: "Requests, limits, probes, config, and secrets shape how each container is scheduled and run." },
+        { path: ["pod", "service"], label: "Ready pods receive traffic", detail: "The Service sends traffic only to endpoints that pass readiness." },
+        { path: ["service", "hpa"], label: "Autoscaler watches demand", detail: "CPU, memory, queue depth, or custom metrics adjust replica count inside safe bounds." },
+        { path: ["hpa", "pdb"], label: "Availability is protected", detail: "A PodDisruptionBudget keeps enough replicas running during voluntary node drains and maintenance." }
+      ]
+    }
+  };
+
+  window.MICRO_TOPICS.forEach(topic => {
+    if (flows[topic.id]) topic.flow = flows[topic.id];
+  });
+})();

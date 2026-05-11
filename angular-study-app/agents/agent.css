@@ -1,0 +1,79 @@
+/* agents/agent.css */
+.agent-widget {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 320px;
+  max-height: 400px;
+  background: rgba(21, 27, 38, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  font-family: var(--font-family, "Inter", sans-serif);
+  color: var(--text);
+}
+.agent-widget.hidden {
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+}
+.agent-header {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  padding: 8px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+}
+.agent-messages {
+  flex: 1;
+  padding: 8px 12px;
+  overflow-y: auto;
+  font-size: 0.94rem;
+}
+.agent-message {
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.agent-message.user {
+  text-align: right;
+  color: var(--accent);
+}
+.agent-message.bot {
+  text-align: left;
+  color: var(--text);
+}
+.agent-input {
+  display: flex;
+  border-top: 1px solid var(--border);
+  padding: 6px 8px;
+  background: var(--panel);
+}
+.agent-input input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  padding: 4px 8px;
+  font-size: 0.94rem;
+}
+.agent-input input::placeholder {
+  color: var(--muted);
+}
+.agent-input button {
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  padding: 4px 10px;
+  margin-left: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.agent-input button:hover {
+  background: var(--accent-2);
+}

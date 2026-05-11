@@ -123,6 +123,47 @@
     );
   }
 
+  function renderFlowLab(topic) {
+    const flow = topic.flow;
+    if (!flow || !flow.nodes || !flow.nodes.length || !flow.steps || !flow.steps.length) return "";
+
+    const firstStep = flow.steps[0];
+    const nodes = flow.nodes.map((node, index) => `
+      <button type="button" class="flow-node" data-node="${esc(node.id)}" style="--i:${index}">
+        <span class="node-index">${index + 1}</span>
+        <span class="node-label">${esc(node.label)}</span>
+        ${node.hint ? `<span class="node-hint">${esc(node.hint)}</span>` : ""}
+      </button>
+      ${index < flow.nodes.length - 1
+        ? `<div class="flow-edge" data-edge="${esc(node.id)}-${esc(flow.nodes[index + 1].id)}" style="--i:${index}"><span></span></div>`
+        : ""}`
+    ).join("");
+
+    return `
+      <div class="section flow-section">
+        <h2>0 · Interactive flow</h2>
+        <div class="flow-lab" data-flow-lab>
+          <div class="flow-title">
+            <strong>${esc(flow.title || topic.title)}</strong>
+            ${flow.caption ? `<span>${esc(flow.caption)}</span>` : ""}
+          </div>
+          <div class="flow-stage" role="group" aria-label="${esc(flow.title || topic.title)}">
+            ${nodes}
+          </div>
+          <div class="flow-controls">
+            <button class="flow-btn" type="button" data-flow-prev>Prev</button>
+            <button class="flow-btn primary" type="button" data-flow-play>Pause</button>
+            <button class="flow-btn" type="button" data-flow-next>Next</button>
+            <div class="flow-progress" aria-hidden="true"><div data-flow-progress></div></div>
+          </div>
+          <div class="flow-readout">
+            <strong data-flow-step-label>${esc(firstStep.label || "Step 1")}</strong>
+            <span data-flow-step-detail>${esc(firstStep.detail || "")}</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
   /* ---------- Components ------------------------------------------------- */
 
   // SidebarComponent
@@ -202,11 +243,103 @@
     const topics = TopicsService;
     const progress = ProgressService;
     const router = Router;
+    let flowTimer = null;
+    let lastTopicId = null;
+
+    function setupFlowLab(topic) {
+      const lab = host.querySelector("[data-flow-lab]");
+      if (!lab || !topic.flow || !topic.flow.steps || !topic.flow.steps.length) return;
+
+      const steps = topic.flow.steps;
+      const nodes = Array.from(lab.querySelectorAll("[data-node]"));
+      const edges = Array.from(lab.querySelectorAll("[data-edge]"));
+      const label = lab.querySelector("[data-flow-step-label]");
+      const detail = lab.querySelector("[data-flow-step-detail]");
+      const progressEl = lab.querySelector("[data-flow-progress]");
+      const playBtn = lab.querySelector("[data-flow-play]");
+      let index = 0;
+      let playing = true;
+
+      function activateStep(nextIndex) {
+        index = (nextIndex + steps.length) % steps.length;
+        const step = steps[index];
+        const path = step.path && step.path.length
+          ? step.path
+          : [step.from, step.to].filter(Boolean);
+
+        nodes.forEach(node => {
+          const nodeId = node.dataset.node;
+          node.classList.toggle("active-path", path.includes(nodeId));
+          node.classList.toggle("active-source", nodeId === path[0]);
+          node.classList.toggle("active-target", nodeId === path[path.length - 1]);
+        });
+
+        edges.forEach(edge => {
+          const active = path.some((nodeId, pathIndex) => {
+            const nextNodeId = path[pathIndex + 1];
+            return nextNodeId && (
+              edge.dataset.edge === nodeId + "-" + nextNodeId ||
+              edge.dataset.edge === nextNodeId + "-" + nodeId
+            );
+          });
+          edge.classList.toggle("active", active);
+        });
+
+        label.textContent = step.label || `Step ${index + 1}`;
+        detail.textContent = step.detail || "";
+        progressEl.style.width = `${((index + 1) / steps.length) * 100}%`;
+      }
+
+      function stopFlow() {
+        playing = false;
+        playBtn.textContent = "Play";
+        if (flowTimer) clearInterval(flowTimer);
+        flowTimer = null;
+      }
+
+      function startFlow() {
+        playing = true;
+        playBtn.textContent = "Pause";
+        if (flowTimer) clearInterval(flowTimer);
+        flowTimer = setInterval(() => activateStep(index + 1), 1800);
+      }
+
+      lab.querySelector("[data-flow-prev]").addEventListener("click", () => {
+        stopFlow();
+        activateStep(index - 1);
+      });
+      lab.querySelector("[data-flow-next]").addEventListener("click", () => {
+        stopFlow();
+        activateStep(index + 1);
+      });
+      playBtn.addEventListener("click", () => playing ? stopFlow() : startFlow());
+      nodes.forEach(node => {
+        node.addEventListener("click", () => {
+          const nextIndex = steps.findIndex(step => {
+            const path = step.path && step.path.length
+              ? step.path
+              : [step.from, step.to].filter(Boolean);
+            return path.includes(node.dataset.node);
+          });
+          stopFlow();
+          activateStep(nextIndex >= 0 ? nextIndex : 0);
+        });
+      });
+
+      activateStep(0);
+      startFlow();
+    }
 
     function render() {
+      if (flowTimer) {
+        clearInterval(flowTimer);
+        flowTimer = null;
+      }
+
       const id = router.current().path.replace(/^\//, "");
       const topic = topics.byId(id);
       if (!topic) {
+        lastTopicId = null;
         host.innerHTML = `
           <div class="empty">
             <div>
@@ -219,6 +352,7 @@
 
       const areaLabel = ({ java:"Java", golang:"Go", python:"Python", microservices:"Microservices" })[topic.area];
       const done = progress.isDone(topic.id);
+      const isTopicChange = topic.id !== lastTopicId;
 
       const interviewHtml = (topic.interview || []).map(qa => `
         <div class="qa">
@@ -247,6 +381,8 @@
           <button class="btn primary" data-mark>${done ? "✓ Completed" : "Mark as completed"}</button>
           <span class="meta">${esc(topic.id)}</span>
         </div>
+
+        ${renderFlowLab(topic)}
 
         <div class="section concept">
           <h2>1 · Concept</h2>
@@ -289,11 +425,13 @@
       });
       const markBtn = host.querySelector("[data-mark]");
       if (markBtn) markBtn.addEventListener("click", () => progress.toggle(topic.id));
+      setupFlowLab(topic);
 
       // Trigger Prism highlight after content is in the DOM
       if (window.Prism) Prism.highlightAllUnder(host);
       // Smooth scroll to top on topic switch
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (isTopicChange) window.scrollTo({ top: 0, behavior: "smooth" });
+      lastTopicId = topic.id;
     }
 
     router.current.subscribe(render);
