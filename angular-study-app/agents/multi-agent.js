@@ -451,13 +451,18 @@ function generateResponse(agentId, msg) {
 
 /* ── Try server, fall back to local ──────────────────────────  */
 async function fetchReply(agentId, msg) {
-  try {
-    const res = await fetch(`http://localhost:3001/api/agent?msg=${encodeURIComponent(msg)}&agent=${agentId}`, { signal: AbortSignal.timeout(2000) });
-    if (res.ok) {
-      const data = await res.json();
-      return { text: data.reply || data.message, agentId };
-    }
-  } catch (_) {}
+  for (const port of [3001, 3002, 3003]) {
+    try {
+      const res = await fetch(
+        `http://localhost:${port}/api/agent?msg=${encodeURIComponent(msg)}&agent=${agentId}`,
+        { signal: AbortSignal.timeout(1500) }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        return { text: data.reply || data.message, agentId };
+      }
+    } catch (_) {}
+  }
   return generateResponse(agentId, msg);
 }
 

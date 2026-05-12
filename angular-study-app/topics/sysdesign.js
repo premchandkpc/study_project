@@ -2936,14 +2936,65 @@ public boolean slidingWindowAllowed(String userId, int limit, int windowSeconds)
   },
   visual: function(mount) {
     var W = 480, H = 220;
+
+    // Controls
+    var ctrl = document.createElement('div');
+    ctrl.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:8px;justify-content:center';
+    var playBtn = document.createElement('button');
+    playBtn.textContent = '▶ Play';
+    playBtn.style.cssText = 'padding:5px 16px;border-radius:6px;border:1px solid #4f8cff55;background:rgba(79,140,255,0.12);color:#4f8cff;cursor:pointer;font-size:13px;font-family:monospace';
+    var sendBtn = document.createElement('button');
+    sendBtn.textContent = '⊕ Send Request';
+    sendBtn.style.cssText = 'padding:5px 16px;border-radius:6px;border:1px solid #3fb95055;background:rgba(63,185,80,0.1);color:#3fb950;cursor:pointer;font-size:13px;font-family:monospace';
+    ctrl.appendChild(playBtn); ctrl.appendChild(sendBtn);
+    mount.appendChild(ctrl);
+
     var canvas = document.createElement('canvas');
     canvas.width = W; canvas.height = H;
     canvas.style.cssText = 'width:100%;max-width:480px;border-radius:8px;background:#0d1117;display:block;margin:0 auto';
     mount.appendChild(canvas);
     var ctx = canvas.getContext('2d');
 
-    var CAPACITY = 10, tokens = 10, REFILL_RATE = 0.03; // tokens per frame
+    var CAPACITY = 10, tokens = 10, REFILL_RATE = 0.03;
     var requests = [], lastReject = 0;
+    var running = false, rafId = null, intervalId = null;
+
+    function drawStatic() {
+      ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
+      // Bucket outline
+      ctx.strokeStyle = '#30363d'; ctx.lineWidth = 2;
+      ctx.fillStyle = '#161b22';
+      ctx.beginPath(); ctx.roundRect(40, 40, 100, 140, 8); ctx.fill(); ctx.stroke();
+      // Fill
+      var fillH = (tokens / CAPACITY) * 128;
+      var grad = ctx.createLinearGradient(40, 180 - fillH, 40, 180);
+      grad.addColorStop(0, '#00e5ff88'); grad.addColorStop(1, '#00b8d4cc');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.roundRect(44, 180 - fillH, 92, fillH, [0,0,6,6]); ctx.fill();
+      // Count
+      ctx.fillStyle = '#e6edf3'; ctx.font = 'bold 22px monospace'; ctx.textAlign = 'center';
+      ctx.fillText(tokens.toFixed(1), 90, 115);
+      ctx.font = '11px monospace'; ctx.fillStyle = '#8b949e';
+      ctx.fillText('tokens', 90, 130);
+      ctx.font = 'bold 12px monospace'; ctx.fillStyle = '#00e5ff';
+      ctx.fillText('Token Bucket', 90, 30);
+      ctx.fillStyle = '#3fb950'; ctx.font = '11px monospace'; ctx.textAlign = 'left';
+      ctx.fillText('↑ refill: ' + (REFILL_RATE * 60).toFixed(1) + '/s', 155, 50);
+      ctx.fillStyle = '#8b949e';
+      ctx.fillText('capacity: ' + CAPACITY, 155, 68);
+      // Legend
+      ctx.fillStyle = '#3fb950';
+      ctx.beginPath(); ctx.arc(155, 100, 5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#e6edf3'; ctx.fillText('allowed', 165, 104);
+      ctx.fillStyle = '#f85149';
+      ctx.beginPath(); ctx.arc(155, 118, 5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#e6edf3'; ctx.fillText('rejected', 165, 122);
+      // Hint when paused
+      if (!running) {
+        ctx.fillStyle = '#8b949e'; ctx.font = '11px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('Press ▶ Play to animate · ⊕ Send Request to test', W/2, H - 10);
+      }
+    }
 
     function addRequest() {
       if (tokens >= 1) {
@@ -2955,77 +3006,60 @@ public boolean slidingWindowAllowed(String userId, int limit, int windowSeconds)
       }
     }
 
-    var interval = setInterval(function() {
-      if (document.body.contains(canvas)) addRequest();
-      else clearInterval(interval);
-    }, 900);
-
     function frame() {
-      if (!document.body.contains(canvas)) return;
-      requestAnimationFrame(frame);
-
+      if (!running || !document.body.contains(canvas)) return;
+      rafId = requestAnimationFrame(frame);
       tokens = Math.min(CAPACITY, tokens + REFILL_RATE);
-
-      ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
-
-      // Bucket
-      ctx.strokeStyle = '#30363d'; ctx.lineWidth = 2;
-      ctx.fillStyle = '#161b22';
-      ctx.beginPath(); ctx.roundRect(40, 40, 100, 140, 8); ctx.fill(); ctx.stroke();
-
-      // Tokens fill
-      var fillH = (tokens / CAPACITY) * 128;
-      var grad = ctx.createLinearGradient(40, 180 - fillH, 40, 180);
-      grad.addColorStop(0, '#00e5ff88'); grad.addColorStop(1, '#00b8d4cc');
-      ctx.fillStyle = grad;
-      ctx.beginPath(); ctx.roundRect(44, 180 - fillH, 92, fillH, [0,0,6,6]); ctx.fill();
-
-      // Token count
-      ctx.fillStyle = '#e6edf3'; ctx.font = 'bold 22px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(tokens.toFixed(1), 90, 115);
-      ctx.font = '11px monospace'; ctx.fillStyle = '#8b949e';
-      ctx.fillText('tokens', 90, 130);
-
-      // Label
-      ctx.font = 'bold 12px monospace'; ctx.fillStyle = '#00e5ff';
-      ctx.fillText('Token Bucket', 90, 30);
-
-      // Refill rate indicator
-      ctx.fillStyle = '#3fb950'; ctx.font = '11px monospace'; ctx.textAlign = 'left';
-      ctx.fillText('↑ refill: ' + (REFILL_RATE * 60).toFixed(1) + '/s', 155, 50);
-      ctx.fillStyle = '#8b949e';
-      ctx.fillText('capacity: ' + CAPACITY, 155, 68);
-
+      drawStatic();
       // Requests
       requests = requests.filter(function(r) { return r.alpha > 0; });
       requests.forEach(function(r) {
-        r.x -= 4;
-        r.alpha -= 0.018;
+        r.x -= 4; r.alpha -= 0.018;
         var col = r.status === 'ok' ? '#3fb950' : '#f85149';
         ctx.globalAlpha = Math.max(0, r.alpha);
         ctx.fillStyle = col;
-        ctx.beginPath(); ctx.arc(r.x, r.y, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(r.x, r.y, 7, 0, Math.PI*2); ctx.fill();
         ctx.globalAlpha = 1;
       });
-
-      // Reject flash
       if (Date.now() - lastReject < 400) {
-        ctx.fillStyle = '#f8514933';
-        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#f8514933'; ctx.fillRect(0, 0, W, H);
         ctx.fillStyle = '#f85149'; ctx.font = 'bold 14px monospace'; ctx.textAlign = 'center';
         ctx.fillText('429 Too Many Requests', W/2, H - 20);
       }
-
-      // Legend
-      ctx.fillStyle = '#3fb950'; ctx.font = '11px monospace'; ctx.textAlign = 'left';
-      ctx.beginPath(); ctx.arc(155, 100, 5, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#e6edf3'; ctx.fillText('allowed', 165, 104);
-      ctx.fillStyle = '#f85149';
-      ctx.beginPath(); ctx.arc(155, 118, 5, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#e6edf3'; ctx.fillText('rejected', 165, 122);
     }
-    requestAnimationFrame(frame);
+
+    function start() {
+      running = true;
+      playBtn.textContent = '⏸ Pause';
+      playBtn.style.color = '#f0883e';
+      playBtn.style.borderColor = '#f0883e55';
+      intervalId = setInterval(function() {
+        if (document.body.contains(canvas) && running) addRequest();
+        else clearInterval(intervalId);
+      }, 900);
+      frame();
+    }
+
+    function pause() {
+      running = false;
+      playBtn.textContent = '▶ Play';
+      playBtn.style.color = '#4f8cff';
+      playBtn.style.borderColor = '#4f8cff55';
+      if (rafId) cancelAnimationFrame(rafId);
+      if (intervalId) clearInterval(intervalId);
+      drawStatic();
+    }
+
+    playBtn.addEventListener('click', function() {
+      running ? pause() : start();
+    });
+    sendBtn.addEventListener('click', function() {
+      addRequest();
+      if (!running) drawStatic();
+    });
+
+    // Draw initial static frame
+    drawStatic();
   }
 }
 
@@ -3137,6 +3171,17 @@ ring.getServer("user:42:profile"); // may now route to "cache-4:11211" or still 
   },
   visual: function(mount) {
     var W = 380, H = 300;
+
+    var ctrl = document.createElement('div');
+    ctrl.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:8px;justify-content:center';
+
+    var playBtn = document.createElement('button');
+    playBtn.textContent = '▶ Play';
+    playBtn.style.cssText = 'padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:13px';
+
+    ctrl.appendChild(playBtn);
+    mount.appendChild(ctrl);
+
     var canvas = document.createElement('canvas');
     canvas.width = W; canvas.height = H;
     canvas.style.cssText = 'width:100%;max-width:380px;border-radius:8px;background:#0d1117;display:block;margin:0 auto';
@@ -3151,6 +3196,7 @@ ring.getServer("user:42:profile"); // may now route to "cache-4:11211" or still 
       {name:'S4', angle: 5.3,      color:'#bc8cff', vnode: true}
     ];
     var dotAngle = 0;
+    var running = false, rafId = null;
 
     function serverAt(angle) {
       var best = servers[0], bestDiff = Infinity;
@@ -3161,18 +3207,18 @@ ring.getServer("user:42:profile"); // may now route to "cache-4:11211" or still 
       return best;
     }
 
-    function frame() {
-      if (!document.body.contains(canvas)) return;
-      requestAnimationFrame(frame);
-      dotAngle = (dotAngle + 0.018) % (Math.PI * 2);
-
+    function drawScene(movingDot) {
       ctx.fillStyle = '#0d1117'; ctx.fillRect(0,0,W,H);
 
-      // Ring
+      ctx.fillStyle = '#00e5ff'; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center';
+      ctx.fillText('Consistent Hash Ring', cx, 20);
+
+      ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
+      ctx.fillText('dot = request key · circles = servers', cx, 36);
+
       ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2);
       ctx.strokeStyle = '#30363d'; ctx.lineWidth = 2; ctx.stroke();
 
-      // Servers
       servers.forEach(function(s) {
         var x = cx + R * Math.cos(s.angle), y = cy + R * Math.sin(s.angle);
         ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI*2);
@@ -3182,31 +3228,46 @@ ring.getServer("user:42:profile"); // may now route to "cache-4:11211" or still 
         ctx.fillText(s.name, x, y + 4);
       });
 
-      // Moving request dot
-      var dx = cx + R * Math.cos(dotAngle), dy = cy + R * Math.sin(dotAngle);
-      ctx.beginPath(); ctx.arc(dx, dy, 7, 0, Math.PI*2);
-      ctx.fillStyle = '#e6edf3'; ctx.fill();
+      if (movingDot) {
+        var dx = cx + R * Math.cos(dotAngle), dy = cy + R * Math.sin(dotAngle);
+        ctx.beginPath(); ctx.arc(dx, dy, 7, 0, Math.PI*2);
+        ctx.fillStyle = '#e6edf3'; ctx.fill();
 
-      // Find next server clockwise
-      var target = serverAt(dotAngle);
-      var tx = cx + R * Math.cos(target.angle), ty = cy + R * Math.sin(target.angle);
+        var target = serverAt(dotAngle);
+        var tx = cx + R * Math.cos(target.angle), ty = cy + R * Math.sin(target.angle);
+        ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(tx, ty);
+        ctx.strokeStyle = target.color + 'aa'; ctx.lineWidth = 1.5;
+        ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
 
-      // Arrow to target
-      ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(tx, ty);
-      ctx.strokeStyle = target.color + 'aa'; ctx.lineWidth = 1.5;
-      ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
-
-      // Label
-      ctx.fillStyle = '#e6edf3'; ctx.font = '12px monospace'; ctx.textAlign = 'center';
-      ctx.fillText('→ routes to ' + target.name, cx, H - 18);
-
-      ctx.fillStyle = '#00e5ff'; ctx.font = 'bold 12px monospace';
-      ctx.fillText('Consistent Hash Ring', cx, 20);
-
-      ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
-      ctx.fillText('dot = request key · circles = servers', cx, 36);
+        ctx.fillStyle = '#e6edf3'; ctx.font = '12px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('→ routes to ' + target.name, cx, H - 18);
+      } else {
+        ctx.fillStyle = '#8b949e'; ctx.font = '11px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('Press ▶ Play to animate request routing', cx, H - 18);
+      }
     }
-    requestAnimationFrame(frame);
+
+    function frame() {
+      if (!running || !document.body.contains(canvas)) return;
+      dotAngle = (dotAngle + 0.018) % (Math.PI * 2);
+      drawScene(true);
+      rafId = requestAnimationFrame(frame);
+    }
+
+    function start() {
+      running = true; playBtn.textContent = '⏸ Pause';
+      rafId = requestAnimationFrame(frame);
+    }
+
+    function pause() {
+      running = false; playBtn.textContent = '▶ Play';
+      cancelAnimationFrame(rafId);
+      drawScene(true);
+    }
+
+    playBtn.addEventListener('click', function() { running ? pause() : start(); });
+
+    drawScene(false);
   }
 },
 

@@ -169,14 +169,28 @@ app.get("/api/skills", (req, res) => {
 
 app.get("/health", (_req, res) => res.json({ status: "ok", agents: Object.keys(AGENTS) }));
 
-app.listen(PORT, () => {
-  console.log(`\n🧠 Multi-Agent Study Server at http://localhost:${PORT}`);
-  console.log(`   Agents: ${Object.keys(AGENTS).join(", ")}`);
-  console.log(`   GET /api/agent?msg=java+virtual+threads&agent=java`);
-  console.log(`   GET /api/java?msg=concurrency`);
-  console.log(`   GET /api/golang?msg=goroutines`);
-  console.log(`   GET /api/microservices?msg=kafka`);
-  console.log(`   GET /api/sysdesign?msg=rate+limiter`);
-  console.log(`   GET /api/design?msg=generate+flow`);
-  console.log(`   GET /health\n`);
-});
+function startServer(port) {
+  const server = app.listen(port)
+    .on('listening', () => {
+      console.log(`\n🧠 Multi-Agent Study Server at http://localhost:${port}`);
+      console.log(`   Agents: ${Object.keys(AGENTS).join(", ")}`);
+      console.log(`   GET /api/agent?msg=kafka&agent=microservices`);
+      console.log(`   GET /api/java?msg=concurrency`);
+      console.log(`   GET /api/golang?msg=goroutines`);
+      console.log(`   GET /api/sysdesign?msg=rate+limiter`);
+      console.log(`   GET /health\n`);
+    })
+    .on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.warn(`⚠️  Port ${port} in use — trying ${port + 1}`);
+        startServer(port + 1);
+      } else {
+        throw err;
+      }
+    });
+
+  ['SIGTERM', 'SIGINT'].forEach(sig =>
+    process.on(sig, () => { server.close(); process.exit(0); }));
+}
+
+startServer(PORT);

@@ -1,0 +1,15 @@
+{
+  "name": "study-project",
+  "version": "1.0.0",
+  "description": "Visual interactive dynamic study of Java, Golang, Python, REST microservices, Spring, FastAPI, MCP, etc.",
+  "main": "app.js",
+  "scripts": {
+    "dev": "http-server . -p 8080 -o",
+    "start": "http-server . -p 8080",
+    "agents": "cd agents && npm run dev"
+  },
+  "dependencies": {
+    "http-server": "^14.1.1"
+  },
+  "devDependencies": {}
+}
