@@ -668,6 +668,90 @@ function initDSAVisualizer(root) {
     return steps;
   }
 
+  function solveClimbStairs(inp) {
+    const n=Math.max(0, parseInt(inp.n)||6);
+    const dp=new Array(n+1).fill(null);
+    const steps=[];
+    steps.push(mkStep(
+      `Climbing Stairs: count ways to reach step <b>${n}</b> using 1-step or 2-step moves.<br>dp[i] = ways to land exactly on step i. Last move into i came from i-1 or i-2.`,
+      rDP1([...dp],-1,`ways[] n=${n}`)
+    ));
+    dp[0]=1;
+    steps.push(mkStep('Base: dp[0] = 1. There is one way to stand at the ground before climbing.',
+      rDP1([...dp],0,'ways[]'),'dp[0]=1'));
+    if(n>=1){
+      dp[1]=1;
+      steps.push(mkStep('Base: dp[1] = 1. Only one single-step move reaches step 1.',
+        rDP1([...dp],1,'ways[]'),'dp[1]=1'));
+    }
+    for(let i=2;i<=n;i++){
+      dp[i]=dp[i-1]+dp[i-2];
+      steps.push(mkStep(
+        `Step ${i}: ways from step ${i-1} plus ways from step ${i-2}.<br>dp[${i}] = ${dp[i-1]} + ${dp[i-2]} = <b>${dp[i]}</b>`,
+        rDP1([...dp],i,'ways[] — Climbing Stairs') + '<br>' +
+        rDecision('Last move choices', [
+          {label:`from ${i-1}`, value:dp[i-1]},
+          {label:`from ${i-2}`, value:dp[i-2]},
+          {label:'total', value:dp[i], win:true}
+        ]),
+        `dp[${i}] = dp[${i-1}] + dp[${i-2}]`
+      ));
+    }
+    steps.push(mkStep(`Total distinct ways to climb ${n} stairs = <b>${dp[n]}</b>`,
+      rDP1([...dp],n,`Result: ${dp[n]} ways`)));
+    return steps;
+  }
+
+  function solveHouseRobber(inp) {
+    const houses=parseNums(inp.arr,[2,7,9,3,1]);
+    const n=houses.length;
+    const dp=new Array(n).fill(null);
+    const steps=[];
+    if(!n) return [mkStep('No houses to rob. Result = 0', '')];
+    steps.push(mkStep(
+      `House Robber: maximize total money without taking adjacent houses.<br>dp[i] = best loot considering houses 0..i. Recurrence: max(skip current, rob current + dp[i-2]).`,
+      rArr(houses,{},'','House values') + '<br>' + rDP1([...dp],-1,'dp[] best loot')
+    ));
+    dp[0]=houses[0];
+    steps.push(mkStep(
+      `Base: only house 0 exists, so dp[0] = ${houses[0]}.`,
+      rArr(houses,{0:'res'},{i:0},'Houses') + '<br>' + rDP1([...dp],0,'dp[]'),
+      `dp[0]=${dp[0]}`
+    ));
+    if(n>=2){
+      dp[1]=Math.max(houses[0],houses[1]);
+      steps.push(mkStep(
+        `Base: choose max(house0=${houses[0]}, house1=${houses[1]}) = <b>${dp[1]}</b>.`,
+        rArr(houses,{0:houses[0]>=houses[1]?'res':'cmp',1:houses[1]>houses[0]?'res':'cmp'},{i:1},'Houses') + '<br>' +
+        rDP1([...dp],1,'dp[]') + '<br>' +
+        rDecision('Base choice', [
+          {label:'rob house 0', value:houses[0], win:houses[0]>=houses[1]},
+          {label:'rob house 1', value:houses[1], win:houses[1]>houses[0]}
+        ]),
+        `dp[1]=max(${houses[0]},${houses[1]})`
+      ));
+    }
+    for(let i=2;i<n;i++){
+      const skip=dp[i-1];
+      const take=houses[i]+dp[i-2];
+      dp[i]=Math.max(skip,take);
+      const states={ [i]:'act', [i-1]:'cmp', [i-2]:'win' };
+      steps.push(mkStep(
+        `House ${i} value=${houses[i]}.<br>Skip current → dp[${i-1}]=${skip}. Rob current → ${houses[i]} + dp[${i-2}]=${take}. Pick <b>${dp[i]}</b>.`,
+        rArr(houses,states,{i},'Houses') + '<br>' +
+        rDP1([...dp],i,'dp[] — max loot so far') + '<br>' +
+        rDecision('Take / skip decision', [
+          {label:'skip current', value:skip, win:skip>=take},
+          {label:'rob current', value:take, win:take>skip}
+        ]),
+        `dp[${i}] = max(${skip}, ${take})`
+      ));
+    }
+    steps.push(mkStep(`Max loot without adjacent houses = <b>${dp[n-1]}</b>`,
+      rDP1([...dp],n-1,`Result: ${dp[n-1]}`)));
+    return steps;
+  }
+
   function solveCoin(inp) {
     const coins=inp.arr.split(',').map(Number);
     const T=parseInt(inp.n)||11;
@@ -695,6 +779,55 @@ function initDSAVisualizer(root) {
     }
     steps.push(mkStep(`Min coins for ${T} = <b>${disp(dp[T])}</b>`,
       rDP1(dp.map(disp),T,`Result: dp[${T}]=${disp(dp[T])}`)));
+    return steps;
+  }
+
+  function solveUniquePaths(inp) {
+    const rows=Math.max(1, parseInt(inp.n)||3);
+    const cols=Math.max(1, parseInt(inp.k)||7);
+    const dp=Array.from({length:rows},()=>new Array(cols).fill(null));
+    const rowL=[...Array(rows).keys()].map(i=>`r${i}`);
+    const colL=[...Array(cols).keys()].map(j=>`c${j}`);
+    const steps=[];
+    steps.push(mkStep(
+      `Unique Paths in a <b>${rows} x ${cols}</b> grid.<br>dp[r][c] = paths to cell (r,c). First row and column are 1 because there is only one straight path.`,
+      rDP2(dp,-1,-1,[],rowL,colL,'Grid paths')
+    ));
+    for(let r=0;r<rows;r++){
+      dp[r][0]=1;
+      steps.push(mkStep(
+        `Base column: cell (${r},0) has exactly one path: keep moving down.`,
+        rDP2(dp.map(x=>[...x]),r,0,[],rowL,colL,'Grid paths'),
+        `dp[${r}][0]=1`
+      ));
+    }
+    for(let c=1;c<cols;c++){
+      dp[0][c]=1;
+      steps.push(mkStep(
+        `Base row: cell (0,${c}) has exactly one path: keep moving right.`,
+        rDP2(dp.map(x=>[...x]),0,c,[],rowL,colL,'Grid paths'),
+        `dp[0][${c}]=1`
+      ));
+    }
+    for(let r=1;r<rows;r++){
+      for(let c=1;c<cols;c++){
+        const top=dp[r-1][c];
+        const left=dp[r][c-1];
+        dp[r][c]=top+left;
+        steps.push(mkStep(
+          `Cell (${r},${c}): every path arrives from top or left.<br>dp[${r}][${c}] = top ${top} + left ${left} = <b>${dp[r][c]}</b>`,
+          rDP2(dp.map(x=>[...x]),r,c,[[r-1,c],[r,c-1]],rowL,colL,'Grid paths') + '<br>' +
+          rDecision('Incoming paths', [
+            {label:'from top', value:top},
+            {label:'from left', value:left},
+            {label:'total', value:dp[r][c], win:true}
+          ]),
+          `dp[${r}][${c}] = ${top} + ${left}`
+        ));
+      }
+    }
+    steps.push(mkStep(`Unique paths to bottom-right = <b>${dp[rows-1][cols-1]}</b>`,
+      rDP2(dp,rows-1,cols-1,[],rowL,colL,`Result: ${dp[rows-1][cols-1]} paths`)));
     return steps;
   }
 
@@ -760,6 +893,171 @@ function initDSAVisualizer(root) {
       }
     }
     steps.push(mkStep(`LCS length = <b>${dp[m][n]}</b>`, rDP2(dp,m,n,[],rowL,colL,`Result: LCS=${dp[m][n]}`)));
+    return steps;
+  }
+
+  function solveEditDistance(inp) {
+    const a=inp.str||'horse', b=inp.k||'ros';
+    const m=a.length, n=b.length;
+    const dp=Array.from({length:m+1},()=>new Array(n+1).fill(null));
+    const rowL=['ε',...a.split('')];
+    const colL=['ε',...b.split('')];
+    const steps=[];
+    steps.push(mkStep(
+      `Edit Distance: minimum operations to convert "<b>${a}</b>" into "<b>${b}</b>".<br>dp[i][j] = min edits to convert first i chars of word1 into first j chars of word2.`,
+      rDP2(dp,-1,-1,[],rowL,colL,'Edit Distance Table')
+    ));
+    dp[0][0]=0;
+    steps.push(mkStep('Base: empty string to empty string costs 0.',
+      rDP2(dp.map(r=>[...r]),0,0,[],rowL,colL,'Edit Distance Table'),'dp[0][0]=0'));
+    for(let i=1;i<=m;i++){
+      dp[i][0]=i;
+      steps.push(mkStep(
+        `Base delete: convert "${a.slice(0,i)}" to empty string using ${i} deletes.`,
+        rDP2(dp.map(r=>[...r]),i,0,[[i-1,0]],rowL,colL,'Edit Distance Table'),
+        `dp[${i}][0]=${i}`
+      ));
+    }
+    for(let j=1;j<=n;j++){
+      dp[0][j]=j;
+      steps.push(mkStep(
+        `Base insert: convert empty string to "${b.slice(0,j)}" using ${j} inserts.`,
+        rDP2(dp.map(r=>[...r]),0,j,[[0,j-1]],rowL,colL,'Edit Distance Table'),
+        `dp[0][${j}]=${j}`
+      ));
+    }
+    for(let i=1;i<=m;i++){
+      for(let j=1;j<=n;j++){
+        if(a[i-1]===b[j-1]){
+          dp[i][j]=dp[i-1][j-1];
+          steps.push(mkStep(
+            `Characters match: '${a[i-1]}' == '${b[j-1]}'. No new operation needed.<br>dp[${i}][${j}] = dp[${i-1}][${j-1}] = <b>${dp[i][j]}</b>`,
+            rDP2(dp.map(r=>[...r]),i,j,[[i-1,j-1]],rowL,colL,'Edit Distance Table') + '<br>' +
+            rDecision('Operation choice', [
+              {label:'match / carry', value:dp[i][j], win:true}
+            ]),
+            `dp[${i}][${j}] = ${dp[i][j]}`
+          ));
+        } else {
+          const del=dp[i-1][j]+1;
+          const ins=dp[i][j-1]+1;
+          const rep=dp[i-1][j-1]+1;
+          dp[i][j]=Math.min(del,ins,rep);
+          steps.push(mkStep(
+            `Mismatch: '${a[i-1]}' vs '${b[j-1]}'. Try delete, insert, replace.<br>min(${del}, ${ins}, ${rep}) = <b>${dp[i][j]}</b>`,
+            rDP2(dp.map(r=>[...r]),i,j,[[i-1,j],[i,j-1],[i-1,j-1]],rowL,colL,'Edit Distance Table') + '<br>' +
+            rDecision('1 + best operation', [
+              {label:'delete', value:del, win:del===dp[i][j]},
+              {label:'insert', value:ins, win:ins===dp[i][j]},
+              {label:'replace', value:rep, win:rep===dp[i][j]}
+            ]),
+            `dp[${i}][${j}] = 1 + min(${del-1}, ${ins-1}, ${rep-1})`
+          ));
+        }
+      }
+    }
+    steps.push(mkStep(`Minimum edits from "${a}" to "${b}" = <b>${dp[m][n]}</b>`,
+      rDP2(dp,m,n,[],rowL,colL,`Result: ${dp[m][n]} edits`)));
+    return steps;
+  }
+
+  function solveLIS(inp) {
+    const arr=parseNums(inp.arr,[10,9,2,5,3,7,101,18]);
+    const n=arr.length;
+    const dp=new Array(n).fill(null);
+    const steps=[];
+    if(!n) return [mkStep('Empty array has LIS length 0.', '')];
+    steps.push(mkStep(
+      `Longest Increasing Subsequence: keep order, skip any elements, and find the longest strictly increasing chain.<br>dp[i] = LIS length that <b>ends at i</b>.`,
+      rArr(arr,{},'','Input array') + '<br>' + rDP1([...dp],-1,'dp[] LIS ending here')
+    ));
+    let best=1;
+    for(let i=0;i<n;i++){
+      dp[i]=1;
+      steps.push(mkStep(
+        `Start i=${i}, value=${arr[i]}. Every single element is an increasing subsequence of length 1.`,
+        rArr(arr,{[i]:'act'},{i},'Input array') + '<br>' + rDP1([...dp],i,'dp[] LIS ending here'),
+        `dp[${i}]=1`
+      ));
+      for(let j=0;j<i;j++){
+        const canExtend=arr[j]<arr[i];
+        const candidate=canExtend ? dp[j]+1 : 1;
+        const before=dp[i];
+        if(canExtend && candidate>dp[i]) dp[i]=candidate;
+        best=Math.max(best,dp[i]);
+        steps.push(mkStep(
+          canExtend
+            ? `Compare j=${j} (${arr[j]}) < i=${i} (${arr[i]}). Can extend: dp[${j}]+1 = ${candidate}. ${candidate>before?`Update dp[${i}] to <b>${dp[i]}</b>.`:`Keep dp[${i}]=${dp[i]}.`}`
+            : `Compare j=${j} (${arr[j]}) with i=${i} (${arr[i]}). Cannot extend because ${arr[j]} is not smaller.`,
+          rArr(arr,{[j]:canExtend?'win':'cmp',[i]:'act'},{j,i},'Input array') + '<br>' +
+          rDP1([...dp],i,'dp[] LIS ending here') + '<br>' +
+          rDecision('Extend decision', [
+            {label:'current dp[i]', value:before},
+            {label:canExtend?'dp[j]+1':'blocked', value:canExtend?candidate:'-'},
+            {label:'best dp[i]', value:dp[i], win:true}
+          ]),
+          canExtend ? `dp[${i}] = max(${before}, ${candidate})` : 'skip'
+        ));
+      }
+    }
+    const maxIdx=dp.indexOf(Math.max(...dp));
+    steps.push(mkStep(`LIS length = <b>${Math.max(...dp)}</b>. The highlighted dp cell marks one best ending position.`,
+      rArr(arr,{[maxIdx]:'res'}, {}, 'Input array') + '<br>' + rDP1([...dp],maxIdx,`Result: LIS length ${Math.max(...dp)}`)));
+    return steps;
+  }
+
+  function solvePartitionEqual(inp) {
+    const arr=parseNums(inp.arr,[1,5,11,5]);
+    const total=arr.reduce((a,b)=>a+b,0);
+    const steps=[];
+    steps.push(mkStep(
+      `Partition Equal Subset Sum: total=${total}. Equal partition is possible only if one subset sums to total/2.`,
+      rArr(arr,{},'','Input numbers')
+    ));
+    if(total%2!==0){
+      steps.push(mkStep(
+        `Total sum ${total} is odd, so it cannot be split into two equal integer sums. Result = <b>false</b>.`,
+        rArr(arr,arr.map((_,i)=>({[i]:'exc'})).reduce((a,b)=>({...a,...b}),{}),'','Odd total')
+      ));
+      return steps;
+    }
+    const target=total/2;
+    const dp=new Array(target+1).fill(false);
+    dp[0]=true;
+    steps.push(mkStep(
+      `Target subset sum = ${target}. dp[s] means "can we form sum s using numbers processed so far?" Init dp[0]=true.`,
+      rDP1(dp.map(tf),0,`subset dp[] target=${target}`),
+      'dp[0]=true'
+    ));
+    for(let i=0;i<arr.length;i++){
+      const num=arr[i];
+      steps.push(mkStep(
+        `Process number arr[${i}]=${num}. Iterate sums backward so this number is used at most once.`,
+        rArr(arr,{[i]:'act'},{i},'Current number') + '<br>' + rDP1(dp.map(tf),-1,`subset dp[] target=${target}`)
+      ));
+      for(let s=target;s>=num;s--){
+        const before=dp[s];
+        const include=dp[s-num];
+        dp[s]=dp[s] || include;
+        steps.push(mkStep(
+          `sum=${s}: keep existing dp[${s}]=${tf(before)} or include ${num} if dp[${s-num}]=${tf(include)}.<br>dp[${s}] becomes <b>${tf(dp[s])}</b>.`,
+          rArr(arr,{[i]:'act'},{i},'Numbers') + '<br>' +
+          rDP1(dp.map(tf),s,`subset dp[] target=${target}`) + '<br>' +
+          rDecision('Subset choice', [
+            {label:'without num', value:tf(before), win:before},
+            {label:`with ${num}`, value:tf(include), win:include},
+            {label:`dp[${s}]`, value:tf(dp[s]), win:dp[s]}
+          ]),
+          `dp[${s}] = dp[${s}] || dp[${s-num}]`
+        ));
+      }
+    }
+    steps.push(mkStep(
+      dp[target]
+        ? `dp[${target}] is true, so the array can be partitioned into two subsets of sum ${target}.`
+        : `dp[${target}] is false, so no equal partition exists.`,
+      rDP1(dp.map(tf),target,`Result: ${dp[target]}`)
+    ));
     return steps;
   }
 
