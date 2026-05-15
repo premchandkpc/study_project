@@ -34,7 +34,8 @@
       .concat(window.GO_TOPICS || [])
       .concat(window.PYTHON_TOPICS || [])
       .concat(window.MICRO_TOPICS || [])
-      .concat(window.SYSDESIGN_TOPICS || []);
+      .concat(window.SYSDESIGN_TOPICS || [])
+      .concat(window.DSA_TOPICS || []);
     return {
       all,
       byId: (id) => all.find(t => t.id === id),
@@ -295,7 +296,8 @@
       { key: "golang",        label: "Golang" },
       { key: "python",        label: "Python" },
       { key: "microservices", label: "Microservices · System Design" },
-      { key: "sysdesign",    label: "⬡ System Design · Architecture" }
+      { key: "sysdesign",    label: "⬡ System Design · Architecture" },
+      { key: "dsa",          label: "⚡ DSA · Algorithms" }
     ];
 
     function render() {
@@ -599,7 +601,7 @@
         return;
       }
 
-      const areaLabel = ({ java:"Java", golang:"Go", python:"Python", microservices:"Microservices", sysdesign:"System Design" })[topic.area] || topic.area;
+      const areaLabel = ({ java:"Java", golang:"Go", python:"Python", microservices:"Microservices", sysdesign:"System Design", dsa:"DSA · Algorithms" })[topic.area] || topic.area;
       const done = progress.isDone(topic.id);
       const isTopicChange = topic.id !== lastTopicId;
 
