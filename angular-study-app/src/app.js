@@ -329,9 +329,9 @@
     const topics = TopicsService;
     const progress = ProgressService;
     const router = Router;
-    const filter = signal("");
     const collapsed = { java:true, golang:true, python:true, microservices:true, sysdesign:true, dsa:true };
     let debounceT = null;
+    let currentQ = "";
 
     const areas = [
       { key: "java",          label: "Java" },
@@ -342,11 +342,9 @@
       { key: "dsa",           label: "⚡ DSA · Algorithms" }
     ];
 
-    function render() {
-      const q = filter();
+    function buildBlocks(q) {
       const active = router.current().path.replace(/^\//, "");
-
-      const blocks = areas.map(a => {
+      return areas.map(a => {
         const areaTopics = topics.byArea(a.key);
         const scored = areaTopics.map(t => {
           const s = fuzzyScore(t, q);
@@ -357,11 +355,11 @@
         const ratio = progress.ratio(areaTopics.map(t => t.id));
         const isOpen = q ? fullList.length > 0 : !collapsed[a.key];
         const topicItems = fullList.map(({ t, titleHl }) => `
-                <li class="topic-item ${active === t.id ? "active" : ""}" data-nav="${esc(t.id)}">
-                  <span class="check ${progress.isDone(t.id) ? "done" : ""}" data-check="${esc(t.id)}" title="Mark complete"></span>
-                  <span class="label">${titleHl}</span>
-                  ${t.tag ? `<span class="pill">${esc(t.tag)}</span>` : ""}
-                </li>`).join("");
+          <li class="topic-item ${active === t.id ? "active" : ""}" data-nav="${esc(t.id)}">
+            <span class="check ${progress.isDone(t.id) ? "done" : ""}" data-check="${esc(t.id)}" title="Mark complete"></span>
+            <span class="label">${titleHl}</span>
+            ${t.tag ? `<span class="pill">${esc(t.tag)}</span>` : ""}
+          </li>`).join("");
         return `
           <div class="area-group">
             <div class="area-title" data-toggle-area="${esc(a.key)}">
@@ -373,58 +371,64 @@
             ${isOpen ? `<ul class="topic-list">${topicItems}</ul>` : ''}
           </div>`;
       }).join("");
+    }
 
-      host.innerHTML = `
-        <div class="sidebar-inner">
-          <div class="brand">
-            <div class="logo">SDE</div>
-            <div>
-              <h1>Senior SDE Study Lab</h1>
-              <small>Java · Go · Python · Microservices</small>
-            </div>
-          </div>
-          <input class="search" id="sidebar-search" placeholder="Search topics, code, tags… (Ctrl+K)" value="${esc(q)}" autocomplete="off" />
-          ${blocks}
-        </div>
-      `;
+    function renderBlocks() {
+      const blocksEl = host.querySelector("#sidebar-blocks");
+      if (blocksEl) blocksEl.innerHTML = buildBlocks(currentQ);
+      bindBlocks();
+    }
 
-      const inp = host.querySelector("#sidebar-search");
-      inp.addEventListener("input", (e) => {
-        clearTimeout(debounceT);
-        debounceT = setTimeout(() => filter.set(e.target.value), 120);
-      });
-      inp.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") { filter.set(""); inp.value = ""; }
-      });
-
+    function bindBlocks() {
       host.querySelectorAll("[data-toggle-area]").forEach(el => {
         el.addEventListener("click", () => {
           const key = el.dataset.toggleArea;
           collapsed[key] = !collapsed[key];
-          render();
+          renderBlocks();
         });
       });
-
       host.querySelectorAll("[data-nav]").forEach(el => {
         el.addEventListener("click", (e) => {
           if (e.target.matches("[data-check]")) return;
           router.navigate("/" + el.dataset.nav);
         });
       });
-
       host.querySelectorAll("[data-check]").forEach(el => {
         el.addEventListener("click", (e) => {
           e.stopPropagation();
           progress.toggle(el.dataset.check);
         });
       });
-
     }
 
-    filter.subscribe(render);
-    progress.state.subscribe(render);
-    router.current.subscribe(render);
-    render();
+    // Build shell once — input is NEVER replaced again
+    host.innerHTML = `
+      <div class="sidebar-inner">
+        <div class="brand">
+          <div class="logo">SDE</div>
+          <div>
+            <h1>Senior SDE Study Lab</h1>
+            <small>Java · Go · Python · Microservices</small>
+          </div>
+        </div>
+        <input class="search" id="sidebar-search" placeholder="Search… (Ctrl+K)" autocomplete="off" spellcheck="false" />
+        <div id="sidebar-blocks"></div>
+      </div>
+    `;
+
+    const inp = host.querySelector("#sidebar-search");
+    inp.addEventListener("input", (e) => {
+      clearTimeout(debounceT);
+      const val = e.target.value;
+      debounceT = setTimeout(() => { currentQ = val; renderBlocks(); }, 100);
+    });
+    inp.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { currentQ = ""; inp.value = ""; renderBlocks(); }
+    });
+
+    progress.state.subscribe(renderBlocks);
+    router.current.subscribe(renderBlocks);
+    renderBlocks();
   }
 
   // TopicDetailComponent
@@ -657,6 +661,9 @@
       const id = router.current().path.replace(/^\//, "");
       const topic = topics.byId(id);
       if (!topic) {
+        // Home already mounted — don't re-mount; HomeComponent manages its own progress subscription
+        if (host._homeActive) return;
+        host._homeActive = true;
         lastTopicId = null;
         host.innerHTML = '';
         host.style.padding = '0';
@@ -665,6 +672,7 @@
         host._homeCleanup = HomeComponent(host);
         return;
       }
+      host._homeActive = false;
       host.style.padding = '';
       host.style.maxWidth = '';
 
@@ -777,35 +785,27 @@
   function HomeComponent(host) {
     const progress = ProgressService;
     const router = Router;
-    const filter = signal("");
+    let currentQ = "";
     let debounceT = null;
     let kHandler = null;
 
     const areaConfig = [
-      { key: "java",          label: "Java",                   color: "var(--java)" },
-      { key: "golang",        label: "Go",                     color: "var(--golang)" },
-      { key: "python",        label: "Python",                 color: "var(--python)" },
-      { key: "microservices", label: "Microservices",          color: "var(--micro)" },
-      { key: "sysdesign",     label: "System Design",          color: "var(--sysdesign)" },
-      { key: "dsa",           label: "DSA · Algorithms",       color: "#f0883e" }
+      { key: "java",          label: "Java",             color: "var(--java)" },
+      { key: "golang",        label: "Go",               color: "var(--golang)" },
+      { key: "python",        label: "Python",           color: "var(--python)" },
+      { key: "microservices", label: "Microservices",    color: "var(--micro)" },
+      { key: "sysdesign",     label: "System Design",    color: "var(--sysdesign)" },
+      { key: "dsa",           label: "DSA · Algorithms", color: "#f0883e" }
     ];
 
-    function render() {
-      const q = filter();
-      const allTopics = TopicsService.all;
-
+    function buildSections(q) {
       const byArea = {};
       areaConfig.forEach(a => { byArea[a.key] = []; });
-
-      allTopics.forEach(t => {
+      TopicsService.all.forEach(t => {
         const s = fuzzyScore(t, q);
         if (s.match && byArea[t.area]) byArea[t.area].push({ t, titleHl: s.titleHl });
       });
-
-      const total = allTopics.length;
-      const done = allTopics.filter(t => progress.isDone(t.id)).length;
-
-      const sections = areaConfig.map(a => {
+      return areaConfig.map(a => {
         const items = byArea[a.key] || [];
         if (q && !items.length) return '';
         const areaTopics = TopicsService.byArea(a.key);
@@ -834,20 +834,45 @@
             <div class="home-grid">${cards}</div>
           </div>`;
       }).join('');
+    }
 
+    function renderContent() {
+      const q = currentQ;
+      const contentEl = host.querySelector('#home-content-inner');
+      if (!contentEl) return;
+      const sections = buildSections(q);
+      contentEl.innerHTML = sections || `<div class="home-empty">No topics match "<strong>${esc(q)}</strong>"</div>`;
+      // update subtitle
+      const sub = host.querySelector('#home-sub');
+      if (sub) {
+        const total = TopicsService.all.length;
+        const done = TopicsService.all.filter(t => progress.isDone(t.id)).length;
+        sub.textContent = `${total} topics · ${done} completed · Java · Go · Python · Microservices · DSA`;
+      }
+      // update clear button visibility
+      const clearWrap = host.querySelector('#home-clear-wrap');
+      if (clearWrap) clearWrap.style.display = q ? 'flex' : 'none';
+      host.querySelectorAll('[data-home-nav]').forEach(el => {
+        el.addEventListener('click', () => router.navigate('/' + el.dataset.homeNav));
+      });
+    }
+
+    function initShell() {
+      const total = TopicsService.all.length;
+      const done = TopicsService.all.filter(t => progress.isDone(t.id)).length;
       host.innerHTML = `
         <div class="home-root">
           <div class="home-hero">
-            <div class="home-hero-text">
-              <h1 class="home-title">Senior SDE Study Lab</h1>
-              <p class="home-sub">${total} topics · ${done} completed · Java · Go · Python · Microservices · DSA</p>
-            </div>
+            <h1 class="home-title">Senior SDE Study Lab</h1>
+            <p class="home-sub" id="home-sub">${total} topics · ${done} completed · Java · Go · Python · Microservices · DSA</p>
             <div class="home-search-wrap">
               <span class="home-search-icon">⌕</span>
               <input class="home-search" id="home-search-input"
                 placeholder="Search topics, patterns, tags… (Ctrl+K)"
-                value="${esc(q)}" autocomplete="off" />
-              ${q ? `<button class="home-search-clear" id="home-clear-btn">✕</button>` : ''}
+                autocomplete="off" spellcheck="false" />
+              <span id="home-clear-wrap" style="display:none">
+                <button class="home-search-clear" id="home-clear-btn">✕</button>
+              </span>
             </div>
             <div class="home-stats">
               ${areaConfig.map(a => {
@@ -862,32 +887,33 @@
             </div>
           </div>
           <div class="home-content">
-            ${sections || `<div class="home-empty">No topics match "<strong>${esc(q)}</strong>" — try a shorter query or different keyword.</div>`}
+            <div id="home-content-inner"></div>
           </div>
         </div>
       `;
 
+      // Input — never re-created, focus stays
       const inp = host.querySelector('#home-search-input');
-      if (inp) {
-        inp.focus();
-        inp.addEventListener('input', e => {
-          clearTimeout(debounceT);
-          debounceT = setTimeout(() => filter.set(e.target.value), 120);
-        });
-        inp.addEventListener('keydown', e => {
-          if (e.key === 'Escape') { filter.set(''); inp.value = ''; }
-        });
-      }
-      const clearBtn = host.querySelector('#home-clear-btn');
-      if (clearBtn) clearBtn.addEventListener('click', () => { filter.set(''); });
-      host.querySelectorAll('[data-home-nav]').forEach(el => {
-        el.addEventListener('click', () => router.navigate('/' + el.dataset.homeNav));
+      inp.addEventListener('input', e => {
+        clearTimeout(debounceT);
+        const val = e.target.value;
+        debounceT = setTimeout(() => { currentQ = val; renderContent(); }, 100);
       });
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { currentQ = ''; inp.value = ''; renderContent(); }
+      });
+      host.querySelector('#home-clear-btn').addEventListener('click', () => {
+        currentQ = ''; inp.value = ''; renderContent(); inp.focus();
+      });
+
+      inp.focus();
+      renderContent();
     }
 
-    filter.subscribe(render);
-    progress.state.subscribe(render);
-    render();
+    // Only re-render content (not shell) on progress changes
+    const unsubProgress = progress.state.subscribe(renderContent);
+
+    initShell();
 
     kHandler = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -897,7 +923,11 @@
       }
     };
     document.addEventListener('keydown', kHandler);
-    return () => { if (kHandler) document.removeEventListener('keydown', kHandler); };
+
+    return () => {
+      unsubProgress();
+      if (kHandler) document.removeEventListener('keydown', kHandler);
+    };
   }
 
   // AppRootComponent — composes the shell
