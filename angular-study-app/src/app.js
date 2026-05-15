@@ -154,7 +154,7 @@
           </div>
           <div class="flow-controls">
             <button class="flow-btn" type="button" data-flow-prev>Prev</button>
-            <button class="flow-btn primary" type="button" data-flow-play>Pause</button>
+            <button class="flow-btn primary" type="button" data-flow-play>Play</button>
             <button class="flow-btn" type="button" data-flow-next>Next</button>
             <div class="flow-progress" aria-hidden="true"><div data-flow-progress></div></div>
           </div>
@@ -212,7 +212,7 @@
           </div>
           <div class="flow-controls">
             <button class="flow-btn" type="button" data-uml-prev>Prev</button>
-            <button class="flow-btn primary" type="button" data-uml-play>Pause</button>
+            <button class="flow-btn primary" type="button" data-uml-play>Play</button>
             <button class="flow-btn" type="button" data-uml-next>Next</button>
             <div class="flow-progress" aria-hidden="true"><div data-uml-progress></div></div>
           </div>
