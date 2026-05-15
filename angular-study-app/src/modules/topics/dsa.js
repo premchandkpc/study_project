@@ -234,7 +234,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Traverse a graph level by level from a source node.',
           scenario: 'Shortest hops in an unweighted social graph.',
           pattern: 'Queue-based breadth-first search',
-          hint: 'Visit neighbors in waves; first time you see a node is the shortest edge-count path.'
+          hint: 'Visit neighbors in waves; first time you see a node is the shortest edge-count path.',
+          examples: [
+            { input:'edges=0-1,0-2,1-3,1-4, src=0', output:'Level 0:[0] Level 1:[1,2] Level 2:[3,4]', trace:'Enqueue 0→dequeue→enqueue neighbors 1,2→dequeue 1→enqueue 3,4→dequeue 2→no new...' },
+            { input:'edges=0-1,1-2 (chain), src=0', output:'BFS: 0,1,2', trace:'Each node has one neighbor → visits in order' },
+            { input:'No edges, n=3, src=0', output:'BFS: just node 0', trace:'No neighbors → only source visited' }
+          ],
+          wrongApproach: 'DFS would also visit all nodes but doesn\'t guarantee level-by-level order or shortest path in unweighted graphs.',
+          aha: 'Queue = FIFO = level by level. Visited set prevents cycles. Dequeue node → enqueue all unvisited neighbors. Distance = level number.'
         },
         dfs: {
           label: 'DFS Traversal',
@@ -243,7 +250,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Traverse a graph by going deep before backtracking.',
           scenario: 'Dependency exploration: fully inspect one branch before moving to the next.',
           pattern: 'Stack-based depth-first search',
-          hint: 'The stack models the recursion call stack.'
+          hint: 'The stack models the recursion call stack.',
+          examples: [
+            { input:'edges=0-1,0-2,1-3 src=0', output:'DFS: 0,1,3,2', trace:'0→go deep to 1→go deep to 3→backtrack→2' },
+            { input:'Chain 0-1-2-3, src=0', output:'DFS: 0,1,2,3', trace:'Straight line — DFS and BFS give same order' },
+            { input:'Cycle 0-1,1-2,2-0, src=0', output:'DFS: 0,1,2', trace:'Visited set prevents revisiting 0 from 2' }
+          ],
+          wrongApproach: 'Recursive DFS without a visited set will infinite loop on cycles.',
+          aha: 'Stack (or recursion) = LIFO = go deep first. Mark visited before pushing to queue to avoid re-enqueuing. Backtrack when no unvisited neighbors.'
         },
         dijkstra: {
           label: "Dijkstra SSSP",
@@ -251,8 +265,15 @@ function initDSAVisualizer(root, _options) {
           def: { arr:'0-1-4,0-2-1,2-1-2,1-3-1,2-3-5', n:'4', k:'0' },
           q: 'Find shortest paths from one source in a graph with non-negative edge weights.',
           scenario: 'Routing engine: repeatedly lock the closest unfinished node and relax outgoing roads.',
-          pattern: 'Greedy shortest path',
-          hint: 'Negative weights break the finalized-distance guarantee.'
+          pattern: 'Greedy shortest path + min-heap',
+          hint: 'Negative weights break the finalized-distance guarantee.',
+          examples: [
+            { input:'0-1:4, 0-2:1, 2-1:2, 1-3:1', output:'dist=[0,3,1,4]', trace:'0→2(cost 1)→1(cost 3 via 2) faster than direct 4. 1→3(cost 4).' },
+            { input:'Linear: 0-1:5, 1-2:3', output:'dist=[0,5,8]', trace:'Only one path to each node' },
+            { input:'0-1:1, 0-1:100 (two edges)', output:'dist=[0,1]', trace:'Min-heap always picks the cheaper path first' }
+          ],
+          wrongApproach: 'Bellman-Ford works too but O(V·E) — much slower. Dijkstra is O((V+E) log V) with a min-heap.',
+          aha: 'Min-heap greedily picks the nearest unfinished node. When you pop a node its distance is final. For each neighbor: if dist[src]+weight < dist[neighbor], relax and push.'
         },
         numIslands: {
           label: 'Number of Islands',
@@ -261,7 +282,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Given a 2D grid of 1s (land) and 0s (water), count the number of islands.',
           scenario: 'Map analysis: every connected blob of land is one island. Classic BFS/DFS flood-fill.',
           pattern: 'BFS/DFS grid flood-fill',
-          hint: 'Each unvisited land cell starts a BFS that marks the whole island visited.'
+          hint: 'Each unvisited land cell starts a BFS that marks the whole island visited.',
+          examples: [
+            { input:'3×3 grid: 1,1,0 / 1,0,0 / 0,0,1', output:'2', trace:'Top-left blob = island 1. Bottom-right 1 = island 2.' },
+            { input:'All 1s 2×2', output:'1', trace:'All connected → one island' },
+            { input:'All 0s', output:'0', trace:'No land cells → no islands' }
+          ],
+          wrongApproach: 'Counting 1-cells directly — misses that connected cells form one island.',
+          aha: 'Iterate all cells. When you hit an unvisited 1, BFS/DFS all its connected land neighbors marking them visited. Increment island count by 1 per flood-fill.'
         },
         topoSort: {
           label: 'Course Schedule (Topo Sort)',
@@ -270,7 +298,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Given n courses and prerequisite pairs, can you finish all courses? Return a valid order.',
           scenario: 'Build system: must compile dependencies before the module that needs them.',
           pattern: "Kahn's BFS topological sort",
-          hint: 'Start with nodes that have zero in-degree; remove them and reduce neighbors\' in-degree.'
+          hint: 'Start with nodes that have zero in-degree; remove them and reduce neighbors\' in-degree.',
+          examples: [
+            { input:'prereqs: 1←0, 2←0, 3←1, 3←2, n=4', output:'Valid order: [0,1,2,3] or [0,2,1,3]', trace:'Course 0 has no prereqs → take first. Unlocks 1 and 2. Both unlock 3 last.' },
+            { input:'prereqs: 1←0, 0←1 (cycle!)', output:'-1 (impossible)', trace:'Cycle: 0 needs 1, 1 needs 0 — deadlock.' },
+            { input:'n=3, no prerequisites', output:'[0,1,2] (any order)', trace:'All in-degree 0 → all immediately available' }
+          ],
+          wrongApproach: 'DFS with color marking also works but Kahn\'s BFS is easier to explain in interviews — you literally "take" available courses.',
+          aha: 'Track in-degree of each node. Start: queue all nodes with in-degree 0. Pop a node: add to order, reduce all neighbors\' in-degree. If neighbor hits 0, enqueue it. Cycle if final order length < n.'
         },
       }
     },
@@ -284,7 +319,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Find the smallest substring of s that contains all characters of t.',
           scenario: 'Log search: find shortest log snippet containing all required keywords.',
           pattern: 'Variable sliding window + two frequency maps',
-          hint: 'Expand right until all chars covered, then shrink left to minimize window.'
+          hint: 'Expand right until all chars covered, then shrink left to minimize window.',
+          examples: [
+            { input:'s="ADOBECODEBANC", t="ABC"', output:'"BANC"', trace:'Expand until all A,B,C present → "ADOBEC". Shrink left: remove A→"DOBEС"(no A)→stop. Continue right... find "BANC".' },
+            { input:'s="a", t="a"', output:'"a"', trace:'Single char match' },
+            { input:'s="a", t="aa"', output:'""', trace:'Not enough a\'s → no valid window' }
+          ],
+          wrongApproach: 'Check all substrings of length ≥ len(t) → O(n²·|t|). Misses the "expand then shrink" key insight.',
+          aha: 'Two pointers L,R. Track "have" vs "need" counts. Expand R until window valid → record → shrink L until invalid → expand again. O(n+m).'
         },
         permInStr: {
           label: 'Permutation in String',
@@ -293,7 +335,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Return true if any permutation of pattern p exists as a substring of s.',
           scenario: 'Anagram detector: is any rearrangement of the keyword hiding in this text?',
           pattern: 'Fixed-size sliding window + char frequency',
-          hint: 'Window size equals len(p); slide and compare frequency maps.'
+          hint: 'Window size equals len(p); slide and compare frequency maps.',
+          examples: [
+            { input:'s="eidbaooo", p="ab"', output:'true', trace:'"ba" at index 3-4 is a permutation of "ab"' },
+            { input:'s="hello", p="ll"', output:'true', trace:'"ll" at index 2-3 is a permutation of "ll"' },
+            { input:'s="ab", p="abc"', output:'false', trace:'s shorter than p → impossible' }
+          ],
+          wrongApproach: 'Generate all permutations of p then search each in s → factorial time. Don\'t enumerate permutations.',
+          aha: 'Two permutations are equal iff their char counts match. Fixed-size window (size=len(p)): slide by 1, update freq map incrementally, compare in O(26).'
         },
       }
     },
@@ -307,7 +356,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Given heights of vertical lines, find two lines that together with the x-axis traps the most water.',
           scenario: 'Tank designer: pick two walls to maximize the water volume between them.',
           pattern: 'Two-pointer shrink from both ends',
-          hint: 'Always move the pointer with the shorter height inward.'
+          hint: 'Always move the pointer with the shorter height inward.',
+          examples: [
+            { input:'[1,8,6,2,5,4,8,3,7]', output:'49', trace:'L=1(h=8), R=8(h=7) → area=min(8,7)×7=49✓' },
+            { input:'[1,1]', output:'1', trace:'Only two walls → 1×1=1' },
+            { input:'[4,3,2,1,4]', output:'16', trace:'Outer walls: min(4,4)×4=16✓' }
+          ],
+          wrongApproach: 'Brute-force all pairs O(n²). For n=10⁵ that\'s 10¹⁰ ops — TLE.',
+          aha: 'Area = min(h[L],h[R]) × (R-L). Moving the taller pointer can only decrease width AND cap stays same → can\'t win. Always move the shorter.'
         },
         trapRain: {
           label: 'Trapping Rain Water',
@@ -316,7 +372,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Given elevation heights, compute how much water is trapped after it rains.',
           scenario: 'Civil engineering: calculate water retention in a terrain profile.',
           pattern: 'Two-pointer with running max from each side',
-          hint: 'Water at position i = min(maxLeft, maxRight) - height[i].'
+          hint: 'Water at position i = min(maxLeft, maxRight) - height[i].',
+          examples: [
+            { input:'[0,1,0,2,1,0,1,3,2,1,2,1]', output:'6', trace:'Depressions at indices 2,4,5,6,9 trap 1+1+2+1+1=6' },
+            { input:'[4,2,0,3,2,5]', output:'9', trace:'Trapped: 2+4+1+2=9' },
+            { input:'[3,0,3]', output:'3', trace:'Middle dip: min(3,3)-0=3' }
+          ],
+          wrongApproach: 'Stack approach works but is harder to reason about. The two-pointer is cleanest O(n) O(1) approach.',
+          aha: 'At each position, water trapped = min(maxSoFarLeft, maxSoFarRight) - height. Two-pointer tracks both maxes without extra arrays.'
         },
         threeSum: {
           label: '3Sum',
@@ -325,7 +388,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Find all unique triplets in the array that sum to zero.',
           scenario: 'Financial reconciliation: find three transactions that exactly cancel each other out.',
           pattern: 'Sort + fix one + two-pointer for the rest',
-          hint: 'Sort first; skip duplicates at each level to avoid repeated triplets.'
+          hint: 'Sort first; skip duplicates at each level to avoid repeated triplets.',
+          examples: [
+            { input:'[-1,0,1,2,-1,-4]', output:'[[-1,-1,2],[-1,0,1]]', trace:'Sort→[-4,-1,-1,0,1,2]. Fix -4: no pair sums to 4. Fix -1: L=0,R=2 sum=0✓; Fix 0: L=1,R=2 sum=3≠0' },
+            { input:'[0,1,1]', output:'[]', trace:'No triple sums to 0' },
+            { input:'[0,0,0]', output:'[[0,0,0]]', trace:'All zeros → one valid triple' }
+          ],
+          wrongApproach: 'Three nested loops → O(n³). Even O(n²) HashSet dedupe is tricky. Sorting + two-pointer avoids Set and handles dupes cleanly.',
+          aha: 'Sort. Fix i, then two-pointer L=i+1, R=end. sum>0→R--, sum<0→L++, sum=0→record+skip dupes. O(n²) total.'
         },
       }
     },
@@ -339,7 +409,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Search a sorted array that has been rotated at an unknown pivot. Return the index or -1.',
           scenario: 'Circular buffer lookup: data was stored in a ring and wrapped around.',
           pattern: 'Binary search with half-sorted check',
-          hint: 'One half is always sorted; decide which half to search based on target range.'
+          hint: 'One half is always sorted; decide which half to search based on target range.',
+          examples: [
+            { input:'arr=[4,5,6,7,0,1,2], target=0', output:'4', trace:'mid=7: left sorted [4..7], 0 not in [4,7]→search right. mid=1: right sorted [1,2], 0<1→search left. mid=0✓' },
+            { input:'arr=[4,5,6,7,0,1,2], target=3', output:'-1', trace:'Binary search exhausts without finding 3' },
+            { input:'arr=[1], target=0', output:'-1', trace:'Single element, no match' }
+          ],
+          wrongApproach: 'Linear scan O(n) works but defeats the purpose. Naive binary search fails because the array isn\'t fully sorted.',
+          aha: 'After split, one half is always cleanly sorted. Check if target falls in the sorted half; if yes search there, else search the other half.'
         },
         findMinRotated: {
           label: 'Find Min in Rotated Array',
@@ -348,7 +425,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Find the minimum element in a rotated sorted array in O(log n).',
           scenario: 'Find the rotation point in a circular log buffer.',
           pattern: 'Binary search on rotation pivot',
-          hint: 'If mid > right, minimum is in the right half; otherwise in the left half.'
+          hint: 'If mid > right, minimum is in the right half; otherwise in the left half.',
+          examples: [
+            { input:'[3,4,5,1,2]', output:'1', trace:'mid=5>right=2 → min in right half. mid=1≤right=2 → min in left or mid. Found 1.' },
+            { input:'[4,5,6,7,0,1,2]', output:'0', trace:'Pivot is at index 4 (value 0)' },
+            { input:'[1]', output:'1', trace:'Single element is the min' }
+          ],
+          wrongApproach: 'Sort and return first element: O(n log n). Or linear scan O(n). Both miss the O(log n) insight.',
+          aha: 'The min is at the rotation point. If arr[mid] > arr[right], min is to the right of mid. Else min is mid or left of it.'
         },
         kokoEating: {
           label: 'Koko Eating Bananas',
@@ -357,7 +441,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Koko can eat k bananas/hour from piles. Find the minimum k to finish all piles within h hours.',
           scenario: 'Rate throttling: find the slowest acceptable processing rate to finish within deadline.',
           pattern: 'Binary search on the answer',
-          hint: 'Binary search on k from 1 to max(piles); check if that rate finishes in time.'
+          hint: 'Binary search on k from 1 to max(piles); check if that rate finishes in time.',
+          examples: [
+            { input:'piles=[3,6,7,11], h=8', output:'4', trace:'k=4: ⌈3/4⌉+⌈6/4⌉+⌈7/4⌉+⌈11/4⌉=1+2+2+3=8✓ hours' },
+            { input:'piles=[30,11,23,4,20], h=5', output:'30', trace:'Must finish each pile in 1 hour → k=max=30' },
+            { input:'piles=[1,1,1,999], h=10', output:'142', trace:'⌈999/142⌉=7, total 1+1+1+7=10✓' }
+          ],
+          wrongApproach: 'Try every k from 1 to max(piles): O(n·max) — could be 10⁹. Too slow.',
+          aha: 'The answer space is monotone: if k works, k+1 also works. Binary search on k in [1, max(piles)]. Check feasibility in O(n). Total O(n log max).'
         },
       }
     },
@@ -371,7 +462,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Given a string of brackets, determine if the brackets are properly opened and closed.',
           scenario: 'Code compiler: every opening bracket must be closed in the right order.',
           pattern: 'Stack push/pop matching',
-          hint: 'Push open brackets; when you see a close bracket, the top of stack must match.'
+          hint: 'Push open brackets; when you see a close bracket, the top of stack must match.',
+          examples: [
+            { input:'"({[]})"', output:'true', trace:'Push (→{ then →[ then ] pops [✓, } pops {✓, ) pops (✓. Stack empty=valid.' },
+            { input:'"([)]"', output:'false', trace:'Push (→[ then ) expects [ on top but gets ( → mismatch ✗' },
+            { input:'"{"', output:'false', trace:'Stack not empty at end → unclosed bracket ✗' }
+          ],
+          wrongApproach: 'Counting openers = closers per type (3 separate counters) — fails for "([)]" which has balanced counts but wrong order.',
+          aha: 'Order matters. Stack enforces LIFO nesting order. Push openers; on closer, pop and check. Empty stack at end = valid.'
         },
         dailyTemp: {
           label: 'Daily Temperatures',
@@ -380,7 +478,14 @@ function initDSAVisualizer(root, _options) {
           q: 'For each day, how many days until a warmer temperature? Return 0 if none exists.',
           scenario: 'Stock ticker: how many days until a stock price rises above today\'s price?',
           pattern: 'Monotonic decreasing stack (indices)',
-          hint: 'Push index onto stack; when current temp > stack-top temp, pop and record the gap.'
+          hint: 'Push index onto stack; when current temp > stack-top temp, pop and record the gap.',
+          examples: [
+            { input:'[73,74,75,71,69,72,76,73]', output:'[1,1,4,2,1,1,0,0]', trace:'73→74 next day(1). 75→76 4 days later(4). Last two 76,73 have no warmer day(0).' },
+            { input:'[30,40,50,60]', output:'[1,1,1,0]', trace:'Each day next day is warmer. Last has no warmer.' },
+            { input:'[30,20,10]', output:'[0,0,0]', trace:'Decreasing temps — no warmer day ever.' }
+          ],
+          wrongApproach: 'For each day scan forward until you find a warmer day → O(n²). For n=10⁵ this TLEs.',
+          aha: 'Monotonic stack stores indices of unresolved days (in decreasing temp order). When day i is warmer than stack top, that top\'s answer is (i - top). Pop and repeat.'
         },
         largestRect: {
           label: 'Largest Rectangle in Histogram',
@@ -389,7 +494,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Find the area of the largest rectangle that can be formed in a histogram.',
           scenario: 'Billboard placement: find the widest+tallest rectangular space in a skyline.',
           pattern: 'Monotonic increasing stack',
-          hint: 'When a shorter bar appears, pop taller bars and calculate the rectangle they bounded.'
+          hint: 'When a shorter bar appears, pop taller bars and calculate the rectangle they bounded.',
+          examples: [
+            { input:'[2,1,5,6,2,3]', output:'10', trace:'Bars h=5,h=6 bounded between indices 2-3 → 5×2=10✓' },
+            { input:'[2,4]', output:'4', trace:'Rectangle = single bar h=4 or two bars h=2×2=4. Max=4.' },
+            { input:'[6,2,5,4,5,1,6]', output:'12', trace:'Middle 4 bars all ≥4 → 4×3=12✓' }
+          ],
+          wrongApproach: 'Check all (L,R) pairs for the min height between them → O(n²) or O(n³). Doesn\'t scale.',
+          aha: 'A bar\'s contribution ends when a shorter bar appears. Monotonic increasing stack: on shorter bar, pop and compute area using the new bar as right boundary and new stack top as left boundary.'
         },
       }
     },
@@ -403,7 +515,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Return all possible subsets (the power set) of a given array of distinct integers.',
           scenario: 'Feature toggle combinations: generate all possible ON/OFF combinations of features.',
           pattern: 'Include/exclude backtracking (or bitmask)',
-          hint: 'At each element decide: include it or skip it. Both paths produce valid subsets.'
+          hint: 'At each element decide: include it or skip it. Both paths produce valid subsets.',
+          examples: [
+            { input:'[1,2,3]', output:'[[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]', trace:'2ⁿ=8 subsets. At each of 3 elements: include or skip.' },
+            { input:'[0]', output:'[[],[0]]', trace:'One element → 2 subsets' },
+            { input:'[1,2]', output:'[[],[1],[2],[1,2]]', trace:'4 subsets' }
+          ],
+          wrongApproach: 'Iterative bit-mask approach works but backtracking is the interview expectation — shows you understand the recursion tree.',
+          aha: 'DFS: at each index, branch into "include nums[i]" and "skip nums[i]". Leaf nodes are complete subsets. No base case needed beyond reaching end of array.'
         },
         permutations: {
           label: 'Permutations',
@@ -412,7 +531,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Return all possible permutations of a list of distinct integers.',
           scenario: 'Password cracker: generate all orderings of a set of characters.',
           pattern: 'Swap-based backtracking',
-          hint: 'Fix each element at position i by swapping it with each remaining element.'
+          hint: 'Fix each element at position i by swapping it with each remaining element.',
+          examples: [
+            { input:'[1,2,3]', output:'6 permutations', trace:'[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,2,1],[3,1,2] — n!=6' },
+            { input:'[1]', output:'[[1]]', trace:'Only one element, one permutation' },
+            { input:'[1,2]', output:'[[1,2],[2,1]]', trace:'2!=2 permutations' }
+          ],
+          wrongApproach: 'Pick each unused element with a "used" boolean array — works but uses O(n) extra space. Swap-in-place backtrack is cleaner.',
+          aha: 'At position i, try putting each remaining element there by swapping arr[i] ↔ arr[j], recurse for i+1, then swap back (undo). n! leaves in the tree.'
         },
         combSum: {
           label: 'Combination Sum',
@@ -421,7 +547,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Find all unique combinations of candidates that sum to target. Same number can be reused.',
           scenario: 'Exact-change problem: which coins (reusable) add up to the exact target?',
           pattern: 'Backtracking with pruning',
-          hint: 'At each step, try adding a candidate; if sum exceeds target, stop that branch.'
+          hint: 'At each step, try adding a candidate; if sum exceeds target, stop that branch.',
+          examples: [
+            { input:'candidates=[2,3,6,7], target=7', output:'[[2,2,3],[7]]', trace:'Path 2→2→3=7✓ and 7=7✓. Path 2→2→2→..>7 pruned.' },
+            { input:'candidates=[2,3,5], target=8', output:'[[2,2,2,2],[2,3,3],[3,5]]', trace:'Three ways to make 8' },
+            { input:'candidates=[2], target=1', output:'[]', trace:'Impossible — 2 never divides to reach 1' }
+          ],
+          wrongApproach: 'Generating all combinations then filtering — exponential and wastes time on paths that clearly overshoot.',
+          aha: 'Sort first so you can prune early (if candidate > remaining, stop). At each level, try same candidate again (reuse allowed) or move to next. Backtrack on sum>target.'
         },
       }
     },
@@ -435,7 +568,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Can the string be segmented into a space-separated sequence of dictionary words?',
           scenario: 'NLP tokenizer: can you split a run-together string into valid dictionary words?',
           pattern: '1D reachability DP',
-          hint: 'dp[i] = true if any split point j has dp[j]=true and s[j..i] is a word.'
+          hint: 'dp[i] = true if any split point j has dp[j]=true and s[j..i] is a word.',
+          examples: [
+            { input:'s="leetcode", dict=[leet,code]', output:'true', trace:'dp[0]=T, dp[4]=T (leet), dp[8]=T (code). Split at 4.' },
+            { input:'s="applepenapple", dict=[apple,pen]', output:'true', trace:'"apple"+"pen"+"apple"' },
+            { input:'s="catsandog", dict=[cats,dog,sand,and,cat]', output:'false', trace:'Reaches "catsand" but "og" not in dict' }
+          ],
+          wrongApproach: 'Recursive without memo: exponential overlapping subproblems. Adding memoization = top-down DP = same as bottom-up.',
+          aha: 'dp[i]=true means s[0..i] is segmentable. For each i, try every split point j: if dp[j] and s[j..i] in dict → dp[i]=true. Start dp[0]=true.'
         },
         jumpGame: {
           label: 'Jump Game',
@@ -444,7 +584,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Each element is the max jump from that position. Can you reach the last index?',
           scenario: 'Level skipping: can a character jump across platforms to reach the exit?',
           pattern: 'Greedy max-reach tracking',
-          hint: 'Track the farthest reachable index; if you step beyond it, you\'re stuck.'
+          hint: 'Track the farthest reachable index; if you step beyond it, you\'re stuck.',
+          examples: [
+            { input:'[2,3,1,1,4]', output:'true', trace:'maxReach: 2,4(via index1),4,4,done. Index 4 ≤ maxReach=4 ✓' },
+            { input:'[3,2,1,0,4]', output:'false', trace:'maxReach: 3,3,3,3 → index 4 > maxReach=3 ✗' },
+            { input:'[0]', output:'true', trace:'Already at last index' }
+          ],
+          wrongApproach: 'DP: dp[i]=can reach i. O(n²). Greedy is O(n) — just track the farthest point you can reach.',
+          aha: 'At each index i (if i≤maxReach): update maxReach=max(maxReach, i+nums[i]). If maxReach≥last index, return true. If i>maxReach, you\'re stranded.'
         },
         maxProduct: {
           label: 'Max Product Subarray',
@@ -453,7 +600,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Find the contiguous subarray with the largest product.',
           scenario: 'Signal processing: find the stretch of multiplied sensor values that peaks highest.',
           pattern: 'DP tracking both max and min (negatives flip sign)',
-          hint: 'A negative × negative can become the new maximum, so track both extremes.'
+          hint: 'A negative × negative can become the new maximum, so track both extremes.',
+          examples: [
+            { input:'[2,3,-2,4]', output:'6', trace:'[2,3]=6. Hitting -2 breaks it. [4]=4. Best=6.' },
+            { input:'[-2,3,-4]', output:'24', trace:'-2×3×-4=24✓. Two negatives flip to positive.' },
+            { input:'[-2]', output:'-2', trace:'Single element, only option.' }
+          ],
+          wrongApproach: 'Only track max product — when you multiply by a negative, the current min becomes the new max! One variable isn\'t enough.',
+          aha: 'Track both curMax and curMin. At each element: new max = max(num, curMax×num, curMin×num). Same for min. Negative flips max↔min.'
         },
         decodeWays: {
           label: 'Decode Ways',
@@ -462,7 +616,14 @@ function initDSAVisualizer(root, _options) {
           q: 'A message is encoded as digits (A=1...Z=26). How many ways can it be decoded?',
           scenario: 'SMS decoder: count how many English-word interpretations a digit string has.',
           pattern: '1D counting DP (like climbing stairs but with validity checks)',
-          hint: 'dp[i] = ways using one digit + ways using two digits (if valid ≤ 26).'
+          hint: 'dp[i] = ways using one digit + ways using two digits (if valid ≤ 26).',
+          examples: [
+            { input:'"226"', output:'3', trace:'"2","26" → BZ; "22","6" → VF; "2","2","6" → BBF. Three ways.' },
+            { input:'"12"', output:'2', trace:'"1","2"→AB or "12"→L' },
+            { input:'"06"', output:'0', trace:'"06" is invalid (no mapping for 0). "0" alone also invalid.' }
+          ],
+          wrongApproach: 'Recursion without memo explodes. Also don\'t forget: "0" is invalid alone, "30","40" etc. are invalid two-digit codes.',
+          aha: 'Like climbing stairs but check validity. dp[i] += dp[i-1] if s[i] valid single digit. dp[i] += dp[i-2] if s[i-1..i] is 10-26. Handle leading zeros carefully.'
         },
       }
     }
