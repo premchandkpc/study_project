@@ -1290,13 +1290,13 @@ window.DSA_TOPICS = [
     area: "dsa",
     title: "DSA Algorithm Visualizer",
     tag: "Interactive",
-    tags: ["dsa", "algorithms", "sliding-window", "dp", "greedy", "graph", "bfs", "dfs", "dijkstra"],
+    tags: ["dsa", "algorithms", "sliding-window", "dp", "greedy", "graph", "bfs", "dfs", "dijkstra", "faang", "climbing-stairs", "house-robber", "edit-distance", "lis", "subset-sum"],
     concept:
 `Step-through visual debugger for core DSA patterns.
 
 **Sliding Window** — fixed/variable window with two pointers. O(n) for sum, frequency, and deque problems.
 
-**Dynamic Programming** — table-filling with dependency arrows. Fibonacci, Coin Change, 0/1 Knapsack, LCS.
+**Dynamic Programming** — table-filling with dependency arrows. Fibonacci, Climbing Stairs, House Robber, Coin Change, Unique Paths, 0/1 Knapsack, LCS, Edit Distance, LIS, Partition Equal Subset Sum.
 
 **Greedy** — local-optimal decisions at each step. Activity Selection, Coin Change, Job Sequencing.
 
@@ -1328,7 +1328,7 @@ def coin_change(coins: list[int], amount: int) -> int:
                 dp[a] = min(dp[a], dp[a - c] + 1)
     return dp[amount] if dp[amount] != float('inf') else -1`,
       notes:
-`Both run in a single forward pass. The visualizer shows every cell write so you can trace the recurrence by eye. For graph problems use the BFS/DFS/Dijkstra tabs — the deque and dist[] arrays are shown live at each node visit.`
+`Both run in a single forward pass. The visualizer now starts every scenario with an interview-style question card, then shows each window shift, queue move, or DP cell write. Use the extra DP tabs for common FAANG-style drills such as Climbing Stairs, House Robber, Unique Paths, Edit Distance, LIS, and Partition Equal Subset Sum.`
     },
     interview: [
       {
@@ -1406,6 +1406,10 @@ def coin_change(coins: list[int], amount: int) -> int:
 .dsa-viz .dsa-expl-step{font-size:11px;color:#58a6ff;font-weight:bold;margin-bottom:4px}
 .dsa-viz .dsa-expl-text{font-size:13px;line-height:1.65;color:#e6edf3}
 .dsa-viz .dsa-expl-code{font-size:11px;color:#f0883e;margin-top:6px;font-family:'Courier New';background:#0d1117;padding:4px 8px;border-radius:4px;display:inline-block}
+.dsa-viz .dsa-prompt-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.dsa-viz .dsa-prompt-card{background:#161b22;border:1px solid #30363d;border-radius:7px;padding:10px 12px;min-height:72px}
+.dsa-viz .dsa-prompt-k{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.dsa-viz .dsa-prompt-v{font-size:12px;line-height:1.45;color:#e6edf3}
 .dsa-viz .dsa-arr-label{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .dsa-viz .dsa-arr-row{display:flex;flex-wrap:wrap;gap:4px;align-items:flex-start}
 .dsa-viz .dsa-cell-wrap{display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -1437,7 +1441,17 @@ def coin_change(coins: list[int], amount: int) -> int:
 .dsa-viz .dsa-aux-chip{padding:2px 8px;border-radius:4px;font-size:11px;background:#21262d;border:1px solid #30363d;color:#e6edf3}
 .dsa-viz .dsa-aux-chip.hi{background:#1f6feb33;border-color:#58a6ff;color:#79c0ff}
 .dsa-viz .dsa-aux-empty{font-size:11px;color:#444;font-style:italic}
+.dsa-viz .dsa-decision-box{background:#161b22;border:1px solid #30363d;border-radius:7px;padding:8px 12px;display:inline-block}
+.dsa-viz .dsa-decision-row{display:flex;gap:8px;flex-wrap:wrap}
+.dsa-viz .dsa-decision-chip{min-width:88px;background:#21262d;border:1px solid #30363d;border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:2px}
+.dsa-viz .dsa-decision-chip span{font-size:10px;color:#8b949e}
+.dsa-viz .dsa-decision-chip strong{font-size:14px;color:#e6edf3}
+.dsa-viz .dsa-decision-chip.win{border-color:#3fb950;background:#23863622}
+.dsa-viz .dsa-decision-chip.win strong{color:#3fb950}
+.dsa-viz .dsa-decision-chip.bad{border-color:#f85149;background:#da363622}
+.dsa-viz .dsa-decision-chip.bad strong{color:#f85149}
 .dsa-viz .dsa-graph-svg-box{background:#161b22;border-radius:8px;border:1px solid #30363d;display:inline-block}
+@media (max-width:760px){.dsa-viz .dsa-app{height:760px;flex-direction:column}.dsa-viz .dsa-sidebar{width:auto;max-height:180px;border-right:none;border-bottom:1px solid #30363d}.dsa-viz .dsa-prompt-grid{grid-template-columns:1fr}}
         `;
         document.head.appendChild(style);
       }
