@@ -701,7 +701,14 @@
       setupArchitectureLab(topic);
       if (topic.visual) {
         const mount = host.querySelector(".viz-mount");
-        if (mount) { try { topic.visual(mount); } catch(e) { console.warn("viz error", e); } }
+        if (mount) {
+          try {
+            topic.visual(mount);
+          } catch(e) {
+            console.error("viz error", e);
+            mount.innerHTML = `<div style="color:#f85149;padding:16px;font-family:monospace;font-size:12px">Visualizer error: ${e.message}</div>`;
+          }
+        }
       }
 
       // Trigger Prism highlight after content is in the DOM

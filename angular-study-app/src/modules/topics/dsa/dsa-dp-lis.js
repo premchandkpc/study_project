@@ -13,6 +13,8 @@
     visual: function(mount) {
       if (typeof window._dsaRenderViz === 'function') {
         window._dsaRenderViz(mount, { topic: 'dp', problem: 'lis' });
+      } else {
+        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
       }
     }
   }]);
