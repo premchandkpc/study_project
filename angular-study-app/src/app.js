@@ -307,6 +307,18 @@
       const blocks = areas.map(a => {
         const list = topics.byArea(a.key).filter(t => !matches || matches.includes(t.id));
         const ratio = progress.ratio(topics.byArea(a.key).map(t => t.id));
+        const activePick = window._dsaActivePick || {};
+        const dsaSubNav = a.key === 'dsa' && window.DSA_ALGO_NAV
+          ? `<div class="dsa-algo-subnav">${
+              Object.entries(window.DSA_ALGO_NAV).map(([tid, cat]) =>
+                `<div class="dsa-sidebar-cat">${esc(cat.label)}</div>` +
+                Object.entries(cat.problems).map(([pid, label]) => {
+                  const isActive = activePick.tid === tid && activePick.pid === pid;
+                  return `<button class="dsa-sidebar-prob${isActive ? ' active' : ''}" data-tid="${esc(tid)}" data-pid="${esc(pid)}">${esc(label)}</button>`;
+                }).join('')
+              ).join('')
+            }</div>`
+          : '';
         return `
           <div class="area-group">
             <div class="area-title">
@@ -322,6 +334,7 @@
                   ${t.tag ? `<span class="pill">${esc(t.tag)}</span>` : ""}
                 </li>`).join("")}
             </ul>
+            ${dsaSubNav}
           </div>`;
       }).join("");
 
@@ -348,6 +361,18 @@
         el.addEventListener("click", (e) => {
           e.stopPropagation();
           progress.toggle(el.dataset.toggle);
+        });
+      });
+      host.querySelectorAll(".dsa-algo-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const { tid, pid } = btn.dataset;
+          if (window._dsaPick) {
+            router.navigate("/dsa-visualizer");
+            window._dsaPick(tid, pid);
+          } else {
+            window._dsaPendingPick = [tid, pid];
+            router.navigate("/dsa-visualizer");
+          }
         });
       });
     }

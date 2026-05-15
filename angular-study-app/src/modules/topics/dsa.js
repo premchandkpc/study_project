@@ -1282,7 +1282,45 @@ function initDSAVisualizer(root) {
 
   buildSidebar();
   pick('sliding', 'maxSumFixed');
+
+  window._dsaPick = pick;
+  if (window._dsaPendingPick) {
+    const [t, p] = window._dsaPendingPick;
+    window._dsaPendingPick = null;
+    pick(t, p);
+  }
 }
+
+window.DSA_ALGO_NAV = {
+  sliding: { label: 'Sliding Window', problems: {
+    maxSumFixed: 'Max Sum Subarray (fixed k)',
+    longestUniq: 'Longest Substr No Repeat',
+    windowMax: 'Sliding Window Maximum',
+    minSubarraySum: 'Min Size Subarray >= target',
+  }},
+  dp: { label: 'Dynamic Programming', problems: {
+    fibonacci: 'Fibonacci (bottom-up)',
+    climbStairs: 'Climbing Stairs',
+    houseRobber: 'House Robber',
+    coinChange: 'Coin Change (min coins)',
+    uniquePaths: 'Unique Paths Grid',
+    knapsack: '0/1 Knapsack',
+    lcs: 'Longest Common Subsequence',
+    editDistance: 'Edit Distance',
+    lis: 'Longest Increasing Subsequence',
+    partitionEqual: 'Partition Equal Subset Sum',
+  }},
+  greedy: { label: 'Greedy', problems: {
+    activitySel: 'Activity Selection',
+    greedyCoin: 'Coin Change (greedy)',
+    jobSeq: 'Job Sequencing',
+  }},
+  graph: { label: 'Graph', problems: {
+    bfs: 'BFS Traversal',
+    dfs: 'DFS Traversal',
+    dijkstra: 'Dijkstra SSSP',
+  }},
+};
 
 window.DSA_TOPICS = [
   {

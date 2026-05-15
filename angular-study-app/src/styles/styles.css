@@ -34,7 +34,7 @@ code, pre { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, 
 .sidebar {
   background: linear-gradient(180deg, var(--bg-2), var(--bg));
   border-right: 1px solid var(--border);
-  padding: 18px 14px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  padding: 18px 14px; position: sticky; top: 0; height: 100vh; overflow-y: scroll;
 }
 .brand { display:flex; align-items:center; gap:10px; padding: 4px 6px 14px; border-bottom:1px solid var(--border); margin-bottom: 12px; }
 .brand .logo {
@@ -75,6 +75,12 @@ code, pre { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, 
 .topic-item .check.done::after { content:"✓"; color:#06281a; font-size: 10px; font-weight: 900; }
 .topic-item .label { flex:1; }
 .topic-item .pill { font-size: 10px; padding: 1px 6px; border-radius: 999px; background: var(--panel-2); color: var(--muted); }
+
+/* DSA algorithm sub-nav in sidebar */
+.dsa-algo-subnav { max-height: 280px; overflow-y: auto; margin: 4px 0 6px; border-top: 1px solid var(--border); padding-top: 4px; }
+.dsa-algo-cat { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .7px; text-transform: uppercase; padding: 8px 8px 3px; }
+.dsa-algo-btn { display: block; width: 100%; text-align: left; background: none; border: none; color: var(--text); font: inherit; font-size: 12.5px; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: background .12s, color .12s; }
+.dsa-algo-btn:hover { background: var(--panel); color: #fff; }
 
 /* Main */
 .main { padding: 28px 36px 60px; max-width: 1280px; }
