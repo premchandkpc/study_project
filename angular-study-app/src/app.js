@@ -308,7 +308,7 @@
       const blocks = areas.map(a => {
         const list = topics.byArea(a.key).filter(t => !matches || matches.includes(t.id));
         const ratio = progress.ratio(topics.byArea(a.key).map(t => t.id));
-        const isOpen = !collapsed[a.key];
+        const isOpen = !collapsed[a.key] || (q && list.length > 0);
         const activePick = window._dsaActivePick || {};
         const dsaSubNav = a.key === 'dsa' && window.DSA_ALGO_NAV
           ? `<div class="dsa-algo-subnav">${
@@ -321,6 +321,13 @@
               ).join('')
             }</div>`
           : '';
+        if (q && list.length === 0) return '';
+        const topicItems = list.map(t => `
+                <li class="topic-item ${active === t.id ? "active" : ""}" data-nav="${esc(t.id)}">
+                  <span class="check ${progress.isDone(t.id) ? "done" : ""}" data-check="${esc(t.id)}" title="Mark complete"></span>
+                  <span class="label">${esc(t.title)}</span>
+                  ${t.tag ? `<span class="pill">${esc(t.tag)}</span>` : ""}
+                </li>`).join("");
         return `
           <div class="area-group">
             <div class="area-title" data-toggle-area="${esc(a.key)}">
@@ -331,12 +338,7 @@
             </div>
             ${isOpen ? `
             <ul class="topic-list">
-              ${list.map(t => `
-                <li class="topic-item ${active === t.id ? "active" : ""}" data-nav="${esc(t.id)}">
-                  <span class="check ${progress.isDone(t.id) ? "done" : ""}" data-check="${esc(t.id)}" title="Mark complete"></span>
-                  <span class="label">${esc(t.title)}</span>
-                  ${t.tag ? `<span class="pill">${esc(t.tag)}</span>` : ""}
-                </li>`).join("")}
+              ${topicItems}
             </ul>
             ${dsaSubNav}` : ''}
           </div>`;

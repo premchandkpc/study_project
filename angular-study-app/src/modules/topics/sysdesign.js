@@ -1713,7 +1713,7 @@ provider:
   memorySize: 512
   timeout: 30
   environment:
-    DB_URL: !Sub "jdbc:postgresql://${DbHost}/orders"
+    DB_URL: !Sub "jdbc:postgresql://\${DbHost}/orders"
 
 functions:
   processOrder:
@@ -3825,7 +3825,7 @@ public class FeedService {
 5. **CDN distribution** — transcoded segments pushed to 200+ CDN PoPs.
 
 **Streaming:**
-- Player requests manifest (`.m3u8` or `.mpd`).
+- Player requests manifest (\`.m3u8\` or \`.mpd\`).
 - Downloads 2-10 second segments. Measures download speed.
 - Switches bitrate every segment — seamless quality adaptation.
 - No persistent connection — pure HTTP. Works through proxies, firewalls.
@@ -3882,7 +3882,7 @@ https://cdn.example.com/videos/abc123/360p/playlist.m3u8
   },
   interview:[
     {question:"How does adaptive bitrate streaming work?",
-     answer:`ABR (HLS/DASH) works in 5 steps:\n1. Server transcodes video into multiple quality levels (2160p → 240p) and divides each into short segments (2-10 seconds).\n2. A manifest file lists all quality variants with bandwidth requirements.\n3. Player downloads the manifest, picks initial quality based on measured bandwidth.\n4. Player downloads segment, measures download time. If download took longer than segment duration → bandwidth too low → switch to lower quality next segment.\n5. If download is consistently fast → buffer ahead and switch to higher quality.\n\n**Key insight:** Switching happens at segment boundaries — seamless. Player maintains a 15-30 second buffer to absorb network jitter without pause.\n\nHLS uses `.m3u8` (Apple format, supported natively by iOS/Safari). DASH is ISO standard (Chrome, Android). Both achieve same result — adaptive quality.`,
+     answer:`ABR (HLS/DASH) works in 5 steps:\n1. Server transcodes video into multiple quality levels (2160p → 240p) and divides each into short segments (2-10 seconds).\n2. A manifest file lists all quality variants with bandwidth requirements.\n3. Player downloads the manifest, picks initial quality based on measured bandwidth.\n4. Player downloads segment, measures download time. If download took longer than segment duration → bandwidth too low → switch to lower quality next segment.\n5. If download is consistently fast → buffer ahead and switch to higher quality.\n\n**Key insight:** Switching happens at segment boundaries — seamless. Player maintains a 15-30 second buffer to absorb network jitter without pause.\n\nHLS uses \`.m3u8\` (Apple format, supported natively by iOS/Safari). DASH is ISO standard (Chrome, Android). Both achieve same result — adaptive quality.`,
      followUps:["Why does Netflix pre-transcode to AV1 codec?","How do you handle DRM (Digital Rights Management) for premium content?"]
     }
   ],
