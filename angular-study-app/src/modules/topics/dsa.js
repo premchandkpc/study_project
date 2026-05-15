@@ -1292,6 +1292,7 @@ function initDSAVisualizer(root) {
   }
 }
 
+window._dsaActivePick = window._dsaActivePick || { tid: 'sliding', pid: 'maxSumFixed' };
 window.DSA_ALGO_NAV = {
   sliding: { label: 'Sliding Window', problems: {
     maxSumFixed: 'Max Sum Subarray (fixed k)',
