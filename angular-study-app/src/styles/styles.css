@@ -91,7 +91,7 @@ code, pre { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, 
 .dsa-sidebar-prob.active { color: #f0883e; background: #f0883e11; border-left: 2px solid #f0883e; padding-left: 26px; }
 
 /* Main */
-.main { padding: 28px 36px 60px; max-width: 1280px; }
+.main { padding: 28px 36px 60px; max-width: 1280px; overflow-y: auto; }
 .crumbs { color: var(--muted); font-size: 12.5px; margin-bottom: 6px; }
 .crumbs .sep { margin: 0 6px; opacity:.6; }
 .title-row { display:flex; align-items:center; gap: 14px; margin: 0 0 6px; }

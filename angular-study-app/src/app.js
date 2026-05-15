@@ -353,7 +353,6 @@
           return s.match ? { t, titleHl: s.titleHl } : null;
         }).filter(Boolean);
         if (q && scored.length === 0) return '';
-        const list = q ? scored : scored.length ? scored : areaTopics.map(t => ({ t, titleHl: esc(t.title) }));
         const fullList = q ? scored : areaTopics.map(t => ({ t, titleHl: esc(t.title) }));
         const ratio = progress.ratio(areaTopics.map(t => t.id));
         const isOpen = q ? fullList.length > 0 : !collapsed[a.key];
@@ -911,6 +910,16 @@
     `;
     SidebarComponent(root.querySelector(".sidebar"));
     TopicDetailComponent(root.querySelector(".main"));
+
+    // Ctrl+K — focus sidebar search (when on topic page, home handles its own)
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        const sideSearch = root.querySelector('#sidebar-search');
+        const homeSearch = document.querySelector('#home-search-input');
+        if (homeSearch) { e.preventDefault(); homeSearch.focus(); homeSearch.select(); }
+        else if (sideSearch) { e.preventDefault(); sideSearch.focus(); sideSearch.select(); }
+      }
+    });
   }
 
   if (document.readyState === "loading") {
