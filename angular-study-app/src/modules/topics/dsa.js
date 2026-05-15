@@ -111,7 +111,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Given money in houses in a line, maximize loot without robbing adjacent houses.',
           scenario: 'Common FAANG-style choose/skip question with adjacency constraint.',
           pattern: '1D decision DP',
-          hint: 'At house i choose max(skip i, rob i + best through i-2).'
+          hint: 'At house i choose max(skip i, rob i + best through i-2).',
+          examples: [
+            { input:'[2,7,9,3,1]', output:'12', trace:'Rob 2+9+1=12 ✓ (skip 7 and 3)' },
+            { input:'[1,2,3,1]', output:'4', trace:'Rob 1+3=4 ✓ vs 2+1=3' },
+            { input:'[2,1,1,2]', output:'4', trace:'Rob 2+2=4 ✓ (skip adjacent 1s)' }
+          ],
+          wrongApproach: 'Always skip every other house: [2,3,2] → you\'d take 2+2=4 but optimal is 3 (only middle). Greedy fails.',
+          aha: 'dp[i] = max(dp[i-1], dp[i-2]+nums[i]). Skip house i → take dp[i-1]. Rob house i → add to dp[i-2].'
         },
         coinChange: {
           label: 'Coin Change (min coins)',
