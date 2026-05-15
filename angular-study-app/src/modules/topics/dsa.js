@@ -205,6 +205,216 @@ function initDSAVisualizer(root, _options) {
           pattern: 'Greedy shortest path',
           hint: 'Negative weights break the finalized-distance guarantee.'
         },
+        numIslands: {
+          label: 'Number of Islands',
+          fn: solveNumIslands,
+          def: { arr:'1,1,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0', n:'5', k:'5' },
+          q: 'Given a 2D grid of 1s (land) and 0s (water), count the number of islands.',
+          scenario: 'Map analysis: every connected blob of land is one island. Classic BFS/DFS flood-fill.',
+          pattern: 'BFS/DFS grid flood-fill',
+          hint: 'Each unvisited land cell starts a BFS that marks the whole island visited.'
+        },
+        topoSort: {
+          label: 'Course Schedule (Topo Sort)',
+          fn: solveTopoSort,
+          def: { arr:'1-0,2-0,3-1,3-2', n:'4', k:'' },
+          q: 'Given n courses and prerequisite pairs, can you finish all courses? Return a valid order.',
+          scenario: 'Build system: must compile dependencies before the module that needs them.',
+          pattern: "Kahn's BFS topological sort",
+          hint: 'Start with nodes that have zero in-degree; remove them and reduce neighbors\' in-degree.'
+        },
+      }
+    },
+    sliding2: {
+      label: 'Sliding Window II',
+      problems: {
+        minWindow: {
+          label: 'Minimum Window Substring',
+          fn: solveMinWindow,
+          def: { str:'ADOBECODEBANC', k:'ABC' },
+          q: 'Find the smallest substring of s that contains all characters of t.',
+          scenario: 'Log search: find shortest log snippet containing all required keywords.',
+          pattern: 'Variable sliding window + two frequency maps',
+          hint: 'Expand right until all chars covered, then shrink left to minimize window.'
+        },
+        permInStr: {
+          label: 'Permutation in String',
+          fn: solvePermInStr,
+          def: { str:'eidbaooo', k:'ab' },
+          q: 'Return true if any permutation of pattern p exists as a substring of s.',
+          scenario: 'Anagram detector: is any rearrangement of the keyword hiding in this text?',
+          pattern: 'Fixed-size sliding window + char frequency',
+          hint: 'Window size equals len(p); slide and compare frequency maps.'
+        },
+      }
+    },
+    twoptr: {
+      label: 'Two Pointers',
+      problems: {
+        containerWater: {
+          label: 'Container With Most Water',
+          fn: solveContainerWater,
+          def: { arr:'1,8,6,2,5,4,8,3,7' },
+          q: 'Given heights of vertical lines, find two lines that together with the x-axis traps the most water.',
+          scenario: 'Tank designer: pick two walls to maximize the water volume between them.',
+          pattern: 'Two-pointer shrink from both ends',
+          hint: 'Always move the pointer with the shorter height inward.'
+        },
+        trapRain: {
+          label: 'Trapping Rain Water',
+          fn: solveTrapRain,
+          def: { arr:'0,1,0,2,1,0,1,3,2,1,2,1' },
+          q: 'Given elevation heights, compute how much water is trapped after it rains.',
+          scenario: 'Civil engineering: calculate water retention in a terrain profile.',
+          pattern: 'Two-pointer with running max from each side',
+          hint: 'Water at position i = min(maxLeft, maxRight) - height[i].'
+        },
+        threeSum: {
+          label: '3Sum',
+          fn: solveThreeSum,
+          def: { arr:'-1,0,1,2,-1,-4' },
+          q: 'Find all unique triplets in the array that sum to zero.',
+          scenario: 'Financial reconciliation: find three transactions that exactly cancel each other out.',
+          pattern: 'Sort + fix one + two-pointer for the rest',
+          hint: 'Sort first; skip duplicates at each level to avoid repeated triplets.'
+        },
+      }
+    },
+    bsearch: {
+      label: 'Binary Search',
+      problems: {
+        searchRotated: {
+          label: 'Search Rotated Sorted Array',
+          fn: solveSearchRotated,
+          def: { arr:'4,5,6,7,0,1,2', n:'0' },
+          q: 'Search a sorted array that has been rotated at an unknown pivot. Return the index or -1.',
+          scenario: 'Circular buffer lookup: data was stored in a ring and wrapped around.',
+          pattern: 'Binary search with half-sorted check',
+          hint: 'One half is always sorted; decide which half to search based on target range.'
+        },
+        findMinRotated: {
+          label: 'Find Min in Rotated Array',
+          fn: solveFindMinRotated,
+          def: { arr:'3,4,5,1,2' },
+          q: 'Find the minimum element in a rotated sorted array in O(log n).',
+          scenario: 'Find the rotation point in a circular log buffer.',
+          pattern: 'Binary search on rotation pivot',
+          hint: 'If mid > right, minimum is in the right half; otherwise in the left half.'
+        },
+        kokoEating: {
+          label: 'Koko Eating Bananas',
+          fn: solveKoko,
+          def: { arr:'3,6,7,11', n:'8' },
+          q: 'Koko can eat k bananas/hour from piles. Find the minimum k to finish all piles within h hours.',
+          scenario: 'Rate throttling: find the slowest acceptable processing rate to finish within deadline.',
+          pattern: 'Binary search on the answer',
+          hint: 'Binary search on k from 1 to max(piles); check if that rate finishes in time.'
+        },
+      }
+    },
+    stack: {
+      label: 'Stack',
+      problems: {
+        validParen: {
+          label: 'Valid Parentheses',
+          fn: solveValidParen,
+          def: { str:'({[]})' },
+          q: 'Given a string of brackets, determine if the brackets are properly opened and closed.',
+          scenario: 'Code compiler: every opening bracket must be closed in the right order.',
+          pattern: 'Stack push/pop matching',
+          hint: 'Push open brackets; when you see a close bracket, the top of stack must match.'
+        },
+        dailyTemp: {
+          label: 'Daily Temperatures',
+          fn: solveDailyTemp,
+          def: { arr:'73,74,75,71,69,72,76,73' },
+          q: 'For each day, how many days until a warmer temperature? Return 0 if none exists.',
+          scenario: 'Stock ticker: how many days until a stock price rises above today\'s price?',
+          pattern: 'Monotonic decreasing stack (indices)',
+          hint: 'Push index onto stack; when current temp > stack-top temp, pop and record the gap.'
+        },
+        largestRect: {
+          label: 'Largest Rectangle in Histogram',
+          fn: solveLargestRect,
+          def: { arr:'2,1,5,6,2,3' },
+          q: 'Find the area of the largest rectangle that can be formed in a histogram.',
+          scenario: 'Billboard placement: find the widest+tallest rectangular space in a skyline.',
+          pattern: 'Monotonic increasing stack',
+          hint: 'When a shorter bar appears, pop taller bars and calculate the rectangle they bounded.'
+        },
+      }
+    },
+    backtrack: {
+      label: 'Backtracking',
+      problems: {
+        subsets: {
+          label: 'Subsets',
+          fn: solveSubsets,
+          def: { arr:'1,2,3' },
+          q: 'Return all possible subsets (the power set) of a given array of distinct integers.',
+          scenario: 'Feature toggle combinations: generate all possible ON/OFF combinations of features.',
+          pattern: 'Include/exclude backtracking (or bitmask)',
+          hint: 'At each element decide: include it or skip it. Both paths produce valid subsets.'
+        },
+        permutations: {
+          label: 'Permutations',
+          fn: solvePermutations,
+          def: { arr:'1,2,3' },
+          q: 'Return all possible permutations of a list of distinct integers.',
+          scenario: 'Password cracker: generate all orderings of a set of characters.',
+          pattern: 'Swap-based backtracking',
+          hint: 'Fix each element at position i by swapping it with each remaining element.'
+        },
+        combSum: {
+          label: 'Combination Sum',
+          fn: solveCombSum,
+          def: { arr:'2,3,6,7', n:'7' },
+          q: 'Find all unique combinations of candidates that sum to target. Same number can be reused.',
+          scenario: 'Exact-change problem: which coins (reusable) add up to the exact target?',
+          pattern: 'Backtracking with pruning',
+          hint: 'At each step, try adding a candidate; if sum exceeds target, stop that branch.'
+        },
+      }
+    },
+    dpx: {
+      label: 'DP Extended',
+      problems: {
+        wordBreak: {
+          label: 'Word Break',
+          fn: solveWordBreak,
+          def: { str:'leetcode', k:'leet,code,leetcode' },
+          q: 'Can the string be segmented into a space-separated sequence of dictionary words?',
+          scenario: 'NLP tokenizer: can you split a run-together string into valid dictionary words?',
+          pattern: '1D reachability DP',
+          hint: 'dp[i] = true if any split point j has dp[j]=true and s[j..i] is a word.'
+        },
+        jumpGame: {
+          label: 'Jump Game',
+          fn: solveJumpGame,
+          def: { arr:'2,3,1,1,4' },
+          q: 'Each element is the max jump from that position. Can you reach the last index?',
+          scenario: 'Level skipping: can a character jump across platforms to reach the exit?',
+          pattern: 'Greedy max-reach tracking',
+          hint: 'Track the farthest reachable index; if you step beyond it, you\'re stuck.'
+        },
+        maxProduct: {
+          label: 'Max Product Subarray',
+          fn: solveMaxProduct,
+          def: { arr:'2,3,-2,4' },
+          q: 'Find the contiguous subarray with the largest product.',
+          scenario: 'Signal processing: find the stretch of multiplied sensor values that peaks highest.',
+          pattern: 'DP tracking both max and min (negatives flip sign)',
+          hint: 'A negative × negative can become the new maximum, so track both extremes.'
+        },
+        decodeWays: {
+          label: 'Decode Ways',
+          fn: solveDecodeWays,
+          def: { str:'226' },
+          q: 'A message is encoded as digits (A=1...Z=26). How many ways can it be decoded?',
+          scenario: 'SMS decoder: count how many English-word interpretations a digit string has.',
+          pattern: '1D counting DP (like climbing stairs but with validity checks)',
+          hint: 'dp[i] = ways using one digit + ways using two digits (if valid ≤ 26).'
+        },
       }
     }
   };
@@ -216,10 +426,10 @@ function initDSAVisualizer(root, _options) {
 
   // ── INPUT BAR ──────────────────────────────────────────────
   const LABELS = {
-    arr: { sliding:'Array (comma sep)', dp:'Values / Edges', greedy:'Values / Edges', graph:'Edges (a-b or a-b-w)' },
-    str: { sliding:'String', dp:'String 1', greedy:'String', graph:'String' },
-    k:   { sliding:'k (window size)', dp:'Weights / String 2', greedy:'Deadlines / String 2', graph:'Start node' },
-    n:   { sliding:'Target', dp:'Target / n', greedy:'Slots / Amount', graph:'Node count' },
+    arr: { sliding:'Array (comma sep)', dp:'Values / Edges', greedy:'Values / Edges', graph:'Edges (a-b or a-b-w)', sliding2:'Array', twoptr:'Heights (comma sep)', bsearch:'Array (comma sep)', stack:'Values (comma sep)', backtrack:'Numbers (comma sep)', dpx:'Values (comma sep)' },
+    str: { sliding:'String', dp:'String 1', greedy:'String', graph:'String', sliding2:'String s', twoptr:'', bsearch:'', stack:'Brackets / String', backtrack:'', dpx:'String' },
+    k:   { sliding:'k (window size)', dp:'Weights / String 2', greedy:'Deadlines / String 2', graph:'Start node', sliding2:'Pattern t', twoptr:'', bsearch:'', stack:'', backtrack:'', dpx:'Word dict (comma sep)' },
+    n:   { sliding:'Target', dp:'Target / n', greedy:'Slots / Amount', graph:'Node count', sliding2:'', twoptr:'', bsearch:'Target / hours', stack:'', backtrack:'Target', dpx:'n / k' },
   };
   function lbl(field, tid) { return LABELS[field][tid] || field; }
 
