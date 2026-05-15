@@ -330,7 +330,8 @@
     const progress = ProgressService;
     const router = Router;
     const filter = signal("");
-    const collapsed = {};
+    const collapsed = { java:true, golang:true, python:true, microservices:true, sysdesign:true, dsa:true };
+    let debounceT = null;
 
     const areas = [
       { key: "java",          label: "Java" },
@@ -343,17 +344,23 @@
 
     function render() {
       const q = filter();
-      const matches = q ? topics.search(q).map(t => t.id) : null;
       const active = router.current().path.replace(/^\//, "");
+
       const blocks = areas.map(a => {
-        const list = topics.byArea(a.key).filter(t => !matches || matches.includes(t.id));
-        const ratio = progress.ratio(topics.byArea(a.key).map(t => t.id));
-        const isOpen = !collapsed[a.key] || (q && list.length > 0);
-        if (q && list.length === 0) return '';
-        const topicItems = list.map(t => `
+        const areaTopics = topics.byArea(a.key);
+        const scored = areaTopics.map(t => {
+          const s = fuzzyScore(t, q);
+          return s.match ? { t, titleHl: s.titleHl } : null;
+        }).filter(Boolean);
+        if (q && scored.length === 0) return '';
+        const list = q ? scored : scored.length ? scored : areaTopics.map(t => ({ t, titleHl: esc(t.title) }));
+        const fullList = q ? scored : areaTopics.map(t => ({ t, titleHl: esc(t.title) }));
+        const ratio = progress.ratio(areaTopics.map(t => t.id));
+        const isOpen = q ? fullList.length > 0 : !collapsed[a.key];
+        const topicItems = fullList.map(({ t, titleHl }) => `
                 <li class="topic-item ${active === t.id ? "active" : ""}" data-nav="${esc(t.id)}">
                   <span class="check ${progress.isDone(t.id) ? "done" : ""}" data-check="${esc(t.id)}" title="Mark complete"></span>
-                  <span class="label">${esc(t.title)}</span>
+                  <span class="label">${titleHl}</span>
                   ${t.tag ? `<span class="pill">${esc(t.tag)}</span>` : ""}
                 </li>`).join("");
         return `
@@ -361,13 +368,10 @@
             <div class="area-title" data-toggle-area="${esc(a.key)}">
               <span class="dot ${a.key}"></span>
               <span>${esc(a.label)}</span>
-              <span class="count">${list.length}/${topics.byArea(a.key).length} · ${Math.round(ratio*100)}%</span>
+              <span class="count">${q ? fullList.length + '/' : ''}${areaTopics.length} · ${Math.round(ratio*100)}%</span>
               <span class="area-caret">${isOpen ? '▾' : '▸'}</span>
             </div>
-            ${isOpen ? `
-            <ul class="topic-list">
-              ${topicItems}
-            </ul>` : ''}
+            ${isOpen ? `<ul class="topic-list">${topicItems}</ul>` : ''}
           </div>`;
       }).join("");
 
@@ -380,12 +384,19 @@
               <small>Java · Go · Python · Microservices</small>
             </div>
           </div>
-          <input class="search" placeholder="Search topics, code, tags…" value="${esc(q)}" />
+          <input class="search" id="sidebar-search" placeholder="Search topics, code, tags… (Ctrl+K)" value="${esc(q)}" autocomplete="off" />
           ${blocks}
         </div>
       `;
 
-      host.querySelector(".search").addEventListener("input", (e) => filter.set(e.target.value));
+      const inp = host.querySelector("#sidebar-search");
+      inp.addEventListener("input", (e) => {
+        clearTimeout(debounceT);
+        debounceT = setTimeout(() => filter.set(e.target.value), 120);
+      });
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") { filter.set(""); inp.value = ""; }
+      });
 
       host.querySelectorAll("[data-toggle-area]").forEach(el => {
         el.addEventListener("click", () => {
@@ -648,15 +659,15 @@
       const topic = topics.byId(id);
       if (!topic) {
         lastTopicId = null;
-        host.innerHTML = `
-          <div class="empty">
-            <div>
-              <h2>Pick a topic on the left</h2>
-              <p>Each topic follows the mentor framework: <strong>Concept → Why → Example → Interview → Trade-offs</strong>. Use the check on the left to mark mastery; progress persists locally.</p>
-            </div>
-          </div>`;
+        host.innerHTML = '';
+        host.style.padding = '0';
+        host.style.maxWidth = '100%';
+        if (host._homeCleanup) { host._homeCleanup(); host._homeCleanup = null; }
+        host._homeCleanup = HomeComponent(host);
         return;
       }
+      host.style.padding = '';
+      host.style.maxWidth = '';
 
       const areaLabel = ({ java:"Java", golang:"Go", python:"Python", microservices:"Microservices", sysdesign:"System Design", dsa:"DSA · Algorithms" })[topic.area] || topic.area;
       const done = progress.isDone(topic.id);
@@ -761,6 +772,133 @@
     router.current.subscribe(render);
     progress.state.subscribe(render);
     render();
+  }
+
+  // HomeComponent — central entry page with 3-col grid + fuzzy search
+  function HomeComponent(host) {
+    const progress = ProgressService;
+    const router = Router;
+    const filter = signal("");
+    let debounceT = null;
+    let kHandler = null;
+
+    const areaConfig = [
+      { key: "java",          label: "Java",                   color: "var(--java)" },
+      { key: "golang",        label: "Go",                     color: "var(--golang)" },
+      { key: "python",        label: "Python",                 color: "var(--python)" },
+      { key: "microservices", label: "Microservices",          color: "var(--micro)" },
+      { key: "sysdesign",     label: "System Design",          color: "var(--sysdesign)" },
+      { key: "dsa",           label: "DSA · Algorithms",       color: "#f0883e" }
+    ];
+
+    function render() {
+      const q = filter();
+      const allTopics = TopicsService.all;
+
+      const byArea = {};
+      areaConfig.forEach(a => { byArea[a.key] = []; });
+
+      allTopics.forEach(t => {
+        const s = fuzzyScore(t, q);
+        if (s.match && byArea[t.area]) byArea[t.area].push({ t, titleHl: s.titleHl });
+      });
+
+      const total = allTopics.length;
+      const done = allTopics.filter(t => progress.isDone(t.id)).length;
+
+      const sections = areaConfig.map(a => {
+        const items = byArea[a.key] || [];
+        if (q && !items.length) return '';
+        const areaTopics = TopicsService.byArea(a.key);
+        const ratio = progress.ratio(areaTopics.map(t => t.id));
+        const doneCount = areaTopics.filter(t => progress.isDone(t.id)).length;
+        const displayItems = items.length ? items : areaTopics.map(t => ({ t, titleHl: esc(t.title) }));
+        const cards = displayItems.map(({ t, titleHl }) => `
+          <div class="home-card" data-home-nav="${esc(t.id)}">
+            <div class="home-card-bar" style="background:${a.color}"></div>
+            <div class="home-card-body">
+              <div class="home-card-title">${titleHl}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:2px">
+                ${t.tag ? `<span class="home-card-tag">${esc(t.tag)}</span>` : ''}
+                ${(t.tags || []).slice(0,2).map(tg => `<span class="home-card-kw">${esc(tg)}</span>`).join('')}
+              </div>
+            </div>
+            <div class="home-card-check ${progress.isDone(t.id) ? 'done' : ''}"></div>
+          </div>`).join('');
+        return `
+          <div class="home-section">
+            <div class="home-section-header">
+              <span class="home-section-dot" style="background:${a.color}"></span>
+              <span class="home-section-label">${a.label}</span>
+              <span class="home-section-progress">${q ? items.length + '/' : ''}${areaTopics.length} topics · ${doneCount} done · ${Math.round(ratio*100)}%</span>
+            </div>
+            <div class="home-grid">${cards}</div>
+          </div>`;
+      }).join('');
+
+      host.innerHTML = `
+        <div class="home-root">
+          <div class="home-hero">
+            <div class="home-hero-text">
+              <h1 class="home-title">Senior SDE Study Lab</h1>
+              <p class="home-sub">${total} topics · ${done} completed · Java · Go · Python · Microservices · DSA</p>
+            </div>
+            <div class="home-search-wrap">
+              <span class="home-search-icon">⌕</span>
+              <input class="home-search" id="home-search-input"
+                placeholder="Search topics, patterns, tags… (Ctrl+K)"
+                value="${esc(q)}" autocomplete="off" />
+              ${q ? `<button class="home-search-clear" id="home-clear-btn">✕</button>` : ''}
+            </div>
+            <div class="home-stats">
+              ${areaConfig.map(a => {
+                const at = TopicsService.byArea(a.key);
+                const dc = at.filter(t => progress.isDone(t.id)).length;
+                return `<div class="home-stat">
+                  <span class="home-stat-dot" style="background:${a.color}"></span>
+                  <span>${a.label}</span>
+                  <strong>${dc}/${at.length}</strong>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+          <div class="home-content">
+            ${sections || `<div class="home-empty">No topics match "<strong>${esc(q)}</strong>" — try a shorter query or different keyword.</div>`}
+          </div>
+        </div>
+      `;
+
+      const inp = host.querySelector('#home-search-input');
+      if (inp) {
+        inp.focus();
+        inp.addEventListener('input', e => {
+          clearTimeout(debounceT);
+          debounceT = setTimeout(() => filter.set(e.target.value), 120);
+        });
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Escape') { filter.set(''); inp.value = ''; }
+        });
+      }
+      const clearBtn = host.querySelector('#home-clear-btn');
+      if (clearBtn) clearBtn.addEventListener('click', () => { filter.set(''); });
+      host.querySelectorAll('[data-home-nav]').forEach(el => {
+        el.addEventListener('click', () => router.navigate('/' + el.dataset.homeNav));
+      });
+    }
+
+    filter.subscribe(render);
+    progress.state.subscribe(render);
+    render();
+
+    kHandler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        const inp = host.querySelector('#home-search-input');
+        if (inp) { inp.focus(); inp.select(); }
+      }
+    };
+    document.addEventListener('keydown', kHandler);
+    return () => { if (kHandler) document.removeEventListener('keydown', kHandler); };
   }
 
   // AppRootComponent — composes the shell
