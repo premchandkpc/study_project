@@ -426,10 +426,10 @@ function initDSAVisualizer(root, _options) {
 
   // ── INPUT BAR ──────────────────────────────────────────────
   const LABELS = {
-    arr: { sliding:'Array (comma sep)', dp:'Values / Edges', greedy:'Values / Edges', graph:'Edges (a-b or a-b-w)', sliding2:'Array', twoptr:'Heights (comma sep)', bsearch:'Array (comma sep)', stack:'Values (comma sep)', backtrack:'Numbers (comma sep)', dpx:'Values (comma sep)' },
-    str: { sliding:'String', dp:'String 1', greedy:'String', graph:'String', sliding2:'String s', twoptr:'', bsearch:'', stack:'Brackets / String', backtrack:'', dpx:'String' },
-    k:   { sliding:'k (window size)', dp:'Weights / String 2', greedy:'Deadlines / String 2', graph:'Start node', sliding2:'Pattern t', twoptr:'', bsearch:'', stack:'', backtrack:'', dpx:'Word dict (comma sep)' },
-    n:   { sliding:'Target', dp:'Target / n', greedy:'Slots / Amount', graph:'Node count', sliding2:'', twoptr:'', bsearch:'Target / hours', stack:'', backtrack:'Target', dpx:'n / k' },
+    arr: { sliding:'Array (comma sep)', dp:'Values / Edges', greedy:'Values / Edges', graph:'Edges (a-b or a-b-w)' },
+    str: { sliding:'String', dp:'String 1', greedy:'String', graph:'String' },
+    k:   { sliding:'k (window size)', dp:'Weights / String 2', greedy:'Deadlines / String 2', graph:'Start node' },
+    n:   { sliding:'Target', dp:'Target / n', greedy:'Slots / Amount', graph:'Node count' },
   };
   function lbl(field, tid) { return LABELS[field][tid] || field; }
 
