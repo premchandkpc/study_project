@@ -290,14 +290,15 @@
     const progress = ProgressService;
     const router = Router;
     const filter = signal("");
+    const collapsed = {};
 
     const areas = [
       { key: "java",          label: "Java" },
       { key: "golang",        label: "Golang" },
       { key: "python",        label: "Python" },
       { key: "microservices", label: "Microservices · System Design" },
-      { key: "sysdesign",    label: "⬡ System Design · Architecture" },
-      { key: "dsa",          label: "⚡ DSA · Algorithms" }
+      { key: "sysdesign",     label: "⬡ System Design · Architecture" },
+      { key: "dsa",           label: "⚡ DSA · Algorithms" }
     ];
 
     function render() {
@@ -307,6 +308,7 @@
       const blocks = areas.map(a => {
         const list = topics.byArea(a.key).filter(t => !matches || matches.includes(t.id));
         const ratio = progress.ratio(topics.byArea(a.key).map(t => t.id));
+        const isOpen = !collapsed[a.key];
         const activePick = window._dsaActivePick || {};
         const dsaSubNav = a.key === 'dsa' && window.DSA_ALGO_NAV
           ? `<div class="dsa-algo-subnav">${
@@ -321,48 +323,63 @@
           : '';
         return `
           <div class="area-group">
-            <div class="area-title">
+            <div class="area-title" data-toggle-area="${esc(a.key)}">
               <span class="dot ${a.key}"></span>
               <span>${esc(a.label)}</span>
               <span class="count">${list.length}/${topics.byArea(a.key).length} · ${Math.round(ratio*100)}%</span>
+              <span class="area-caret">${isOpen ? '▾' : '▸'}</span>
             </div>
+            ${isOpen ? `
             <ul class="topic-list">
               ${list.map(t => `
                 <li class="topic-item ${active === t.id ? "active" : ""}" data-nav="${esc(t.id)}">
-                  <span class="check ${progress.isDone(t.id) ? "done" : ""}" data-toggle="${esc(t.id)}" title="Mark complete"></span>
+                  <span class="check ${progress.isDone(t.id) ? "done" : ""}" data-check="${esc(t.id)}" title="Mark complete"></span>
                   <span class="label">${esc(t.title)}</span>
                   ${t.tag ? `<span class="pill">${esc(t.tag)}</span>` : ""}
                 </li>`).join("")}
             </ul>
-            ${dsaSubNav}
+            ${dsaSubNav}` : ''}
           </div>`;
       }).join("");
 
       host.innerHTML = `
-        <div class="brand">
-          <div class="logo">SDE</div>
-          <div>
-            <h1>Senior SDE Study Lab</h1>
-            <small>Java · Go · Python · Microservices</small>
+        <div class="sidebar-inner">
+          <div class="brand">
+            <div class="logo">SDE</div>
+            <div>
+              <h1>Senior SDE Study Lab</h1>
+              <small>Java · Go · Python · Microservices</small>
+            </div>
           </div>
+          <input class="search" placeholder="Search topics, code, tags…" value="${esc(q)}" />
+          ${blocks}
         </div>
-        <input class="search" placeholder="Search topics, code, tags…" value="${esc(q)}" />
-        ${blocks}
       `;
 
       host.querySelector(".search").addEventListener("input", (e) => filter.set(e.target.value));
+
+      host.querySelectorAll("[data-toggle-area]").forEach(el => {
+        el.addEventListener("click", () => {
+          const key = el.dataset.toggleArea;
+          collapsed[key] = !collapsed[key];
+          render();
+        });
+      });
+
       host.querySelectorAll("[data-nav]").forEach(el => {
         el.addEventListener("click", (e) => {
-          if (e.target.matches("[data-toggle]")) return;
+          if (e.target.matches("[data-check]")) return;
           router.navigate("/" + el.dataset.nav);
         });
       });
-      host.querySelectorAll("[data-toggle]").forEach(el => {
+
+      host.querySelectorAll("[data-check]").forEach(el => {
         el.addEventListener("click", (e) => {
           e.stopPropagation();
-          progress.toggle(el.dataset.toggle);
+          progress.toggle(el.dataset.check);
         });
       });
+
       host.querySelectorAll(".dsa-sidebar-prob").forEach(btn => {
         btn.addEventListener("click", () => {
           const { tid, pid } = btn.dataset;
