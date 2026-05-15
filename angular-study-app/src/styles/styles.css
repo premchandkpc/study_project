@@ -19,7 +19,23 @@
   --sysdesign: #26d9ff;
   --code-bg: #0d1320;
   --shadow: 0 8px 32px rgba(0,0,0,.45);
+  --kafka: #e8741a;
+  --rust: #ce422b;
+  --angular: #dd0031;
+  --react-color: #61dafb;
+  --databases: #00b4a2;
 }
+.dot.kafka { background: var(--kafka); }
+.dot.rust { background: var(--rust); }
+.dot.angular { background: var(--angular); }
+.dot.react { background: var(--react-color); }
+.dot.databases { background: var(--databases); }
+.section.kafka h2::before, .section.kafka-section h2::before { background: var(--kafka); }
+.tag.area-kafka { background: rgba(232,116,26,.15); color: var(--kafka); border-color: rgba(232,116,26,.3); }
+.tag.area-rust { background: rgba(206,66,43,.15); color: var(--rust); border-color: rgba(206,66,43,.3); }
+.tag.area-angular { background: rgba(221,0,49,.15); color: var(--angular); border-color: rgba(221,0,49,.3); }
+.tag.area-react { background: rgba(97,218,251,.15); color: var(--react-color); border-color: rgba(97,218,251,.3); }
+.tag.area-databases { background: rgba(0,180,162,.15); color: var(--databases); border-color: rgba(0,180,162,.3); }
 *,*::before,*::after { box-sizing: border-box; }
 html,body { margin:0; padding:0; height:100%; background: var(--bg); color: var(--text);
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;

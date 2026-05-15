@@ -337,7 +337,7 @@
     const topics = TopicsService;
     const progress = ProgressService;
     const router = Router;
-    const collapsed = { java:true, golang:true, python:true, microservices:true, sysdesign:true, dsa:true };
+    const collapsed = { java:true, golang:true, python:true, microservices:true, sysdesign:true, dsa:true, kafka:true, rust:true, angular:true, react:true, databases:true };
     let debounceT = null;
     let currentQ = "";
 
@@ -347,7 +347,12 @@
       { key: "python",        label: "Python" },
       { key: "microservices", label: "Microservices · System Design" },
       { key: "sysdesign",     label: "⬡ System Design · Architecture" },
-      { key: "dsa",           label: "⚡ DSA · Algorithms" }
+      { key: "dsa",           label: "⚡ DSA · Algorithms" },
+      { key: "kafka",         label: "☁ Kafka · RabbitMQ · WarpStream" },
+      { key: "rust",          label: "⚙ Rust" },
+      { key: "angular",       label: "▲ Angular" },
+      { key: "react",         label: "⚛ React" },
+      { key: "databases",     label: "🗄 Databases & Internals" }
     ];
 
     function buildBlocks(q) {
@@ -725,7 +730,7 @@
       host.style.padding = '';
       host.style.maxWidth = '';
 
-      const areaLabel = ({ java:"Java", golang:"Go", python:"Python", microservices:"Microservices", sysdesign:"System Design", dsa:"DSA · Algorithms" })[topic.area] || topic.area;
+      const areaLabel = ({ java:"Java", golang:"Go", python:"Python", microservices:"Microservices", sysdesign:"System Design", dsa:"DSA · Algorithms", kafka:"Kafka / Messaging", rust:"Rust", angular:"Angular", react:"React", databases:"Databases" })[topic.area] || topic.area;
       const done = progress.isDone(topic.id);
       const isTopicChange = topic.id !== lastTopicId;
 
@@ -849,7 +854,12 @@
       { key: "python",        label: "Python",           color: "var(--python)" },
       { key: "microservices", label: "Microservices",    color: "var(--micro)" },
       { key: "sysdesign",     label: "System Design",    color: "var(--sysdesign)" },
-      { key: "dsa",           label: "DSA · Algorithms", color: "#f0883e" }
+      { key: "dsa",           label: "DSA · Algorithms",          color: "#f0883e" },
+      { key: "kafka",         label: "Kafka / Messaging",          color: "var(--kafka)" },
+      { key: "rust",          label: "Rust",                       color: "var(--rust)" },
+      { key: "angular",       label: "Angular",                    color: "var(--angular)" },
+      { key: "react",         label: "React",                      color: "var(--react-color)" },
+      { key: "databases",     label: "Databases & Internals",      color: "var(--databases)" }
     ];
 
     function buildSections(q) {
