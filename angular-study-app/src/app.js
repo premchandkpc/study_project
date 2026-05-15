@@ -35,7 +35,12 @@
       .concat(window.PYTHON_TOPICS || [])
       .concat(window.MICRO_TOPICS || [])
       .concat(window.SYSDESIGN_TOPICS || [])
-      .concat(window.DSA_TOPICS || []);
+      .concat(window.DSA_TOPICS || [])
+      .concat(window.KAFKA_TOPICS || [])
+      .concat(window.RUST_TOPICS || [])
+      .concat(window.ANGULAR_TOPICS || [])
+      .concat(window.REACT_TOPICS || [])
+      .concat(window.DB_TOPICS || []);
     return {
       all,
       byId: (id) => all.find(t => t.id === id),
