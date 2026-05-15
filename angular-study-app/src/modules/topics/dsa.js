@@ -262,6 +262,7 @@ function initDSAVisualizer(root) {
   // ── PICK / RUN ─────────────────────────────────────────────
   function pick(tid, pid) {
     CUR_TOPIC = tid; CUR_PROB = pid;
+    window._dsaActivePick = { tid, pid };
     buildSidebar();
     const p = TOPICS[tid].problems[pid];
     buildTopBar(p, tid);

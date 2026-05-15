@@ -363,9 +363,10 @@
           progress.toggle(el.dataset.toggle);
         });
       });
-      host.querySelectorAll(".dsa-algo-btn").forEach(btn => {
+      host.querySelectorAll(".dsa-sidebar-prob").forEach(btn => {
         btn.addEventListener("click", () => {
           const { tid, pid } = btn.dataset;
+          window._dsaActivePick = { tid, pid };
           if (window._dsaPick) {
             router.navigate("/dsa-visualizer");
             window._dsaPick(tid, pid);
@@ -373,6 +374,7 @@
             window._dsaPendingPick = [tid, pid];
             router.navigate("/dsa-visualizer");
           }
+          render();
         });
       });
     }
