@@ -89,6 +89,46 @@
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[c]);
   }
+
+  /* ---------- Fuzzy search helpers --------------------------------------- */
+  function fuzzyMatch(text, query) {
+    if (!query) return { match: true, score: 0, indices: [] };
+    const t = text.toLowerCase(), q = query.toLowerCase();
+    let ti = 0, qi = 0;
+    const indices = [];
+    while (ti < t.length && qi < q.length) {
+      if (t[ti] === q[qi]) { indices.push(ti); qi++; }
+      ti++;
+    }
+    if (qi < q.length) return { match: false };
+    const consecutiveBonus = indices.reduce((acc, idx, i) => acc + (i > 0 && idx === indices[i-1]+1 ? 2 : 0), 0);
+    return { match: true, score: qi + consecutiveBonus, indices };
+  }
+
+  function fuzzyHL(text, indices) {
+    if (!indices || !indices.length) return esc(text);
+    let r = '', inM = false;
+    for (let i = 0; i < text.length; i++) {
+      const hit = indices.includes(i);
+      if (hit && !inM) { r += '<mark class="fz-hl">'; inM = true; }
+      if (!hit && inM) { r += '</mark>'; inM = false; }
+      r += esc(text[i]);
+    }
+    return inM ? r + '</mark>' : r;
+  }
+
+  function fuzzyScore(topic, q) {
+    if (!q) return { match: true, score: 0, titleHl: esc(topic.title) };
+    const titleM = fuzzyMatch(topic.title, q);
+    if (titleM.match) return { match: true, score: titleM.score + 20, titleHl: fuzzyHL(topic.title, titleM.indices) };
+    const tagM = fuzzyMatch(topic.tag || '', q);
+    if (tagM.match && q.length >= 2) return { match: true, score: tagM.score + 10, titleHl: esc(topic.title) };
+    const tagsHit = (topic.tags || []).some(tg => fuzzyMatch(tg, q).match);
+    if (tagsHit && q.length >= 2) return { match: true, score: 5, titleHl: esc(topic.title) };
+    const areaM = fuzzyMatch(topic.area, q);
+    if (areaM.match && q.length >= 2) return { match: true, score: 1, titleHl: esc(topic.title) };
+    return { match: false };
+  }
   // Tiny markdown subset: **bold**, `code`, lists, paragraphs
   function md(text) {
     if (!text) return "";
