@@ -423,7 +423,7 @@
       const progressEl = lab.querySelector("[data-flow-progress]");
       const playBtn = lab.querySelector("[data-flow-play]");
       let index = 0;
-      let playing = true;
+      let playing = false;
 
       function activateStep(nextIndex) {
         index = (nextIndex + steps.length) % steps.length;
@@ -492,7 +492,6 @@
       });
 
       activateStep(0);
-      startFlow();
     }
 
     function setupUmlLab(topic) {
@@ -509,7 +508,7 @@
       const progressEl = lab.querySelector("[data-uml-progress]");
       const playBtn = lab.querySelector("[data-uml-play]");
       let index = 0;
-      let playing = true;
+      let playing = false;
 
       function activateMessage(nextIndex) {
         index = (nextIndex + messages.length) % messages.length;
@@ -570,7 +569,6 @@
       });
 
       activateMessage(0);
-      startUml();
     }
 
     function setupArchitectureLab(topic) {
