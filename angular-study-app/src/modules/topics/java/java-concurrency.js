@@ -428,6 +428,34 @@ exec.submit(() -> {
                 <div class="cc-qa" style="display:none;font-size:10px;color:#768390;margin-top:6px;border-top:1px solid #30363d;padding-top:6px">${q.a}</div>
               </div>`).join('')}
           </div>
+
+          <!-- PATTERNS PANEL -->
+          <div class="cc-panel" id="cc-panel-patterns">
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
+              ${CC_PATTERNS.map((sc, i) => `<button class="cc-btn pat-scene${i===0?' pat-active':''}" data-scene="${i}" style="${i===0?'background:#1f6feb;border-color:#1f6feb;color:#fff;':''}font-size:10.5px">${sc.icon} ${sc.title}</button>`).join('')}
+            </div>
+            <div id="pat-subtitle" style="font-size:11px;color:#9aaabb;margin-bottom:8px;line-height:1.5"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div>
+                <div style="font-size:9px;font-weight:700;color:#f47067;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">❌ Problem</div>
+                <pre id="pat-bad-code" style="background:#0d1117;border:1px solid #3d1f1f;border-radius:6px;padding:8px;font-size:9.5px;margin:0 0 6px;overflow-x:auto;line-height:1.45;min-height:80px;white-space:pre-wrap"></pre>
+                <div id="pat-bad-state" style="min-height:70px"></div>
+              </div>
+              <div>
+                <div id="pat-fix-head" style="font-size:9px;font-weight:700;color:#3dd68c;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">✅ Fix</div>
+                <pre id="pat-good-code" style="background:#0d1117;border:1px solid #1f3d2d;border-radius:6px;padding:8px;font-size:9.5px;margin:0 0 6px;overflow-x:auto;line-height:1.45;min-height:80px;white-space:pre-wrap"></pre>
+                <div id="pat-good-state" style="min-height:70px"></div>
+              </div>
+            </div>
+            <div id="pat-note" style="background:rgba(0,0,0,.3);border-left:3px solid #58a6ff;border-radius:0 6px 6px 0;padding:7px 12px;font-size:11.5px;color:#cdd9e5;margin:8px 0 6px;min-height:36px;line-height:1.5"></div>
+            <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+              <button class="cc-btn" id="pat-prev">◀ Prev</button>
+              <button class="cc-btn" id="pat-play">▶ Play</button>
+              <button class="cc-btn" id="pat-next">Next ▶</button>
+              <button class="cc-btn" id="pat-reset">↺ Reset</button>
+              <span id="pat-step-info" style="font-size:10px;color:#768390;margin-left:4px"></span>
+            </div>
+          </div>
         </div>`;
 
       // Tab switching
@@ -576,6 +604,132 @@ exec.submit(() -> {
       });
       mount.querySelector('#cc-cb-reset').addEventListener('click', () => { cbCount = 0; renderCB(); semInfo.innerHTML = 'CyclicBarrier reset. Reusable unlike CountDownLatch.'; });
       renderCB();
+
+      // ── Patterns tab ──────────────────────────────────────────────────
+      let patScene = 0, patStep = 0, patTimer = null;
+
+      function patThreadHtml(t) {
+        const colors = { idle:'#768390', run:'#3dd68c', wait:'#f5b944', done:'#58a6ff', dead:'#f47067', parked:'#f5b944', queue:'#768390' };
+        const bgs    = { idle:'#21262d', run:'rgba(61,214,140,.1)', wait:'rgba(245,185,68,.1)', done:'rgba(88,166,255,.1)', dead:'rgba(244,112,103,.12)', parked:'rgba(245,185,68,.1)', queue:'#21262d' };
+        const c = colors[t.st] || '#768390', bg = bgs[t.st] || '#21262d';
+        return `<div style="background:${bg};border:1px solid ${c}30;border-radius:5px;padding:5px 8px;margin-bottom:4px;font-size:10px;display:flex;gap:8px;align-items:flex-start">
+          <span style="font-weight:700;color:${c};min-width:24px">${t.label}</span>
+          <div style="flex:1">
+            <div style="color:${c};font-size:8.5px;font-weight:700;text-transform:uppercase">${t.st}</div>
+            ${t.code ? `<div style="color:#cdd9e5;font-size:9px;margin-top:2px;font-family:monospace">${t.code}</div>` : ''}
+            ${t.holds ? `<span style="font-size:9px;color:#768390">holds: <span style="color:#f5b944">${t.holds}</span> </span>` : ''}
+            ${t.wants ? `<span style="font-size:9px;color:#768390">wants: <span style="color:#f47067">${t.wants}</span></span>` : ''}
+          </div>
+        </div>`;
+      }
+
+      function patCounterHtml(val) {
+        return `<div style="text-align:center;padding:6px;background:#21262d;border-radius:5px;border:1px solid #30363d;margin-top:4px">
+          <div style="font-size:9px;color:#768390">counter</div>
+          <div style="font-size:22px;font-weight:800;color:#fff;font-family:monospace">${val}</div>
+        </div>`;
+      }
+
+      function patLockBarHtml(locks) {
+        const c = l => l === 'free' ? '#3dd68c' : '#f5b944';
+        return `<div style="display:flex;gap:10px;margin-bottom:6px;font-size:9.5px">
+          <span style="color:#768390">LockA: <strong style="color:${c(locks.A)}">${locks.A}</strong></span>
+          <span style="color:#768390">LockB: <strong style="color:${c(locks.B)}">${locks.B}</strong></span>
+        </div>`;
+      }
+
+      function patPlatformHtml(platform, queue) {
+        const th = platform.map(p => {
+          const c = p.st==='idle'?'#768390':p.st==='blocked'?'#f47067':p.st==='done'?'#3dd68c':'#58a6ff';
+          const bg = p.st==='blocked'?'rgba(244,112,103,.1)':p.st==='done'?'rgba(61,214,140,.1)':'#21262d';
+          return `<div style="background:${bg};border:1px solid ${c}30;border-radius:5px;padding:4px 6px;text-align:center;font-size:9px;color:${c}">
+            <div style="font-weight:700">${p.id}</div><div>${p.label||p.st}</div>
+          </div>`;
+        }).join('');
+        return `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:5px">${th}</div>
+          ${queue>0?`<div style="background:rgba(245,185,68,.08);border:1px solid rgba(245,185,68,.3);border-radius:4px;padding:4px 8px;font-size:9.5px;color:#f5b944;text-align:center">⏳ ${queue} requests queued</div>`:''}`;
+      }
+
+      function patVtHtml(carriers, vts) {
+        const cHtml = carriers.map(c => {
+          const color = c.st==='idle'?'#768390':'#29b6cf';
+          return `<div style="background:rgba(41,182,207,.08);border:1px solid ${color}30;border-radius:4px;padding:4px 8px;font-size:9px;color:${color};text-align:center">
+            <div style="font-weight:700">OS ${c.id}</div><div>${c.label||c.st}</div>
+          </div>`;
+        }).join('');
+        const vtHtml = vts.map(v => {
+          const c = {idle:'#768390',run:'#3dd68c',parked:'#f5b944',done:'#58a6ff',queue:'#768390'}[v.st]||'#768390';
+          const bg = {idle:'#21262d',run:'rgba(61,214,140,.08)',parked:'rgba(245,185,68,.08)',done:'rgba(88,166,255,.08)',queue:'#21262d'}[v.st]||'#21262d';
+          return `<div style="background:${bg};border:1px solid ${c}25;border-radius:4px;padding:3px 6px;font-size:9px;color:${c}">${v.label||v.id}</div>`;
+        }).join('');
+        return `<div style="margin-bottom:5px">
+          <div style="font-size:8.5px;color:#768390;margin-bottom:3px">OS CARRIERS</div>
+          <div style="display:flex;gap:5px">${cHtml}</div>
+        </div>
+        <div>
+          <div style="font-size:8.5px;color:#768390;margin-bottom:3px">VIRTUAL THREADS</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">${vtHtml}</div>
+        </div>`;
+      }
+
+      function renderPatStep() {
+        const sc = CC_PATTERNS[patScene];
+        const stepCount = sc.steps.length;
+        const fixCount  = sc.fixSteps.length;
+        const badS  = sc.steps[Math.min(patStep, stepCount-1)];
+        const fixS  = sc.fixSteps[Math.min(patStep, fixCount-1)];
+
+        mount.querySelector('#pat-subtitle').textContent = sc.subtitle;
+        mount.querySelector('#pat-bad-code').textContent = sc.badCode;
+        mount.querySelector('#pat-good-code').textContent = sc.goodCode;
+
+        const noteEl = mount.querySelector('#pat-note');
+        noteEl.textContent = badS.note || '';
+        noteEl.style.borderLeftColor = badS.error ? '#f47067' : '#58a6ff';
+        noteEl.style.background = badS.error ? 'rgba(244,112,103,.06)' : 'rgba(0,0,0,.3)';
+
+        mount.querySelector('#pat-step-info').textContent = `Step ${patStep+1} / ${stepCount}`;
+
+        if (sc.id === 'race') {
+          mount.querySelector('#pat-bad-state').innerHTML  = badS.threads.map(patThreadHtml).join('') + patCounterHtml(badS.counter);
+          mount.querySelector('#pat-good-state').innerHTML = fixS.threads.map(patThreadHtml).join('') + patCounterHtml(fixS.counter);
+        } else if (sc.id === 'deadlock') {
+          mount.querySelector('#pat-bad-state').innerHTML  = patLockBarHtml(badS.locks)  + badS.threads.map(patThreadHtml).join('');
+          mount.querySelector('#pat-good-state').innerHTML = patLockBarHtml(fixS.locks)  + fixS.threads.map(patThreadHtml).join('');
+        } else if (sc.id === 'vthreads') {
+          mount.querySelector('#pat-bad-state').innerHTML  = patPlatformHtml(badS.platform, badS.queue||0);
+          mount.querySelector('#pat-good-state').innerHTML = patVtHtml(fixS.carriers, fixS.vts);
+          noteEl.textContent = (badS.note||'') + '\nFix: ' + (fixS.note||'');
+        }
+      }
+
+      function patStop() { if (patTimer) clearInterval(patTimer); patTimer=null; mount.querySelector('#pat-play').textContent='▶ Play'; }
+      function patStart() {
+        patStop();
+        mount.querySelector('#pat-play').textContent='⏸ Pause';
+        patTimer = setInterval(() => {
+          const maxStep = CC_PATTERNS[patScene].steps.length - 1;
+          if (patStep < maxStep) { patStep++; renderPatStep(); } else { patStop(); }
+        }, 1700);
+      }
+
+      mount.querySelectorAll('.pat-scene').forEach((btn, i) => {
+        btn.addEventListener('click', () => {
+          patStop(); patScene = i; patStep = 0;
+          mount.querySelectorAll('.pat-scene').forEach((b, j) => {
+            b.style.background = j===i ? '#1f6feb' : '';
+            b.style.borderColor = j===i ? '#1f6feb' : '';
+            b.style.color = j===i ? '#fff' : '';
+          });
+          renderPatStep();
+        });
+      });
+      mount.querySelector('#pat-prev').addEventListener('click', () => { patStop(); if (patStep>0) { patStep--; renderPatStep(); } });
+      mount.querySelector('#pat-next').addEventListener('click', () => { patStop(); if (patStep < CC_PATTERNS[patScene].steps.length-1) { patStep++; renderPatStep(); } });
+      mount.querySelector('#pat-play').addEventListener('click', () => patTimer ? patStop() : patStart());
+      mount.querySelector('#pat-reset').addEventListener('click', () => { patStop(); patStep=0; renderPatStep(); });
+
+      renderPatStep();
     },
 
     concept:
