@@ -211,18 +211,7 @@ function initDSAVisualizer(root) {
 
   // ── SIDEBAR ────────────────────────────────────────────────
   function buildSidebar() {
-    let h = '';
-    for (const [tid, t] of Object.entries(TOPICS)) {
-      h += `<div class="dsa-topic-header">${t.label}</div>`;
-      for (const [pid, p] of Object.entries(t.problems)) {
-        const a = (CUR_PROB === pid) ? 'active' : '';
-        h += `<button class="dsa-prob-btn ${a}" data-tid="${tid}" data-pid="${pid}">${p.label}</button>`;
-      }
-    }
-    root.querySelector('#dsa-sidebar').innerHTML = h;
-    root.querySelectorAll('.dsa-prob-btn').forEach(btn => {
-      btn.addEventListener('click', () => pick(btn.dataset.tid, btn.dataset.pid));
-    });
+    /* internal sidebar removed — navigation is in the main app left sidebar */
   }
 
   // ── INPUT BAR ──────────────────────────────────────────────
@@ -1479,8 +1468,7 @@ def coin_change(coins: list[int], amount: int) -> int:
         style.textContent = `
 .dsa-viz{font-family:'Courier New',monospace;background:#0d1117;color:#e6edf3;border-radius:8px;overflow:hidden}
 .dsa-viz .dsa-app{display:flex;height:640px;overflow:hidden}
-.dsa-viz .dsa-sidebar{width:220px;background:#161b22;border-right:1px solid #30363d;padding:12px;overflow-y:auto;flex-shrink:0}
-.dsa-viz .dsa-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.dsa-viz .dsa-main{flex:1;display:flex;flex-direction:column;overflow:hidden;width:100%}
 .dsa-viz .dsa-top-bar{background:#161b22;border-bottom:1px solid #30363d;padding:8px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:48px}
 .dsa-viz .dsa-viz-area{flex:1;padding:14px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
 .dsa-viz .dsa-bottom-bar{background:#161b22;border-top:1px solid #30363d;padding:10px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -1557,7 +1545,7 @@ def coin_change(coins: list[int], amount: int) -> int:
 .dsa-viz .dsa-decision-chip.bad{border-color:#f85149;background:#da363622}
 .dsa-viz .dsa-decision-chip.bad strong{color:#f85149}
 .dsa-viz .dsa-graph-svg-box{background:#161b22;border-radius:8px;border:1px solid #30363d;display:inline-block}
-@media (max-width:760px){.dsa-viz .dsa-app{height:760px;flex-direction:column}.dsa-viz .dsa-sidebar{width:auto;max-height:180px;border-right:none;border-bottom:1px solid #30363d}.dsa-viz .dsa-prompt-grid{grid-template-columns:1fr}}
+@media (max-width:760px){.dsa-viz .dsa-app{height:auto;flex-direction:column}.dsa-viz .dsa-prompt-grid{grid-template-columns:1fr}}
         `;
         document.head.appendChild(style);
       }
@@ -1565,13 +1553,9 @@ def coin_change(coins: list[int], amount: int) -> int:
       mount.innerHTML = `
         <div class="dsa-viz">
           <div class="dsa-app">
-            <div class="dsa-sidebar">
-              <h3>⚡ DSA Visual</h3>
-              <div id="dsa-sidebar"></div>
-            </div>
             <div class="dsa-main">
               <div class="dsa-top-bar" id="dsa-top-bar">
-                <span style="color:#8b949e;font-size:12px">← select a problem</span>
+                <span style="color:#8b949e;font-size:12px">← select a problem from the left sidebar</span>
               </div>
               <div class="dsa-viz-area" id="dsa-viz-area">
                 <div class="dsa-expl-box">
