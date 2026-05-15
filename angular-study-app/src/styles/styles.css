@@ -157,6 +157,9 @@ pre[class*="language-"] {
 .trade-card ul { margin: 0; padding-left: 18px; }
 .trade-card li { font-size: 13px; margin: 3px 0; }
 
+.section.gotchas h2::before { background: var(--bad); }
+.gotcha-item { background: #3d1f1f; border: 1px solid #f47067; border-radius: 6px; padding: 8px 12px; font-size: 13px; color: #cdd9e5; margin-bottom: 6px; line-height: 1.5; }
+
 .empty {
   display:grid; place-items:center; height: 70vh; color: var(--muted); text-align:center;
 }

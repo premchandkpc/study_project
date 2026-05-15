@@ -105,6 +105,17 @@
     },
 
     visual: function(mount) {
+      const CC_TRICKS = [
+        { wrong: 'synchronized(lock) { dbCall(); } in a virtual thread. Assumed vthread parks, carrier is freed.', right: 'synchronized PINS vthread to carrier. Carrier OS thread blocks during I/O. Use ReentrantLock — vthread parks, carrier freed.' },
+        { wrong: 'StampedLock sl = new StampedLock(); long s1 = sl.writeLock(); long s2 = sl.writeLock(); // nested re-entry', right: 'StampedLock is NOT reentrant. Second writeLock() call deadlocks forever. Never call lock() while already holding a stamp.' },
+        { wrong: 'volatile int counter; counter++; // assumed atomic increment', right: 'volatile gives visibility not atomicity. counter++ = read + increment + write (3 ops, not atomic). Use AtomicInteger.incrementAndGet().' },
+        { wrong: 'ReentrantLock lock = new ReentrantLock(); lock.lock(); doWork(); lock.unlock(); // outside try-finally', right: 'doWork() throws exception → unlock() skipped → permanent deadlock. ALWAYS: lock.lock(); try { ... } finally { lock.unlock(); }' },
+      ];
+      const CC_QS = [
+        { q: 'Difference between virtual threads and reactive (WebFlux)?', a: 'Both achieve high concurrency with few OS threads. Virtual threads keep imperative blocking programming model — linear stack traces, ThreadLocal works, easy debugging. Reactive uses async non-blocking APIs — higher throughput ceiling but steep learning curve. For most 2025 services: virtual threads are the better default.' },
+        { q: 'Why does synchronized pin virtual threads?', a: 'synchronized uses JVM monitor (biased/thin/fat lock). When a virtual thread blocks inside synchronized (e.g. waiting for I/O or lock), the JVM cannot unmount it from the carrier — the carrier OS thread blocks too. JEP 444 is fixing this for Java 25. Until then, use ReentrantLock for I/O-bound virtual-thread code.' },
+        { q: 'CountDownLatch vs CyclicBarrier — when to use which?', a: 'CountDownLatch: ONE-SHOT gate, N countDown() calls open it. Perfect for: start N workers then wait for all (or fire N workers simultaneously). Cannot reset. CyclicBarrier: ALL N threads meet at barrier, then all released together. REUSABLE — resets automatically. Use for iterative parallel phases (game loop, matrix multiply phases).' },
+      ];
       mount.innerHTML = `
         <style>
           .cc-wrap { font-family: monospace; color: #cdd9e5; padding: 12px; }
@@ -177,6 +188,7 @@
             <button class="cc-tab active" data-tab="threads">Thread Types</button>
             <button class="cc-tab" data-tab="locks">Lock Types</button>
             <button class="cc-tab" data-tab="sync">Synchronizers</button>
+            <button class="cc-tab" data-tab="tricks">⚠️ Tricks + Interview</button>
           </div>
 
           <!-- THREAD PANEL -->
@@ -291,6 +303,26 @@
               </div>
             </div>
             <div class="cc-info" id="cc-sync-info">Click buttons to see each synchronizer in action. Semaphore = pool of permits. CountDownLatch = one-time gate. CyclicBarrier = reusable rendezvous.</div>
+          </div>
+
+          <!-- TRICKS + INTERVIEW PANEL -->
+          <div class="cc-panel" id="cc-panel-tricks">
+            <div style="font-size:10px;color:#768390;margin-bottom:8px">⚠️ WRONG assumption vs ✓ CORRECT behavior — common concurrency gotchas</div>
+            ${CC_TRICKS.map(t => `
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <div style="background:#3d1f1f;border:1px solid #f47067;border-radius:6px;padding:8px;font-size:10px;color:#cdd9e5">
+                  <div style="color:#f47067;font-weight:bold;margin-bottom:4px">⚠️ WRONG</div>${t.wrong}
+                </div>
+                <div style="background:#1f3d2d;border:1px solid #57ab5a;border-radius:6px;padding:8px;font-size:10px;color:#cdd9e5">
+                  <div style="color:#57ab5a;font-weight:bold;margin-bottom:4px">✓ CORRECT</div>${t.right}
+                </div>
+              </div>`).join('')}
+            <div style="font-size:10px;color:#768390;margin:10px 0 6px">💬 Interview Flash Cards — click to reveal answer</div>
+            ${CC_QS.map(q => `
+              <div style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:8px;margin-bottom:6px;cursor:pointer" onclick="const a=this.querySelector('.cc-qa');a.style.display=a.style.display==='none'?'block':'none'">
+                <div style="font-size:11px;color:#cdd9e5;font-weight:bold">Q: ${q.q}</div>
+                <div class="cc-qa" style="display:none;font-size:10px;color:#768390;margin-top:6px;border-top:1px solid #30363d;padding-top:6px">${q.a}</div>
+              </div>`).join('')}
           </div>
         </div>`;
 
@@ -443,13 +475,13 @@
     },
 
     concept:
-`Three layers:
-1. **\`Thread\`** — OS thread, ~1 MB stack, expensive context-switch.
-2. **\`ExecutorService\`** + pools — reuse OS threads. Backed by a queue. Variants: fixed, cached, scheduled, work-stealing (\`ForkJoinPool\`).
-3. **Virtual threads (Project Loom, Java 21 GA)** — JVM-scheduled, mounted on carrier threads. Millions per JVM. Blocking I/O parks them cheaply.
+`**L1 (30s ELI5):** Threads are mini-programs running simultaneously. Like workers sharing a factory — need locks so they don't break things. Java 21 virtual threads: 10 million lightweight threads instead of 10,000 real ones.
 
-Locks: \`synchronized\` → \`ReentrantLock\` → \`ReadWriteLock\` → \`StampedLock\` (optimistic).
-Synchronizers: \`Semaphore\` (permits), \`CountDownLatch\` (one-shot), \`CyclicBarrier\` (reusable), \`Phaser\` (dynamic).`,
+**L2 (2min core):** Platform threads = 1:1 OS threads (~1MB stack). Virtual threads (Java 21): heap-stack, mounts on carrier OS thread. Blocking I/O parks vthread → unmounts from carrier → carrier FREE for others. Lock ladder: \`synchronized\` → \`ReentrantLock\` → \`ReadWriteLock\` → \`StampedLock\` (optimistic reads). Synchronizers: Semaphore (permits), CountDownLatch (one-shot gate), CyclicBarrier (reusable rendezvous).
+
+**L3 (10min edge cases):** \`synchronized\` PINS virtual thread to carrier (blocks carrier OS thread — defeats purpose). StampedLock NOT reentrant: calling \`lock()\` inside \`lock()\` = deadlock. CyclicBarrier: one thread dies = all waiters get BrokenBarrierException. ThreadLocal leaks in pooled threads — always \`remove()\` in finally. volatile does NOT provide atomicity for compound ops (check-then-act).
+
+**L4 (30min deep):** JMM happens-before: lock release → lock acquire, volatile write → volatile read, Thread.start() → first action in started thread. Without happens-before: stale cached values, reordered writes visible. VarHandle: acquire/release/opaque memory order semantics for lock-free structures. ForkJoinPool work-stealing: each worker has a deque; idle workers steal from tail of others. Virtual thread continuation: stack stored as heap object, mounted/unmounted via JVM internal \`Continuation.yield()/run()\`.`,
     why:
 `Virtual threads collapse the **thread-per-request vs reactive** debate. You write straight-line blocking code; the JVM gives you reactive-grade scalability. Lock choice determines virtual thread friendliness and contention patterns.`,
     example: {
@@ -519,6 +551,14 @@ barrier.await();  // all 4 must arrive before any proceeds`,
 `**CountDownLatch**: one-way, one-shot. Either many threads wait for 1 signal, or 1 thread waits for N completions. Cannot reuse. **CyclicBarrier**: N threads all wait for each other at a rendezvous point. Resets automatically after all arrive. Optional barrierAction fires when all arrive. Use CyclicBarrier for iterative parallel algorithms (game loops, parallel matrix ops, phases).`,
         followUps: ["Can CountDownLatch deadlock?", "Phaser vs CyclicBarrier?"]
       }
+    ],
+    gotchas: [
+      "synchronized pins virtual threads: carrier OS thread blocks during I/O — same as platform thread. Use ReentrantLock for virtual-thread code.",
+      "StampedLock is NOT reentrant: calling lock() inside the same thread that holds a stamp = deadlock (no exception, just hangs).",
+      "CyclicBarrier: if one thread throws exception before barrier.await(), all other waiters get BrokenBarrierException. Must handle.",
+      "volatile gives VISIBILITY not ATOMICITY: volatile int x; x++ is still a race (read-increment-write = 3 ops). Use AtomicInteger.",
+      "ReentrantLock: forgetting unlock() in finally = permanent deadlock for all threads waiting on that lock.",
+      "ThreadLocal leak in virtual threads: child virtual threads inherit parent's ThreadLocal values — surprising shared state."
     ],
     tradeoffs: {
       pros: [

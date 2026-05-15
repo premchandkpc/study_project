@@ -741,6 +741,11 @@
             <h2>5 · Trade-offs</h2>
             ${tradeHtml}
           </div>` : ""}
+        ${topic.gotchas && topic.gotchas.length ? `
+          <div class="section gotchas">
+            <h2>6 · Gotchas</h2>
+            ${topic.gotchas.map(g => `<div class="gotcha-item">⚠️ ${esc(g)}</div>`).join("")}
+          </div>` : ""}
       `;
 
       host.querySelectorAll("[data-copy]").forEach(btn => {

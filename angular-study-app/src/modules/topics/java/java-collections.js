@@ -254,6 +254,17 @@
     },
 
     visual: function(mount) {
+      const CV_TRICKS = [
+        { wrong: 'class User { } → put in HashMap. Forgot to override hashCode/equals. Expected: one entry per unique User.', right: 'Without override: Object.hashCode() = identity hash. Two equal Users → different buckets → duplicates. Must override both.' },
+        { wrong: 'for (Item i : list) { if (condition) list.remove(i); } // remove during for-each', right: 'ConcurrentModificationException. Use: list.removeIf(i -> condition) or collect indices then remove after loop.' },
+        { wrong: 'List<Integer> queue = new LinkedList<>(); // used as queue for BFS, assumed O(1) everywhere', right: 'LinkedList.get(index) is O(n). Poor cache locality. Use ArrayDeque for queue/stack. Use ArrayList if random access needed.' },
+        { wrong: 'HashMap<String,List<String>> map = new HashMap<>(); map.get(key).add(val); // NPE if key absent', right: 'Use computeIfAbsent: map.computeIfAbsent(key, k -> new ArrayList<>()).add(val). Atomic, no NPE.' },
+      ];
+      const CV_QS = [
+        { q: 'When does HashMap become O(n) instead of O(1)?', a: 'Two scenarios: (1) Bad hashCode() — all keys hash to same bucket → O(n) linked list scan. Java 8 fixes worst case to O(log k) via treeification at 8 nodes. (2) Resize — when size > capacity × 0.75, all entries rehashed into 2× array — O(n) one-time cost. Pre-size to avoid.' },
+        { q: 'HashMap vs ConcurrentHashMap — what breaks without CHM?', a: 'Concurrent puts: (1) two threads resize simultaneously → entries lost or infinite loop in Java 6 (fixed in 8 but still data corruption). (2) Read during write: inconsistent partial state. CHM Java 8: per-bin CAS for empty bucket, synchronized on first node for collision. Reads fully lock-free.' },
+        { q: 'LinkedList vs ArrayList — is LinkedList ever better?', a: 'Almost never in practice. LinkedList O(1) insert at ends sounds good but ArrayDeque beats it for queue/stack. LinkedList has terrible cache locality — each Node is a separate heap object causing cache misses. ArrayList O(1) append, O(n) insert middle (copy). LinkedList theoretically wins only for frequent insert/delete in MIDDLE of large list with existing iterator — rare in practice.' },
+      ];
       mount.innerHTML = `
         <style>
           .cv-wrap { font-family: monospace; color: #cdd9e5; padding: 12px; }
@@ -306,6 +317,7 @@
             <button class="cv-tab active" data-tab="hm">HashMap Internals</button>
             <button class="cv-tab" data-tab="arr">ArrayList Growth</button>
             <button class="cv-tab" data-tab="cmp">Complexity Table</button>
+            <button class="cv-tab" data-tab="tricks">⚠️ Tricks + Interview</button>
           </div>
 
           <!-- HASHMAP PANEL -->
@@ -368,6 +380,26 @@
               </tbody>
             </table>
             <div class="cv-info" style="margin-top:8px"><span class="ok">O(1)</span> = constant time. <span class="kw">O(log n)</span> = logarithmic. <span style="color:#f47067">O(n)</span> = linear. "avg" = average case assuming good hash distribution. ConcurrentHashMap reads are lock-free since Java 8.</div>
+          </div>
+
+          <!-- TRICKS + INTERVIEW PANEL -->
+          <div class="cv-panel" id="cv-panel-tricks">
+            <div style="font-size:10px;color:#768390;margin-bottom:8px">⚠️ WRONG assumption vs ✓ CORRECT behavior — common collections gotchas</div>
+            ${CV_TRICKS.map(t => `
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <div style="background:#3d1f1f;border:1px solid #f47067;border-radius:6px;padding:8px;font-size:10px;color:#cdd9e5">
+                  <div style="color:#f47067;font-weight:bold;margin-bottom:4px">⚠️ WRONG</div>${t.wrong}
+                </div>
+                <div style="background:#1f3d2d;border:1px solid #57ab5a;border-radius:6px;padding:8px;font-size:10px;color:#cdd9e5">
+                  <div style="color:#57ab5a;font-weight:bold;margin-bottom:4px">✓ CORRECT</div>${t.right}
+                </div>
+              </div>`).join('')}
+            <div style="font-size:10px;color:#768390;margin:10px 0 6px">💬 Interview Flash Cards — click to reveal answer</div>
+            ${CV_QS.map(q => `
+              <div style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:8px;margin-bottom:6px;cursor:pointer" onclick="const a=this.querySelector('.cv-qa');a.style.display=a.style.display==='none'?'block':'none'">
+                <div style="font-size:11px;color:#cdd9e5;font-weight:bold">Q: ${q.q}</div>
+                <div class="cv-qa" style="display:none;font-size:10px;color:#768390;margin-top:6px;border-top:1px solid #30363d;padding-top:6px">${q.a}</div>
+              </div>`).join('')}
           </div>
         </div>`;
 
@@ -529,11 +561,13 @@
     },
 
     concept:
-`Java Collections Framework provides generic, reusable data structures:
-- **List** — ordered, indexed, duplicates allowed. \`ArrayList\` (default), \`LinkedList\` (Deque only), \`CopyOnWriteArrayList\` (thread-safe reads).
-- **Set** — no duplicates. \`HashSet\` O(1), \`LinkedHashSet\` insertion-ordered, \`TreeSet\` sorted O(log n).
-- **Map** — key→value. \`HashMap\` O(1) avg, \`LinkedHashMap\` LRU cache, \`TreeMap\` sorted keys, \`ConcurrentHashMap\` thread-safe.
-- **Queue/Deque** — \`ArrayDeque\` (fastest), \`PriorityQueue\` (min-heap), \`LinkedBlockingQueue\` (producer-consumer).`,
+`**L1 (30s ELI5):** Collections are containers: List (ordered shelf), Set (no-duplicates jar), Map (labeled drawers). Pick by what you need: order, fast lookup, or key-value pairs.
+
+**L2 (2min core):** ArrayList: dynamic array, O(1) random access, grows 1.5× on full. HashMap: array of buckets, \`hash & (n-1)\` index, linked-list per bucket, treeify ≥ 8 nodes. ConcurrentHashMap: per-bin CAS + synchronized, lock-free reads since Java 8. TreeMap/TreeSet: red-black tree, O(log n) all ops, sorted order. ArrayDeque: fastest queue/stack, never use Stack class.
+
+**L3 (10min edge cases):** HashMap allows null key (bucket[0]); TreeMap throws NPE on null key. Override both \`hashCode()\` AND \`equals()\` for custom Map keys — same contract required. Pre-size HashMap: \`new HashMap<>(expected * 4/3 + 1)\` to avoid resize. ConcurrentModificationException on modification during iteration — use \`removeIf()\` or \`iterator.remove()\`. \`CopyOnWriteArrayList.iterator()\` is a snapshot — iterates stale data during concurrent writes.
+
+**L4 (30min deep):** HashMap internals: load factor 0.75 → resize at 75% fill, rehash all entries to new 2× array. Bucket index: \`hash & (n-1)\` works because n is always power-of-2 (fast modulo). Hash spreading: \`h ^ (h >>> 16)\` mixes high bits into low — reduces collision in small tables. Treeification: 8 nodes per bucket AND table capacity ≥ 64. ConcurrentHashMap: CAS on empty buckets, synchronized on first node for collision chains. EnumMap: array-backed with \`enum.ordinal()\` as index — fastest possible Map.`,
     why:
 `Choosing the wrong collection is a classic senior interview trap. \`LinkedList\` for a list (terrible cache locality), \`HashMap\` with wrong equals/hashCode (all O(n)), \`ArrayList\` without pre-sizing (repeated resizes), \`HashMap\` in concurrent code (data corruption). Know the internals.`,
     example: {
@@ -596,6 +630,14 @@ System.out.println(maxHeap.poll()); // 9`,
 `Almost never, in practice. LinkedList is theoretically O(1) at ends but ArrayList is also O(1) amortized at end. LinkedList has terrible **cache locality** — each node is a separate heap object, causing cache misses. ArrayDeque beats LinkedList for queue/deque usage and ArrayList beats it for random access. LinkedList wins only for: concurrent modification during iteration with ListIterator, or when you need the Deque interface without ArrayDeque being available.`,
         followUps: ["What is cache line size?", "How does sequential memory access beat linked structures?"]
       }
+    ],
+    gotchas: [
+      "HashMap null key → bucket[0] (allowed). TreeMap null key → NullPointerException. Hashtable null key → NPE. Know the difference.",
+      "Override BOTH hashCode() AND equals() for Map keys. Missing either: entries lost or duplicated. Use Objects.hash() + Objects.equals().",
+      "LinkedList as List is almost always wrong: terrible cache locality (each node separate heap object), O(n) random access. Use ArrayList.",
+      "ConcurrentModificationException: modifying collection while iterating. Fix: use iterator.remove(), removeIf(), or collect-then-modify.",
+      "CopyOnWriteArrayList iterator is a snapshot: sees data at time of iterator creation, not current state. Stale reads during concurrent writes.",
+      "HashMap pre-size: new HashMap<>(expectedSize * 4/3 + 1) avoids resize. Forgetting causes O(n) rehash when load factor exceeded."
     ],
     tradeoffs: {
       pros: [

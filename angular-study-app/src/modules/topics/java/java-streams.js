@@ -248,6 +248,17 @@
     },
 
     visual: function(mount) {
+      const SV_TRICKS = [
+        { wrong: 'Stream<String> s = list.stream().filter(...); s.collect(...); s.count(); // reuse stream', right: 'Stream is single-use. After terminal op: IllegalStateException. Assign to List first, then stream again.' },
+        { wrong: 'orders.parallelStream().map(o -> dbRepo.find(o.id())).collect(toList()) // parallel for speed', right: 'parallelStream() uses common FJP shared JVM-wide. DB calls block FJP threads → starves ALL parallel streams. Use sequential or custom pool.' },
+        { wrong: '.sorted().limit(5) // assumed: stop after 5 elements found, short-circuit', right: 'sorted() buffers ALL elements then sorts before limit() runs. O(n log n) always. No short-circuit with sorted().' },
+        { wrong: 'Collectors.toMap(User::id, u -> u) // assumes unique ids in practice', right: 'Duplicate key throws IllegalStateException. Always: toMap(User::id, u -> u, (a, b) -> b) or groupingBy if duplicates expected.' },
+      ];
+      const SV_QS = [
+        { q: 'When NOT to use parallelStream?', a: 'Three red flags: (1) Tasks share downstream resource (DB, HTTP) — FJP threads block, starve all parallel streams in JVM. (2) Pipeline is short (< 10k elements) — split overhead dominates. (3) Ordering matters — findFirst semantics differ from findAny in parallel, forEachOrdered kills parallelism.' },
+        { q: 'Difference between map and flatMap?', a: 'map is 1→1: Stream<T> → Stream<R>. flatMap is 1→N: Stream<Stream<R>> → Stream<R> via flattening. Use flatMap to expand collections (List<List<T>> → List<T>), parse multi-line input, or chain Optional results. Note: flatMap eagerly starts each inner stream, breaking lazy fusion.' },
+        { q: 'Why does sorted() + limit() not short-circuit?', a: 'sorted() is a stateful op: must see ALL elements to determine the sort order before outputting any. Even if you only want limit(3), sorted() still processes every element. If you need top-N efficiently, use a PriorityQueue or Collectors.toList() + Collections.sort() with subList.' },
+      ];
       mount.innerHTML = `
         <style>
           .sv-wrap { font-family: monospace; color: #cdd9e5; padding: 12px; }
@@ -284,7 +295,11 @@
         </style>
         <div class="sv-wrap">
           <div class="sv-title">Live Stream Pipeline — Watch Elements Flow Through Stages</div>
-
+          <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap">
+            <button class="sv-tab" data-tab="pipe" style="background:#1f6feb;border:1px solid #1f6feb;color:#fff;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:monospace">Pipeline Demo</button>
+            <button class="sv-tab" data-tab="tricks" style="background:#21262d;border:1px solid #30363d;color:#768390;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:monospace">⚠️ Tricks + Interview</button>
+          </div>
+          <div id="sv-panel-pipe">
           <div class="sv-pipeline">
             <div class="sv-stage" id="sv-src">
               <div class="sv-stage-name">Source</div>
@@ -324,6 +339,26 @@
 
           <div class="sv-info" id="sv-info">Pipeline built lazily. Click "Run Pipeline" to trigger the terminal op and watch elements flow through.</div>
           <div class="sv-result" id="sv-result">// result will appear here</div>
+          </div>
+
+          <div id="sv-panel-tricks" style="display:none">
+            <div style="font-size:10px;color:#768390;margin-bottom:8px">⚠️ WRONG assumption vs ✓ CORRECT behavior — common Streams gotchas</div>
+            ${SV_TRICKS.map(t => `
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <div style="background:#3d1f1f;border:1px solid #f47067;border-radius:6px;padding:8px;font-size:10px;color:#cdd9e5">
+                  <div style="color:#f47067;font-weight:bold;margin-bottom:4px">⚠️ WRONG</div>${t.wrong}
+                </div>
+                <div style="background:#1f3d2d;border:1px solid #57ab5a;border-radius:6px;padding:8px;font-size:10px;color:#cdd9e5">
+                  <div style="color:#57ab5a;font-weight:bold;margin-bottom:4px">✓ CORRECT</div>${t.right}
+                </div>
+              </div>`).join('')}
+            <div style="font-size:10px;color:#768390;margin:10px 0 6px">💬 Interview Flash Cards — click to reveal answer</div>
+            ${SV_QS.map(q => `
+              <div style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:8px;margin-bottom:6px;cursor:pointer" onclick="const a=this.querySelector('.sv-qa');a.style.display=a.style.display==='none'?'block':'none'">
+                <div style="font-size:11px;color:#cdd9e5;font-weight:bold">Q: ${q.q}</div>
+                <div class="sv-qa" style="display:none;font-size:10px;color:#768390;margin-top:6px;border-top:1px solid #30363d;padding-top:6px">${q.a}</div>
+              </div>`).join('')}
+          </div>
         </div>`;
 
       const data = [
@@ -436,13 +471,29 @@
         next();
       });
       mount.querySelector('#sv-reset').addEventListener('click', reset);
+
+      // Tab switching
+      mount.querySelectorAll('.sv-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          mount.querySelectorAll('.sv-tab').forEach(t => {
+            t.style.background = '#21262d'; t.style.borderColor = '#30363d'; t.style.color = '#768390';
+          });
+          tab.style.background = '#1f6feb'; tab.style.borderColor = '#1f6feb'; tab.style.color = '#fff';
+          const isPipe = tab.dataset.tab === 'pipe';
+          mount.querySelector('#sv-panel-pipe').style.display = isPipe ? 'block' : 'none';
+          mount.querySelector('#sv-panel-tricks').style.display = isPipe ? 'none' : 'block';
+        });
+      });
     },
 
     concept:
-`A **Stream** is a lazy, pull-based pipeline of operations over a Spliterator source.
-- **Intermediate ops** (\`filter\`, \`map\`, \`flatMap\`) are lazy; nothing runs until a **terminal op** (\`collect\`, \`reduce\`, \`forEach\`).
-- **Stateless** ops fuse and parallelise well; **stateful** ops (\`sorted\`, \`distinct\`) buffer.
-- \`parallelStream()\` uses common \`ForkJoinPool\`; tune with \`-Djava.util.concurrent.ForkJoinPool.common.parallelism\`.`,
+`**L1 (30s ELI5):** Stream is an assembly line. Raw materials (list) → filter belt → transform belt → collection box. Nothing moves until the collection box is attached.
+
+**L2 (2min core):** Lazy pull model: intermediate ops (filter, map, flatMap) store predicates/functions, return new Stream wrappers. Terminal op (collect, reduce, forEach) drives the loop — calls \`spliterator.tryAdvance()\` one element at a time through ALL stages. Stateless ops fuse in a single pass. Stateful ops (sorted, distinct) buffer ALL elements before outputting any.
+
+**L3 (10min edge cases):** Stream consumed after first terminal op — reuse throws \`IllegalStateException\`. \`parallelStream()\` uses shared common ForkJoinPool — blocking tasks starve ALL parallel streams in JVM. \`sorted() + limit(n)\` is NOT short-circuit: sorted buffers all first. \`Collectors.toMap()\` throws \`IllegalStateException\` on duplicate key — always pass merge function. \`Files.lines()\` must be closed or file handle leaks.
+
+**L4 (30min deep):** Spliterator characteristics: SIZED, ORDERED, SORTED, DISTINCT, SUBSIZED — affect fusion and parallel splitting. Op fusion in ReferencePipeline: linked list of StatelessOp/StatefulOp wrappers; terminal creates sink chain, processes each element through all sinks in one loop. Parallel: ForkJoinPool splits via \`trySplit()\`; leaf tasks run sequential sub-pipelines; results merged via \`Collector.combiner()\`. \`Collector.Characteristics.CONCURRENT\`: skips combiner — single shared mutable container (e.g. ConcurrentHashMap).`,
     why:
 `Declarative pipelines reduce bug surface vs hand-written loops, but **\`parallelStream\`** is a footgun on shared pools (one slow task blocks every consumer). In data pipelines, \`Collectors.groupingBy\` + \`mapping\` replaces 30 lines of imperative aggregation.`,
     example: {
@@ -502,6 +553,14 @@ public class StreamsDemo {
 `\`groupingBy\` uses a \`HashMap\` internally — not thread-safe. For parallel streams, the combiner must merge two partial Maps. The default downstream \`toList()\` produces an \`ArrayList\`, which is fine. But if you use a **stateful downstream** like \`sorting\` or a custom mutable accumulator, thread safety is your responsibility. Prefer \`toConcurrentMap\` or \`groupingByConcurrent\` for parallel.`,
         followUps: ["What is Collector.Characteristics.CONCURRENT?", "Why use toConcurrentMap over toMap for parallel?"]
       }
+    ],
+    gotchas: [
+      "Stream consumed after terminal op: reusing throws IllegalStateException. Streams are single-use — create fresh from source.",
+      "parallelStream() uses common ForkJoinPool shared JVM-wide: blocking tasks (DB, HTTP) starve ALL parallel streams in process.",
+      "sorted() + limit(n) is NOT short-circuit: sorted() buffers ALL elements first, then limit() drops the rest. O(n log n) always.",
+      "Collectors.toMap() throws IllegalStateException on duplicate key with no merge function. Always pass (a, b) -> b or similar.",
+      "Files.lines(path) must be closed: backed by NIO file channel. Wrap in try-with-resources or stream.close(). Leaks file descriptors.",
+      "flatMap breaks lazy fusion: each inner stream is eagerly computed before short-circuit ops (findFirst) can stop it."
     ],
     tradeoffs: {
       pros: ["Declarative, composable.", "Stream fusion avoids intermediate collections.", "Collectors framework covers 90% of aggregation needs."],

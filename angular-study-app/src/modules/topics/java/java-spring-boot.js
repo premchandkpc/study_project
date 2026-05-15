@@ -124,6 +124,17 @@
     },
 
     visual: function(mount) {
+      const SP_TRICKS = [
+        { wrong: '@Service class MyService { @Transactional private void save() { repo.save(x); } } // expected transaction', right: '@Transactional on private: CGLIB proxy can\'t override private → no transaction started, no exception. Make method public.' },
+        { wrong: '@Service class OrderSvc { Order create() { validate(); save(); } @Transactional void save() {} } // self-call', right: 'this.save() bypasses proxy → no transaction. @Cacheable/@Async same issue. Extract to separate bean or use AspectJ weaving.' },
+        { wrong: '@Autowired MyPrototype proto; // in singleton. Expected new instance per use.', right: 'Prototype injected into singleton = same instance forever. Use: @Autowired ObjectProvider<MyPrototype> proto; proto.getObject().' },
+        { wrong: '@Async void process() { throw new RuntimeException(); } // assumed exception logged/thrown', right: '@Async void: exceptions silently swallowed. Use @Async Future<Void> or configure AsyncUncaughtExceptionHandler in @EnableAsync.' },
+      ];
+      const SP_QS = [
+        { q: 'Why does @Transactional not work on private methods?', a: 'Spring wraps beans in a CGLIB subclass proxy. The proxy can only override public/protected methods. Private methods are invisible to subclass — call goes directly to original bean, bypassing the proxy. No proxy interception = no TransactionInterceptor = no transaction. Fix: make method public, or extract to a separate Spring bean.' },
+        { q: 'How does auto-configuration know what to load?', a: 'At startup, Spring reads META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports from every JAR on classpath. Each entry is evaluated with @Conditional annotations. @ConditionalOnClass: is the class on classpath? @ConditionalOnMissingBean: has user already defined one? Only matching beans are registered. /actuator/conditions endpoint shows all decisions and reasons.' },
+        { q: 'What happens if you inject a prototype into a singleton?', a: 'The prototype is injected ONCE when the singleton is created and held forever. The singleton effectively becomes a singleton-scoped wrapper around one prototype instance — defeating the prototype scope. Fixes: inject ObjectProvider<T> and call .getObject() each time, or use @Scope(proxyMode=ScopedProxyMode.TARGET_CLASS) which creates a new prototype on each method call through the proxy.' },
+      ];
       mount.innerHTML = `
         <style>
           .sp-wrap { font-family: monospace; color: #cdd9e5; padding: 12px; }
@@ -184,6 +195,7 @@
             <button class="sp-tab active" data-tab="startup">Startup Sequence</button>
             <button class="sp-tab" data-tab="request">Request Flow</button>
             <button class="sp-tab" data-tab="beans">Bean Scopes & DI</button>
+            <button class="sp-tab" data-tab="tricks">⚠️ Tricks + Interview</button>
           </div>
 
           <!-- STARTUP PANEL -->
@@ -297,6 +309,26 @@
             </div>
             <div class="sp-info" id="sp-bean-info">Click any scope card to understand its lifecycle, or click a DI style to compare them.</div>
           </div>
+
+          <!-- TRICKS + INTERVIEW PANEL -->
+          <div class="sp-panel" id="sp-panel-tricks">
+            <div style="font-size:10px;color:#768390;margin-bottom:8px">⚠️ WRONG assumption vs ✓ CORRECT behavior — common Spring Boot gotchas</div>
+            ${SP_TRICKS.map(t => `
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <div style="background:#3d1f1f;border:1px solid #f47067;border-radius:6px;padding:8px;font-size:10px;color:#cdd9e5">
+                  <div style="color:#f47067;font-weight:bold;margin-bottom:4px">⚠️ WRONG</div>${t.wrong}
+                </div>
+                <div style="background:#1f3d2d;border:1px solid #57ab5a;border-radius:6px;padding:8px;font-size:10px;color:#cdd9e5">
+                  <div style="color:#57ab5a;font-weight:bold;margin-bottom:4px">✓ CORRECT</div>${t.right}
+                </div>
+              </div>`).join('')}
+            <div style="font-size:10px;color:#768390;margin:10px 0 6px">💬 Interview Flash Cards — click to reveal answer</div>
+            ${SP_QS.map(q => `
+              <div style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:8px;margin-bottom:6px;cursor:pointer" onclick="const a=this.querySelector('.sp-qa');a.style.display=a.style.display==='none'?'block':'none'">
+                <div style="font-size:11px;color:#cdd9e5;font-weight:bold">Q: ${q.q}</div>
+                <div class="sp-qa" style="display:none;font-size:10px;color:#768390;margin-top:6px;border-top:1px solid #30363d;padding-top:6px">${q.a}</div>
+              </div>`).join('')}
+          </div>
         </div>`;
 
       // Tab switching
@@ -366,12 +398,13 @@
     },
 
     concept:
-`Spring Boot is **Spring + opinionated auto-configuration**. Core building blocks:
-- **IoC container** — \`ApplicationContext\` manages bean lifecycle.
-- **DI** — constructor injection (recommended), field/setter injection (legacy).
-- **Auto-configuration** — \`@EnableAutoConfiguration\` walks \`META-INF/spring/AutoConfiguration.imports\` and conditionally registers beans via \`@ConditionalOnClass\`, \`@ConditionalOnMissingBean\`.
-- **AOP proxies** — \`@Transactional\`, \`@Cacheable\`, \`@Async\` implemented as CGLIB proxies intercepting method calls.
-- **Starters** — curated dependency POMs (\`spring-boot-starter-web\`, \`-data-jpa\`, \`-actuator\`).`,
+`**L1 (30s ELI5):** Spring Boot is a machine that builds your app automatically. You add JARs, it figures out what you need (database? auto-adds HikariCP). You write business code; Spring wires everything together.
+
+**L2 (2min core):** IoC container (ApplicationContext) manages bean lifecycle. Auto-config: reads \`META-INF/spring/AutoConfiguration.imports\` from every JAR, evaluates \`@ConditionalOnClass\`/\`@ConditionalOnMissingBean\`. DI: constructor injection (preferred, immutable, testable) > setter > field. AOP: CGLIB subclass proxy wraps \`@Transactional\`/\`@Cacheable\`/\`@Async\` beans — proxy intercepts external method calls.
+
+**L3 (10min edge cases):** \`@Transactional\` on private methods: CGLIB proxy can't override private → no transaction (silently ignored). Self-invocation \`this.method()\`: bypasses proxy → \`@Cacheable\`/\`@Async\` silently ignored. Prototype into singleton: same instance forever — use \`ObjectProvider<T>\`. \`@Async void\`: exceptions silently swallowed unless \`AsyncUncaughtExceptionHandler\` configured. \`@Transactional\`: only unchecked \`RuntimeException\` triggers rollback — checked exceptions don't by default.
+
+**L4 (30min deep):** Bean lifecycle: instantiate → populateProperties → Aware callbacks (BeanNameAware, ApplicationContextAware) → \`@PostConstruct\` (InitializingBean.afterPropertiesSet) → in-service → \`@PreDestroy\` (DisposableBean.destroy). BeanPostProcessor intercepts all beans before/after init — AOP proxy creation happens here (AbstractAutoProxyCreator). BeanFactoryPostProcessor: modifies bean definitions before instantiation (PropertySourcesPlaceholderConfigurer resolves \`\${}\`). DispatcherServlet strategy pattern: each of HandlerMapping, HandlerAdapter, ViewResolver, HandlerExceptionResolver is a Spring bean — fully replaceable.`,
     why:
 `Auto-config is **decision compression** — sensible defaults that work in 80% of cases. But it hides what's running. In senior interviews, you must be able to trace a \`/actuator/conditions\` report, explain AOP proxy limitations (@Transactional on private methods), and describe the full HTTP request lifecycle through DispatcherServlet.`,
     example: {
@@ -441,6 +474,14 @@ record OrderProperties(int maxRetries, Duration timeout, String topic) {}`,
 `The prototype bean is injected ONCE at singleton creation and held forever — defeating the prototype scope. The singleton holds the same prototype instance for its entire lifetime. Fix: inject \`ObjectProvider<T>\` and call \`getObject()\` each time you need a fresh instance, or use scoped proxies (\`@Scope(proxyMode = TARGET_CLASS)\`) which create a new prototype on each method call through the proxy.`,
         followUps: ["What is a scoped proxy?", "ObjectProvider vs ApplicationContext.getBean()?"]
       }
+    ],
+    gotchas: [
+      "@Transactional on private method: CGLIB proxy can't override private → no transaction started, no exception, silent failure.",
+      "Self-invocation this.method(): bypasses the AOP proxy entirely → @Cacheable, @Async, @Transactional all silently ignored.",
+      "Prototype bean injected into singleton: injected once at singleton creation time. Same instance forever — prototype scope defeated.",
+      "@Async void method: exceptions are swallowed silently. Configure AsyncUncaughtExceptionHandler or return Future<T>.",
+      "@Transactional checked exceptions: only RuntimeException (unchecked) rolls back by default. SQLException won't roll back unless rollbackFor=Exception.class.",
+      "Lazy-loaded JPA entity outside @Transactional: LazyInitializationException. Session closed before collection accessed."
     ],
     tradeoffs: {
       pros: [

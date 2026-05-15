@@ -120,6 +120,17 @@
     },
 
     visual: function(mount) {
+      const JV_TRICKS = [
+        { wrong: 'Set -Xms=512m -Xmx=4g in containers → JVM resizes heap under load → GC pause during resize + OS may not commit pages.', right: 'Always -Xms = -Xmx in containers. Eliminates resize overhead. JVM commits all memory upfront.' },
+        { wrong: 'new byte[50_000_000] expects Eden allocation → fast TLAB bump-pointer.', right: 'Large arrays (> ½ G1 region) skip Eden entirely → Old Gen directly. Many humongous allocs fragment Old → Full GC.' },
+        { wrong: 'synchronized(lock) { jdbcCall(); } in virtual thread → thought carrier is free during I/O wait.', right: 'synchronized PINS virtual thread to carrier. Carrier OS thread BLOCKS. Use ReentrantLock — vthread unmounts, carrier freed.' },
+        { wrong: 'ThreadLocal.set(user) in Tomcat thread. Request ends. Assume it is cleaned up.', right: 'Tomcat reuses threads. Next request inherits stale ThreadLocal value. Always ThreadLocal.remove() in finally block.' },
+      ];
+      const JV_QS = [
+        { q: 'When would you pick ZGC over G1?', a: 'ZGC when p99 latency matters and heap > 16 GB. ZGC keeps pauses < 1ms regardless of heap size. G1 is the safer default for 4–32 GB where 100–200ms pauses are acceptable and throughput matters more.' },
+        { q: 'What is a humongous allocation and why is it dangerous?', a: 'Any object > ½ of a G1 region (1–32 MB). Skips Eden, allocated directly in Old Gen contiguous regions. Many humongous allocations fragment Old Gen → force Full GC. Fix: tune -XX:G1HeapRegionSize or avoid large array allocs in hot paths.' },
+        { q: 'Why does Metaspace leak on WAR redeploy?', a: 'Each WAR gets its own ClassLoader. The old ClassLoader is GC-eligible only when NO live reference points to it. If a static Map, thread, JDBC driver, or logging framework holds a Class or ClassLoader reference: old ClassLoader (and all its classes) stay in Metaspace forever.' },
+      ];
       mount.innerHTML = `
         <style>
           .jv-wrap { font-family: monospace; color: #cdd9e5; padding: 12px; }
@@ -176,6 +187,7 @@
             <button class="jv-tab active" data-tab="heap">Heap & GC Cycle</button>
             <button class="jv-tab" data-tab="gccomp">GC Algorithm Comparison</button>
             <button class="jv-tab" data-tab="jit">JIT Tiers</button>
+            <button class="jv-tab" data-tab="tricks">⚠️ Tricks + Interview</button>
           </div>
 
           <!-- HEAP PANEL -->
@@ -279,6 +291,26 @@
               </div>
             </div>
             <div class="jv-info" id="jv-jit-info">Click a JIT tier or optimization above to learn about it.</div>
+          </div>
+
+          <!-- TRICKS + INTERVIEW PANEL -->
+          <div class="jv-panel" id="jv-panel-tricks">
+            <div style="font-size:10px;color:#768390;margin-bottom:8px">⚠️ WRONG assumption vs ✓ CORRECT behavior — common JVM gotchas</div>
+            ${JV_TRICKS.map(t => `
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <div style="background:#3d1f1f;border:1px solid #f47067;border-radius:6px;padding:8px;font-size:10px;color:#cdd9e5">
+                  <div style="color:#f47067;font-weight:bold;margin-bottom:4px">⚠️ WRONG</div>${t.wrong}
+                </div>
+                <div style="background:#1f3d2d;border:1px solid #57ab5a;border-radius:6px;padding:8px;font-size:10px;color:#cdd9e5">
+                  <div style="color:#57ab5a;font-weight:bold;margin-bottom:4px">✓ CORRECT</div>${t.right}
+                </div>
+              </div>`).join('')}
+            <div style="font-size:10px;color:#768390;margin:10px 0 6px">💬 Interview Flash Cards — click to reveal answer</div>
+            ${JV_QS.map(q => `
+              <div style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:8px;margin-bottom:6px;cursor:pointer" onclick="const a=this.querySelector('.jv-qa');a.style.display=a.style.display==='none'?'block':'none'">
+                <div style="font-size:11px;color:#cdd9e5;font-weight:bold">Q: ${q.q}</div>
+                <div class="jv-qa" style="display:none;font-size:10px;color:#768390;margin-top:6px;border-top:1px solid #30363d;padding-top:6px">${q.a}</div>
+              </div>`).join('')}
           </div>
         </div>`;
 
@@ -386,12 +418,13 @@
     },
 
     concept:
-`The JVM splits memory into **Heap** (Young = Eden + S0/S1, Old/Tenured), **Metaspace** (class metadata, native), **Stack** (per-thread frames), **PC register**, and **Native method stack**. Allocations land in Eden; surviving objects age through survivor spaces, then promote to Old.
-Modern collectors:
-- **G1** — region-based, predictable pause-time goal, default since Java 9.
-- **ZGC** — sub-millisecond pauses, colored pointers, scales to multi-TB heaps. Production-ready since Java 15.
-- **Shenandoah** — concurrent compaction, Red Hat.
-- **Generational ZGC** (Java 21) combines young/old generations with ZGC's concurrency.`,
+`**L1 (30s ELI5):** JVM is a fake computer inside your computer. Objects live in "heap." Old objects get their own room. GC throws away objects nobody needs anymore.
+
+**L2 (2min core):** Heap = Young Gen (Eden + S0/S1) + Old Gen. New objects → Eden via TLAB (bump-pointer, ≈5 ns). Minor GC copies survivors; age ≥ 15 → promote Old. Metaspace (off-heap): class metadata. Collectors: **G1** (region-based, 200ms pause goal, Java 9 default), **ZGC** (<1ms pause, colored pointers, Java 15+), **Shenandoah** (concurrent compact, Red Hat).
+
+**L3 (10min edge cases):** Humongous allocs (> ½ G1 region) skip Eden → fragment Old Gen → Full GC. Metaspace OOM on redeployment: ClassLoader not GC'd if stale static/thread ref held. \`-Xms ≠ -Xmx\` in containers: heap resize under load → GC pause. ZGC reserves 2.5× virtual address space — inflates docker memory stats.
+
+**L4 (30min deep):** TLAB = per-thread bump-pointer in Eden; refilled via CAS on exhaustion. GC roots: thread stacks, static fields, JNI globals. G1 RSets: card table tracks cross-region dirty refs. ZGC colored pointers: 42-bit address + 4 metadata bits (marked0/1, remapped, finalizable); load barriers fix stale refs on access. Escape analysis at C2: stack-allocates non-escaping objects → zero GC pressure.`,
     why:
 `Heap layout and GC choice directly drive **p99 latency** and **throughput**. Misconfigured heaps cause stop-the-world pauses that break SLOs in trading, ads, and chat systems. At scale (\`> 32 GB heap\`), CompressedOops boundary and GC algorithm choice change throughput by 20–40%.`,
     example: {
@@ -441,6 +474,14 @@ public class HeapInspector {
 `In G1, any object larger than half of a region (regions are 1–32 MB) is allocated directly in contiguous old-gen regions. Many humongous allocations fragment the heap and force full GC. Detect with \`-Xlog:gc+heap=debug\`.`,
         followUps: ["How to tune region size?", "G1 vs Parallel for batch jobs?"]
       }
+    ],
+    gotchas: [
+      "Humongous allocation (> ½ G1 region): skips Eden → goes direct to Old Gen → fragments heap → Full GC. Detect with -Xlog:gc+heap=debug.",
+      "-Xms ≠ -Xmx in containers: JVM resizes heap under load → GC pause during resize. Always set equal in prod.",
+      "Metaspace OOM after WAR redeployment: old ClassLoader held alive by stale static field, thread, or JDBC driver classref.",
+      "ZGC reserves 2.5× virtual address space: docker stats shows inflated 'memory'. It's mostly uncommitted pages — use RSS not VSZ.",
+      "synchronized block PINS virtual thread to carrier OS thread. Carrier blocks too — defeats virtual thread benefit. Use ReentrantLock instead.",
+      "ThreadLocal in Tomcat pooled thread: request ends, next request gets stale value. Always ThreadLocal.remove() in finally block."
     ],
     tradeoffs: {
       pros: [
