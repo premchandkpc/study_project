@@ -116,6 +116,109 @@
         { q: 'Why does synchronized pin virtual threads?', a: 'synchronized uses JVM monitor (biased/thin/fat lock). When a virtual thread blocks inside synchronized (e.g. waiting for I/O or lock), the JVM cannot unmount it from the carrier — the carrier OS thread blocks too. JEP 444 is fixing this for Java 25. Until then, use ReentrantLock for I/O-bound virtual-thread code.' },
         { q: 'CountDownLatch vs CyclicBarrier — when to use which?', a: 'CountDownLatch: ONE-SHOT gate, N countDown() calls open it. Perfect for: start N workers then wait for all (or fire N workers simultaneously). Cannot reset. CyclicBarrier: ALL N threads meet at barrier, then all released together. REUSABLE — resets automatically. Use for iterative parallel phases (game loop, matrix multiply phases).' },
       ];
+      const CC_PATTERNS = [
+        {
+          id: 'race', icon: '💥', title: 'Race Condition',
+          subtitle: 'counter++ = read + add + write (3 ops). ANY context switch between them = lost update.',
+          badCode: `// ❌ NOT thread-safe
+int counter = 0;
+
+// Thread-1 and Thread-2 concurrently:
+void increment() {
+  counter++; // read → add → write (3 ops!)
+}
+// Expected: counter=2  Actual: counter=1 💥`,
+          goodCode: `// ✅ Atomic CAS (Compare-And-Swap)
+AtomicInteger counter = new AtomicInteger(0);
+
+// Thread-1 and Thread-2 concurrently:
+void increment() {
+  counter.incrementAndGet(); // single CAS op
+}
+// Expected: counter=2  Actual: counter=2 ✅`,
+          steps: [
+            { threads: [{label:'T1',st:'idle'},{label:'T2',st:'idle'}], counter: 0, note: 'Initial: counter=0. T1 and T2 both want to increment.' },
+            { threads: [{label:'T1',st:'run',code:'read counter → 0'},{label:'T2',st:'run',code:'read counter → 0 ← RACE!'}], counter: 0, note: '⚠️ Context switch! Both threads read counter=0 simultaneously.', error: true },
+            { threads: [{label:'T1',st:'run',code:'v = 0 + 1 = 1'},{label:'T2',st:'run',code:'v = 0 + 1 = 1 ← same!'}], counter: 0, note: 'Both compute 0+1=1 in their local register. Unaware of each other.' },
+            { threads: [{label:'T1',st:'done',code:'write counter = 1 ✓'},{label:'T2',st:'done',code:'write counter = 1 ← OVERWRITES!'}], counter: 1, note: '💥 T1 writes 1. T2 also writes 1. Expected 2, got 1. LOST UPDATE!', error: true },
+          ],
+          fixSteps: [
+            { threads: [{label:'T1',st:'idle'},{label:'T2',st:'idle'}], counter: 0, note: 'AtomicInteger uses CAS hardware instruction — atomic read+compare+write in one CPU op.' },
+            { threads: [{label:'T1',st:'run',code:'CAS(0 → 1) wins ✓'},{label:'T2',st:'wait',code:'CAS spinning (retry)…'}], counter: 1, note: 'T1 wins CAS: 0→1 atomically. T2 detects mismatch, retries.' },
+            { threads: [{label:'T1',st:'done',code:'done ✓'},{label:'T2',st:'run',code:'CAS(1 → 2) wins ✓'}], counter: 2, note: '✅ T2 wins CAS: 1→2. Final counter=2. No lost updates. Lock-free!' },
+          ]
+        },
+        {
+          id: 'deadlock', icon: '🔒', title: 'Deadlock',
+          subtitle: 'T1 holds LockA + waits for LockB. T2 holds LockB + waits for LockA. Both wait forever.',
+          badCode: `// ❌ Inconsistent lock order
+void transferAtoB() {
+  synchronized(lockA) {         // T1 grabs A
+    synchronized(lockB) { … }   // T1 wants B ← blocked!
+  }
+}
+void transferBtoA() {
+  synchronized(lockB) {         // T2 grabs B
+    synchronized(lockA) { … }   // T2 wants A ← DEADLOCK
+  }
+}`,
+          goodCode: `// ✅ Consistent lock ordering (always A → B)
+void transfer(Lock from, Lock to) {
+  Lock first  = id(from) < id(to) ? from : to;
+  Lock second = id(from) < id(to) ? to   : from;
+  synchronized(first) {
+    synchronized(second) { … }  // safe, no cycle
+  }
+}`,
+          steps: [
+            { threads: [{label:'T1',st:'idle',holds:null,wants:null},{label:'T2',st:'idle',holds:null,wants:null}], locks: {A:'free',B:'free'}, note: 'Two threads, two locks: LockA and LockB — both free.' },
+            { threads: [{label:'T1',st:'run',holds:'A',wants:null,code:'synchronized(lockA) ✓'},{label:'T2',st:'run',holds:'B',wants:null,code:'synchronized(lockB) ✓'}], locks: {A:'T1',B:'T2'}, note: 'T1 grabs LockA. T2 grabs LockB. Both acquired, running fine so far.' },
+            { threads: [{label:'T1',st:'wait',holds:'A',wants:'B',code:'synchronized(lockB)… BLOCKED'},{label:'T2',st:'wait',holds:'B',wants:'A',code:'synchronized(lockA)… BLOCKED'}], locks: {A:'T1',B:'T2'}, note: '⚠️ T1 wants B (held by T2). T2 wants A (held by T1). Circular wait!', error: true },
+            { threads: [{label:'T1',st:'dead',holds:'A',wants:'B',code:'// 💀 DEADLOCK'},{label:'T2',st:'dead',holds:'B',wants:'A',code:'// 💀 DEADLOCK'}], locks: {A:'T1',B:'T2'}, note: '💀 DEADLOCK. Neither thread can proceed. JVM thread dump shows WAITING. App hangs until restart.', error: true },
+          ],
+          fixSteps: [
+            { threads: [{label:'T1',st:'idle',holds:null,wants:null},{label:'T2',st:'idle',holds:null,wants:null}], locks: {A:'free',B:'free'}, note: 'Fix: all threads acquire locks in same global order (by lock ID). Eliminates circular wait.' },
+            { threads: [{label:'T1',st:'run',holds:'A',wants:null,code:'synchronized(lockA) ✓'},{label:'T2',st:'wait',holds:null,wants:'A',code:'synchronized(lockA)… wait'}], locks: {A:'T1',B:'free'}, note: 'T1 grabs A. T2 also tries A FIRST (same order) — it waits. T2 does NOT hold LockB yet!' },
+            { threads: [{label:'T1',st:'run',holds:'A+B',wants:null,code:'synchronized(lockB) ✓'},{label:'T2',st:'wait',holds:null,wants:'A',code:'still waiting for A…'}], locks: {A:'T1',B:'T1'}, note: 'T1 grabs B too (no contest). T2 patiently waits. No circular dependency.' },
+            { threads: [{label:'T1',st:'done',holds:null,wants:null,code:'releases A+B ✓'},{label:'T2',st:'run',holds:'A+B',wants:null,code:'grabs A ✓ then B ✓'}], locks: {A:'T2',B:'T2'}, note: '✅ T1 finishes, releases both. T2 acquires A→B in order. No deadlock!' },
+          ]
+        },
+        {
+          id: 'vthreads', icon: '🚀', title: 'Virtual Threads I/O',
+          subtitle: 'Platform threads BLOCK their OS thread on I/O. Virtual threads PARK (unmount from carrier) — carrier stays free.',
+          badCode: `// ❌ Platform thread pool (fixed 4 threads)
+ExecutorService pool =
+  Executors.newFixedThreadPool(4);
+
+pool.submit(() -> {
+  var result = db.query(sql); // BLOCKS OS thread!
+  return result;
+});
+// 4 threads = max 4 concurrent I/O ops 😬`,
+          goodCode: `// ✅ Virtual threads (JDK 21+)
+ExecutorService exec =
+  Executors.newVirtualThreadPerTaskExecutor();
+
+exec.submit(() -> {
+  var result = db.query(sql); // PARKS, frees carrier
+  return result;
+});
+// Millions of vThreads, ~2 OS carrier threads 🚀`,
+          steps: [
+            { platform: [{id:'P1',st:'idle'},{id:'P2',st:'idle'},{id:'P3',st:'idle'},{id:'P4',st:'idle'}], queue: 0, note: 'Fixed pool: 4 platform threads. 8 I/O requests arriving.' },
+            { platform: [{id:'P1',st:'blocked',label:'req1 DB…'},{id:'P2',st:'blocked',label:'req2 DB…'},{id:'P3',st:'blocked',label:'req3 DB…'},{id:'P4',st:'blocked',label:'req4 DB…'}], queue: 4, note: '⚠️ All 4 OS threads BLOCKED waiting for DB. Req 5–8 pile up in queue. Zero throughput!', error: true },
+            { platform: [{id:'P1',st:'blocked',label:'req1 DB…'},{id:'P2',st:'done',label:'req2 done ✓'},{id:'P3',st:'blocked',label:'req3 DB…'},{id:'P4',st:'blocked',label:'req4 DB…'}], queue: 3, note: 'req2 returns. P2 picks req5. But pool exhausted most of the time — latency spikes.' },
+            { platform: [{id:'P1',st:'done',label:'req1 ✓'},{id:'P2',st:'done',label:'req5 ✓'},{id:'P3',st:'done',label:'req3 ✓'},{id:'P4',st:'done',label:'req4 ✓'}], queue: 0, note: 'Eventually all done. But under burst: req5–8 see high latency. Cannot scale beyond 4 concurrent I/O.' },
+          ],
+          fixSteps: [
+            { carriers: [{id:'C1',st:'idle'},{id:'C2',st:'idle'}], vts: [{id:'V1',st:'idle'},{id:'V2',st:'idle'},{id:'V3',st:'idle'},{id:'V4',st:'idle'}], note: '2 OS carrier threads manage N virtual threads. Virtual threads are heap objects (cheap!).' },
+            { carriers: [{id:'C1',st:'run',label:'→ vt1'},{id:'C2',st:'run',label:'→ vt2'}], vts: [{id:'V1',st:'run',label:'vt1 → DB call'},{id:'V2',st:'run',label:'vt2 → DB call'},{id:'V3',st:'queue',label:'vt3 queued'},{id:'V4',st:'queue',label:'vt4 queued'}], note: 'vt1 mounted on C1, vt2 on C2. vt3+4 queued briefly.' },
+            { carriers: [{id:'C1',st:'run',label:'→ vt3'},{id:'C2',st:'run',label:'→ vt4'}], vts: [{id:'V1',st:'parked',label:'vt1 PARKED ⟳'},{id:'V2',st:'parked',label:'vt2 PARKED ⟳'},{id:'V3',st:'run',label:'vt3 running ✓'},{id:'V4',st:'run',label:'vt4 running ✓'}], note: '✅ vt1+vt2 PARK on I/O (unmount from carrier). C1/C2 immediately run vt3+4. Zero OS blocking!' },
+            { carriers: [{id:'C1',st:'run',label:'C1'},{id:'C2',st:'run',label:'C2'}], vts: [{id:'V1',st:'done',label:'vt1 resumed ✓'},{id:'V2',st:'done',label:'vt2 resumed ✓'},{id:'V3',st:'done',label:'vt3 ✓'},{id:'V4',st:'done',label:'vt4 ✓'}], note: '🚀 DB responds → vt1+vt2 remount on any free carrier. All 4 served with 2 OS threads!' },
+          ]
+        }
+      ];
+
       mount.innerHTML = `
         <style>
           .cc-wrap { font-family: monospace; color: #cdd9e5; padding: 12px; }
@@ -189,6 +292,7 @@
             <button class="cc-tab" data-tab="locks">Lock Types</button>
             <button class="cc-tab" data-tab="sync">Synchronizers</button>
             <button class="cc-tab" data-tab="tricks">⚠️ Tricks + Interview</button>
+            <button class="cc-tab" data-tab="patterns">🔥 Patterns</button>
           </div>
 
           <!-- THREAD PANEL -->

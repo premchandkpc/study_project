@@ -257,8 +257,11 @@
             <div class="flow-progress" aria-hidden="true"><div data-uml-progress></div></div>
           </div>
           <div class="uml-readout">
-            <strong data-uml-label>${esc(firstMessage.label || "Message 1")}</strong>
-            <span data-uml-detail>${esc(firstMessage.detail || "")}</span>
+            <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+              <strong data-uml-label style="font-size:14px;">${esc(firstMessage.label || "Message 1")}</strong>
+              <span class="uml-type-badge ${firstMessage.async ? 'async' : 'sync'}" data-uml-type-badge>${firstMessage.async ? 'async' : 'sync'}</span>
+            </div>
+            <span data-uml-detail style="font-size:13px;color:#d3dcea;line-height:1.6;">${esc(firstMessage.detail || "")}</span>
           </div>
         </div>
       </div>`;
@@ -534,10 +537,15 @@
       const messageEls = Array.from(lab.querySelectorAll("[data-uml-message]"));
       const label = lab.querySelector("[data-uml-label]");
       const detail = lab.querySelector("[data-uml-detail]");
+      const typeBadge = lab.querySelector("[data-uml-type-badge]");
       const progressEl = lab.querySelector("[data-uml-progress]");
       const playBtn = lab.querySelector("[data-uml-play]");
       let index = 0;
       let playing = false;
+
+      function fmtDetail(text) {
+        return esc(text).replace(/`([^`\n]+)`/g, '<code style="background:#0d1320;border:1px solid #2a374f;padding:1px 5px;border-radius:3px;font-size:11px;color:#d6e0ff;font-family:JetBrains Mono,monospace;">$1</code>');
+      }
 
       function activateMessage(nextIndex) {
         index = (nextIndex + messages.length) % messages.length;
@@ -554,7 +562,11 @@
         messageEls.forEach(el => el.classList.toggle("active", Number(el.dataset.umlMessage) === index));
 
         label.textContent = message.label || `Message ${index + 1}`;
-        detail.textContent = message.detail || "";
+        detail.innerHTML = fmtDetail(message.detail || "");
+        if (typeBadge) {
+          typeBadge.textContent = message.async ? "async" : "sync";
+          typeBadge.className = "uml-type-badge " + (message.async ? "async" : "sync");
+        }
         progressEl.style.width = `${((index + 1) / messages.length) * 100}%`;
       }
 
@@ -581,11 +593,43 @@
         activateMessage(index + 1);
       });
       playBtn.addEventListener("click", () => playing ? stopUml() : startUml());
+      let tip = document.getElementById("_uml_tip");
+      if (!tip) {
+        tip = document.createElement("div");
+        tip.id = "_uml_tip";
+        tip.className = "uml-tip";
+        tip.style.display = "none";
+        document.body.appendChild(tip);
+      }
+
       messageEls.forEach(el => {
         el.addEventListener("click", () => {
           stopUml();
           activateMessage(Number(el.dataset.umlMessage));
         });
+        el.addEventListener("mouseenter", () => {
+          const msg = messages[Number(el.dataset.umlMessage)];
+          if (!msg) return;
+          const isAsync = !!msg.async;
+          tip.innerHTML = `
+            <div class="uml-tip-label">${esc(msg.label || "")}</div>
+            <span class="uml-tip-badge ${isAsync ? 'async' : 'sync'}">${isAsync ? '⟳ async' : '→ sync'}</span>
+            <div class="uml-tip-detail">${fmtDetail(msg.detail || "")}</div>`;
+          tip.style.display = "block";
+          tip.style.animation = "none";
+          requestAnimationFrame(() => { tip.style.animation = ""; });
+          const rect = el.getBoundingClientRect();
+          const tipW = 320;
+          let left = rect.left + rect.width / 2 - tipW / 2;
+          left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
+          let top = rect.top - 12;
+          if (top < 60) top = rect.bottom + 8;
+          tip.style.left = left + "px";
+          tip.style.top = top + "px";
+          tip.style.width = tipW + "px";
+          tip.style.transform = "translateY(-100%)";
+        });
+        el.addEventListener("mouseleave", () => { tip.style.display = "none"; });
       });
       actors.forEach(actor => {
         actor.addEventListener("click", () => {
