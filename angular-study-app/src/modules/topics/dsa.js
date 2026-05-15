@@ -1338,16 +1338,82 @@ def coin_change(coins: list[int], amount: int) -> int:
         followUps: ["Monotonic deque for window maximum?", "Shrink condition for variable window?"]
       },
       {
+        question: "FAANG-style: How do you solve Sliding Window Maximum in O(n)?",
+        answer:
+`Use a **monotonic deque of indices**. Before adding i, remove indices outside the window from the front. Then remove smaller values from the back because they can never become a future maximum while the new larger value remains. Push i. Once the first full window exists, arr[deque[0]] is the answer. Each index enters and exits once, so total time is O(n), space O(k).`,
+        followUps: ["Why store indices instead of values?", "How does it handle duplicates?"]
+      },
+      {
         question: "How do you recognise a DP problem?",
         answer:
 `Three signals: (1) **optimal substructure** — solution built from optimal sub-solutions; (2) **overlapping subproblems** — same sub-problem computed multiple times in naive recursion; (3) problem asks for min/max/count over choices. Draw the recurrence first, then decide top-down (memoisation) vs bottom-up (tabulation). Bottom-up is usually faster due to no call-stack overhead.`,
-        followUps: ["Space optimisation for 1D DP?", "When is memoisation better than tabulation?"]
+        followUps: ["Space optimisation for 1D DP?", "When is memoisation better than tabulation?", "What is the state definition?"]
+      },
+      {
+        question: "FAANG-style: Climbing Stairs recurrence and complexity?",
+        answer:
+`State: dp[i] = number of ways to reach step i. Last move is either 1 step from i-1 or 2 steps from i-2, so dp[i] = dp[i-1] + dp[i-2]. Base dp[0]=1 and dp[1]=1. Tabulation is O(n) time and O(n) space; with two rolling variables it becomes O(1) space.`,
+        followUps: ["How does this change if steps can be [1,3,5]?", "Why is dp[0]=1?"]
+      },
+      {
+        question: "FAANG-style: House Robber choose/skip recurrence?",
+        answer:
+`State: dp[i] = max money from houses 0..i. At every house, either skip it and keep dp[i-1], or rob it and add nums[i] + dp[i-2]. Recurrence: dp[i] = max(dp[i-1], nums[i] + dp[i-2]). This is O(n) time and can be O(1) space because only the previous two states are needed.`,
+        followUps: ["How does House Robber II change with a circular street?", "How would you reconstruct which houses were robbed?"]
+      },
+      {
+        question: "FAANG-style: Coin Change min coins vs greedy?",
+        answer:
+`Greedy picks the largest coin first, but it fails on non-canonical sets such as coins=[1,3,4], amount=6. DP defines dp[a] = minimum coins for amount a. For each amount, try every coin as the last coin: dp[a] = min(dp[a], dp[a-c] + 1). Time O(amount * coin_count), space O(amount).`,
+        followUps: ["How do you return the actual coins?", "How is Coin Change II different?"]
+      },
+      {
+        question: "FAANG-style: Unique Paths grid recurrence?",
+        answer:
+`State: dp[r][c] = number of ways to reach cell (r,c). Since moves are only right or down, every interior cell is reached from top or left: dp[r][c] = dp[r-1][c] + dp[r][c-1]. First row and first column are all 1. Time O(mn), space O(mn), optimizable to O(n).`,
+        followUps: ["How do obstacles change the recurrence?", "How do you optimize to one row?"]
       },
       {
         question: "When does greedy fail where DP succeeds?",
         answer:
 `Greedy works when the problem has the **greedy-choice property**: a locally optimal choice leads to a globally optimal solution. Greedy Coin Change fails on non-canonical coin sets (e.g. coins=[1,3,4], amount=6 → greedy gives 4+1+1=3 coins, DP gives 3+3=2 coins). Whenever past choices constrain future choices in non-obvious ways, DP is safer.`,
         followUps: ["Prove Activity Selection greedy is optimal?", "Exchange argument?"]
+      },
+      {
+        question: "FAANG-style: 0/1 Knapsack recurrence?",
+        answer:
+`State: dp[i][w] = max value using the first i items with capacity w. For item i, if weight > w, copy dp[i-1][w]. If it fits, choose max(skip = dp[i-1][w], take = value + dp[i-1][w-weight]). The "i-1" row is what prevents using the same item more than once.`,
+        followUps: ["How do you compress to 1D?", "Why must 1D capacity iterate backward?"]
+      },
+      {
+        question: "FAANG-style: LCS vs longest common substring?",
+        answer:
+`LCS allows gaps; substring must be contiguous. For LCS, dp[i][j] compares prefixes. If chars match, use diagonal + 1. If not, take max(top, left). For longest common substring, mismatch resets the cell to 0 because contiguity is broken.`,
+        followUps: ["How do you reconstruct the sequence?", "What changes for shortest common supersequence?"]
+      },
+      {
+        question: "FAANG-style: Edit Distance operation choices?",
+        answer:
+`State: dp[i][j] = min edits to convert word1[0..i) to word2[0..j). If chars match, carry dp[i-1][j-1]. Otherwise choose 1 + min(delete from word1 = dp[i-1][j], insert into word1 = dp[i][j-1], replace = dp[i-1][j-1]). Base row/column represent converting to/from the empty string.`,
+        followUps: ["How would weighted operation costs change it?", "How do you recover the edit script?"]
+      },
+      {
+        question: "FAANG-style: LIS O(n²) DP and O(n log n) upgrade?",
+        answer:
+`O(n²) DP: dp[i] = LIS length ending at i, and for every j<i with nums[j]<nums[i], update dp[i]=max(dp[i], dp[j]+1). The O(n log n) method keeps tails[len] = smallest possible tail value for an increasing subsequence of length len+1 and binary-searches where each number belongs. tails gives length, not the exact sequence unless extra parent pointers are kept.`,
+        followUps: ["Why replace tails values?", "How do duplicates change lower_bound vs upper_bound?"]
+      },
+      {
+        question: "FAANG-style: Partition Equal Subset Sum as subset sum?",
+        answer:
+`If total sum is odd, answer is false. Otherwise target = total/2 and the task becomes: can any subset sum to target? Use boolean dp[s]. Start dp[0]=true. For each number, iterate s backward and set dp[s] = dp[s] || dp[s-num]. Backward iteration enforces 0/1 usage.`,
+        followUps: ["Why not iterate forward?", "How do you count number of subsets instead of boolean existence?"]
+      },
+      {
+        question: "Graph scenario: BFS, DFS, or Dijkstra?",
+        answer:
+`Use **BFS** when all edges have equal weight and you need shortest hops or level traversal. Use **DFS** for connected components, cycle checks, topological-style exploration, or exhaustive branch traversal. Use **Dijkstra** for shortest paths with non-negative weighted edges. If negative weights appear, switch to Bellman-Ford or another suitable algorithm.`,
+        followUps: ["Why does Dijkstra fail with negative edges?", "When do you need a priority queue?"]
       }
     ],
     tradeoffs: {
@@ -1355,11 +1421,11 @@ def coin_change(coins: list[int], amount: int) -> int:
         "Step-by-step execution with explanation + pseudocode line at each step",
         "Custom input — paste any array or string to test edge cases",
         "Auto-play with speed control for rapid pattern absorption",
-        "Four canonical patterns covering most interview problems"
+        "Four canonical patterns plus expanded DP drills from common FAANG-style interviews"
       ],
       cons: [
         "Graph layout is circular — may overlap for dense graphs",
-        "No backtracking / recursive call-stack visualisation",
+        "No backtracking / recursive call-stack visualisation yet",
         "No sorting algorithms (bubble, merge, quick) — separate concern"
       ],
       when: "Use before interviews to rebuild intuition on any pattern you haven't touched recently. Run a problem you've seen before — see if you can predict the next step before clicking Next."
