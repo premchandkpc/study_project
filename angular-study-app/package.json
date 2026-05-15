@@ -1,15 +1,45 @@
 {
-  "name": "study-project",
+  "name": "sde-study-lab",
   "version": "1.0.0",
   "description": "Visual interactive dynamic study of Java, Golang, Python, REST microservices, Spring, FastAPI, MCP, etc.",
-  "main": "app.js",
+  "main": "server/agents/server.js",
+  "type": "module",
   "scripts": {
-    "dev": "http-server . -p 8080 -o",
-    "start": "http-server . -p 8080",
-    "agents": "cd agents && npm run dev"
+    "start": "http-server . -p 8080 --spa index.html",
+    "dev": "http-server . -p 8080 -c-1 -o --spa index.html",
+    "server": "node server/agents/server.js",
+    "server:dev": "node --watch server/agents/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src --fix",
+    "format": "prettier --write \"src/**/*.{js,css,html}\"",
+    "build": "echo \"Build configuration not set up yet\""
   },
   "dependencies": {
+    "express": "^4.21.0",
+    "cors": "^2.8.5",
     "http-server": "^14.1.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/sde-study-lab.git"
+  },
+  "keywords": [
+    "java",
+    "golang",
+    "python",
+    "microservices",
+    "spring",
+    "fastapi",
+    "system-design",
+    "sde-interview"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
 }
