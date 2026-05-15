@@ -309,18 +309,6 @@
         const list = topics.byArea(a.key).filter(t => !matches || matches.includes(t.id));
         const ratio = progress.ratio(topics.byArea(a.key).map(t => t.id));
         const isOpen = !collapsed[a.key] || (q && list.length > 0);
-        const activePick = window._dsaActivePick || {};
-        const dsaSubNav = a.key === 'dsa' && window.DSA_ALGO_NAV
-          ? `<div class="dsa-algo-subnav">${
-              Object.entries(window.DSA_ALGO_NAV).map(([tid, cat]) =>
-                `<div class="dsa-sidebar-cat">${esc(cat.label)}</div>` +
-                Object.entries(cat.problems).map(([pid, label]) => {
-                  const isActive = activePick.tid === tid && activePick.pid === pid;
-                  return `<button class="dsa-sidebar-prob${isActive ? ' active' : ''}" data-tid="${esc(tid)}" data-pid="${esc(pid)}">${esc(label)}</button>`;
-                }).join('')
-              ).join('')
-            }</div>`
-          : '';
         if (q && list.length === 0) return '';
         const topicItems = list.map(t => `
                 <li class="topic-item ${active === t.id ? "active" : ""}" data-nav="${esc(t.id)}">
@@ -339,8 +327,7 @@
             ${isOpen ? `
             <ul class="topic-list">
               ${topicItems}
-            </ul>
-            ${dsaSubNav}` : ''}
+            </ul>` : ''}
           </div>`;
       }).join("");
 
@@ -382,20 +369,6 @@
         });
       });
 
-      host.querySelectorAll(".dsa-sidebar-prob").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const { tid, pid } = btn.dataset;
-          window._dsaActivePick = { tid, pid };
-          if (window._dsaPick) {
-            router.navigate("/dsa-visualizer");
-            window._dsaPick(tid, pid);
-          } else {
-            window._dsaPendingPick = [tid, pid];
-            router.navigate("/dsa-visualizer");
-          }
-          render();
-        });
-      });
     }
 
     filter.subscribe(render);
