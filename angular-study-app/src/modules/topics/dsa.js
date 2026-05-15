@@ -1473,6 +1473,792 @@ function initDSAVisualizer(root, _options) {
     return steps;
   }
 
+
+  // ── NEW SOLVERS ────────────────────────────────────────────
+
+  // Sliding Window II
+  function solveMinWindow(inp) {
+    const s = inp.str || 'ADOBECODEBANC';
+    const t = inp.k || 'ABC';
+    const steps = [];
+    const need = {};
+    for (const c of t) need[c] = (need[c]||0) + 1;
+    const total = Object.keys(need).length;
+    let have = 0, formed = 0;
+    const window = {};
+    let l = 0, best = '';
+    let bestL = -1, bestR = -1;
+    steps.push(mkStep(
+      `Find shortest substring of <b>"${s}"</b> containing all chars of <b>"${t}"</b>.<br>🧒 Slide a magnifying glass — expand right until all letters found, shrink left for shortest fit.`,
+      rStr(s,{},'',`s = "${s}"`) + '<br>' + rAux(Object.entries(need).map(([k,v])=>`${k}:${v}`),'Need'),
+      `need = {${Object.entries(need).map(([k,v])=>k+':'+v).join(',')}}`
+    ));
+    for (let r = 0; r < s.length; r++) {
+      const c = s[r];
+      window[c] = (window[c]||0) + 1;
+      if (need[c] !== undefined && window[c] === need[c]) formed++;
+      const st = {};
+      for (let i = l; i <= r; i++) st[i] = 'win';
+      st[r] = 'act';
+      while (formed === total) {
+        if (best === '' || r - l + 1 < best.length) {
+          best = s.slice(l, r+1); bestL = l; bestR = r;
+        }
+        const lc = s[l];
+        window[lc]--;
+        if (need[lc] !== undefined && window[lc] < need[lc]) formed--;
+        l++;
+        steps.push(mkStep(
+          `r=${r}. Window valid! Shrink left: remove '${lc}'. Window now "${s.slice(l,r+1)}". Best: <b>"${best}"</b>`,
+          rStr(s, {...st, [l-1]:'exc'}, {L:l, R:r}, `window "${s.slice(l,r+1)}"`) + '<br>' +
+          rAuxRow(rAux(Object.entries(window).filter(([,v])=>v>0).map(([k,v])=>`${k}:${v}`),'Window'), rAux([best],'Best')),
+          `l=${l}, r=${r}, best="${best}"`
+        ));
+      }
+      if (formed < total) {
+        steps.push(mkStep(
+          `r=${r} add '${c}'. Window "${s.slice(l,r+1)}" — still missing chars (${formed}/${total}). Expand right.`,
+          rStr(s, st, {L:l, R:r}, `expanding`) + '<br>' +
+          rAux(Object.entries(window).filter(([,v])=>v>0).map(([k,v])=>`${k}:${v}`),'Window'),
+          `formed=${formed}/${total}`
+        ));
+      }
+    }
+    const finalSt = {};
+    if (bestL >= 0) for (let i = bestL; i <= bestR; i++) finalSt[i] = 'res';
+    steps.push(mkStep(
+      best ? `Min window = <b>"${best}"</b> (len ${best.length}).` : `No valid window found.`,
+      rStr(s, finalSt, {}, `Result: "${best}"`)
+    ));
+    return steps;
+  }
+
+  function solvePermInStr(inp) {
+    const s = inp.str || 'eidbaooo';
+    const p = inp.k || 'ab';
+    const steps = [];
+    const pFreq = {};
+    for (const c of p) pFreq[c] = (pFreq[c]||0)+1;
+    const wFreq = {};
+    let match = 0;
+    const need = Object.keys(pFreq).length;
+    const k = p.length;
+    steps.push(mkStep(
+      `Does any permutation of <b>"${p}"</b> appear in <b>"${s}"</b>?<br>🧒 Slide a window of size ${k}. Same letter counts = permutation match!`,
+      rStr(s,{},'',`s = "${s}"`) + '<br>' + rAux(Object.entries(pFreq).map(([c,v])=>`${c}:${v}`),'Pattern freq'),
+      `window size = ${k}`
+    ));
+    let found = false;
+    for (let r = 0; r < s.length; r++) {
+      const rc = s[r];
+      wFreq[rc] = (wFreq[rc]||0)+1;
+      if (pFreq[rc] !== undefined && wFreq[rc] === pFreq[rc]) match++;
+      if (r >= k) {
+        const lc = s[r-k];
+        if (pFreq[lc] !== undefined && wFreq[lc] === pFreq[lc]) match--;
+        wFreq[lc]--;
+      }
+      const st = {};
+      const L = Math.max(0, r-k+1);
+      for (let i = L; i <= r; i++) st[i] = match===need ? 'res':'win';
+      st[r] = match===need ? 'res':'act';
+      const isMatch = match === need;
+      if (isMatch) found = true;
+      steps.push(mkStep(
+        `Window "${s.slice(L,r+1)}" — ${isMatch ? `MATCH! Permutation of "${p}" found!` : `no match (${match}/${need})`}`,
+        rStr(s, st, {L, R:r}, `window size ${k}`) + '<br>' +
+        rAux(Object.entries(wFreq).filter(([,v])=>v>0).map(([c,v])=>`${c}:${v}`),'Window freq'),
+        `r=${r}, match=${match}/${need}`
+      ));
+      if (isMatch) break;
+    }
+    steps.push(mkStep(
+      found ? `Permutation of <b>"${p}"</b> found! Result = <b>true</b>.` : `No permutation found. Result = <b>false</b>.`,
+      rAux([found?'true':'false'],'Result')
+    ));
+    return steps;
+  }
+
+  // Two Pointers
+  function solveContainerWater(inp) {
+    const h = parseNums(inp.arr,[1,8,6,2,5,4,8,3,7]);
+    const steps = [];
+    steps.push(mkStep(
+      `Find two lines trapping the most water. 🧒 Fence posts of different heights — water level is the shorter post. Area = shorter × distance. Start widest, move the shorter pointer inward.`,
+      rArr(h,{},'','Heights'),
+      `area = min(h[L],h[R]) x (R-L)`
+    ));
+    let l=0, r=h.length-1, best=0, bestL=0, bestR=h.length-1;
+    while (l < r) {
+      const area = Math.min(h[l],h[r]) * (r-l);
+      const better = area > best;
+      if (better) { best=area; bestL=l; bestR=r; }
+      const st = {};
+      for (let i=l; i<=r; i++) st[i]='win';
+      st[l]='act'; st[r]='act';
+      steps.push(mkStep(
+        `L=${l}(h=${h[l]}), R=${r}(h=${h[r]}). Area=min(${h[l]},${h[r]})x${r-l}=<b>${area}</b>. ${better?`New best!`:`best=${best}`}<br>Move <b>${h[l]<=h[r]?'LEFT':'RIGHT'}</b> pointer inward.`,
+        rArr(h, st, {L:l, R:r}, `area=${area}, best=${best}`),
+        `area=${area}, best=${best}`
+      ));
+      if (h[l] <= h[r]) l++; else r--;
+    }
+    const fs = {};
+    for (let i=bestL;i<=bestR;i++) fs[i]='res';
+    steps.push(mkStep(`Max water = <b>${best}</b> between ${bestL} and ${bestR}.`, rArr(h,fs,{},`max area=${best}`)));
+    return steps;
+  }
+
+  function solveTrapRain(inp) {
+    const h = parseNums(inp.arr,[0,1,0,2,1,0,1,3,2,1,2,1]);
+    const n = h.length;
+    const steps = [];
+    steps.push(mkStep(
+      `Compute trapped rain water. 🧒 Water at each bar = min(tallest left, tallest right) minus bar height. Two pointers track running max from each side in O(n).`,
+      rArr(h,{},'','Elevation'),
+      `water[i] = min(maxL,maxR) - h[i]`
+    ));
+    let l=0, r=n-1, maxL=0, maxR=0, total=0;
+    while (l <= r) {
+      if (h[l] <= h[r]) {
+        maxL = Math.max(maxL, h[l]);
+        const w = maxL - h[l];
+        const st = {};
+        st[l]='act';
+        for (let i=0;i<l;i++) st[i]='vis';
+        steps.push(mkStep(
+          `L=${l} h=${h[l]}, maxL=${maxL}. water=${maxL}-${h[l]}=<b>${w}</b>. Total=${total+w}.`,
+          rArr(h,st,{L:l,R:r},`maxL=${maxL}`),
+          `water[${l}]=${w}, total=${total+w}`
+        ));
+        total+=w; l++;
+      } else {
+        maxR = Math.max(maxR, h[r]);
+        const w = maxR - h[r];
+        const st = {};
+        st[r]='act';
+        for (let i=r+1;i<n;i++) st[i]='vis';
+        steps.push(mkStep(
+          `R=${r} h=${h[r]}, maxR=${maxR}. water=${maxR}-${h[r]}=<b>${w}</b>. Total=${total+w}.`,
+          rArr(h,st,{L:l,R:r},`maxR=${maxR}`),
+          `water[${r}]=${w}, total=${total+w}`
+        ));
+        total+=w; r--;
+      }
+    }
+    steps.push(mkStep(`Total trapped water = <b>${total}</b> units.`, rArr(h,{},'',`Result: ${total} units`)));
+    return steps;
+  }
+
+  function solveThreeSum(inp) {
+    const arr = parseNums(inp.arr,[-1,0,1,2,-1,-4]);
+    arr.sort((a,b)=>a-b);
+    const steps = [];
+    steps.push(mkStep(
+      `Find all unique triplets summing to 0. 🧒 Sort first. Fix one number, then two-pointer on the rest — like squeezing from both sides to find the matching pair.`,
+      rArr(arr,{},'',`Sorted: [${arr.join(',')}]`),
+      `sort, fix i, two-pointer [i+1..n-1]`
+    ));
+    const result = [];
+    for (let i = 0; i < arr.length-2; i++) {
+      if (i > 0 && arr[i] === arr[i-1]) {
+        steps.push(mkStep(`Skip i=${i} (${arr[i]}) — duplicate.`, rArr(arr,{[i]:'exc'},'',`skip dup`)));
+        continue;
+      }
+      let l=i+1, r=arr.length-1;
+      steps.push(mkStep(
+        `Fix i=${i}(${arr[i]}). Two-pointer: need L+R=${-arr[i]}.`,
+        rArr(arr,{[i]:'res',[l]:'act',[r]:'act'},{L:l,R:r},`fixed=${arr[i]}`),
+        `fixed=${arr[i]}, target=${-arr[i]}`
+      ));
+      while (l < r) {
+        const sum = arr[i]+arr[l]+arr[r];
+        const st = {[i]:'res',[l]:'act',[r]:'act'};
+        if (sum === 0) {
+          result.push([arr[i],arr[l],arr[r]]);
+          steps.push(mkStep(
+            `Triplet [${arr[i]},${arr[l]},${arr[r]}] sums to 0!`,
+            rArr(arr,st,{L:l,R:r},`Found triplet!`),
+            `[${arr[i]},${arr[l]},${arr[r]}] added`
+          ));
+          while (l<r && arr[l]===arr[l+1]) l++;
+          while (l<r && arr[r]===arr[r-1]) r--;
+          l++; r--;
+        } else if (sum < 0) {
+          steps.push(mkStep(`Sum=${sum}<0, move L right.`, rArr(arr,st,{L:l,R:r},`too small`)));
+          l++;
+        } else {
+          steps.push(mkStep(`Sum=${sum}>0, move R left.`, rArr(arr,st,{L:l,R:r},`too big`)));
+          r--;
+        }
+      }
+    }
+    steps.push(mkStep(`Found <b>${result.length}</b> triplet(s): ${result.map(t=>`[${t}]`).join(', ')}.`, rAux(result.map(t=>`[${t}]`),'Triplets summing to 0')));
+    return steps;
+  }
+
+  // Binary Search
+  function solveSearchRotated(inp) {
+    const arr = parseNums(inp.arr,[4,5,6,7,0,1,2]);
+    const target = parseInt(inp.n)||0;
+    const steps = [];
+    steps.push(mkStep(
+      `Search for <b>${target}</b> in rotated sorted array. 🧒 Like a circular conveyor belt — sorted list cut and rejoined. Binary search still works! One half is ALWAYS sorted.`,
+      rArr(arr,{},'',`Rotated sorted — target=${target}`),
+      `one half always sorted — use that to decide direction`
+    ));
+    let l=0, r=arr.length-1, found=-1;
+    while (l <= r) {
+      const mid = (l+r)>>1;
+      const st = {[mid]:'act'};
+      for (let i=l;i<mid;i++) st[i]='win';
+      for (let i=mid+1;i<=r;i++) st[i]='win';
+      if (arr[mid]===target) {
+        found=mid;
+        steps.push(mkStep(`mid=${mid}(${arr[mid]})=target! Found at index <b>${mid}</b>.`, rArr(arr,{...st,[mid]:'res'},{L:l,M:mid,R:r})));
+        break;
+      }
+      const ls = arr[l] <= arr[mid];
+      const goLeft = ls ? (target>=arr[l]&&target<arr[mid]) : !(target>arr[mid]&&target<=arr[r]);
+      steps.push(mkStep(
+        `mid=${mid}(${arr[mid]}). ${ls?'Left':'Right'} half sorted. Target ${target} → go <b>${goLeft?'LEFT':'RIGHT'}</b>.`,
+        rArr(arr,st,{L:l,M:mid,R:r},`${ls?'left':'right'} sorted`),
+        `leftSorted=${ls}, go${goLeft?'Left':'Right'}`
+      ));
+      if (goLeft) r=mid-1; else l=mid+1;
+    }
+    if (found<0) steps.push(mkStep(`Target ${target} not found. Return <b>-1</b>.`, rAux(['-1'],'Result')));
+    return steps;
+  }
+
+  function solveFindMinRotated(inp) {
+    const arr = parseNums(inp.arr,[3,4,5,1,2]);
+    const steps = [];
+    steps.push(mkStep(
+      `Find minimum in rotated sorted array O(log n). 🧒 Sorted array spun like a wheel. Minimum is at the rotation seam. Binary search: go toward the unsorted (smaller) side.`,
+      rArr(arr,{},'','Rotated sorted'),
+      `if mid>right: min is in right half, else left`
+    ));
+    let l=0, r=arr.length-1;
+    while (l < r) {
+      const mid=(l+r)>>1;
+      const st={[mid]:'act'};
+      for(let i=l;i<=r;i++) if(i!==mid) st[i]='win';
+      if (arr[mid]>arr[r]) {
+        steps.push(mkStep(`mid=${mid}(${arr[mid]})>right(${arr[r]}). Min in RIGHT half. l=${mid+1}.`, rArr(arr,st,{L:l,M:mid,R:r},`min is right`), `l=mid+1`));
+        l=mid+1;
+      } else {
+        steps.push(mkStep(`mid=${mid}(${arr[mid]})<=right(${arr[r]}). Min in LEFT (includes mid). r=${mid}.`, rArr(arr,st,{L:l,M:mid,R:r},`min is left/mid`), `r=mid`));
+        r=mid;
+      }
+    }
+    steps.push(mkStep(`Min = <b>${arr[l]}</b> at index ${l}.`, rArr(arr,{[l]:'res'},{},'Result')));
+    return steps;
+  }
+
+  function solveKoko(inp) {
+    const piles = parseNums(inp.arr,[3,6,7,11]);
+    const h = parseInt(inp.n)||8;
+    const maxPile = Math.max(...piles);
+    const hoursAt = k => piles.reduce((s,p)=>s+Math.ceil(p/k),0);
+    const steps = [];
+    steps.push(mkStep(
+      `Koko eats ${piles.length} piles in ${h} hours. Min bananas/hour? 🧒 Try binary search on speed! If speed k works, maybe k-1 works. If not, need higher speed.`,
+      rArr(piles,{},'','Piles') + '<br>' + rAux([`h=${h}hrs`,`maxPile=${maxPile}`],'Constraints'),
+      `binary search lo=1 hi=${maxPile}`
+    ));
+    let lo=1, hi=maxPile, best=maxPile;
+    while (lo<=hi) {
+      const mid=(lo+hi)>>1;
+      const total=hoursAt(mid);
+      const ok=total<=h;
+      if(ok){best=mid;hi=mid-1;} else lo=mid+1;
+      steps.push(mkStep(
+        `Speed k=${mid}: hours=${piles.map(p=>`ceil(${p}/${mid})=${Math.ceil(p/mid)}`).join('+')}=${total}. ${ok?`Valid (${total}<=${h})! Try lower. best=${best}.`:`Too slow (${total}>${h}). Try higher.`}`,
+        rArr(piles,piles.map((_,i)=>({[i]:ok?'vis':'exc'})).reduce((a,b)=>({...a,...b}),{}),{},`k=${mid} → ${total}hrs`),
+        `k=${mid}, ok=${ok}, best=${best}`
+      ));
+    }
+    steps.push(mkStep(`Min speed = <b>${best}</b> bananas/hr.`, rArr(piles,{},'',`Answer: k=${best}`) + '<br>' + rAux([`${best} bananas/hr`],'Answer')));
+    return steps;
+  }
+
+  // Stack
+  function solveValidParen(inp) {
+    const s = inp.str || '({[]})';
+    const steps = [];
+    const pairs = {')':'(',']':'[','}':'{'};
+    const opens = new Set(['(','[','{']);
+    const stack = [];
+    steps.push(mkStep(
+      `Validate brackets in <b>"${s}"</b>. 🧒 Stack like a pile of plates. Open bracket = add plate. Close bracket = top plate must match!`,
+      rStr(s,{},'',`"${s}"`) + '<br>' + rAux([],'Stack'),
+      `open=push, close=pop+match`
+    ));
+    let valid=true;
+    for (let i=0;i<s.length;i++) {
+      const c=s[i];
+      const st={};
+      for(let j=0;j<i;j++) st[j]='vis';
+      st[i]='act';
+      if (opens.has(c)) {
+        stack.push(c);
+        steps.push(mkStep(
+          `'${c}' is opening bracket. Push.`,
+          rStr(s,st,'',`char='${c}'`) + '<br>' + rAux([...stack],'Stack',stack.length-1),
+          `push '${c}'`
+        ));
+      } else {
+        const top=stack[stack.length-1];
+        const match=top===pairs[c];
+        if(!match) valid=false;
+        if(match) stack.pop();
+        steps.push(mkStep(
+          `'${c}' is closing. Top='${top||'empty'}'. ${match?`Match! Pop.`:`MISMATCH! Expected '${pairs[c]}' → INVALID.`}`,
+          rStr(s,{...st,[i]:match?'vis':'exc'},'',`char='${c}'`) + '<br>' + rAux([...stack],'Stack after'),
+          `match=${match}`
+        ));
+        if(!valid) break;
+      }
+    }
+    if(valid&&stack.length>0) valid=false;
+    steps.push(mkStep(
+      valid?`All matched, stack empty. Result=<b>true</b> ✅`:`Result=<b>false</b> ❌`,
+      rAux([valid?'true':'false'],'Valid?')
+    ));
+    return steps;
+  }
+
+  function solveDailyTemp(inp) {
+    const temps = parseNums(inp.arr,[73,74,75,71,69,72,76,73]);
+    const n = temps.length;
+    const ans = new Array(n).fill(0);
+    const stack = [];
+    const steps = [];
+    steps.push(mkStep(
+      `Days until warmer temperature. 🧒 Keep a "waiting days" stack. When today is warmer than a waiting day, that day gets its answer: how long it waited!`,
+      rArr(temps,{},'','Temperatures'),
+      `monotonic decreasing stack of indices`
+    ));
+    for (let i=0;i<n;i++) {
+      const st={};
+      for(let j=0;j<i;j++) st[j]='vis';
+      st[i]='act';
+      steps.push(mkStep(
+        `Day ${i}: temp=${temps[i]}. Stack top=${stack.length?`day ${stack[stack.length-1]}(${temps[stack[stack.length-1]]})`:'empty'}.`,
+        rArr(temps,st,{},`Day ${i}=${temps[i]}`) + '<br>' + rAux(stack.map(idx=>`d${idx}:${temps[idx]}`),'Waiting stack'),
+        `i=${i}`
+      ));
+      while (stack.length&&temps[stack[stack.length-1]]<temps[i]) {
+        const j=stack.pop();
+        ans[j]=i-j;
+        const st2={...st,[j]:'res'};
+        steps.push(mkStep(
+          `Day ${i}(${temps[i]}°)>day ${j}(${temps[j]}°). Day ${j} waited <b>${ans[j]} days</b>!`,
+          rArr(temps,st2,{},`ans[${j}]=${ans[j]}`) + '<br>' + rAux(stack.map(idx=>`d${idx}:${temps[idx]}`),'Stack after pop'),
+          `ans[${j}]=${ans[j]}`
+        ));
+      }
+      stack.push(i);
+    }
+    steps.push(mkStep(
+      `Done! Remaining stack → 0 (no warmer day). Result: [${ans.join(',')}]`,
+      rArr(ans,ans.map((v,i)=>({[i]:v>0?'res':'exc'})).reduce((a,b)=>({...a,...b}),{}),{},'Days to wait')
+    ));
+    return steps;
+  }
+
+  function solveLargestRect(inp) {
+    const h = parseNums(inp.arr,[2,1,5,6,2,3]);
+    const n = h.length;
+    const stack = [];
+    const steps = [];
+    steps.push(mkStep(
+      `Largest rectangle in histogram. 🧒 Each bar can be the SHORTEST bar in a rectangle. When a shorter bar appears, taller waiting bars know their span just ended — compute their area!`,
+      rArr(h,{},'','Heights'),
+      `monotonic increasing stack`
+    ));
+    let maxArea=0;
+    const ext=[...h,0];
+    for (let i=0;i<=n;i++) {
+      const cur=ext[i];
+      while (stack.length&&h[stack[stack.length-1]]>cur) {
+        const hi=stack.pop();
+        const width=stack.length?i-stack[stack.length-1]-1:i;
+        const area=h[hi]*width;
+        maxArea=Math.max(maxArea,area);
+        const st={};
+        for(let j=(stack.length?stack[stack.length-1]+1:0);j<i;j++) st[j]='res';
+        st[hi]='act';
+        steps.push(mkStep(
+          `Pop bar ${hi}(h=${h[hi]}), width=${width}. Area=${h[hi]}x${width}=<b>${area}</b>. Max=${maxArea}.`,
+          rArr(h,st,{},`h=${h[hi]} w=${width}`) + '<br>' + rAux(stack.map(s=>`${s}:h${h[s]}`),'Stack'),
+          `area=${area}, max=${maxArea}`
+        ));
+      }
+      if (i<n) {
+        stack.push(i);
+        const st={};
+        for(let j=0;j<i;j++) st[j]='vis';
+        st[i]='act';
+        steps.push(mkStep(`i=${i} h=${h[i]}: push.`, rArr(h,st,{},`push ${i}`) + '<br>' + rAux(stack.map(s=>`${s}:h${h[s]}`),'Stack'), `push i=${i}`));
+      }
+    }
+    steps.push(mkStep(`Largest rect area = <b>${maxArea}</b>.`, rArr(h,{},'',`Answer: ${maxArea}`)));
+    return steps;
+  }
+
+  // Backtracking
+  function solveSubsets(inp) {
+    const nums = parseNums(inp.arr,[1,2,3]);
+    const steps = [];
+    const result = [];
+    steps.push(mkStep(
+      `All subsets of [${nums.join(',')}]. 🧒 For each number: put it in the bag or leave it out. That gives ${Math.pow(2,nums.length)} subsets!`,
+      rArr(nums,{},'','Numbers'),
+      `2^${nums.length}=${Math.pow(2,nums.length)} subsets`
+    ));
+    function bt(idx, cur) {
+      result.push([...cur]);
+      steps.push(mkStep(
+        `Add subset [${cur.join(',')||'empty'}].`,
+        rArr(nums,nums.map((_,i)=>({[i]:i<idx?'vis':i===idx?'act':'def'})).reduce((a,b)=>({...a,...b}),{}),{},`current=[${cur.join(',')||'empty'}]`) + '<br>' +
+        rAux(result.map(r=>`[${r.join(',')||'e'}]`),'Subsets'),
+        `[${cur.join(',')||'empty'}]`
+      ));
+      for (let i=idx;i<nums.length;i++) {
+        cur.push(nums[i]);
+        bt(i+1,cur);
+        cur.pop();
+      }
+    }
+    bt(0,[]);
+    steps.push(mkStep(`Done! ${result.length} subsets.`, rAux(result.map(r=>`[${r.join(',')||'e'}]`),'Power set')));
+    return steps;
+  }
+
+  function solvePermutations(inp) {
+    const nums = parseNums(inp.arr,[1,2,3]);
+    const steps = [];
+    const result = [];
+    const total = nums.reduce((a,_,i)=>a*(i+1),1);
+    steps.push(mkStep(
+      `All permutations of [${nums.join(',')}]. 🧒 Arrange toys on a shelf — try each toy in the first spot, arrange the rest. ${total} arrangements total!`,
+      rArr(nums,{},'','Numbers'),
+      `${nums.length}!=${total} permutations`
+    ));
+    const arr=[...nums];
+    function bt(start) {
+      if (start===arr.length) {
+        result.push([...arr]);
+        steps.push(mkStep(
+          `Permutation: [${arr.join(',')}]`,
+          rArr(arr,arr.map((_,i)=>({[i]:'res'})).reduce((a,b)=>({...a,...b}),{}),{},`[${arr.join(',')}]`) + '<br>' +
+          rAux(result.map(r=>`[${r.join(',')}]`),'Found'),
+          `perm [${arr.join(',')}]`
+        ));
+        return;
+      }
+      for (let i=start;i<arr.length;i++) {
+        [arr[start],arr[i]]=[arr[i],arr[start]];
+        const st=arr.map((_,j)=>({[j]:j<start?'vis':j===start?'act':'def'})).reduce((a,b)=>({...a,...b}),{});
+        steps.push(mkStep(
+          `Fix pos ${start}=<b>${arr[start]}</b> (swapped with ${i}).`,
+          rArr(arr,st,{fix:start},`arr=[${arr.join(',')}]`),
+          `swap(${start},${i})`
+        ));
+        bt(start+1);
+        [arr[start],arr[i]]=[arr[i],arr[start]];
+      }
+    }
+    bt(0);
+    steps.push(mkStep(`Done! ${result.length} permutations.`, rAux(result.map(r=>`[${r.join(',')}]`),'All permutations')));
+    return steps;
+  }
+
+  function solveCombSum(inp) {
+    const cands = parseNums(inp.arr,[2,3,6,7]).sort((a,b)=>a-b);
+    const target = parseInt(inp.n)||7;
+    const steps = [];
+    const result = [];
+    steps.push(mkStep(
+      `Combinations from [${cands.join(',')}] summing to <b>${target}</b> (reuse allowed). 🧒 Like making exact change with reusable coins. Try each coin, keep adding until you hit the target or overshoot!`,
+      rArr(cands,{},'','Candidates (sorted)') + '<br>' + rAux([target],'Target'),
+      `sort + backtrack + prune`
+    ));
+    function bt(start, cur, rem) {
+      if (rem===0) {
+        result.push([...cur]);
+        steps.push(mkStep(
+          `Found: [${cur.join('+')}]=${target}!`,
+          rArr(cands,cands.map((_,i)=>({[i]:i<start?'vis':'def'})).reduce((a,b)=>({...a,...b}),{}),{},`sum=${target}`) + '<br>' +
+          rAux(result.map(r=>`[${r.join('+')}]`),'Combinations'),
+          `[${cur.join(',')}] added`
+        ));
+        return;
+      }
+      for (let i=start;i<cands.length;i++) {
+        if (cands[i]>rem) {
+          steps.push(mkStep(`${cands[i]}>${rem} → prune branch.`, rArr(cands,{...cands.map((_,j)=>({[j]:'exc'})).reduce((a,b)=>({...a,...b}),{})},{},'prune'), `prune`));
+          break;
+        }
+        cur.push(cands[i]);
+        steps.push(mkStep(
+          `Pick ${cands[i]}. current=[${cur.join(',')}], rem=${rem-cands[i]}.`,
+          rArr(cands,cands.map((_,j)=>({[j]:j<i?'vis':j===i?'act':'def'})).reduce((a,b)=>({...a,...b}),{}),{},`rem=${rem-cands[i]}`),
+          `pick ${cands[i]}`
+        ));
+        bt(i,cur,rem-cands[i]);
+        cur.pop();
+      }
+    }
+    bt(0,[],target);
+    steps.push(mkStep(`Done! ${result.length} combination(s).`, rAux(result.map(r=>`[${r.join('+')}]`),`Summing to ${target}`)));
+    return steps;
+  }
+
+  // DP Extended
+  function solveWordBreak(inp) {
+    const s = inp.str || 'leetcode';
+    const dict = new Set((inp.k||'leet,code').split(',').map(x=>x.trim()).filter(Boolean));
+    const n = s.length;
+    const dp = new Array(n+1).fill(false);
+    dp[0]=true;
+    const steps = [];
+    steps.push(mkStep(
+      `Can "<b>${s}</b>" be split into words from [${[...dict].join(', ')}]? 🧒 dp[i]=true means position i is a valid cut point. Try every possible word ending at i — if the word is in the dict AND dp before it is true, dp[i]=true!`,
+      rStr(s,{},'',`"${s}"`) + '<br>' + rDP1(dp,0,`dp[] reachable positions`),
+      `dp[0]=true`
+    ));
+    for (let i=1;i<=n;i++) {
+      for (let j=0;j<i;j++) {
+        const word=s.slice(j,i);
+        const inDict=dict.has(word);
+        if (dp[j]&&inDict) {
+          dp[i]=true;
+          steps.push(mkStep(
+            `dp[${j}]=true + s[${j}..${i-1}]="<b>${word}</b>" in dict → dp[${i}]=<b>true</b>!`,
+            rStr(s,Object.fromEntries([...s].map((_,k)=>[k,k>=j&&k<i?'res':'vis'])),{},`"${word}" in dict`) + '<br>' + rDP1(dp,i,'dp[]'),
+            `dp[${i}]=true via "${word}"`
+          ));
+          break;
+        }
+      }
+    }
+    steps.push(mkStep(
+      dp[n]?`dp[${n}]=true. "<b>${s}</b>" CAN be segmented! ✅`:`dp[${n}]=false. Cannot segment. ❌`,
+      rDP1(dp,n,`Result: ${dp[n]}`)
+    ));
+    return steps;
+  }
+
+  function solveJumpGame(inp) {
+    const arr = parseNums(inp.arr,[2,3,1,1,4]);
+    const n = arr.length;
+    const steps = [];
+    steps.push(mkStep(
+      `Each value = max jump. Can you reach the last index? 🧒 Jumping on lily pads. Each pad shows how far you can jump. Track the FARTHEST pad you could ever reach!`,
+      rArr(arr,{},'','Jump lengths'),
+      `maxReach = farthest reachable index`
+    ));
+    let maxReach=0, canReach=true;
+    for (let i=0;i<n;i++) {
+      if (i>maxReach) {
+        canReach=false;
+        steps.push(mkStep(
+          `i=${i}>maxReach=${maxReach}. STUCK! Cannot reach the end. ❌`,
+          rArr(arr,arr.map((_,j)=>({[j]:j<i?'vis':j===i?'exc':'def'})).reduce((a,b)=>({...a,...b}),{}),{i},`STUCK`),
+          `FAIL`
+        ));
+        break;
+      }
+      const nm=Math.max(maxReach,i+arr[i]);
+      const st=arr.map((_,j)=>({[j]:j<i?'vis':j===i?'act':j<=nm?'win':'def'})).reduce((a,b)=>({...a,...b}),{});
+      steps.push(mkStep(
+        `i=${i} jump=${arr[i]}. Reach up to ${i+arr[i]}. maxReach=max(${maxReach},${i+arr[i]})=<b>${nm}</b>.`,
+        rArr(arr,st,{i},`maxReach=${nm}`),
+        `maxReach=${nm}`
+      ));
+      maxReach=nm;
+      if (maxReach>=n-1) break;
+    }
+    steps.push(mkStep(
+      canReach?`maxReach=${maxReach}>=${n-1}. Result=<b>true</b> ✅`:`Stuck. Result=<b>false</b> ❌`,
+      rAux([canReach?'true':'false'],'Can reach?')
+    ));
+    return steps;
+  }
+
+  function solveMaxProduct(inp) {
+    const arr = parseNums(inp.arr,[2,3,-2,4]);
+    const steps = [];
+    let maxSoFar=arr[0], curMax=arr[0], curMin=arr[0];
+    steps.push(mkStep(
+      `Max product subarray. 🧒 Negative x negative = positive! Track BOTH running max AND running min. When you multiply by a negative, they FLIP!`,
+      rArr(arr,{[0]:'act'},'','Array') + '<br>' + rAuxRow(rAux([curMax],'curMax'),rAux([curMin],'curMin'),rAux([maxSoFar],'globalMax')),
+      `track both max and min`
+    ));
+    for (let i=1;i<arr.length;i++) {
+      const v=arr[i];
+      const c=[v,curMax*v,curMin*v];
+      const nMax=Math.max(...c), nMin=Math.min(...c);
+      maxSoFar=Math.max(maxSoFar,nMax);
+      const st=arr.map((_,j)=>({[j]:j<i?'vis':j===i?'act':'def'})).reduce((a,b)=>({...a,...b}),{});
+      steps.push(mkStep(
+        `i=${i} val=${v}. candidates=[${v},${curMax*v},${curMin*v}]. newMax=<b>${nMax}</b>, newMin=<b>${nMin}</b>. global=<b>${maxSoFar}</b>.`,
+        rArr(arr,st,{},`val=${v}`) + '<br>' +
+        rAuxRow(rAux([nMax],'curMax'),rAux([nMin],'curMin'),rAux([maxSoFar],'globalMax')) + '<br>' +
+        rDecision('Pick newMax',[{label:'v',value:v,win:v===nMax},{label:'max*v',value:curMax*v,win:curMax*v===nMax},{label:'min*v',value:curMin*v,win:curMin*v===nMax}]),
+        `max=${nMax},global=${maxSoFar}`
+      ));
+      curMax=nMax; curMin=nMin;
+    }
+    steps.push(mkStep(`Max product = <b>${maxSoFar}</b>.`, rArr(arr,{},'',`Answer: ${maxSoFar}`)));
+    return steps;
+  }
+
+  function solveDecodeWays(inp) {
+    const s = inp.str || '226';
+    const n = s.length;
+    const dp = new Array(n+1).fill(0);
+    dp[0]=1;
+    dp[1]=s[0]==='0'?0:1;
+    const steps = [];
+    steps.push(mkStep(
+      `Decode ways for "<b>${s}</b>" (A=1..Z=26). 🧒 Like climbing stairs with rules: step 1 digit (valid 1-9) OR 2 digits (valid 10-26). Count all valid paths!`,
+      rStr(s,{[0]:'vis'},'',`"${s}"`) + '<br>' + rDP1(dp,1,'dp[] decode ways'),
+      `dp[0]=1, dp[1]=${dp[1]}`
+    ));
+    for (let i=2;i<=n;i++) {
+      const one=parseInt(s[i-1]);
+      const two=parseInt(s.slice(i-2,i));
+      const ok1=one>=1&&one<=9;
+      const ok2=two>=10&&two<=26;
+      if(ok1) dp[i]+=dp[i-1];
+      if(ok2) dp[i]+=dp[i-2];
+      steps.push(mkStep(
+        `pos ${i}: digit="${s[i-1]}"(${ok1?'ok':'invalid'}), two="${s.slice(i-2,i)}"(${ok2?'ok':'invalid'}). dp[${i}]=${ok1?`dp[${i-1}]=${dp[i-1]}`:'0'}+${ok2?`dp[${i-2}]=${dp[i-2]}`:'0'}=<b>${dp[i]}</b>`,
+        rStr(s,Object.fromEntries([...s].map((_,j)=>[j,j<i-1?'vis':j===i-1?'act':'def'])),{},'s') + '<br>' + rDP1([...dp],i,'dp[]'),
+        `dp[${i}]=${dp[i]}`
+      ));
+    }
+    steps.push(mkStep(`Decode ways = <b>${dp[n]}</b>.`, rDP1(dp,n,`Result: ${dp[n]}`)));
+    return steps;
+  }
+
+  // Graph (new)
+  function solveNumIslands(inp) {
+    const flat = parseNums(inp.arr,[1,1,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0]);
+    const rows = parseInt(inp.n)||5, cols = parseInt(inp.k)||5;
+    const grid = [];
+    for (let i=0;i<rows;i++) grid.push(flat.slice(i*cols,(i+1)*cols).map(x=>x?'1':'0'));
+    const vis = Array.from({length:rows},()=>new Array(cols).fill(false));
+    const steps = [];
+    const rGrid = (g,v,hiR,hiC,label) => {
+      let h = label?`<div class="dsa-arr-label">${label}</div>`:'';
+      h += '<div style="display:inline-block">';
+      const COL = {'1':'#1f6feb','0':'#161b22',vi:'#238636',ac:'#f0883e'};
+      for (let r=0;r<rows;r++) {
+        h += '<div style="display:flex">';
+        for (let c=0;c<cols;c++) {
+          const isHi=r===hiR&&c===hiC, isVis=v[r][c];
+          const bg=isHi?COL.ac:isVis?COL.vi:(g[r][c]==='1'?COL['1']:COL['0']);
+          h += `<div style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid #30363d;background:${bg};color:#e6edf3;font-size:13px;font-weight:bold;border-radius:3px;margin:1px">${g[r][c]}</div>`;
+        }
+        h += '</div>';
+      }
+      h += '</div>';
+      return h;
+    };
+    steps.push(mkStep(
+      `Count islands in ${rows}x${cols} grid. 🧒 Like a map — connected land tiles (1s) = one island. BFS flood-fill each island, count how many floods you start!`,
+      rGrid(grid,vis,-1,-1,`${rows}x${cols} grid`),
+      `BFS flood-fill each unvisited land cell`
+    ));
+    let islands=0;
+    for (let r=0;r<rows;r++) {
+      for (let c=0;c<cols;c++) {
+        if (grid[r][c]==='1'&&!vis[r][c]) {
+          islands++;
+          const queue=[[r,c]];
+          vis[r][c]=true;
+          steps.push(mkStep(`New island #${islands} at (${r},${c})! BFS flood-fill.`, rGrid(grid,vis,r,c,`Island ${islands}`), `island #${islands}`));
+          while (queue.length) {
+            const [cr,cc]=queue.shift();
+            for (const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+              const nr=cr+dr,nc=cc+dc;
+              if (nr>=0&&nr<rows&&nc>=0&&nc<cols&&grid[nr][nc]==='1'&&!vis[nr][nc]) {
+                vis[nr][nc]=true;
+                queue.push([nr,nc]);
+                steps.push(mkStep(`Visit (${nr},${nc}) — part of island #${islands}.`, rGrid(grid,vis,nr,nc,`Island ${islands} expanding`), `(${nr},${nc})`));
+              }
+            }
+          }
+        }
+      }
+    }
+    steps.push(mkStep(`Total islands = <b>${islands}</b>.`, rGrid(grid,vis,-1,-1,`Done: ${islands} island(s)`) + '<br>' + rAux([islands],'Islands')));
+    return steps;
+  }
+
+  function solveTopoSort(inp) {
+    const n = parseInt(inp.n)||4;
+    const edgeStr = inp.arr||'1-0,2-0,3-1,3-2';
+    const adj = Array.from({length:n},()=>[]);
+    const inDeg = new Array(n).fill(0);
+    const edgeMap = {};
+    for (const e of edgeStr.split(',')) {
+      const parts=e.trim().split('-').map(Number);
+      if (parts.length<2) continue;
+      const [a,b]=parts;
+      if (a>=n||b>=n) continue;
+      adj[b].push(a);
+      inDeg[a]++;
+      const key=`${Math.min(a,b)}-${Math.max(a,b)}`;
+      edgeMap[key]={};
+    }
+    const steps = [];
+    steps.push(mkStep(
+      `Finish ${n} courses with prerequisites. 🧒 Each course is a door — only opens when ALL its prerequisites are done. Start with courses that have 0 prerequisites. As you finish them, unlock more!`,
+      rGraph(n,edgeMap,inDeg.reduce((o,_,i)=>({...o,[i]:'def'}),{}),{}) + '<br>' + rArr(inDeg,{},'','In-degree (# prereqs)'),
+      `Kahn: start with in-degree=0`
+    ));
+    const queue=[];
+    for (let i=0;i<n;i++) if(inDeg[i]===0) queue.push(i);
+    const order=[], ns=new Array(n).fill('def');
+    for (const i of queue) ns[i]='que';
+    steps.push(mkStep(
+      `In-degree 0 (no prereqs): [${queue.join(',')}]. Enqueue.`,
+      rGraph(n,edgeMap,{...ns},{}) + '<br>' + rAux(queue.map(i=>`C${i}`),'Queue'),
+      `queue=[${queue.join(',')}]`
+    ));
+    while (queue.length) {
+      const cur=queue.shift();
+      order.push(cur);
+      ns[cur]='vis';
+      steps.push(mkStep(
+        `Complete C${cur}. Order: [${order.join('->')}].`,
+        rGraph(n,edgeMap,{...ns},{}) + '<br>' + rAuxRow(rAux(queue.map(i=>`C${i}`),'Queue'),rAux(order.map(i=>`C${i}`),'Done')),
+        `complete C${cur}`
+      ));
+      for (const nb of adj[cur]) {
+        inDeg[nb]--;
+        if (inDeg[nb]===0) { queue.push(nb); ns[nb]='que'; }
+        steps.push(mkStep(
+          `C${cur} unlocks C${nb}: inDeg[${nb}]->${inDeg[nb]}. ${inDeg[nb]===0?'Enqueued!':'Still has prereqs.'}`,
+          rGraph(n,edgeMap,{...ns},{}) + '<br>' + rArr(inDeg,{[nb]:inDeg[nb]===0?'res':'act'},'','In-degrees'),
+          `inDeg[${nb}]=${inDeg[nb]}`
+        ));
+      }
+    }
+    const ok=order.length===n;
+    steps.push(mkStep(
+      ok?`Order [${order.join('->')}] completes all ${n} courses! ✅`:`Only ${order.length}/${n} done — CYCLE detected! ❌`,
+      rGraph(n,edgeMap,ns,{}) + '<br>' + rAux(order.map(i=>`C${i}`),ok?'Valid order':'Incomplete!')
+    ));
+    return steps;
+  }
+
   // ── INIT ────────────────────────────────────────────────────
   root.querySelector('#dsa-btn-prev').addEventListener('click', () => nav(-1));
   root.querySelector('#dsa-btn-next').addEventListener('click', () => nav(1));
