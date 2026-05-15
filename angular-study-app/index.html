@@ -82,7 +82,32 @@
     <script src="src/modules/topics/agents/agent-reasoning-react.js"></script>
     <script src="src/modules/topics/agents/agent-mcp-protocol.js"></script>
     <script src="src/modules/topics/agents/agent-skills-tools.js"></script>
-    <script src="src/modules/topics/dsa/dsa-visualizer.js"></script>
+    <!-- DSA core (defines initDSAVisualizer + _dsaRenderViz) must load first -->
+    <script src="src/modules/topics/dsa.js"></script>
+    <!-- Sliding Window -->
+    <script src="src/modules/topics/dsa/dsa-sw-max-sum-fixed.js"></script>
+    <script src="src/modules/topics/dsa/dsa-sw-longest-uniq.js"></script>
+    <script src="src/modules/topics/dsa/dsa-sw-window-max.js"></script>
+    <script src="src/modules/topics/dsa/dsa-sw-min-subarray.js"></script>
+    <!-- Dynamic Programming -->
+    <script src="src/modules/topics/dsa/dsa-dp-fibonacci.js"></script>
+    <script src="src/modules/topics/dsa/dsa-dp-climb-stairs.js"></script>
+    <script src="src/modules/topics/dsa/dsa-dp-house-robber.js"></script>
+    <script src="src/modules/topics/dsa/dsa-dp-coin-change.js"></script>
+    <script src="src/modules/topics/dsa/dsa-dp-unique-paths.js"></script>
+    <script src="src/modules/topics/dsa/dsa-dp-knapsack.js"></script>
+    <script src="src/modules/topics/dsa/dsa-dp-lcs.js"></script>
+    <script src="src/modules/topics/dsa/dsa-dp-edit-distance.js"></script>
+    <script src="src/modules/topics/dsa/dsa-dp-lis.js"></script>
+    <script src="src/modules/topics/dsa/dsa-dp-partition-equal.js"></script>
+    <!-- Greedy -->
+    <script src="src/modules/topics/dsa/dsa-greedy-activity.js"></script>
+    <script src="src/modules/topics/dsa/dsa-greedy-coin.js"></script>
+    <script src="src/modules/topics/dsa/dsa-greedy-job-seq.js"></script>
+    <!-- Graph -->
+    <script src="src/modules/topics/dsa/dsa-graph-bfs.js"></script>
+    <script src="src/modules/topics/dsa/dsa-graph-dfs.js"></script>
+    <script src="src/modules/topics/dsa/dsa-graph-dijkstra.js"></script>
 
 <!-- Angular-style mini framework + app -->
 <script src="src/app.js"></script>

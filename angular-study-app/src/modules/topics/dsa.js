@@ -1,6 +1,6 @@
 /* ===== DSA Visualizer — interactive step-through component ===== */
 
-function initDSAVisualizer(root) {
+function initDSAVisualizer(root, _options) {
   // ── STATE ──────────────────────────────────────────────────
   let CUR_TOPIC = null, CUR_PROB = null;
   let STEPS = [], SI = 0, AUTO_T = null;
@@ -1264,208 +1264,26 @@ function initDSAVisualizer(root) {
   }
 
   // ── INIT ────────────────────────────────────────────────────
-  // Wire up bottom bar buttons
   root.querySelector('#dsa-btn-prev').addEventListener('click', () => nav(-1));
   root.querySelector('#dsa-btn-next').addEventListener('click', () => nav(1));
   root.querySelector('#dsa-btn-reset').addEventListener('click', () => doReset());
   root.querySelector('#dsa-btn-auto').addEventListener('click', () => toggleAuto());
 
   buildSidebar();
-  pick('sliding', 'maxSumFixed');
+
+  const _initTopic = (_options && _options.topic) || 'sliding';
+  const _initProb  = (_options && _options.problem) || 'maxSumFixed';
+  pick(_initTopic, _initProb);
 
   window._dsaPick = pick;
-  if (window._dsaPendingPick) {
-    const [t, p] = window._dsaPendingPick;
-    window._dsaPendingPick = null;
-    pick(t, p);
-  }
 }
 
-window._dsaActivePick = window._dsaActivePick || { tid: 'sliding', pid: 'maxSumFixed' };
-window.DSA_ALGO_NAV = {
-  sliding: { label: 'Sliding Window', problems: {
-    maxSumFixed: 'Max Sum Subarray (fixed k)',
-    longestUniq: 'Longest Substr No Repeat',
-    windowMax: 'Sliding Window Maximum',
-    minSubarraySum: 'Min Size Subarray >= target',
-  }},
-  dp: { label: 'Dynamic Programming', problems: {
-    fibonacci: 'Fibonacci (bottom-up)',
-    climbStairs: 'Climbing Stairs',
-    houseRobber: 'House Robber',
-    coinChange: 'Coin Change (min coins)',
-    uniquePaths: 'Unique Paths Grid',
-    knapsack: '0/1 Knapsack',
-    lcs: 'Longest Common Subsequence',
-    editDistance: 'Edit Distance',
-    lis: 'Longest Increasing Subsequence',
-    partitionEqual: 'Partition Equal Subset Sum',
-  }},
-  greedy: { label: 'Greedy', problems: {
-    activitySel: 'Activity Selection',
-    greedyCoin: 'Coin Change (greedy)',
-    jobSeq: 'Job Sequencing',
-  }},
-  graph: { label: 'Graph', problems: {
-    bfs: 'BFS Traversal',
-    dfs: 'DFS Traversal',
-    dijkstra: 'Dijkstra SSSP',
-  }},
-};
-
-window.DSA_TOPICS = [
-  {
-    id: "dsa-visualizer",
-    area: "dsa",
-    title: "DSA Algorithm Visualizer",
-    tag: "Interactive",
-    tags: ["dsa", "algorithms", "sliding-window", "dp", "greedy", "graph", "bfs", "dfs", "dijkstra", "faang", "climbing-stairs", "house-robber", "edit-distance", "lis", "subset-sum"],
-    concept:
-`Step-through visual debugger for core DSA patterns.
-
-**Sliding Window** — fixed/variable window with two pointers. O(n) for sum, frequency, and deque problems.
-
-**Dynamic Programming** — table-filling with dependency arrows. Fibonacci, Climbing Stairs, House Robber, Coin Change, Unique Paths, 0/1 Knapsack, LCS, Edit Distance, LIS, Partition Equal Subset Sum.
-
-**Greedy** — local-optimal decisions at each step. Activity Selection, Coin Change, Job Sequencing.
-
-**Graph** — BFS (queue, shortest path in unweighted), DFS (stack/recursion, cycle detection), Dijkstra (min-heap / dist array, SSSP in weighted).`,
-    why:
-`These four patterns cover ~70% of Leetcode medium/hard problems. Recognising which pattern applies is the interview skill — not memorising solutions. Each visualizer step shows the exact decision the algorithm makes, building intuition for why it works.`,
-    example: {
-      language: "python",
-      code:
-`# Sliding Window — Longest Substring Without Repeat  O(n)
-def length_of_longest_substring(s: str) -> int:
-    freq: dict[str, int] = {}
-    l, max_len = 0, 0
-    for r, c in enumerate(s):
-        freq[c] = freq.get(c, 0) + 1
-        while freq[c] > 1:
-            freq[s[l]] -= 1
-            l += 1
-        max_len = max(max_len, r - l + 1)
-    return max_len
-
-# DP — Coin Change  O(amount * len(coins))
-def coin_change(coins: list[int], amount: int) -> int:
-    dp = [float('inf')] * (amount + 1)
-    dp[0] = 0
-    for a in range(1, amount + 1):
-        for c in coins:
-            if c <= a:
-                dp[a] = min(dp[a], dp[a - c] + 1)
-    return dp[amount] if dp[amount] != float('inf') else -1`,
-      notes:
-`Both run in a single forward pass. The visualizer now starts every scenario with an interview-style question card, then shows each window shift, queue move, or DP cell write. Use the extra DP tabs for common FAANG-style drills such as Climbing Stairs, House Robber, Unique Paths, Edit Distance, LIS, and Partition Equal Subset Sum.`
-    },
-    interview: [
-      {
-        question: "When do you use sliding window vs two pointers?",
-        answer:
-`**Sliding window** = subarray/substring with a constraint (sum ≥ k, no duplicates). Window expands right and contracts left while the constraint is violated. **Two pointers** = sorted array, meeting in the middle (pair sum, palindrome check). Rule of thumb: if you need a contiguous window, use sliding window; if you can sort and work from both ends, use two pointers.`,
-        followUps: ["Monotonic deque for window maximum?", "Shrink condition for variable window?"]
-      },
-      {
-        question: "FAANG-style: How do you solve Sliding Window Maximum in O(n)?",
-        answer:
-`Use a **monotonic deque of indices**. Before adding i, remove indices outside the window from the front. Then remove smaller values from the back because they can never become a future maximum while the new larger value remains. Push i. Once the first full window exists, arr[deque[0]] is the answer. Each index enters and exits once, so total time is O(n), space O(k).`,
-        followUps: ["Why store indices instead of values?", "How does it handle duplicates?"]
-      },
-      {
-        question: "How do you recognise a DP problem?",
-        answer:
-`Three signals: (1) **optimal substructure** — solution built from optimal sub-solutions; (2) **overlapping subproblems** — same sub-problem computed multiple times in naive recursion; (3) problem asks for min/max/count over choices. Draw the recurrence first, then decide top-down (memoisation) vs bottom-up (tabulation). Bottom-up is usually faster due to no call-stack overhead.`,
-        followUps: ["Space optimisation for 1D DP?", "When is memoisation better than tabulation?", "What is the state definition?"]
-      },
-      {
-        question: "FAANG-style: Climbing Stairs recurrence and complexity?",
-        answer:
-`State: dp[i] = number of ways to reach step i. Last move is either 1 step from i-1 or 2 steps from i-2, so dp[i] = dp[i-1] + dp[i-2]. Base dp[0]=1 and dp[1]=1. Tabulation is O(n) time and O(n) space; with two rolling variables it becomes O(1) space.`,
-        followUps: ["How does this change if steps can be [1,3,5]?", "Why is dp[0]=1?"]
-      },
-      {
-        question: "FAANG-style: House Robber choose/skip recurrence?",
-        answer:
-`State: dp[i] = max money from houses 0..i. At every house, either skip it and keep dp[i-1], or rob it and add nums[i] + dp[i-2]. Recurrence: dp[i] = max(dp[i-1], nums[i] + dp[i-2]). This is O(n) time and can be O(1) space because only the previous two states are needed.`,
-        followUps: ["How does House Robber II change with a circular street?", "How would you reconstruct which houses were robbed?"]
-      },
-      {
-        question: "FAANG-style: Coin Change min coins vs greedy?",
-        answer:
-`Greedy picks the largest coin first, but it fails on non-canonical sets such as coins=[1,3,4], amount=6. DP defines dp[a] = minimum coins for amount a. For each amount, try every coin as the last coin: dp[a] = min(dp[a], dp[a-c] + 1). Time O(amount * coin_count), space O(amount).`,
-        followUps: ["How do you return the actual coins?", "How is Coin Change II different?"]
-      },
-      {
-        question: "FAANG-style: Unique Paths grid recurrence?",
-        answer:
-`State: dp[r][c] = number of ways to reach cell (r,c). Since moves are only right or down, every interior cell is reached from top or left: dp[r][c] = dp[r-1][c] + dp[r][c-1]. First row and first column are all 1. Time O(mn), space O(mn), optimizable to O(n).`,
-        followUps: ["How do obstacles change the recurrence?", "How do you optimize to one row?"]
-      },
-      {
-        question: "When does greedy fail where DP succeeds?",
-        answer:
-`Greedy works when the problem has the **greedy-choice property**: a locally optimal choice leads to a globally optimal solution. Greedy Coin Change fails on non-canonical coin sets (e.g. coins=[1,3,4], amount=6 → greedy gives 4+1+1=3 coins, DP gives 3+3=2 coins). Whenever past choices constrain future choices in non-obvious ways, DP is safer.`,
-        followUps: ["Prove Activity Selection greedy is optimal?", "Exchange argument?"]
-      },
-      {
-        question: "FAANG-style: 0/1 Knapsack recurrence?",
-        answer:
-`State: dp[i][w] = max value using the first i items with capacity w. For item i, if weight > w, copy dp[i-1][w]. If it fits, choose max(skip = dp[i-1][w], take = value + dp[i-1][w-weight]). The "i-1" row is what prevents using the same item more than once.`,
-        followUps: ["How do you compress to 1D?", "Why must 1D capacity iterate backward?"]
-      },
-      {
-        question: "FAANG-style: LCS vs longest common substring?",
-        answer:
-`LCS allows gaps; substring must be contiguous. For LCS, dp[i][j] compares prefixes. If chars match, use diagonal + 1. If not, take max(top, left). For longest common substring, mismatch resets the cell to 0 because contiguity is broken.`,
-        followUps: ["How do you reconstruct the sequence?", "What changes for shortest common supersequence?"]
-      },
-      {
-        question: "FAANG-style: Edit Distance operation choices?",
-        answer:
-`State: dp[i][j] = min edits to convert word1[0..i) to word2[0..j). If chars match, carry dp[i-1][j-1]. Otherwise choose 1 + min(delete from word1 = dp[i-1][j], insert into word1 = dp[i][j-1], replace = dp[i-1][j-1]). Base row/column represent converting to/from the empty string.`,
-        followUps: ["How would weighted operation costs change it?", "How do you recover the edit script?"]
-      },
-      {
-        question: "FAANG-style: LIS O(n²) DP and O(n log n) upgrade?",
-        answer:
-`O(n²) DP: dp[i] = LIS length ending at i, and for every j<i with nums[j]<nums[i], update dp[i]=max(dp[i], dp[j]+1). The O(n log n) method keeps tails[len] = smallest possible tail value for an increasing subsequence of length len+1 and binary-searches where each number belongs. tails gives length, not the exact sequence unless extra parent pointers are kept.`,
-        followUps: ["Why replace tails values?", "How do duplicates change lower_bound vs upper_bound?"]
-      },
-      {
-        question: "FAANG-style: Partition Equal Subset Sum as subset sum?",
-        answer:
-`If total sum is odd, answer is false. Otherwise target = total/2 and the task becomes: can any subset sum to target? Use boolean dp[s]. Start dp[0]=true. For each number, iterate s backward and set dp[s] = dp[s] || dp[s-num]. Backward iteration enforces 0/1 usage.`,
-        followUps: ["Why not iterate forward?", "How do you count number of subsets instead of boolean existence?"]
-      },
-      {
-        question: "Graph scenario: BFS, DFS, or Dijkstra?",
-        answer:
-`Use **BFS** when all edges have equal weight and you need shortest hops or level traversal. Use **DFS** for connected components, cycle checks, topological-style exploration, or exhaustive branch traversal. Use **Dijkstra** for shortest paths with non-negative weighted edges. If negative weights appear, switch to Bellman-Ford or another suitable algorithm.`,
-        followUps: ["Why does Dijkstra fail with negative edges?", "When do you need a priority queue?"]
-      }
-    ],
-    tradeoffs: {
-      pros: [
-        "Step-by-step execution with explanation + pseudocode line at each step",
-        "Custom input — paste any array or string to test edge cases",
-        "Auto-play with speed control for rapid pattern absorption",
-        "Four canonical patterns plus expanded DP drills from common FAANG-style interviews"
-      ],
-      cons: [
-        "Graph layout is circular — may overlap for dense graphs",
-        "No backtracking / recursive call-stack visualisation yet",
-        "No sorting algorithms (bubble, merge, quick) — separate concern"
-      ],
-      when: "Use before interviews to rebuild intuition on any pattern you haven't touched recently. Run a problem you've seen before — see if you can predict the next step before clicking Next."
-    },
-    visual(mount) {
-      // Inject scoped styles
-      const styleId = 'dsa-viz-style';
-      if (!document.getElementById(styleId)) {
-        const style = document.createElement('style');
-        style.id = styleId;
-        style.textContent = `
+window._dsaRenderViz = function(mount, opts) {
+  var styleId = 'dsa-viz-style';
+  if (!document.getElementById(styleId)) {
+    var style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
 .dsa-viz{font-family:'Courier New',monospace;background:#0d1117;color:#e6edf3;border-radius:8px;overflow:hidden}
 .dsa-viz .dsa-app{display:flex;height:640px;overflow:hidden}
 .dsa-viz .dsa-main{flex:1;display:flex;flex-direction:column;overflow:hidden;width:100%}
@@ -1546,40 +1364,38 @@ def coin_change(coins: list[int], amount: int) -> int:
 .dsa-viz .dsa-decision-chip.bad strong{color:#f85149}
 .dsa-viz .dsa-graph-svg-box{background:#161b22;border-radius:8px;border:1px solid #30363d;display:inline-block}
 @media (max-width:760px){.dsa-viz .dsa-app{height:auto;flex-direction:column}.dsa-viz .dsa-prompt-grid{grid-template-columns:1fr}}
-        `;
-        document.head.appendChild(style);
-      }
-
-      mount.innerHTML = `
-        <div class="dsa-viz">
-          <div class="dsa-app">
-            <div class="dsa-main">
-              <div class="dsa-top-bar" id="dsa-top-bar">
-                <span style="color:#8b949e;font-size:12px">← select a problem from the left sidebar</span>
-              </div>
-              <div class="dsa-viz-area" id="dsa-viz-area">
-                <div class="dsa-expl-box">
-                  <div class="dsa-expl-step">Welcome</div>
-                  <div class="dsa-expl-text">Pick any topic + problem from the left sidebar.<br>Customize input, then step through each iteration.</div>
-                </div>
-              </div>
-              <div class="dsa-bottom-bar">
-                <button class="dsa-btn dsa-btn-gray" id="dsa-btn-prev" disabled>◀ Prev</button>
-                <button class="dsa-btn dsa-btn-gray" id="dsa-btn-next" disabled>Next ▶</button>
-                <button class="dsa-btn dsa-btn-gray" id="dsa-btn-reset" disabled>↺ Reset</button>
-                <button class="dsa-btn dsa-btn-green" id="dsa-btn-auto" disabled>▶ Auto</button>
-                <div class="dsa-speed-row">
-                  <label>Speed</label>
-                  <input type="range" id="dsa-speed" min="1" max="10" value="5">
-                </div>
-                <span class="dsa-step-counter" id="dsa-step-ctr">— / —</span>
-              </div>
+    `;
+    document.head.appendChild(style);
+  }
+  mount.innerHTML = `
+    <div class="dsa-viz">
+      <div class="dsa-app">
+        <div class="dsa-main">
+          <div class="dsa-top-bar" id="dsa-top-bar">
+            <span style="color:#8b949e;font-size:12px">← select a problem from the left sidebar</span>
+          </div>
+          <div class="dsa-viz-area" id="dsa-viz-area">
+            <div class="dsa-expl-box">
+              <div class="dsa-expl-step">Welcome</div>
+              <div class="dsa-expl-text">Pick any topic + problem from the left sidebar.<br>Customize input, then step through each iteration.</div>
             </div>
           </div>
+          <div class="dsa-bottom-bar">
+            <button class="dsa-btn dsa-btn-gray" id="dsa-btn-prev" disabled>◀ Prev</button>
+            <button class="dsa-btn dsa-btn-gray" id="dsa-btn-next" disabled>Next ▶</button>
+            <button class="dsa-btn dsa-btn-gray" id="dsa-btn-reset" disabled>↺ Reset</button>
+            <button class="dsa-btn dsa-btn-green" id="dsa-btn-auto" disabled>▶ Auto</button>
+            <div class="dsa-speed-row">
+              <label>Speed</label>
+              <input type="range" id="dsa-speed" min="1" max="10" value="5">
+            </div>
+            <span class="dsa-step-counter" id="dsa-step-ctr">— / —</span>
+          </div>
         </div>
-      `;
+      </div>
+    </div>
+  `;
+  initDSAVisualizer(mount, opts);
+};
 
-      initDSAVisualizer(mount);
-    }
-  }
-];
+window.DSA_TOPICS = window.DSA_TOPICS || [];
