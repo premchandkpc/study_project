@@ -17,7 +17,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Given an integer array and k, find the maximum sum of any contiguous subarray of size k.',
           scenario: 'Traffic dashboard: find the busiest exact k-minute interval.',
           pattern: 'Fixed sliding window',
-          hint: 'Build the first window once, then add one new value and remove one old value per move.'
+          hint: 'Build the first window once, then add one new value and remove one old value per move.',
+          examples: [
+            { input:'arr=[2,1,5,1,3,2], k=3', output:'9', trace:'Windows: [2,1,5]=8 → [1,5,1]=7 → [5,1,3]=9✓ → [1,3,2]=6' },
+            { input:'arr=[1,2,3,4,5], k=2', output:'9', trace:'Windows: 3,5,7,9✓' },
+            { input:'arr=[-1,2,-3,4], k=2', output:'1', trace:'Windows: 1,-1,1✓' }
+          ],
+          wrongApproach: 'Nested loop: recalculate sum for each window from scratch → O(n·k). Tempting but slow.',
+          aha: 'Slide by 1 each step: subtract arr[i-k] and add arr[i]. Sum updates in O(1), total O(n).'
         },
         longestUniq: {
           label: 'Longest Substr No Repeat',
@@ -26,7 +33,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Return the length of the longest substring without repeating characters.',
           scenario: 'Session-token scan: keep the longest contiguous clean segment with no duplicate symbol.',
           pattern: 'Variable sliding window + frequency map',
-          hint: 'Expand right; when duplicate appears, move left until the window is valid again.'
+          hint: 'Expand right; when duplicate appears, move left until the window is valid again.',
+          examples: [
+            { input:'s="abcabcbb"', output:'3', trace:'"abc"=3 → hit "a" again, shrink left → "bca"=3 → ... best=3' },
+            { input:'s="bbbbb"', output:'1', trace:'Every char repeats → window always size 1' },
+            { input:'s="pwwkew"', output:'3', trace:'"pw"→hit w→shrink→"wke"=3✓→"kew"=3' }
+          ],
+          wrongApproach: 'Trying all substrings with Set.has() → O(n²). You check too many windows.',
+          aha: 'When you see a duplicate at right, jump left past the previous occurrence of that char. Freq map tells you exactly where.'
         },
         windowMax: {
           label: 'Sliding Window Maximum',
@@ -35,7 +49,14 @@ function initDSAVisualizer(root, _options) {
           q: 'For every contiguous window of size k, output the maximum value in that window.',
           scenario: 'Rolling leaderboard: each window needs the current peak without rescanning all k values.',
           pattern: 'Monotonic deque',
-          hint: 'Deque stores candidate indices in decreasing value order; front is always the max.'
+          hint: 'Deque stores candidate indices in decreasing value order; front is always the max.',
+          examples: [
+            { input:'arr=[1,3,-1,-3,5,3,6,7], k=3', output:'[3,3,5,5,6,7]', trace:'[1,3,-1]→3, [3,-1,-3]→3, [-1,-3,5]→5, [-3,5,3]→5, [5,3,6]→6, [3,6,7]→7' },
+            { input:'arr=[1,2,3], k=1', output:'[1,2,3]', trace:'Each window is one element' },
+            { input:'arr=[9,1,1,9], k=2', output:'[9,1,9]', trace:'[9,1]→9, [1,1]→1, [1,9]→9' }
+          ],
+          wrongApproach: 'Max scan inside each window → O(n·k). For k=1000 and n=10⁶ this TLEs.',
+          aha: 'Monotonic deque: pop from back whenever new element ≥ back (those can never be max again). Pop front when it leaves window. Front = current max.'
         },
         minSubarraySum: {
           label: 'Min Size Subarray >= target',
@@ -44,7 +65,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Find the smallest length of a contiguous subarray whose sum is at least target.',
           scenario: 'Quota tracker: shortest run of events that reaches a required total.',
           pattern: 'Variable sliding window',
-          hint: 'Grow until the target is reached, then shrink while the window stays valid.'
+          hint: 'Grow until the target is reached, then shrink while the window stays valid.',
+          examples: [
+            { input:'arr=[2,3,1,2,4,3], target=7', output:'2', trace:'[4,3]=7 ✓ length 2' },
+            { input:'arr=[2,1,6,5,4], target=9', output:'2', trace:'[6,5]=11≥9 ✓ then try shrink: [5]=5<9. Min=2' },
+            { input:'arr=[1,1,1,1,7], target=7', output:'1', trace:'Just [7]=7 ✓ length 1' }
+          ],
+          wrongApproach: 'Prefix sum + binary search finds this too but it\'s O(n log n). Sliding window is cleaner O(n).',
+          aha: 'Two pointers: right expands, left shrinks when sum≥target. Record length every time you can shrink.'
         },
       }
     },
@@ -58,7 +86,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Compute the nth Fibonacci number without exponential recursion.',
           scenario: 'Warm-up DP: each state depends on the previous two states.',
           pattern: '1D bottom-up DP',
-          hint: 'Replace the recursion tree with a left-to-right table.'
+          hint: 'Replace the recursion tree with a left-to-right table.',
+          examples: [
+            { input:'n=6', output:'8', trace:'dp=[0,1,1,2,3,5,8] — each cell = prev two' },
+            { input:'n=9', output:'34', trace:'dp=[0,1,1,2,3,5,8,13,21,34]' },
+            { input:'n=1', output:'1', trace:'Base case — dp[1]=1' }
+          ],
+          wrongApproach: 'Naive recursion fib(n)=fib(n-1)+fib(n-2) → O(2ⁿ). fib(50) calls fib(1) billions of times.',
+          aha: 'Each fib(n) only needs the two previous values. Build left→right, O(n) time, O(1) space (just two vars).'
         },
         climbStairs: {
           label: 'Climbing Stairs',
@@ -477,19 +512,13 @@ function initDSAVisualizer(root, _options) {
     stopAuto();
     try {
       STEPS = p.fn(getI());
-      if (p.q) {
-        STEPS.unshift(mkStep(
-          `<b>Q.</b> ${p.q}<br><b>Scenario.</b> ${p.scenario || p.label}<br><b>Approach.</b> ${p.hint || p.pattern || 'Trace the state change step by step.'}`,
-          rPromptCard(p),
-          p.pattern ? `pattern = ${p.pattern}` : ''
-        ));
-      }
     } catch(e) { STEPS = [mkStep('Error: ' + e.message, '')]; }
     SI = 0;
     root.querySelector('#dsa-btn-prev').disabled = false;
     root.querySelector('#dsa-btn-next').disabled = false;
     root.querySelector('#dsa-btn-reset').disabled = false;
     root.querySelector('#dsa-btn-auto').disabled = false;
+    buildQuestionPanel(p);
     paint();
   }
 
@@ -537,6 +566,53 @@ function initDSAVisualizer(root, _options) {
 
   // ── STEP BUILDER ───────────────────────────────────────────
   function mkStep(expl, html, code='') { return { expl, html, code }; }
+
+  // ── QUESTION PANEL (Tab A: Understand Q) ───────────────────
+  function buildQuestionPanel(p) {
+    const qp = root.querySelector('#dsa-q-panel');
+    if (!qp) return;
+    let exHtml = '';
+    if (p.examples && p.examples.length) {
+      exHtml = `<div class="dsa-q-section"><div class="dsa-q-title">✏️ Worked Examples</div>` +
+        p.examples.map((ex, i) => `
+          <div class="dsa-q-example">
+            <div class="dsa-q-ex-num">Example ${i + 1}</div>
+            <div class="dsa-q-ex-io">
+              <span class="dsa-q-label">Input:</span>&nbsp;<code>${ex.input}</code>
+              <span class="dsa-q-arrow">→</span>
+              <span class="dsa-q-label">Output:</span>&nbsp;<code>${ex.output}</code>
+            </div>
+            ${ex.trace ? `<div class="dsa-q-trace">${ex.trace}</div>` : ''}
+          </div>`).join('') + `</div>`;
+    }
+    const wrongHtml = p.wrongApproach
+      ? `<div class="dsa-q-section"><div class="dsa-q-wrong"><div class="dsa-q-wrong-title">⚠️ Common Wrong Approach</div><div class="dsa-q-wrong-body">${p.wrongApproach}</div></div></div>`
+      : '';
+    const ahaHtml = (p.aha || p.hint)
+      ? `<div class="dsa-q-section"><div class="dsa-q-aha"><div class="dsa-q-aha-title">💡 Key Insight</div><div class="dsa-q-aha-body">${p.aha || p.hint}</div></div></div>`
+      : '';
+    qp.innerHTML = `
+      <div class="dsa-q-section">
+        <div class="dsa-q-title">📋 Problem Statement</div>
+        <div class="dsa-q-statement">${p.q || p.label}</div>
+      </div>
+      <div class="dsa-q-section">
+        <div class="dsa-q-title">🏭 Real-World Scenario</div>
+        <div class="dsa-q-statement dsa-q-scenario">${p.scenario || 'Classic interview coding round.'}</div>
+      </div>
+      ${exHtml}${wrongHtml}${ahaHtml}
+      <div class="dsa-q-section">
+        <div class="dsa-q-title">🎯 Pattern to Apply</div>
+        <div class="dsa-q-pattern">${p.pattern || 'Trace state changes step by step'}</div>
+      </div>
+      <div class="dsa-q-cta">
+        <button class="dsa-btn dsa-btn-blue" id="dsa-goto-viz">▶ See Algorithm Flow →</button>
+        <span class="dsa-q-hint">Think through your approach before clicking →</span>
+      </div>
+    `;
+    const gotoBtn = root.querySelector('#dsa-goto-viz');
+    if (gotoBtn) gotoBtn.addEventListener('click', () => { if (window._dsaSetTab) window._dsaSetTab('viz'); });
+  }
 
   // ── RENDER HELPERS ─────────────────────────────────────────
   function rPromptCard(p) {
@@ -2267,6 +2343,31 @@ function initDSAVisualizer(root, _options) {
 
   buildSidebar();
 
+  // Tab A ↔ Tab B switching
+  function setTab(tab) {
+    const qPanel = root.querySelector('#dsa-q-panel');
+    const vizArea = root.querySelector('#dsa-viz-area');
+    const bottomBar = root.querySelector('#dsa-bottom-bar');
+    const tabQ = root.querySelector('#dsa-tab-q');
+    const tabViz = root.querySelector('#dsa-tab-viz');
+    if (tab === 'q') {
+      qPanel.style.display = 'flex';
+      vizArea.style.display = 'none';
+      bottomBar.style.display = 'none';
+      tabQ.classList.add('active');
+      tabViz.classList.remove('active');
+    } else {
+      qPanel.style.display = 'none';
+      vizArea.style.display = 'flex';
+      bottomBar.style.display = 'flex';
+      tabQ.classList.remove('active');
+      tabViz.classList.add('active');
+    }
+  }
+  root.querySelector('#dsa-tab-q').addEventListener('click', () => setTab('q'));
+  root.querySelector('#dsa-tab-viz').addEventListener('click', () => setTab('viz'));
+  window._dsaSetTab = setTab;
+
   const _initTopic = (_options && _options.topic) || 'sliding';
   const _initProb  = (_options && _options.problem) || 'maxSumFixed';
   pick(_initTopic, _initProb);
@@ -2360,6 +2461,30 @@ window._dsaRenderViz = function(mount, opts) {
 .dsa-viz .dsa-decision-chip.bad strong{color:#f85149}
 .dsa-viz .dsa-graph-svg-box{background:#161b22;border-radius:8px;border:1px solid #30363d;display:inline-block}
 @media (max-width:760px){.dsa-viz .dsa-app{height:auto;flex-direction:column}.dsa-viz .dsa-prompt-grid{grid-template-columns:1fr}}
+.dsa-viz .dsa-tab-strip{display:flex;background:#161b22;border-bottom:1px solid #30363d;padding:0 14px;gap:2px}
+.dsa-viz .dsa-tab{background:none;border:none;border-bottom:2px solid transparent;color:#8b949e;font-family:inherit;font-size:12px;font-weight:600;padding:10px 18px;cursor:pointer;transition:all .15s;margin-bottom:-1px}
+.dsa-viz .dsa-tab:hover{color:#e6edf3}
+.dsa-viz .dsa-tab.active{color:#58a6ff;border-bottom-color:#58a6ff}
+.dsa-viz .dsa-q-section{background:#161b22;border:1px solid #30363d;border-radius:7px;padding:14px 16px}
+.dsa-viz .dsa-q-title{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;font-weight:600}
+.dsa-viz .dsa-q-statement{font-size:13px;line-height:1.7;color:#e6edf3}
+.dsa-viz .dsa-q-scenario{color:#cdd9e5;font-style:italic;font-size:12px}
+.dsa-viz .dsa-q-example{background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:10px 12px;margin-bottom:8px}
+.dsa-viz .dsa-q-ex-num{font-size:10px;color:#58a6ff;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.dsa-viz .dsa-q-ex-io{font-size:12px;color:#e6edf3;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dsa-viz .dsa-q-label{color:#8b949e;font-size:11px}
+.dsa-viz .dsa-q-ex-io code{background:#21262d;padding:2px 7px;border-radius:4px;color:#79c0ff;font-family:'Courier New';font-size:12px}
+.dsa-viz .dsa-q-arrow{color:#f0883e;font-weight:bold;font-size:14px}
+.dsa-viz .dsa-q-trace{margin-top:7px;font-size:11px;color:#8b949e;line-height:1.6;font-family:'Courier New';background:#0d1117;padding:6px 10px;border-radius:4px;border-left:2px solid #30363d}
+.dsa-viz .dsa-q-wrong{background:#da363611;border:1px solid #f8514966;border-radius:7px;padding:12px 14px}
+.dsa-viz .dsa-q-wrong-title{font-size:11px;color:#f85149;font-weight:700;margin-bottom:6px}
+.dsa-viz .dsa-q-wrong-body{font-size:12px;color:#e6edf3;line-height:1.6}
+.dsa-viz .dsa-q-aha{background:#23863611;border:1px solid #3fb95066;border-radius:7px;padding:12px 14px}
+.dsa-viz .dsa-q-aha-title{font-size:11px;color:#3fb950;font-weight:700;margin-bottom:6px}
+.dsa-viz .dsa-q-aha-body{font-size:12px;color:#e6edf3;line-height:1.6}
+.dsa-viz .dsa-q-pattern{display:inline-block;background:#1f6feb22;border:1px solid #58a6ff66;border-radius:20px;padding:4px 14px;font-size:12px;color:#79c0ff;font-weight:600}
+.dsa-viz .dsa-q-cta{padding-top:4px;display:flex;gap:10px;align-items:center}
+.dsa-viz .dsa-q-cta .dsa-q-hint{font-size:11px;color:#8b949e;font-style:italic}
     `;
     document.head.appendChild(style);
   }
@@ -2370,13 +2495,23 @@ window._dsaRenderViz = function(mount, opts) {
           <div class="dsa-top-bar" id="dsa-top-bar">
             <span style="color:#8b949e;font-size:12px">← select a problem from the left sidebar</span>
           </div>
-          <div class="dsa-viz-area" id="dsa-viz-area">
+          <div class="dsa-tab-strip">
+            <button class="dsa-tab active" id="dsa-tab-q">📖 Understand Q</button>
+            <button class="dsa-tab" id="dsa-tab-viz">▶ Algorithm Flow</button>
+          </div>
+          <div class="dsa-viz-area" id="dsa-q-panel">
             <div class="dsa-expl-box">
-              <div class="dsa-expl-step">Welcome</div>
-              <div class="dsa-expl-text">Pick any topic + problem from the left sidebar.<br>Customize input, then step through each iteration.</div>
+              <div class="dsa-expl-step">Pick a Problem</div>
+              <div class="dsa-expl-text">Select a topic + problem from the left sidebar.<br>This tab shows the question, examples, wrong approaches, and key insight before you visualize the algorithm.</div>
             </div>
           </div>
-          <div class="dsa-bottom-bar">
+          <div class="dsa-viz-area" id="dsa-viz-area" style="display:none">
+            <div class="dsa-expl-box">
+              <div class="dsa-expl-step">Algorithm Flow</div>
+              <div class="dsa-expl-text">Read the question first → then click "See Algorithm Flow →" to step through.</div>
+            </div>
+          </div>
+          <div class="dsa-bottom-bar" id="dsa-bottom-bar" style="display:none">
             <button class="dsa-btn dsa-btn-gray" id="dsa-btn-prev" disabled>◀ Prev</button>
             <button class="dsa-btn dsa-btn-gray" id="dsa-btn-next" disabled>Next ▶</button>
             <button class="dsa-btn dsa-btn-gray" id="dsa-btn-reset" disabled>↺ Reset</button>
