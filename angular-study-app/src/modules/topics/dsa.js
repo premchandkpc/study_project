@@ -120,7 +120,14 @@ function initDSAVisualizer(root, _options) {
           q: 'Given coin denominations and an amount, return the fewest coins needed to make that amount.',
           scenario: 'Payment engine: canonical greedy fails on many coin sets, so use DP.',
           pattern: 'Unbounded min-cost DP',
-          hint: 'For each amount, try taking one last coin and reuse dp[amount - coin].'
+          hint: 'For each amount, try taking one last coin and reuse dp[amount - coin].',
+          examples: [
+            { input:'coins=[1,5,6,9], amount=11', output:'2', trace:'9+2·1=3 coins vs 6+5=2✓ coins' },
+            { input:'coins=[1,2,5], amount=11', output:'3', trace:'5+5+1=3✓' },
+            { input:'coins=[2], amount=3', output:'-1', trace:'Can\'t make odd with only coin=2' }
+          ],
+          wrongApproach: 'Greedy (always pick largest coin): coins=[1,3,4], amount=6 → greedy picks 4+1+1=3 but 3+3=2 is better.',
+          aha: 'dp[a] = min coins to make amount a. For each coin c: dp[a]=min(dp[a], dp[a-c]+1). Bottom-up from 0→amount.'
         },
         uniquePaths: {
           label: 'Unique Paths Grid',
