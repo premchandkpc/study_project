@@ -28,6 +28,15 @@
 <!-- Angular-style core framework -->
 <script src="src/app/core/signal.js"></script>
 <script src="src/app/core/injector.js"></script>
+<!-- Constants (mirror Angular environment/token files) -->
+<script src="src/app/core/constants/colors.js"></script>
+<script src="src/app/core/constants/animation.js"></script>
+<script src="src/app/core/constants/complexity.js"></script>
+<script src="src/app/core/constants/theme.js"></script>
+<!-- Models (mirror Angular interface/class files) -->
+<script src="src/app/core/models/topic.model.js"></script>
+<script src="src/app/core/models/animation.model.js"></script>
+<!-- Utils -->
 <script src="src/app/utils/renderer.utils.js"></script>
 <!-- Coder feature -->
 <script src="src/features/coder/coder.component.js"></script>
@@ -232,12 +241,21 @@
 <script src="src/app/services/topics.service.js"></script>
 <script src="src/app/services/progress.service.js"></script>
 <script src="src/app/services/router.service.js"></script>
-
-<!-- Angular-style components -->
+<!-- Store (NgRx-style: state → actions → reducer → selectors) -->
+<script src="src/app/store/app.state.js"></script>
+<script src="src/app/store/app.actions.js"></script>
+<script src="src/app/store/app.reducer.js"></script>
+<script src="src/app/store/app.selectors.js"></script>
+<!-- Shared components (reusable @Component blocks) -->
+<script src="src/app/shared/components/controls/controls.component.js"></script>
+<script src="src/app/shared/components/narration-panel/narration-panel.component.js"></script>
+<script src="src/app/shared/components/complexity-panel/complexity-panel.component.js"></script>
+<!-- Layouts (shell/router-outlet wrappers) -->
+<script src="src/app/layouts/main-layout/main-layout.component.js"></script>
+<!-- Feature components -->
 <script src="src/app/components/home/home.component.js"></script>
 <script src="src/app/components/sidebar/sidebar.component.js"></script>
 <script src="src/app/components/topic-detail/topic-detail.component.js"></script>
-
 <!-- Root bootstrap -->
 <script src="src/app/app.component.js"></script>
 
