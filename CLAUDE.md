@@ -5,10 +5,14 @@ Topic = `visual(mount)` function. Must have:
 - Animated state transitions (CSS + JS timers)
 - Multi-tab scenarios (same concept, different angles)
 - Scenario-based: "fail case?", "compare A vs B"
-- Color-coded states: active=orange/blue, success=green, error=red, waiting=gray
+- Color-coded states: active=orange/blue, success=green, error=red, waiting=gray humanr readaable easy understandable formats formats fonts sizes etc should match my eye and i should ready easily dont over compact.
 - Step/Play/Reset controls (user paced)
 - Info bar: updates per state, explains WHY
-- animations are must and imp
+- animations are must and imp for each and every bit and should create for each 
+- hovering should show proper detail of the topic what why etc code also
+- for each topic complete flow cycle is imp
+- multiple animation styles examles for each
+
 
 
 ## 2 · Reusable Generalized Service Pattern
@@ -145,3 +149,6 @@ Sync: Click "next step" in visual → highlight code line + update state vars
 - No silent fails: show error state if visual() throws
 - Cache bust: ?v=N on dsa scripts when dsa.js updates
 - Code: no comments unless WHY unclear
+
+
+*** for each topic real world load based examples visusal dynamic animation is imp
