@@ -69,20 +69,32 @@
         letter-spacing: .02em;
         white-space: nowrap;
       }
+      /* ── two-column body ── */
+      .rt-body {
+        display: flex;
+        height: 520px;
+        border-bottom: 1px solid #30363d;
+      }
+      /* ── left column: code top, narration + tabs bottom ── */
+      .rt-left-col {
+        display: flex;
+        flex-direction: column;
+        width: 44%;
+        min-width: 240px;
+        max-width: 480px;
+        border-right: 1px solid #30363d;
+        flex-shrink: 0;
+      }
       .rt-main {
         display: flex;
-        height: 340px;
-        border-bottom: 1px solid #30363d;
+        flex: 1;
+        min-height: 0;
       }
       /* ── code panel ── */
       .rt-code-panel {
-        width: 40%;
-        min-width: 200px;
-        max-width: 420px;
-        border-right: 1px solid #30363d;
+        flex: 1;
         overflow-y: auto;
         background: #0d1117;
-        flex-shrink: 0;
       }
       .rt-code {
         padding: 8px 0;
@@ -121,23 +133,30 @@
       }
       .rt-code-row.rt-active .rt-line-text { color: #ffffff; }
       /* ── visual panel ── */
+      /* ── right column: viz full height ── */
+      .rt-right-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+      }
       .rt-viz-panel {
         flex: 1;
-        padding: 12px;
+        padding: 10px 12px;
         overflow-y: auto;
         background: #161b22;
         display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-content: flex-start;
+        flex-direction: column;
+        gap: 8px;
       }
       .rt-viz-block {
         background: #21262d;
         border: 1px solid #30363d;
         border-radius: 8px;
-        padding: 10px 12px;
-        flex: 0 0 auto;
-        max-width: 100%;
+        padding: 8px 12px;
+        width: 100%;
+        box-sizing: border-box;
       }
       .rt-viz-label {
         font-size: 10px;
@@ -162,10 +181,17 @@
         gap: 4px;
         align-items: center;
       }
-      /* ── narration ── */
-      .rt-nar-wrap { border-bottom: 1px solid #30363d; }
-      /* ── bottom tabs ── */
-      .rt-bottom { background: #21262d; }
+      /* ── narration (inside left col) ── */
+      .rt-nar-wrap {
+        border-top: 1px solid #30363d;
+        border-bottom: 1px solid #30363d;
+        flex-shrink: 0;
+      }
+      /* ── tabs (inside left col, fixed height) ── */
+      .rt-bottom {
+        background: #21262d;
+        flex-shrink: 0;
+      }
       .rt-tab-bar {
         display: flex;
         border-bottom: 1px solid #30363d;
@@ -179,7 +205,7 @@
         color: #768390;
         font-family: 'JetBrains Mono', monospace;
         font-size: 12px;
-        padding: 7px 14px;
+        padding: 5px 12px;
         cursor: pointer;
         white-space: nowrap;
         transition: color .12s, border-color .12s;
@@ -190,8 +216,8 @@
         border-bottom-color: #1f6feb;
       }
       .rt-tab-pane {
-        padding: 10px 14px;
-        height: 130px;
+        padding: 8px 14px;
+        height: 80px;
         overflow-y: auto;
         font-size: 12px;
       }
@@ -318,9 +344,13 @@
     root.appendChild(header);
 
     /* ── main split ── */
-    const main = el('div', 'rt-main');
+    /* ── two-column body ── */
+    const body = el('div', 'rt-body');
 
-    /* code panel */
+    /* LEFT COLUMN: code (top) + narration + tabs (bottom) */
+    const leftCol = el('div', 'rt-left-col');
+
+    const main = el('div', 'rt-main');
     const codePanel = el('div', 'rt-code-panel');
     const codeEl = el('div', 'rt-code');
     const lineEls = [];
@@ -337,19 +367,15 @@
     });
     codePanel.appendChild(codeEl);
     main.appendChild(codePanel);
+    leftCol.appendChild(main);
 
-    /* visual panel */
-    const vizPanel = el('div', 'rt-viz-panel');
-    main.appendChild(vizPanel);
-    root.appendChild(main);
-
-    /* ── narration ── */
+    /* narration — inside left col */
     const narWrap = el('div', 'rt-nar-wrap');
     const nar = window.DSAViz.makeNarration('Press ▶▶ or Play to start');
     narWrap.appendChild(nar);
-    root.appendChild(narWrap);
+    leftCol.appendChild(narWrap);
 
-    /* ── bottom tabs ── */
+    /* tabs — inside left col */
     const TAB_NAMES = ['Variables', 'Memory', 'Timeline', 'Debug'];
     const bottom = el('div', 'rt-bottom');
     const tabBar = el('div', 'rt-tab-bar');
@@ -378,7 +404,16 @@
       bottom.appendChild(pane);
       tabPanes[name] = pane;
     });
-    root.appendChild(bottom);
+    leftCol.appendChild(bottom);
+    body.appendChild(leftCol);
+
+    /* RIGHT COLUMN: viz panel full height */
+    const rightCol = el('div', 'rt-right-col');
+    const vizPanel = el('div', 'rt-viz-panel');
+    rightCol.appendChild(vizPanel);
+    body.appendChild(rightCol);
+
+    root.appendChild(body);
 
     /* control bar slot */
     const ctrlSlot = el('div', 'rt-ctrl-slot');
