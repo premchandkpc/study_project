@@ -708,14 +708,14 @@ Automatically infer:
 # 🏗️ FRONTEND ARCHITECTURE
 
 ```txt
-React
+Angular 17+
 TypeScript
-Tailwind
-Framer Motion
+SCSS / CSS Variables
+Angular Animations
 D3.js
-React Flow
-PixiJS
-Zustand
+NgRx Signals
+Web Components
+PixiJS / Canvas API
 ```
 
 ---
@@ -828,6 +828,68 @@ System instantly shows:
 - memory changes
 
 LIVE.
+
+---
+
+# 4. STATE SNAPSHOT FORMAT
+
+Every step emitted by tracer matches this shape:
+
+```js
+{
+  line:           number,    // 0-indexed source line
+  variables:      object,    // all in-scope vars, safe-cloned
+  arrays:         object,    // { varName: { arr[], highlights? } }
+  maps:           object,    // { varName: { key: val } }
+  sets:           object,    // { varName: [val, ...] }
+  stack:          string[],  // call stack frames e.g. ['twoSum','main']
+  recursionDepth: number,    // current call depth
+  narration:      string,    // ≤12 words, ELI8
+  timeLabel:      string,    // 'step N'
+  ops:            number,    // total operations so far
+  codeLine:       number,    // alias of line, used by code-panel highlighter
+  error?:         boolean,   // true if execution threw
+}
+```
+
+---
+
+# 🗂️ CODER FILE STRUCTURE
+
+```txt
+src/app/shared/dsa-viz/
+├── dsa-viz-tracer.js       ← JS execution tracer (this module)
+├── dsa-viz-runtime.js      ← 3-panel layout engine + step replay
+├── dsa-viz-array.js        ← array renderer (boxes, window, pointers)
+├── dsa-viz-tree.js         ← tree renderer (BST, heap, trie)
+├── dsa-viz-graph.js        ← graph renderer (BFS/DFS/Dijkstra)
+├── dsa-viz-matrix.js       ← matrix renderer (flood fill, paths)
+├── dsa-viz-dp.js           ← DP table renderer (1D, 2D, memoTree)
+├── dsa-viz-string.js       ← string renderer (KMP, window, compare)
+└── dsa-viz-controls.js     ← step control UI (play/pause/step/speed)
+
+src/app/pages/coder/
+├── coder.component.ts      ← Angular component wrapper
+├── coder.component.html    ← 3-panel layout template
+└── coder.component.scss    ← coder-specific styles
+```
+
+---
+
+# 📋 BUILT-IN PRESETS
+
+| Key | Algorithm | Complexity |
+|-----|-----------|------------|
+| `twoSum` | Two Sum — HashMap | O(n) / O(n) |
+| `binarySearch` | Binary Search | O(log n) / O(1) |
+| `slidingWindow` | Max Sum Subarray K | O(n) / O(1) |
+| `fibonacci` | Fibonacci DP | O(n) / O(n) |
+| `validParentheses` | Valid Parens — Stack | O(n) / O(n) |
+| `bubbleSort` | Bubble Sort | O(n²) / O(1) |
+| `mergeSort` | Merge Sort | O(n log n) / O(n) |
+| `bfs` | BFS — Level Order | O(V+E) / O(V) |
+| `dfs` | DFS — Recursion | O(V+E) / O(V) |
+| `lcs` | Longest Common Subsequence | O(mn) / O(mn) |
 
 ---
 

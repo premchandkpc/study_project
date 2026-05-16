@@ -502,16 +502,45 @@
       });
     }
 
+    /* sets — rendered as pill list */
+    if (step.sets) {
+      Object.entries(step.sets).forEach(([name, items]) => {
+        const block = vizBlock(`${name} (set)`);
+        const pills = el('div', 'rt-map-chips');
+        if (!items.length) {
+          const empty = el('span');
+          empty.style.cssText = 'color:#484f58;font-size:11px';
+          empty.textContent = '∅ empty';
+          pills.appendChild(empty);
+        }
+        items.forEach(v => {
+          const pill = el('div', 'rt-map-chip');
+          pill.style.borderColor = '#7c4dff';
+          pill.innerHTML = `<span style="color:#c9b1ff">${JSON.stringify(v)}</span>`;
+          pills.appendChild(pill);
+        });
+        block.inner.appendChild(pills);
+        panel.appendChild(block.wrap);
+      });
+    }
+
     /* recursion call stack as mini stack visual */
-    if (step.callStack?.length && !step.heap) {
+    const stackData = step.stack || step.callStack;
+    if (stackData?.length) {
       const block = vizBlock('Call Stack');
       const frames = el('div', 'rt-stack-frames');
-      [...step.callStack].reverse().forEach((fn, i) => {
+      [...stackData].reverse().forEach((fn, i) => {
         const frame = el('div', i === 0 ? 'rt-stack-frame rt-top' : 'rt-stack-frame');
         frame.textContent = fn;
         frames.appendChild(frame);
       });
-      block.inner.appendChild(frames);
+      if (step.recursionDepth !== undefined) {
+        const depth = el('div');
+        depth.style.cssText = 'font-size:10px;color:#768390;margin-top:4px';
+        depth.textContent = `depth: ${step.recursionDepth}`;
+        block.inner.appendChild(depth);
+      }
+      block.inner.prepend(frames);
       panel.appendChild(block.wrap);
     }
   }
