@@ -151,10 +151,41 @@
   }
 
   /* ── CODE INSTRUMENTATION ─────────────────────────────────────── */
+
+  /* track { } [ ] to know when we're inside object/array literals vs blocks */
+  function updateBracketStack(line, stack) {
+    let inStr = false;
+    let strChar = '';
+    for (let ci = 0; ci < line.length; ci++) {
+      const c = line[ci];
+      if (inStr) {
+        if (c === strChar && line[ci - 1] !== '\\') inStr = false;
+      } else if (c === '"' || c === "'" || c === '`') {
+        inStr = true;
+        strChar = c;
+      } else if (c === '{') {
+        /* look at preceding non-space char to decide block vs object literal */
+        let j = ci - 1;
+        while (j >= 0 && line[j] === ' ') j--;
+        const prev = j >= 0 ? line[j] : '';
+        const isBlock =
+          prev === ')' || prev === '}' ||
+          /=>\s*\{/.test(line.substring(0, ci + 1)) ||
+          /\bfunction\b/.test(line.substring(0, ci + 1));
+        stack.push(isBlock ? 'block' : 'literal');
+      } else if (c === '[') {
+        stack.push('literal');
+      } else if ((c === '}' || c === ']') && stack.length) {
+        stack.pop();
+      }
+    }
+  }
+
   function instrument(code) {
     const lines = code.split('\n');
     const output = [];
     const scopeVars = new Set();
+    const blockTypeStack = []; /* 'block' | 'literal' for each open { or [ */
 
     /* named function params */
     const paramRe = /function\s*\w*\s*\(([^)]*)\)/g;
@@ -175,11 +206,15 @@
 
     const declRe = /\b(?:let|const|var)\s+([a-zA-Z_$][\w$]*)/g;
     const assignRe = /^([a-zA-Z_$][\w$]*)\s*(?:[+\-*/%&|^]?=(?!=))/;
-    /* for...of / for...in loop variable e.g. "for (const x of arr)" */
     const forOfRe = /for\s*\((?:let|const|var)?\s*([a-zA-Z_$][\w$]*)\s+(?:of|in)\s/;
 
     lines.forEach((line, i) => {
       const t = line.trim();
+
+      /* check if currently inside an object/array literal (before this line updates stack) */
+      const insideLiteral =
+        blockTypeStack.length > 0 &&
+        blockTypeStack[blockTypeStack.length - 1] === 'literal';
 
       /* track declared vars */
       let dm;
@@ -191,13 +226,22 @@
         scopeVars.add(am2[1]);
       }
 
-      /* for...of / for...in loop var */
       const forOfM = t.match(forOfRe);
       if (forOfM) scopeVars.add(forOfM[1]);
 
       output.push(line);
 
+      /* update bracket stack and detect if this line opens an unclosed literal */
+      const depthBefore = blockTypeStack.length;
+      updateBracketStack(line, blockTypeStack);
+      const depthAfter = blockTypeStack.length;
+      const openedLiteral =
+        depthAfter > depthBefore &&
+        blockTypeStack[blockTypeStack.length - 1] === 'literal';
+
       const skip =
+        insideLiteral ||   /* inside multi-line object/array literal */
+        openedLiteral ||   /* this line opens an unclosed object/array literal */
         !t ||
         t.startsWith('//') ||
         t.startsWith('/*') ||
