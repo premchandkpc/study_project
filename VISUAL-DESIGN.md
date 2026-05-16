@@ -746,14 +746,14 @@ WebGL   → huge simulations
 ## Frontend
 
 ```txt
-React
+Angular 17+
 TypeScript
-Tailwind
-Framer Motion
+SCSS / CSS Variables
+Angular Animations
 D3.js
-React Flow
 XState
-Zustand
+NgRx Signals
+Web Components
 ```
 
 ---
@@ -763,9 +763,10 @@ Zustand
 ```txt
 PixiJS
 Three.js
-React Three Fiber
 GSAP
-WebGL
+WebGL / Canvas API
+SVG animations
+roughjs (Excalidraw mode)
 ```
 
 ---

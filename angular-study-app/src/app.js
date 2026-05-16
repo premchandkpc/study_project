@@ -716,6 +716,47 @@
       }
 
       const id = router.current().path.replace(/^\//, "");
+
+      /* ── /coder route ── */
+      if (id === 'coder') {
+        if (host._coderActive) return;
+        host._coderActive = true;
+        host._homeActive = false;
+        lastTopicId = null;
+        host.innerHTML = '';
+        host.style.padding = '0';
+        host.style.maxWidth = '100%';
+        if (host._homeCleanup) { host._homeCleanup(); host._homeCleanup = null; }
+        if (host._coderCleanup) { host._coderCleanup(); host._coderCleanup = null; }
+
+        /* hide header breadcrumb, add coder-mode to shell */
+        const shell = document.querySelector('app-root');
+        if (shell) shell.classList.add('coder-mode');
+        const sepEl = document.getElementById('hdr-sep');
+        const topicEl = document.getElementById('hdr-topic');
+        const dotEl = document.getElementById('hdr-dot');
+        const areaEl = document.getElementById('hdr-area');
+        if (dotEl) dotEl.style.background = 'var(--accent)';
+        if (areaEl) { areaEl.textContent = 'Code Runner'; areaEl.style.color = 'var(--accent)'; }
+        if (sepEl) sepEl.style.display = 'none';
+        if (topicEl) topicEl.textContent = '';
+
+        if (window.CoderPage?.mount) {
+          host._coderCleanup = window.CoderPage.mount(host) || null;
+        } else {
+          host.innerHTML = '<div style="padding:32px;color:#f85149">CoderPage not loaded.</div>';
+        }
+        return;
+      }
+
+      /* leaving coder — remove coder-mode */
+      if (host._coderActive) {
+        host._coderActive = false;
+        const shell = document.querySelector('app-root');
+        if (shell) shell.classList.remove('coder-mode');
+        if (host._coderCleanup) { host._coderCleanup(); host._coderCleanup = null; }
+      }
+
       const topic = topics.byId(id);
       if (!topic) {
         // Home already mounted — don't re-mount; HomeComponent manages its own progress subscription
@@ -943,19 +984,27 @@
         <span class="hdr-area" id="hdr-area"></span>
         <span class="hdr-sep" id="hdr-sep" style="display:none">›</span>
         <span class="hdr-topic" id="hdr-topic"></span>
+        <span style="flex:1"></span>
+        <button class="hdr-coder-btn" id="hdr-coder-btn">⚡ Code Runner</button>
       </header>
       <aside class="sidebar"></aside>
       <main class="main"></main>
     `;
 
-    // toggle home-mode based on route
+    // toggle home-mode / coder-mode based on route
     Router.current.subscribe(({ path }) => {
-      const isHome = path === '/';
+      const isHome = path === '/' || path === '';
+      const isCoder = path === '/coder';
       root.classList.toggle('home-mode', isHome);
+      /* coder-mode toggled by TopicDetailComponent render() */
+      if (!isCoder) root.classList.remove('coder-mode');
     });
 
     // header back button → home
     root.querySelector('#hdr-back').addEventListener('click', () => Router.navigate('/'));
+
+    // Code Runner button → /coder
+    root.querySelector('#hdr-coder-btn').addEventListener('click', () => Router.navigate('/coder'));
 
     SidebarComponent(root.querySelector(".sidebar"));
     TopicDetailComponent(root.querySelector(".main"));
