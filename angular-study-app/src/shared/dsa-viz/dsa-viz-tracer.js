@@ -215,7 +215,7 @@
           .map(v => `(function(){try{return ${v};}catch(_){return undefined;}})()`)
           .join(',');
         output.push(
-          `try{__t(${i},[${namesJson}],[${captures}]);}catch(__te){}`
+          `try{__t(${i},${namesJson},[${captures}]);}catch(__te){}`
         );
       }
     });

@@ -417,7 +417,7 @@
       /* tab panes */
       renderVariables(tabPanes['Variables'], step.variables || {}, prevVars);
       prevVars = { ...(step.variables || {}) };
-      renderMemory(tabPanes['Memory'], step.callStack || [], step.heap || {});
+      renderMemory(tabPanes['Memory'], step.stack || step.callStack || [], step.heap || {});
       if (step.timeLabel || step.narration) {
         timelineEvents.push({ t: step.timeLabel || `step ${idx + 1}`, msg: step.narration || '' });
       }
@@ -440,16 +440,37 @@
   }
 
   /* ── VISUALIZATION RENDERER ───────────────────────────────────── */
+  const PTR_NAMES = new Set(['i','j','k','l','left','right','mid','ptr','start','end','lo','hi','p','q','slow','fast','top','bot','head','tail']);
+
   function renderVisuals(panel, step) {
     panel.innerHTML = '';
     const { DSAViz } = window;
+
+    /* collect integer vars that could be array pointers */
+    const indexVars = {};
+    if (step.variables) {
+      Object.entries(step.variables).forEach(([name, val]) => {
+        if (Number.isInteger(val) && val >= 0 && PTR_NAMES.has(name)) indexVars[name] = val;
+      });
+    }
 
     /* arrays */
     if (step.arrays) {
       Object.entries(step.arrays).forEach(([name, cfg]) => {
         const block = vizBlock(name);
         panel.appendChild(block.wrap);
-        if (DSAViz.array) DSAViz.array.render(block.inner, cfg);
+        if (DSAViz.array) {
+          const enriched = Object.assign({}, cfg);
+          if (!enriched.pointers) {
+            const ptrs = {};
+            const len = (enriched.arr || []).length;
+            Object.entries(indexVars).forEach(([pName, idx]) => {
+              if (idx < len) ptrs[pName] = idx;
+            });
+            if (Object.keys(ptrs).length) enriched.pointers = ptrs;
+          }
+          DSAViz.array.render(block.inner, enriched);
+        }
       });
     }
 
@@ -523,6 +544,32 @@
         block.inner.appendChild(pills);
         panel.appendChild(block.wrap);
       });
+    }
+
+    /* scalar variables — show primitives (numbers/booleans/strings) as chips */
+    if (step.variables) {
+      const scalars = {};
+      Object.entries(step.variables).forEach(([name, val]) => {
+        if (val !== null && val !== undefined && typeof val !== 'object' && typeof val !== 'function') {
+          scalars[name] = val;
+        }
+      });
+      if (Object.keys(scalars).length) {
+        const block = vizBlock('Variables');
+        const chips = el('div', 'rt-map-chips');
+        Object.entries(scalars).forEach(([name, val]) => {
+          const isIdx = PTR_NAMES.has(name) && Number.isInteger(val);
+          const chip = el('div', 'rt-map-chip');
+          chip.style.borderColor = isIdx ? '#e3b341' : '#30363d';
+          chip.innerHTML =
+            `<span style="color:${isIdx ? '#e3b341' : '#58a6ff'};font-weight:700">${name}</span>` +
+            `<span style="color:#768390">=</span>` +
+            `<span style="color:#56d364">${JSON.stringify(val)}</span>`;
+          chips.appendChild(chip);
+        });
+        block.inner.appendChild(chips);
+        panel.appendChild(block.wrap);
+      }
     }
 
     /* recursion call stack as mini stack visual */
