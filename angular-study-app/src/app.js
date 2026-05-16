@@ -357,6 +357,9 @@
 
     function buildBlocks(q) {
       const active = router.current().path.replace(/^\//, "");
+      // auto-expand area of currently active topic
+      const activeTopic = topics.byId(active);
+      if (activeTopic) collapsed[activeTopic.area] = false;
       return areas.map(a => {
         const areaTopics = topics.byArea(a.key);
         const scored = areaTopics.map(t => {
@@ -730,7 +733,21 @@
       host.style.padding = '';
       host.style.maxWidth = '';
 
-      const areaLabel = ({ java:"Java", golang:"Go", python:"Python", microservices:"Microservices", sysdesign:"System Design", dsa:"DSA · Algorithms", kafka:"Kafka / Messaging", rust:"Rust", angular:"Angular", react:"React", databases:"Databases" })[topic.area] || topic.area;
+      const AREA_LABEL = { java:"Java", golang:"Go", python:"Python", microservices:"Microservices", sysdesign:"System Design", dsa:"DSA · Algorithms", kafka:"Kafka / Messaging", rust:"Rust", angular:"Angular", react:"React", databases:"Databases" };
+      const AREA_COLOR = { java:"var(--java)", golang:"var(--golang)", python:"var(--python)", microservices:"var(--micro)", sysdesign:"var(--sysdesign)", dsa:"#f0883e", kafka:"var(--kafka)", rust:"var(--rust)", angular:"var(--angular)", react:"var(--react-color)", databases:"var(--databases)" };
+      const areaLabel = AREA_LABEL[topic.area] || topic.area;
+      const areaColor = AREA_COLOR[topic.area] || 'var(--accent)';
+
+      // Update header bar
+      const dotEl = document.getElementById('hdr-dot');
+      const areaEl = document.getElementById('hdr-area');
+      const topicEl = document.getElementById('hdr-topic');
+      const sepEl = document.getElementById('hdr-sep');
+      if (dotEl) dotEl.style.background = areaColor;
+      if (areaEl) { areaEl.textContent = areaLabel; areaEl.style.color = areaColor; }
+      if (topicEl) topicEl.textContent = topic.title;
+      if (sepEl) sepEl.style.display = '';
+
       const done = progress.isDone(topic.id);
       const isTopicChange = topic.id !== lastTopicId;
 
@@ -840,13 +857,10 @@
     render();
   }
 
-  // HomeComponent — central entry page with 3-col grid + fuzzy search
+  // HomeComponent — area card grid landing page
   function HomeComponent(host) {
     const progress = ProgressService;
     const router = Router;
-    let currentQ = "";
-    let debounceT = null;
-    let kHandler = null;
 
     const areaConfig = [
       { key: "java",          label: "Java",             color: "var(--java)" },
@@ -861,65 +875,6 @@
       { key: "react",         label: "React",                      color: "var(--react-color)" },
       { key: "databases",     label: "Databases & Internals",      color: "var(--databases)" }
     ];
-
-    function buildSections(q) {
-      const byArea = {};
-      areaConfig.forEach(a => { byArea[a.key] = []; });
-      TopicsService.all.forEach(t => {
-        const s = fuzzyScore(t, q);
-        if (s.match && byArea[t.area]) byArea[t.area].push({ t, titleHl: s.titleHl });
-      });
-      return areaConfig.map(a => {
-        const items = byArea[a.key] || [];
-        if (q && !items.length) return '';
-        const areaTopics = TopicsService.byArea(a.key);
-        const ratio = progress.ratio(areaTopics.map(t => t.id));
-        const doneCount = areaTopics.filter(t => progress.isDone(t.id)).length;
-        const displayItems = items.length ? items : areaTopics.map(t => ({ t, titleHl: esc(t.title) }));
-        const cards = displayItems.map(({ t, titleHl }) => `
-          <div class="home-card" data-home-nav="${esc(t.id)}">
-            <div class="home-card-bar" style="background:${a.color}"></div>
-            <div class="home-card-body">
-              <div class="home-card-title">${titleHl}</div>
-              <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:2px">
-                ${t.tag ? `<span class="home-card-tag">${esc(t.tag)}</span>` : ''}
-                ${(t.tags || []).slice(0,2).map(tg => `<span class="home-card-kw">${esc(tg)}</span>`).join('')}
-              </div>
-            </div>
-            <div class="home-card-check ${progress.isDone(t.id) ? 'done' : ''}"></div>
-          </div>`).join('');
-        return `
-          <div class="home-section">
-            <div class="home-section-header">
-              <span class="home-section-dot" style="background:${a.color}"></span>
-              <span class="home-section-label">${a.label}</span>
-              <span class="home-section-progress">${q ? items.length + '/' : ''}${areaTopics.length} topics · ${doneCount} done · ${Math.round(ratio*100)}%</span>
-            </div>
-            <div class="home-grid">${cards}</div>
-          </div>`;
-      }).join('');
-    }
-
-    function renderContent() {
-      const q = currentQ;
-      const contentEl = host.querySelector('#home-content-inner');
-      if (!contentEl) return;
-      const sections = buildSections(q);
-      contentEl.innerHTML = sections || `<div class="home-empty">No topics match "<strong>${esc(q)}</strong>"</div>`;
-      // update subtitle
-      const sub = host.querySelector('#home-sub');
-      if (sub) {
-        const total = TopicsService.all.length;
-        const done = TopicsService.all.filter(t => progress.isDone(t.id)).length;
-        sub.textContent = `${total} topics · ${done} completed · Java · Go · Python · Microservices · DSA`;
-      }
-      // update clear button visibility
-      const clearWrap = host.querySelector('#home-clear-wrap');
-      if (clearWrap) clearWrap.style.display = q ? 'flex' : 'none';
-      host.querySelectorAll('[data-home-nav]').forEach(el => {
-        el.addEventListener('click', () => router.navigate('/' + el.dataset.homeNav));
-      });
-    }
 
     function renderAreaCards() {
       const gridEl = host.querySelector('#home-area-grid');
