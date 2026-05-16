@@ -426,11 +426,12 @@
     }
 
     return {
-      animate(steps, _opts = {}) {
+      animate(steps, opts = {}) {
         const ctrl = window.DSAViz.makeStepCtrl(steps, (step, idx) => {
           renderStep(step, idx);
           ctrl._updateCtr?.();
         });
+        if (opts.speed) ctrl.setSpeed(opts.speed);
         ctrlSlot.innerHTML = '';
         ctrlSlot.appendChild(window.DSAViz.makeControlBar(ctrl));
         return ctrl;
