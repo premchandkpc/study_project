@@ -199,6 +199,7 @@ const result = twoSum(nums, target);`;
           });
 
           activeCtrl = rt.animate(steps, { speed });
+          speedSel.onchange = () => { if (activeCtrl) activeCtrl.setSpeed(Number(speedSel.value)); };
 
         } catch (err) {
           showError(outputPanel, `Tracer error: ${err.message}`);
