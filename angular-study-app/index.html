@@ -25,6 +25,12 @@
 <script src="src/shared/dsa-viz/dsa-viz-string.js"></script>
 <script src="src/shared/dsa-viz/dsa-viz-runtime.js"></script>
 <script src="src/shared/dsa-viz/dsa-viz-tracer.js"></script>
+<!-- ReactViz engine — must load before ALL topic files -->
+<script src="src/shared/react-viz/react-viz-core.js?v=2"></script>
+<script src="src/shared/react-viz/animations/component-tree.animation.js?v=2"></script>
+<script src="src/shared/react-viz/animations/hook-timeline.animation.js?v=2"></script>
+<script src="src/shared/react-viz/animations/fiber.animation.js?v=2"></script>
+<script src="src/shared/react-viz/animations/flow-diagram.animation.js?v=2"></script>
 <!-- DSA OOP layer: models → animations → templates (load order matters) -->
 <script src="src/shared/dsa-viz/models/dsa-step.model.js"></script>
 <script src="src/shared/dsa-viz/models/dsa-problem.model.js"></script>
@@ -165,12 +171,6 @@
     <script src="src/modules/topics/angular/ng-pipes.js"></script>
     <script src="src/modules/topics/angular/ng-ngrx.js"></script>
     <script src="src/modules/topics/angular/ng-testing.js"></script>
-    <!-- ReactViz engine — load BEFORE React topic files -->
-    <script src="src/shared/react-viz/react-viz-core.js"></script>
-    <script src="src/shared/react-viz/animations/component-tree.animation.js"></script>
-    <script src="src/shared/react-viz/animations/hook-timeline.animation.js"></script>
-    <script src="src/shared/react-viz/animations/fiber.animation.js"></script>
-    <script src="src/shared/react-viz/animations/flow-diagram.animation.js"></script>
     <!-- React -->
     <script src="src/modules/topics/react/react-hooks-state-effect.js"></script>
     <script src="src/modules/topics/react/react-hooks-memo-callback.js"></script>
