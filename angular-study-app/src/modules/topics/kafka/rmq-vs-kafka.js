@@ -477,15 +477,36 @@
           '<div class="rv-ans" style="display:none;color:#cdd9e5;font-size:12px;margin-top:8px;line-height:1.6">' + qa.a + '</div></div>';
       }).join('');
 
-      var wrongs = [
-        '❌ "Kafka is just a better RabbitMQ" — Wrong. Different models. RMQ deletes on ack, Kafka retains. Push vs pull. Fundamentally different.',
-        '❌ "RabbitMQ can replay messages" — Only if you kept them in a second queue. Default: acked = gone.',
-        '❌ "Kafka has lower latency" — No. RabbitMQ ~1ms, Kafka ~5-10ms. Kafka trades latency for throughput via batching.',
-        '❌ "Just use Kafka for everything" — Wrong. Kafka is operationally heavy. For simple task queues, RabbitMQ is simpler and sufficient.'
+      // WRONG vs CORRECT visual side-by-side
+      var wrongRight = [
+        {
+          wrong: '// "Kafka for everything"\nproducer.send("email.task", payload);\n// Consumer must track if email sent\n// No TTL, no priority, no routing\n// Ops burden for simple use-case',
+          right: '// RabbitMQ for task queues\nchannel.sendToQueue("email.work",\n  payload, { persistent: true });\n// TTL, priority, DLQ built-in\n// Consumer acks = message gone',
+          label: 'Task queue: Kafka vs RabbitMQ'
+        },
+        {
+          wrong: '// "RabbitMQ can replay"\nchannel.ack(msg); // GONE\n// 2nd consumer joins next day\n// Cannot read old messages',
+          right: '// Kafka retains for replay\nconsumer.seek(partition, 0);\n// Rewind to offset 0, read all\n// 2nd consumer reads full history',
+          label: 'Message replay'
+        }
       ];
-      document.getElementById('rv-wrong-list').innerHTML = wrongs.map(function (w) {
-        return '<div style="color:#cdd9e5;font-size:12px;padding:8px 0;border-bottom:1px solid #30363d;line-height:1.6">' + w + '</div>';
+
+      var wcHtml = '<div style="color:#a371f7;font-size:12px;font-weight:bold;margin-bottom:10px">⚠️ WRONG vs ✓ CORRECT</div>';
+      wcHtml += wrongRight.map(function (item) {
+        return '<div style="margin-bottom:12px"><div style="color:#768390;font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">' + item.label + '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+          '<div style="background:#0d1117;border:2px solid #da3633;border-radius:6px;padding:10px"><div style="color:#da3633;font-size:10px;font-weight:bold;margin-bottom:6px">❌ WRONG</div><pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.wrong + '</pre></div>' +
+          '<div style="background:#0d1117;border:2px solid #3fb950;border-radius:6px;padding:10px"><div style="color:#3fb950;font-size:10px;font-weight:bold;margin-bottom:6px">✓ CORRECT</div><pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.right + '</pre></div>' +
+          '</div></div>';
       }).join('');
+      document.getElementById('rv-wrong-list').innerHTML = wcHtml;
+
+      // Production story
+      var prodCard = document.createElement('div');
+      prodCard.style.cssText = 'background:#0d1117;border:1px solid #a371f7;border-radius:8px;padding:14px;margin-bottom:14px';
+      prodCard.innerHTML = '<div style="color:#a371f7;font-size:12px;font-weight:bold;margin-bottom:6px">🏭 Production Story: Choosing Wrong</div>' +
+        '<div style="color:#cdd9e5;font-size:12px;line-height:1.7">Fintech startup chose Kafka for background job processing (10K jobs/day). 6 months in: partition rebalance freezes consumers for 30s during deployments. Payment jobs timeout. Root cause: Kafka consumer group rebalance during rolling deploy. RabbitMQ would have handled this with zero config. Right tool matters.</div>';
+      document.getElementById('rv-qa-list').parentNode.insertBefore(prodCard, document.getElementById('rv-qa-list'));
     },
 
     gotchas: [

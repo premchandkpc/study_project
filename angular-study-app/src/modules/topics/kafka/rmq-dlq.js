@@ -448,17 +448,45 @@ channel.assertQueue('events', {
           '<div class="dl-ans" style="display:none;color:#cdd9e5;font-size:12px;margin-top:8px;line-height:1.6">' + qa.a + '</div></div>';
       }).join('');
 
-      var gotchas = [
-        '⚠️ x-dead-letter-exchange must exist BEFORE queue declared — else routing fails silently',
-        '⚠️ DLQ itself should NOT have x-dead-letter-exchange — creates infinite loop',
-        '⚠️ x-death count resets if message routing key changes between hops',
-        '⚠️ Per-message expiration string, not number: expiration: "30000" not expiration: 30000',
-        '⚠️ rejected reason only set when requeue=false. requeue=true → message goes BACK, not to DLX'
+      // WRONG vs CORRECT visual
+      var wrongRight = [
+        {
+          wrong: 'nack(msg, false, true)\n// requeue=true → goes BACK\n// to same queue, NOT to DLX',
+          right: 'nack(msg, false, false)\n// requeue=false → triggers\n// dead-lettering to DLX',
+          label: 'nack requeue flag'
+        },
+        {
+          wrong: '// DLQ with its OWN DLX\nchannel.assertQueue("dlq", {\n  arguments: {\n    "x-dead-letter-exchange": "dlx2"\n  }\n});\n// INFINITE LOOP!',
+          right: '// DLQ has NO x-dead-letter-exchange\nchannel.assertQueue("payment.dlq", {\n  durable: true\n  // no DLX — messages stay here\n});',
+          label: 'DLQ config'
+        },
+        {
+          wrong: 'channel.publish(ex, key, data, {\n  expiration: 30000  // NUMBER\n});\n// Silently ignored — no TTL!',
+          right: 'channel.publish(ex, key, data, {\n  expiration: "30000"  // STRING\n});\n// TTL works correctly',
+          label: 'TTL type'
+        }
       ];
 
-      document.getElementById('dl-gotcha-list').innerHTML = gotchas.map(function (g) {
-        return '<div style="background:#0d1117;border-left:3px solid #da3633;padding:8px 12px;margin-bottom:6px;font-size:12px;color:#cdd9e5;border-radius:0 4px 4px 0">' + g + '</div>';
+      var wcHtml = '<div style="color:#a371f7;font-size:12px;font-weight:bold;margin-bottom:10px">⚠️ WRONG vs ✓ CORRECT</div>';
+      wcHtml += wrongRight.map(function (item) {
+        return '<div style="margin-bottom:12px"><div style="color:#768390;font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">' + item.label + '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+          '<div style="background:#0d1117;border:2px solid #da3633;border-radius:6px;padding:10px">' +
+          '<div style="color:#da3633;font-size:10px;font-weight:bold;margin-bottom:6px">❌ WRONG</div>' +
+          '<pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.wrong + '</pre></div>' +
+          '<div style="background:#0d1117;border:2px solid #3fb950;border-radius:6px;padding:10px">' +
+          '<div style="color:#3fb950;font-size:10px;font-weight:bold;margin-bottom:6px">✓ CORRECT</div>' +
+          '<pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.right + '</pre></div>' +
+          '</div></div>';
       }).join('');
+      document.getElementById('dl-gotcha-list').innerHTML = wcHtml;
+
+      // Production story card
+      var prodStory = document.createElement('div');
+      prodStory.style.cssText = 'background:#0d1117;border:1px solid #f59134;border-radius:8px;padding:14px;margin-bottom:14px';
+      prodStory.innerHTML = '<div style="color:#f59134;font-size:12px;font-weight:bold;margin-bottom:6px">🏭 Production Story</div>' +
+        '<div style="color:#cdd9e5;font-size:12px;line-height:1.7">Payment service at 50K RPM. 0.3% messages fail JSON parse (malformed upstream). Without DLQ → messages nacked+requeued → CPU spike, infinite loop, queue floods 500K+ msgs, OOM. Fix: DLQ + retry with x-death count. Now: bad msgs quarantined in 250ms, alerting fires, engineers inspect.</div>';
+      document.getElementById('dl-qa-list').parentNode.insertBefore(prodStory, document.getElementById('dl-qa-list'));
     },
 
     gotchas: [
