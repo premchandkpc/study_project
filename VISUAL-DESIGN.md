@@ -1006,3 +1006,746 @@ Teach systems like movies.
 Explain infrastructure like games.
 Visualize runtime like reality.
 ```
+
+---
+
+# 🧵 CONCURRENCY VISUALIZER
+
+## Simulate
+
+- mutex lock / unlock
+- semaphore count
+- read-write lock contention
+- race conditions
+- atomic CAS operations
+- goroutine scheduler (Go)
+- thread pool saturation
+- condition variables
+- producer-consumer
+- dining philosophers
+
+---
+
+## Concurrency Flow
+
+```txt
+Thread A          Thread B
+   │                 │
+   ▼                 ▼
+acquire lock      acquire lock
+   │              (BLOCKED)
+   ▼                 │
+critical section     │
+   │                 │
+release lock         │
+                     ▼
+                 acquire lock
+                 critical section
+                 release lock
+```
+
+Animations:
+- lock ownership glow
+- blocked thread pulse red
+- deadlock cycle highlight
+- starvation counter
+- race condition flash
+
+---
+
+# 🖥️ OPERATING SYSTEMS VISUALIZER
+
+## Simulate
+
+- process scheduling (FCFS, SJF, Round Robin, Priority)
+- context switching
+- page table walks
+- TLB hits/misses
+- virtual → physical address translation
+- disk I/O scheduling
+- inode file lookup
+- pipe communication
+- signal handling
+- zombie processes
+
+---
+
+## Process Scheduler Flow
+
+```txt
+READY QUEUE
+[P1][P2][P3][P4]
+       │
+       ▼
+  CPU dispatcher
+       │
+  ┌────┴─────┐
+  ▼          ▼
+RUNNING    WAITING (I/O)
+  │          │
+  ▼          ▼
+TERMINATED  READY (I/O done)
+```
+
+Animations:
+- Gantt chart live-fill
+- context switch register dump
+- page fault TLB miss flash
+- disk arm seek animation
+- process state color transitions
+
+---
+
+## Virtual Memory
+
+```txt
+Virtual Address
+       │
+       ▼
+   Page Table
+       │
+  ┌────┴────┐
+  ▼         ▼
+TLB Hit   TLB Miss
+  │           │
+  ▼           ▼
+Physical   Page Walk
+Address    (slow path)
+```
+
+---
+
+# 🌐 DISTRIBUTED SYSTEMS VISUALIZER
+
+## Simulate
+
+- leader election (Raft)
+- log replication
+- split brain
+- network partition (netsplit)
+- quorum consensus
+- vector clocks
+- eventual consistency
+- two-phase commit
+- saga pattern
+- circuit breaker
+
+---
+
+## Raft Consensus Flow
+
+```txt
+FOLLOWER → (timeout) → CANDIDATE
+    │                      │
+    │                 RequestVote RPC
+    │                      │
+    ▼                      ▼
+FOLLOWER            majority votes
+                           │
+                           ▼
+                         LEADER
+                           │
+                    AppendEntries RPC
+                           │
+                    ┌──────┴──────┐
+                    ▼             ▼
+                FOLLOWER     FOLLOWER
+```
+
+Animations:
+- heartbeat pulse from leader
+- vote RPC arrows fly
+- log entry commit wave
+- partition wall drops between nodes
+- term number increments
+
+---
+
+## CAP Theorem Visualizer
+
+```txt
+┌──────────────────────────────┐
+│          CAP Triangle        │
+│                              │
+│         Consistency          │
+│              /\              │
+│             /  \             │
+│            / CP \            │
+│           /──────\           │
+│          / CA  AP \          │
+│   Availability─Partition     │
+│           Tolerance          │
+└──────────────────────────────┘
+```
+
+Toggle partition mode → watch which guarantees break.
+
+---
+
+# 📡 NETWORKING VISUALIZER (DEEP)
+
+## OSI Stack Animation
+
+```txt
+Layer 7  Application  HTTP/gRPC/WebSocket
+Layer 6  Presentation TLS/compression
+Layer 5  Session      connection state
+Layer 4  Transport    TCP/UDP segments
+Layer 3  Network      IP routing
+Layer 2  Data Link    MAC frames
+Layer 1  Physical     bits on wire
+```
+
+Packet travels DOWN sender stack → UP receiver stack. Each layer wraps/unwraps header — animate per layer.
+
+---
+
+## TCP Handshake
+
+```txt
+Client                Server
+  │──── SYN ──────────▶│
+  │◀─── SYN-ACK ───────│
+  │──── ACK ──────────▶│
+  │    ESTABLISHED      │
+```
+
+## TCP Congestion
+
+```txt
+cwnd
+ │
+ │        /\
+ │       /  \  (congestion)
+ │      /    \────────────
+ │     /      slow start
+ │────/
+ │  slow
+ └──────────────────── time
+```
+
+Animations:
+- packet loss → cwnd halves
+- slow start exponential climb
+- congestion avoidance linear
+- retransmit timer flash
+
+---
+
+## DNS Resolution Chain
+
+```txt
+Browser cache
+     │ miss
+     ▼
+OS resolver
+     │ miss
+     ▼
+Recursive resolver (ISP)
+     │ miss
+     ▼
+Root nameserver
+     │
+     ▼
+TLD nameserver (.com)
+     │
+     ▼
+Authoritative nameserver
+     │
+     ▼
+IP address returned
+```
+
+---
+
+# 🧩 COMPONENT API REFERENCE
+
+## DSAViz Core API
+
+```js
+// Arrays
+DSAViz.array.render(container, arr, opts)
+DSAViz.array.highlight(indices, color)
+DSAViz.array.swap(i, j)
+DSAViz.array.compare(i, j)
+DSAViz.array.window(left, right)
+DSAViz.array.pointer(index, label)
+DSAViz.array.mark(index, label)
+DSAViz.array.reset()
+
+// Trees
+DSAViz.tree.render(container, root, opts)
+DSAViz.tree.highlightNode(val, color)
+DSAViz.tree.traverse(order)        // 'inorder'|'preorder'|'postorder'|'bfs'
+DSAViz.tree.insertNode(val)
+DSAViz.tree.deleteNode(val)
+DSAViz.tree.rotateLeft(val)
+DSAViz.tree.rotateRight(val)
+
+// Graphs
+DSAViz.graph.render(container, nodes, edges, opts)
+DSAViz.graph.highlightNode(id, color)
+DSAViz.graph.highlightEdge(from, to, color)
+DSAViz.graph.bfs(startId, onVisit)
+DSAViz.graph.dfs(startId, onVisit)
+DSAViz.graph.dijkstra(startId, onRelax)
+DSAViz.graph.topoSort(onVisit)
+
+// Matrix
+DSAViz.matrix.render(container, grid, opts)
+DSAViz.matrix.highlightCell(r, c, color)
+DSAViz.matrix.floodFill(r, c, color)
+DSAViz.matrix.drawPath(cells, color)
+DSAViz.matrix.reset()
+
+// DP Tables
+DSAViz.dp.table1D(container, arr, opts)
+DSAViz.dp.table2D(container, grid, opts)
+DSAViz.dp.memoTree(container, root, opts)
+DSAViz.dp.highlightCell(r, c, color)
+DSAViz.dp.drawArrow(from, to)
+
+// Strings
+DSAViz.string.render(container, str, opts)
+DSAViz.string.compare(str1, str2)
+DSAViz.string.highlight(start, end, color)
+DSAViz.string.slideWindow(left, right)
+DSAViz.string.kmpTable(pattern)
+```
+
+---
+
+## Simulation Control API
+
+```js
+// Step controls
+DSAViz.sim.step()
+DSAViz.sim.stepBack()
+DSAViz.sim.play(speedMs)
+DSAViz.sim.pause()
+DSAViz.sim.reset()
+DSAViz.sim.goto(stepIndex)
+DSAViz.sim.onStep(fn)          // fn(state, stepIndex)
+
+// Narration
+DSAViz.narrate(text)
+DSAViz.narrateCode(lineNumber)
+
+// Complexity
+DSAViz.complexity.ops(count)
+DSAViz.complexity.setLabel('O(n log n)')
+DSAViz.complexity.space(bytes)
+```
+
+---
+
+## Camera API
+
+```js
+DSAViz.camera.zoom(factor)
+DSAViz.camera.pan(x, y)
+DSAViz.camera.focus(nodeId)
+DSAViz.camera.follow(packetId)
+DSAViz.camera.shake(intensity)
+DSAViz.camera.reset()
+DSAViz.camera.flyTo(x, y, zoom, durationMs)
+```
+
+---
+
+# 🎨 COLOR SYSTEM
+
+## Design Tokens
+
+```css
+:root {
+  /* ByteByteGo dark */
+  --bg-primary:     #0d1117;
+  --bg-secondary:   #161b22;
+  --bg-card:        #1c2128;
+  --border:         rgba(255,255,255,0.08);
+
+  /* Node states */
+  --node-default:   #58a6ff;
+  --node-active:    #f78166;
+  --node-visited:   #3fb950;
+  --node-comparing: #e3b341;
+  --node-blocked:   #ff6e6e;
+  --node-done:      #7c4dff;
+
+  /* Edges */
+  --edge-default:   #30363d;
+  --edge-active:    #e3b341;
+  --edge-flow:      #58a6ff;
+  --edge-error:     #f85149;
+
+  /* Text */
+  --text-primary:   #e6edf3;
+  --text-muted:     #8b949e;
+  --text-accent:    #58a6ff;
+
+  /* Complexity bands */
+  --complexity-good:    #3fb950;  /* O(1), O(log n) */
+  --complexity-ok:      #e3b341;  /* O(n), O(n log n) */
+  --complexity-bad:     #f78166;  /* O(n²) */
+  --complexity-worst:   #f85149;  /* O(2^n), O(n!) */
+
+  /* Kafka */
+  --kafka-producer:  #58a6ff;
+  --kafka-broker:    #e3b341;
+  --kafka-consumer:  #3fb950;
+  --kafka-lag:       #f85149;
+
+  /* K8s */
+  --pod-running:    #3fb950;
+  --pod-pending:    #e3b341;
+  --pod-crash:      #f85149;
+  --pod-terminating:#8b949e;
+
+  /* JVM */
+  --heap-eden:      #58a6ff;
+  --heap-survivor:  #e3b341;
+  --heap-old:       #7c4dff;
+  --metaspace:      #3fb950;
+  --gc-sweep:       #f85149;
+}
+```
+
+---
+
+# 🖼️ LAYOUT SYSTEM
+
+## 3-Panel DSA Layout
+
+```txt
+┌─────────────────────────────────────────────────────┐
+│  NAVBAR  [Topic] [Mode] [Theme] [Speed] [Interview] │
+├──────────────────┬──────────────────────────────────┤
+│                  │  NARRATION BAR                   │
+│  VISUALIZATION   │  "Pointer i moves right..."      │
+│  CANVAS          ├──────────────────────────────────┤
+│                  │  CODE PANEL                      │
+│  (SVG/Canvas)    │  ▶ arr[i] = arr[j]              │
+│                  │    i++                           │
+│                  ├──────────────────────────────────┤
+│                  │  STATE PANEL                     │
+│                  │  i=3  j=7  window=4              │
+│                  │  max=12  sum=34                  │
+├──────────────────┼──────────────────────────────────┤
+│  STEP CONTROLS   │  COMPLEXITY PANEL                │
+│  ⏮ ◀ ▶▶ ⏭ ↺   │  ops: 47   O(n²)   space: O(1)  │
+└──────────────────┴──────────────────────────────────┘
+```
+
+---
+
+## System Design Layout
+
+```txt
+┌─────────────────────────────────────────────────────┐
+│  NAVBAR  [System] [Scenario] [Theme] [Speed]        │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│            INFINITE CANVAS                          │
+│                                                     │
+│   [Client]──▶[CDN]──▶[LB]──▶[Service]──▶[DB]      │
+│                         │                           │
+│                      [Cache]                        │
+│                                                     │
+├──────────────┬──────────────────────────────────────┤
+│  TIMELINE    │  LIVE METRICS                        │
+│  t=0  req in │  Latency: 120ms  QPS: 18k           │
+│  t=10 cache  │  CPU: 72%        Lag: 2300           │
+│  t=90 DB hit │  Errors: 0.01%   p99: 340ms         │
+└──────────────┴──────────────────────────────────────┘
+```
+
+---
+
+# 📢 NARRATION ENGINE
+
+## Rules
+
+- max 12 words per narration line
+- ELI8 language always
+- sync with highlighted code line
+- auto-scroll on step change
+- optional TTS toggle
+
+## Narration Templates
+
+```js
+const NARRATION = {
+  compare:    (a, b)    => `Comparing ${a} and ${b}`,
+  swap:       (i, j)    => `Swapping positions ${i} and ${j}`,
+  found:      (val)     => `Found ${val}! Target located.`,
+  miss:       ()        => `Not found here. Move right.`,
+  enqueue:    (val)     => `${val} joins the queue.`,
+  dequeue:    (val)     => `${val} leaves the queue.`,
+  push:       (val)     => `Push ${val} onto stack.`,
+  pop:        (val)     => `Pop ${val} from stack.`,
+  visit:      (node)    => `Visit node ${node}.`,
+  relax:      (u, v, w) => `Relax edge ${u}→${v}, cost ${w}.`,
+  gcSweep:    ()        => `GC sweeps dead objects. World stops.`,
+  podScale:   (n)       => `HPA scales to ${n} pods.`,
+  leaderFail: (id)      => `Leader ${id} down. Election starts.`,
+};
+```
+
+---
+
+# ⏯️ STEP CONTROL SYSTEM
+
+## Step Record Format
+
+```js
+{
+  id: 42,
+  action: 'swap',
+  targets: [3, 7],
+  state: { i: 3, j: 7, arr: [1,4,2,8,5,7] },
+  narration: 'Swapping 2 and 8',
+  codeLine: 14,
+  complexity: { ops: 47, space: 1 }
+}
+```
+
+## Controls Behavior
+
+| Button | Action |
+|--------|--------|
+| ⏮ | jump to step 0 |
+| ◀ | step back 1 |
+| ▶ | step forward 1 |
+| ⏭ | jump to last step |
+| ↺ | reset + clear highlights |
+| ▶▶ | auto-play at speed |
+| ⏸ | pause auto-play |
+
+Speed slider: 100ms → 2000ms per step.
+
+---
+
+# 📋 USAGE EXAMPLES
+
+## Sliding Window Problem
+
+```js
+import { DSAViz } from '../shared/dsa-viz/dsa-viz-tracer.js';
+
+const arr = [2, 1, 5, 1, 3, 2];
+const k = 3;
+const viz = new DSAViz('#canvas');
+
+viz.array.render(arr);
+
+let maxSum = 0, windowSum = 0;
+
+// Build first window
+for (let i = 0; i < k; i++) {
+  windowSum += arr[i];
+  viz.array.window(0, i);
+  viz.narrate(`Add ${arr[i]} to window`);
+  viz.sim.record({ state: { windowSum }, codeLine: 5 });
+}
+
+maxSum = windowSum;
+
+// Slide
+for (let i = k; i < arr.length; i++) {
+  windowSum += arr[i] - arr[i - k];
+  viz.array.window(i - k + 1, i);
+  viz.array.highlight([i], 'var(--node-active)');
+  viz.array.highlight([i - k], 'var(--node-visited)');
+  viz.narrate(`Window [${i-k+1}..${i}] sum = ${windowSum}`);
+  maxSum = Math.max(maxSum, windowSum);
+  viz.sim.record({ state: { windowSum, maxSum }, codeLine: 10 });
+}
+```
+
+---
+
+## BFS Graph Traversal
+
+```js
+const nodes = ['A','B','C','D','E'];
+const edges = [['A','B'],['A','C'],['B','D'],['C','E']];
+const viz = new DSAViz('#canvas');
+
+viz.graph.render(nodes, edges, { directed: false });
+
+function bfs(start) {
+  const queue = [start];
+  const visited = new Set([start]);
+
+  while (queue.length) {
+    const node = queue.shift();
+    viz.graph.highlightNode(node, 'var(--node-active)');
+    viz.narrate(`Visit node ${node}`);
+    viz.sim.record({ state: { queue: [...queue], visited: [...visited] } });
+
+    for (const neighbor of graph[node]) {
+      if (!visited.has(neighbor)) {
+        visited.add(neighbor);
+        queue.push(neighbor);
+        viz.graph.highlightEdge(node, neighbor, 'var(--edge-active)');
+      }
+    }
+    viz.graph.highlightNode(node, 'var(--node-visited)');
+  }
+}
+
+bfs('A');
+viz.sim.play(800);
+```
+
+---
+
+## JVM GC Simulation
+
+```js
+const jvmViz = new DSAViz('#jvm-canvas');
+jvmViz.mode('jvm');
+
+jvmViz.jvm.allocate({ id: 'obj1', size: 24, gen: 'eden' });
+jvmViz.jvm.allocate({ id: 'obj2', size: 16, gen: 'eden' });
+jvmViz.narrate('Objects born in Eden space');
+
+jvmViz.jvm.minorGC();
+jvmViz.narrate('Minor GC. Short-lived objects die.');
+
+jvmViz.jvm.promote('obj1', 'survivor');
+jvmViz.narrate('obj1 survives — moves to Survivor.');
+
+jvmViz.jvm.promote('obj1', 'old');
+jvmViz.narrate('obj1 old enough — promoted to Old Gen.');
+
+jvmViz.jvm.fullGC();
+jvmViz.narrate('Full GC. Stop-the-world pause begins.');
+```
+
+---
+
+# 🔁 FAILURE SCENARIO LIBRARY
+
+Every visualizer must include failure modes:
+
+| System | Failure | Animate |
+|--------|---------|---------|
+| Kafka | leader down | ISR promotes, election arrows |
+| K8s | pod OOMKill | pod turns red, restarts counter |
+| K8s | node drain | pods evict, reschedule elsewhere |
+| DB | deadlock | cycle arrows, wait-for graph |
+| Thread | starvation | low-priority thread dims, timer grows |
+| Network | packet drop | packet disappears, retransmit fires |
+| Cache | thundering herd | 1000 req hit DB simultaneously |
+| Circuit breaker | open | requests blocked, timer countdown |
+| Raft | split brain | partition wall, two leaders red |
+| JVM | OOM | heap bar fills red, crash icon |
+
+---
+
+# 🧪 VISUAL TEST CHECKLIST
+
+Before shipping any visualizer:
+
+```txt
+✅ renders on empty input
+✅ renders on single element
+✅ renders on max size input
+✅ step forward works
+✅ step backward works
+✅ reset clears all highlights
+✅ auto-play starts and stops
+✅ speed slider changes pace
+✅ narration syncs with step
+✅ code line highlights sync
+✅ complexity updates per step
+✅ failure scenario animates
+✅ mobile layout fits (min 375px)
+✅ dark theme renders correct colors
+✅ no layout break on long arrays (n>50)
+```
+
+---
+
+# 🚦 COMPLEXITY COLOR BANDS
+
+Visual rule — color complexity label by class:
+
+```txt
+O(1)        ████ green    #3fb950
+O(log n)    ████ green    #3fb950
+O(n)        ████ yellow   #e3b341
+O(n log n)  ████ yellow   #e3b341
+O(n²)       ████ orange   #f78166
+O(2^n)      ████ red      #f85149
+O(n!)       ████ red      #f85149
+```
+
+Show ops counter live. Animate bar fill as ops grow.
+
+---
+
+# 🗂️ VISUAL COMPONENT FILE STRUCTURE
+
+```txt
+src/app/shared/
+│
+├── dsa-viz/
+│   ├── dsa-viz-tracer.js       ← core tracer API
+│   ├── dsa-viz-runtime.js      ← 3-panel layout engine
+│   ├── dsa-viz-array.js        ← array renderer
+│   ├── dsa-viz-tree.js         ← tree renderer
+│   ├── dsa-viz-graph.js        ← graph renderer
+│   ├── dsa-viz-matrix.js       ← matrix renderer
+│   ├── dsa-viz-dp.js           ← DP table renderer
+│   ├── dsa-viz-string.js       ← string renderer
+│   └── dsa-viz-controls.js     ← step control UI
+│
+├── system-viz/
+│   ├── kafka-viz.js            ← Kafka flow animator
+│   ├── k8s-viz.js              ← Kubernetes animator
+│   ├── jvm-viz.js              ← JVM memory animator
+│   ├── network-viz.js          ← packet flow animator
+│   ├── db-viz.js               ← DB internals animator
+│   ├── thread-viz.js           ← concurrency animator
+│   ├── aws-viz.js              ← AWS infra animator
+│   └── raft-viz.js             ← distributed consensus
+│
+└── ui/
+    ├── narration-bar.js        ← narration display
+    ├── complexity-panel.js     ← ops + big-O display
+    ├── code-panel.js           ← highlighted code sync
+    ├── timeline-panel.js       ← timeline scrubber
+    ├── metrics-panel.js        ← live metric gauges
+    └── camera-controller.js   ← zoom / pan / follow
+```
+
+---
+
+# 🎯 VISUALIZER COMPLETION CHECKLIST
+
+Track which visualizers are built:
+
+```txt
+DSA
+  ✅ Arrays + Sliding Window
+  ✅ Graphs (BFS/DFS/Dijkstra)
+  ⬜ Trees (BST/AVL/Heap/Trie)
+  ⬜ Dynamic Programming
+  ⬜ Matrix / Islands
+  ⬜ String Matching
+
+Systems
+  ✅ Kafka (partitions, ISR, lag)
+  ⬜ Kubernetes (pods, HPA, drain)
+  ⬜ JVM (GC, heap, threads)
+  ⬜ AWS (EC2, Lambda, SQS, EKS)
+  ⬜ Database (MVCC, WAL, locks)
+  ⬜ Networking (TCP, DNS, OSI)
+  ⬜ Distributed (Raft, CAP, 2PC)
+  ⬜ Concurrency (mutex, semaphore)
+  ⬜ OS (scheduler, paging, I/O)
+  ⬜ AI/Transformer (attention, embeddings)
+```
