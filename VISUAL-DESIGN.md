@@ -1,5 +1,326 @@
 # Study Lab — Visual Design System
-*Reusable styles, animations, palettes, UML patterns. Reference from CLAUDE.md.*
+*Reusable styles, animations, palettes, UML patterns, DSA components. Reference from CLAUDE.md.*
+
+---
+
+## DSA VIZ COMPONENTS
+*Standalone reusable JS components. Load order: core → then any others.*
+*Location: `src/shared/dsa-viz/`*
+
+### Load Order (HTML script tags)
+```html
+<!-- 1. Core utilities (always first) -->
+<script src="src/shared/dsa-viz/dsa-viz-core.js"></script>
+<!-- 2. Load only what you need -->
+<script src="src/shared/dsa-viz/dsa-viz-array.js"></script>
+<script src="src/shared/dsa-viz/dsa-viz-tree.js"></script>
+<script src="src/shared/dsa-viz/dsa-viz-graph.js"></script>
+<script src="src/shared/dsa-viz/dsa-viz-matrix.js"></script>
+<script src="src/shared/dsa-viz/dsa-viz-dp.js"></script>
+<script src="src/shared/dsa-viz/dsa-viz-string.js"></script>
+```
+
+### Namespace: `window.DSAViz`
+All components live on `window.DSAViz.*`. Never pollute global scope further.
+
+---
+
+### C1 · `DSAViz.array` — Arrays / Sliding Window / Two Pointers
+**File:** `dsa-viz-array.js`
+
+```js
+// Static render
+DSAViz.array.render(mountEl, {
+  arr: [3, 1, 4, 1, 5, 9, 2, 6],
+  title: 'Max Sum Subarray',
+  highlights: { 2: 'active', 3: 'active', 4: 'active' },  // state per index
+  pointers:   { L: 2, R: 4 },                              // labeled arrows above
+  window:     { l: 2, r: 4 },                              // bracket underline
+  narration:  'Window [4,1,5] — current sum = 10',
+  barMode:    false,                                        // set true for histogram
+});
+
+// Animated step-through
+const steps = [
+  { arr, highlights: {0:'active'}, pointers:{L:0,R:0}, window:{l:0,r:0}, narration:'Start: L=R=0' },
+  { arr, highlights: {0:'active',1:'active'}, pointers:{L:0,R:1}, window:{l:0,r:1}, narration:'Expand R' },
+  // ...
+];
+const ctrl = DSAViz.array.animate(mountEl, steps);
+// ctrl.play() / ctrl.step() / ctrl.reset()
+```
+
+**State colors:** `active` (blue) | `success` (green) | `error` (red) | `warn` (yellow) | `compare` (orange) | `swap` (green flash)
+
+**When to use:**
+- Sliding window problems (highlight window range)
+- Two-pointer (L/R pointer labels)
+- Sorting animation (swap/compare states)
+- Prefix sum (annotate each cell with cumulative value)
+- Stack/queue (show as 1D array, use `warn` for top)
+
+---
+
+### C2 · `DSAViz.tree` — Binary / N-ary Trees
+**File:** `dsa-viz-tree.js`
+
+```js
+// TreeNode shape: { val, left?, right? }  OR  { val, children: [] }
+const root = {
+  val: 4,
+  left:  { val: 2, left: { val: 1 }, right: { val: 3 } },
+  right: { val: 6, left: { val: 5 }, right: { val: 7 } },
+};
+
+DSAViz.tree.render(mountEl, {
+  root,
+  highlights: { 4: 'active', 2: 'visited', 6: 'default' },
+  path:  [4, 2, 1],        // highlight edge path by node values
+  stack: [4, 2],           // DFS stack panel (shown beside tree)
+  queue: [],               // BFS queue panel
+  narration: 'Visiting node 2 — going left',
+});
+
+// Animated
+const ctrl = DSAViz.tree.animate(mountEl, steps);
+```
+
+**States:** `active` (blue pulse) | `visited` (purple) | `success` (green) | `error` (red) | `current` (bright blue filled)
+
+**When to use:**
+- BST insert/search/delete
+- DFS/BFS traversal (stack/queue panels)
+- Recursion tree for DP (use `warn` for memo hits)
+- Segment tree, Trie (N-ary mode with `children` array)
+- Heap (complete binary tree, highlight swaps)
+
+---
+
+### C3 · `DSAViz.graph` — Directed / Undirected Graphs
+**File:** `dsa-viz-graph.js`
+
+```js
+DSAViz.graph.render(mountEl, {
+  nodes: [
+    { id: 'A' }, { id: 'B' }, { id: 'C', x: 260, y: 160 },  // x/y optional
+  ],
+  edges: [
+    { from: 'A', to: 'B', weight: 4 },
+    { from: 'B', to: 'C', weight: 2 },
+  ],
+  directed: true,
+  highlights: { A: 'active', B: 'frontier', C: 'default' },
+  edgeHi:    { 'A-B': 'active', 'B-C': 'path' },
+  distances:  { A: 0, B: 4, C: 6 },     // Dijkstra distance labels
+  visited:    ['A'],
+  queue:      ['B', 'C'],
+  narration:  'Processing A — relaxing neighbors',
+});
+```
+
+**Node states:** `active` (blue pulse) | `frontier` (yellow) | `visited` (green) | `path` (purple) | `error` (red)
+
+**Edge states:** `active` (animated blink) | `path` (gold) | `rejected` (red dashed)
+
+**When to use:**
+- BFS/DFS with visited + queue/stack panels
+- Dijkstra (distance labels below nodes)
+- Topo sort (show in-degree, fade processed nodes)
+- Union-Find (show components as clusters)
+- Number of Islands (use DSAViz.matrix instead for grid)
+
+---
+
+### C4 · `DSAViz.matrix` — 2D Grid / Islands / Path Finding
+**File:** `dsa-viz-matrix.js`
+
+```js
+DSAViz.matrix.render(mountEl, {
+  grid: [
+    [1, 1, 0],
+    [1, 0, 0],
+    [0, 0, 1],
+  ],
+  highlights: {
+    '0,0': 'visited', '0,1': 'visited',
+    '1,0': 'active',
+  },
+  pointer: { r: 1, c: 0 },      // shows ▼ cursor on cell
+  rowLabels: ['r=0','r=1','r=2'],
+  colLabels: ['c=0','c=1','c=2'],
+  showCoords: true,              // tooltip shows [r,c]=val
+  narration: 'BFS from (1,0) — checking neighbors',
+});
+```
+
+**States:** `active` (blue pulse) | `visited` (purple) | `path` (gold) | `wall` (dark, blocked) | `success` (green) | `error` (red)
+
+**When to use:**
+- Number of Islands / Flood Fill (highlight visited cells)
+- 2D DP table (use `DSAViz.dp.table2D` which wraps this)
+- Shortest path in grid (BFS, highlight path)
+- Sudoku / N-Queens (show board state)
+- Rotting Oranges (time-step animation)
+
+---
+
+### C5 · `DSAViz.dp` — DP Tables + Recursion Trees
+**File:** `dsa-viz-dp.js`
+
+```js
+// 1D DP (e.g. Fibonacci, Climb Stairs, Coin Change)
+DSAViz.dp.table1D(mountEl, {
+  dp: [0, 1, 1, 2, 3, 5, 8, 13],
+  indices: ['0','1','2','3','4','5','6','7'],
+  highlights: { 6: 'current', 4: 'source', 5: 'source' },
+  pointer: 6,
+  formula: 'dp[i] = dp[i-1] + dp[i-2]',
+  narration: 'Computing dp[6] = dp[5] + dp[4] = 5 + 3 = 8',
+});
+
+// 2D DP (e.g. LCS, Edit Distance, Knapsack)
+DSAViz.dp.table2D(mountEl, {
+  dp: [
+    [0,0,0,0],
+    [0,1,1,1],
+    [0,1,1,2],
+  ],
+  rowLabels: ['','A','B'],
+  colLabels:  ['','C','B','A'],
+  highlights: { '2,3': 'current', '1,2': 'source', '2,2': 'source' },
+  narration: 'LCS("AB","CBA") cell [2,3]',
+});
+
+// Recursion tree with memo hits
+DSAViz.dp.memoTree(mountEl, {
+  root: { val:'fib(5)', left:{ val:'fib(4)', left:{val:'fib(3)'},right:{val:'fib(2)'} }, right:{ val:'fib(3)' } },
+  highlights: { 'fib(3)': 'memo' },   // 'memo' = cache hit (gold star)
+  narration: 'fib(3) already computed — skip (memo hit)',
+});
+
+// Animated sequence of any of the above
+const ctrl = DSAViz.dp.animate(mountEl, [
+  { _type: 'table1D', dp:[0,1], pointer:1, narration:'Base case' },
+  { _type: 'table1D', dp:[0,1,1], pointer:2, narration:'dp[2]=1' },
+]);
+```
+
+**1D states:** `current` (cursor blue) | `source` (yellow, dependency) | `memo` (purple star) | `filled` (green done) | `empty` (dark, not yet)
+
+**When to use:**
+- Any 1D DP (coin change, house robber, jump game)
+- Any 2D DP (edit distance, LCS, unique paths, knapsack)
+- Recursion tree to show why naive is O(2ⁿ) vs memoized O(n)
+
+---
+
+### C6 · `DSAViz.string` — String / Pointer / Window
+**File:** `dsa-viz-string.js`
+
+```js
+// Single string with pointer + window
+DSAViz.string.render(mountEl, {
+  str: 'abcabcbb',
+  highlights: { 0:'match', 1:'match', 2:'match', 3:'mismatch' },
+  pointers: { L: 0, R: 3 },
+  window:   { l: 0, r: 2 },
+  narration: 'Window "abc" — R hit duplicate "a", shrink left',
+});
+
+// Two strings compare (LCS / edit distance)
+DSAViz.string.compare(mountEl, {
+  strA: 'ABCBDAB',
+  strB: 'BDCAB',
+  ptrA: 2,          // current index in strA (shown as 'i' pointer)
+  ptrB: 1,          // current index in strB (shown as 'j' pointer)
+  hiA:  { 0:'match', 1:'match' },
+  hiB:  { 3:'match', 4:'match' },
+  matchMap: [[0,3],[1,4]],   // draw match lines
+  narration: 'Match found: A[2]=C vs B[1]=D — mismatch, recurse',
+  labelA: 'Text (A)',
+  labelB: 'Pattern (B)',
+});
+
+// Animated
+const ctrl = DSAViz.string.animate(mountEl, steps);
+// steps with _type: 'compare' use the two-string view, else single string
+```
+
+**States:** `match` (green) | `mismatch` (red) | `active` (blue pointer) | `warn` (yellow) | `skip` (dim gray)
+
+**When to use:**
+- Sliding window on string (longest no-repeat, min window substring)
+- Two pointer (valid palindrome, reverse words)
+- Pattern matching (KMP, Rabin-Karp — highlight match/mismatch per char)
+- LCS / edit distance (compare view with match lines)
+- Anagram detection (show char frequency map alongside)
+
+---
+
+### C7 · `DSAViz.core` — Shared Utilities
+**File:** `dsa-viz-core.js` (always load first)
+
+```js
+// Step controller
+const ctrl = DSAViz.makeStepCtrl(steps, (step, idx, total) => {
+  /* render step */ 
+});
+ctrl.play(); ctrl.stop(); ctrl.step(); ctrl.prev(); ctrl.reset(); ctrl.goto(3);
+
+// Control bar (returns DOM element with buttons + speed selector)
+const bar = DSAViz.makeControlBar(ctrl);
+mount.appendChild(bar);
+
+// Narration bar
+const nar = DSAViz.makeNarration('Initial text');
+nar.update('New message', '#56d364'); // second arg = border color
+mount.appendChild(nar);
+
+// Complexity badge
+const badge = DSAViz.makeComplexityBadge('O(n)', 'O(1)');
+mount.appendChild(badge);
+
+// Flash a cell
+DSAViz.flash(el, '#e3b341', 400);
+
+// Typewriter effect on narration
+DSAViz.typewrite(narEl, 'Now doing X because Y...', 25);
+
+// SVG helpers
+const svg = DSAViz.makeSVG(500, 300);
+const circle = DSAViz.svgEl('circle', { cx: 50, cy: 50, r: 20, fill: '#1f6feb' });
+DSAViz.svgArrow(svg, x1, y1, x2, y2, '#e3b341', 'label', false);
+DSAViz.ensureArrowMarker(svg, '#e3b341');
+
+// Container builder (clears mount, sets dark bg)
+const container = DSAViz.makeContainer(mountEl, 'My Title');
+```
+
+**Color constants:** `DSAViz.C.active`, `.success`, `.error`, `.warn`, `.ptr`, `.compare`, `.swap`, etc.
+
+---
+
+### Component Quick-Select Table
+
+| Problem Type | Component | Key Config |
+|---|---|---|
+| Array traversal | `array.render` | `highlights`, `pointers` |
+| Sliding window | `array.render` | `window:{l,r}`, `pointers:{L,R}` |
+| Two pointers | `array.render` | `pointers:{L,R}`, `compare` state |
+| Sorting (swap) | `array.animate` | `swap`/`compare` states per step |
+| Binary search | `array.animate` | `pointers:{lo,mid,hi}` |
+| BST / heap | `tree.render` | `highlights`, `path` |
+| DFS tree | `tree.animate` | `stack:[]`, `visited` state |
+| BFS tree | `tree.animate` | `queue:[]`, `frontier` state |
+| Recursion memo | `dp.memoTree` | `highlights:{val:'memo'}` |
+| Graph BFS/DFS | `graph.animate` | `visited`, `queue`/`stack` panels |
+| Dijkstra | `graph.animate` | `distances`, `edgeHi:{:'path'}` |
+| Islands/grid | `matrix.animate` | `highlights:{r,c:'visited'}` |
+| 2D path | `matrix.animate` | `pointer:{r,c}`, `path` state |
+| 1D DP | `dp.table1D` | `pointer`, `formula`, `source` state |
+| 2D DP | `dp.table2D` | `highlights`, `arrows` |
+| String window | `string.render` | `window`, `pointers:{L,R}` |
+| LCS / edit dist | `string.compare` | `matchMap`, `ptrA`, `ptrB` |
 
 ---
 
