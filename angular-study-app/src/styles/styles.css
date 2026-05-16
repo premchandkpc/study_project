@@ -45,13 +45,55 @@ a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 code, pre { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
-/* Layout shell — sidebar + main */
-.app-shell { display: grid; grid-template-columns: 320px 1fr; min-height: 100vh; }
+/* ── App Header ─────────────────────────────────────────────── */
+.app-header {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 20px; height: 52px;
+  position: sticky; top: 0; z-index: 100;
+  font-size: 13px;
+}
+.hdr-back {
+  background: var(--panel); border: 1px solid var(--border);
+  color: var(--muted); padding: 5px 12px; border-radius: 6px;
+  font-size: 12px; cursor: pointer; font-family: inherit;
+  transition: color .15s, border-color .15s; white-space: nowrap;
+}
+.hdr-back:hover { color: var(--text); border-color: var(--accent); }
+.hdr-div { color: var(--border); font-size: 16px; margin: 0 2px; }
+.hdr-area-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.hdr-area { font-weight: 700; }
+.hdr-sep { color: var(--border); margin: 0 2px; }
+.hdr-topic { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 480px; }
+
+/* ── Layout shell — header + sidebar + main ─────────────────── */
+.app-shell {
+  display: grid;
+  grid-template-columns: 272px 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
 .sidebar {
+  grid-row: 2;
   background: linear-gradient(180deg, var(--bg-2), var(--bg));
   border-right: 1px solid var(--border);
-  padding: 0; position: sticky; top: 0; height: 100vh; overflow: hidden;
+  padding: 0; position: sticky; top: 52px; height: calc(100vh - 52px); overflow: hidden;
   display: flex; flex-direction: column;
+}
+
+/* ── Home mode: full-width, no header, no sidebar ────────────── */
+.app-shell.home-mode {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+.app-shell.home-mode .app-header { display: none; }
+.app-shell.home-mode .sidebar { display: none; }
+.app-shell.home-mode .main {
+  grid-column: 1; grid-row: 1;
+  padding: 0; max-width: 100%;
 }
 .sidebar-inner {
   flex: 1; overflow-y: auto; overflow-x: hidden; padding: 18px 14px 32px;
