@@ -464,7 +464,7 @@
           '<div class="wk-ans" style="display:none;color:#cdd9e5;font-size:12px;margin-top:8px;line-height:1.6">' + qa.a + '</div></div>';
       }).join('');
 
-      var decisions = [
+      decisions = [
         { q: 'Need <50ms latency?', k: 'Use Kafka', w: 'Avoid WarpStream' },
         { q: 'Budget-sensitive (>10TB/mo)?', k: 'Self-hosted OK', w: 'WarpStream wins' },
         { q: 'Kafka Streams / ksqlDB needed?', k: 'Must use Kafka', w: 'Not compatible' },
@@ -472,12 +472,44 @@
         { q: 'Compliance (data must stay in your cloud)?', k: 'Self-hosted only', w: 'WarpStream BYOC' },
         { q: 'Event replay / audit log?', k: 'Both work', w: 'Both work' }
       ];
-      document.getElementById('wk-decision').innerHTML = decisions.map(function (d) {
-        return '<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;padding:7px 0;border-bottom:1px solid #30363d;font-size:11px">' +
-          '<div style="color:#cdd9e5">' + d.q + '</div>' +
-          '<div style="color:#e8741a;text-align:center">' + d.k + '</div>' +
-          '<div style="color:#38bdf8;text-align:center">' + d.w + '</div></div>';
+      document.getElementById('wk-decision').innerHTML = '<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;padding:5px 0;border-bottom:1px solid #30363d;font-size:10px;color:#768390"><div>SCENARIO</div><div style="text-align:center;color:#e8741a">KAFKA</div><div style="text-align:center;color:#38bdf8">WARPSTREAM</div></div>' +
+        decisions.map(function (d) {
+          return '<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;padding:7px 0;border-bottom:1px solid #30363d;font-size:11px">' +
+            '<div style="color:#cdd9e5">' + d.q + '</div>' +
+            '<div style="color:#e8741a;text-align:center">' + d.k + '</div>' +
+            '<div style="color:#38bdf8;text-align:center">' + d.w + '</div></div>';
+        }).join('');
+
+      // WRONG vs CORRECT
+      var wrongRight = [
+        {
+          wrong: '// "WarpStream = same latency"\nprops.put("linger.ms", "0");\n// Kafka: ~5ms with linger.ms=0\n// WarpStream: ~250ms minimum\n// (S3 flush cannot be bypassed)\n// SLA breach in prod!',
+          right: '// Know your latency floor\n// WarpStream: 250-500ms p99\n// Only use when latency OK:\nif (useCase === "analytics" ||\n    useCase === "logging") {\n  // WarpStream fine\n} // NOT for payments/gaming',
+          label: 'Latency assumptions'
+        },
+        {
+          wrong: '// "Kafka Streams works on WarpStream"\nStreamsConfig cfg = new StreamsConfig();\ncfg.put(BOOTSTRAP_SERVERS_CONFIG,\n  "warpstream-agent:9092");\n// FAILS at runtime\n// Internal topics not supported\n// Admin API gaps',
+          right: '// Use Flink / Spark Structured Streaming\n// They use Fetch protocol only\nKafkaSource source = KafkaSource\n  .builder()\n  .setBootstrapServers(wsEndpoint)\n  .setTopics("events")\n  .build();\n// Reads via Fetch — WarpStream compatible',
+          label: 'Stream processing compat'
+        }
+      ];
+
+      var wcHtml = '<div style="color:#38bdf8;font-size:12px;font-weight:bold;margin-bottom:10px;margin-top:16px">⚠️ WRONG vs ✓ CORRECT</div>';
+      wcHtml += wrongRight.map(function (item) {
+        return '<div style="margin-bottom:12px"><div style="color:#768390;font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">' + item.label + '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+          '<div style="background:#0d1117;border:2px solid #da3633;border-radius:6px;padding:10px"><div style="color:#da3633;font-size:10px;font-weight:bold;margin-bottom:6px">❌ WRONG</div><pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.wrong + '</pre></div>' +
+          '<div style="background:#0d1117;border:2px solid #3fb950;border-radius:6px;padding:10px"><div style="color:#3fb950;font-size:10px;font-weight:bold;margin-bottom:6px">✓ CORRECT</div><pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.right + '</pre></div>' +
+          '</div></div>';
       }).join('');
+      document.getElementById('wk-decision').innerHTML += wcHtml;
+
+      // Production story
+      var prodCard = document.createElement('div');
+      prodCard.style.cssText = 'background:#0d1117;border:1px solid #a371f7;border-radius:8px;padding:14px;margin-bottom:14px';
+      prodCard.innerHTML = '<div style="color:#a371f7;font-size:12px;font-weight:bold;margin-bottom:6px">🏭 Real Migration Story</div>' +
+        '<div style="color:#cdd9e5;font-size:12px;line-height:1.7">E-commerce: 2TB/day clickstream. Confluent Cloud bill: $8,400/mo. Migrated to WarpStream BYOC: S3 ($46) + agents ($180) = $226/mo. Saved $97K/year. Latency went 8ms → 280ms — clickstream analytics accepted 300ms. Kafka Streams pipeline (sessionization) replaced with Flink job. Migration took 2 engineers 3 weeks.</div>';
+      document.getElementById('wk-qa-list').parentNode.insertBefore(prodCard, document.getElementById('wk-qa-list'));
     },
 
     gotchas: [

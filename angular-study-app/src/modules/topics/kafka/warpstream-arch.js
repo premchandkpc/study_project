@@ -454,16 +454,36 @@ props.put("bootstrap.servers", "serverless.warpstream.com:9092");
           '<div class="ws-ans" style="display:none;color:#cdd9e5;font-size:12px;margin-top:8px;line-height:1.6">' + qa.a + '</div></div>';
       }).join('');
 
-      var gotchas = [
-        '⚠️ Latency: ~250ms+ vs Kafka ~5ms. Not for real-time trading, gaming tick data.',
-        '⚠️ Buffer in RAM: agent crash before flush = message loss. Use producer retries + idempotency.',
-        '⚠️ S3 costs add up at high egress rates (cross-AZ/cross-region reads billed by AWS).',
-        '⚠️ Not open-source (yet). Vendor lock-in risk vs self-hosted Kafka.',
-        '⚠️ Kafka Streams / ksqlDB not compatible — WarpStream is protocol-compatible, not ecosystem-compatible.'
+      // WRONG vs CORRECT
+      var wrongRight = [
+        {
+          wrong: '// "WarpStream = Kafka, just cheaper"\n// Use Kafka Streams on WarpStream\nKafkaStreams streams = new KafkaStreams(\n  topology, config);\n// FAILS — Kafka Streams needs\n// internal topics + admin APIs\n// not exposed by WarpStream',
+          right: '// WarpStream = Kafka PROTOCOL only\n// Use Flink or custom consumer\nFlinkKafkaConsumer consumer =\n  new FlinkKafkaConsumer(\n    "topic", schema, props);\n// Flink reads via fetch protocol\n// — compatible with WarpStream',
+          label: 'Stream processing'
+        },
+        {
+          wrong: '// "Stateless = no data loss risk"\n// Agent crashes at 249ms\n// buffer not yet flushed to S3\nproducer.send(record);\n// Record LOST — no ack received',
+          right: '// Use idempotent producer + retries\nprops.put("enable.idempotence", "true");\nprops.put("retries", "5");\nprops.put("acks", "all");\n// On agent crash: producer retries\n// Next agent receives, flushes OK',
+          label: 'Agent crash durability'
+        }
       ];
-      document.getElementById('ws-gotcha-list').innerHTML = gotchas.map(function (g) {
-        return '<div style="color:#cdd9e5;font-size:12px;padding:8px 0;border-bottom:1px solid #30363d;line-height:1.6">' + g + '</div>';
+
+      var wcHtml = '<div style="color:#38bdf8;font-size:12px;font-weight:bold;margin-bottom:10px">⚠️ WRONG vs ✓ CORRECT</div>';
+      wcHtml += wrongRight.map(function (item) {
+        return '<div style="margin-bottom:12px"><div style="color:#768390;font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">' + item.label + '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+          '<div style="background:#0d1117;border:2px solid #da3633;border-radius:6px;padding:10px"><div style="color:#da3633;font-size:10px;font-weight:bold;margin-bottom:6px">❌ WRONG</div><pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.wrong + '</pre></div>' +
+          '<div style="background:#0d1117;border:2px solid #3fb950;border-radius:6px;padding:10px"><div style="color:#3fb950;font-size:10px;font-weight:bold;margin-bottom:6px">✓ CORRECT</div><pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.right + '</pre></div>' +
+          '</div></div>';
       }).join('');
+      document.getElementById('ws-gotcha-list').innerHTML = wcHtml;
+
+      // Production story
+      var prodCard = document.createElement('div');
+      prodCard.style.cssText = 'background:#0d1117;border:1px solid #38bdf8;border-radius:8px;padding:14px;margin-bottom:14px';
+      prodCard.innerHTML = '<div style="color:#38bdf8;font-size:12px;font-weight:bold;margin-bottom:6px">🏭 Production Story: WarpStream at Scale</div>' +
+        '<div style="color:#cdd9e5;font-size:12px;line-height:1.7">SaaS analytics company: 500GB/day event ingestion. Self-hosted Kafka: 3 brokers × m5.4xlarge = $2,800/mo + 20% eng time ops. Migrated to WarpStream BYOC: S3 cost $350/mo + tiny pods ($200). 87% cost reduction. Trade-off accepted: p99 latency 300ms vs 8ms — acceptable for analytics pipeline. Kafka Streams replaced with Flink.</div>';
+      document.getElementById('ws-qa-list').parentNode.insertBefore(prodCard, document.getElementById('ws-qa-list'));
     },
 
     gotchas: [
