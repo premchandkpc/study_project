@@ -921,95 +921,95 @@
       });
     }
 
+    function renderAreaCards() {
+      const gridEl = host.querySelector('#home-area-grid');
+      if (!gridEl) return;
+      gridEl.innerHTML = areaConfig.map(a => {
+        const areaTopics = TopicsService.byArea(a.key);
+        const done = areaTopics.filter(t => progress.isDone(t.id)).length;
+        const ratio = areaTopics.length ? done / areaTopics.length : 0;
+        return `
+          <div class="area-card" data-area-nav="${esc(a.key)}" style="--area-color:${a.color}">
+            <div class="area-card-head">
+              <span class="area-card-dot" style="background:${a.color}"></span>
+              <span class="area-card-name">${esc(a.label)}</span>
+            </div>
+            <div class="area-card-count">${areaTopics.length} topics</div>
+            ${done > 0 ? `<div class="area-card-done">${done} completed</div>` : ''}
+            <div class="area-card-bar">
+              <div style="width:${Math.round(ratio * 100)}%;background:${a.color}"></div>
+            </div>
+          </div>`;
+      }).join('');
+      gridEl.querySelectorAll('[data-area-nav]').forEach(el => {
+        el.addEventListener('click', () => {
+          const key = el.dataset.areaNav;
+          const first = TopicsService.byArea(key)[0];
+          if (first) router.navigate('/' + first.id);
+        });
+      });
+    }
+
     function initShell() {
       const total = TopicsService.all.length;
       const done = TopicsService.all.filter(t => progress.isDone(t.id)).length;
       host.innerHTML = `
-        <div class="home-root">
-          <div class="home-hero">
-            <h1 class="home-title">Senior SDE Study Lab</h1>
-            <p class="home-sub" id="home-sub">${total} topics · ${done} completed · Java · Go · Python · Microservices · DSA</p>
-            <div class="home-search-wrap">
-              <span class="home-search-icon">⌕</span>
-              <input class="home-search" id="home-search-input"
-                placeholder="Search topics, patterns, tags… (Ctrl+K)"
-                autocomplete="off" spellcheck="false" />
-              <span id="home-clear-wrap" style="display:none">
-                <button class="home-search-clear" id="home-clear-btn">✕</button>
-              </span>
-            </div>
-            <div class="home-stats">
-              ${areaConfig.map(a => {
-                const at = TopicsService.byArea(a.key);
-                const dc = at.filter(t => progress.isDone(t.id)).length;
-                return `<div class="home-stat">
-                  <span class="home-stat-dot" style="background:${a.color}"></span>
-                  <span>${a.label}</span>
-                  <strong>${dc}/${at.length}</strong>
-                </div>`;
-              }).join('')}
-            </div>
+        <div class="home-landing">
+          <div class="home-landing-hero">
+            <h1 class="home-landing-title">Senior SDE Study Lab</h1>
+            <p class="home-landing-sub">Pick a subject to start learning</p>
+            <div class="home-landing-total">${total} topics · ${done} completed</div>
           </div>
-          <div class="home-content">
-            <div id="home-content-inner"></div>
-          </div>
+          <div class="home-area-grid" id="home-area-grid"></div>
         </div>
       `;
-
-      // Input — never re-created, focus stays
-      const inp = host.querySelector('#home-search-input');
-      inp.addEventListener('input', e => {
-        clearTimeout(debounceT);
-        const val = e.target.value;
-        debounceT = setTimeout(() => { currentQ = val; renderContent(); }, 100);
-      });
-      inp.addEventListener('keydown', e => {
-        if (e.key === 'Escape') { currentQ = ''; inp.value = ''; renderContent(); }
-      });
-      host.querySelector('#home-clear-btn').addEventListener('click', () => {
-        currentQ = ''; inp.value = ''; renderContent(); inp.focus();
-      });
-
-      inp.focus();
-      renderContent();
+      renderAreaCards();
     }
 
-    // Only re-render content (not shell) on progress changes
-    const unsubProgress = progress.state.subscribe(renderContent);
+    // Re-render area cards on progress changes (updates done counts)
+    const unsubProgress = progress.state.subscribe(renderAreaCards);
 
     initShell();
 
-    kHandler = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        const inp = host.querySelector('#home-search-input');
-        if (inp) { inp.focus(); inp.select(); }
-      }
-    };
-    document.addEventListener('keydown', kHandler);
-
     return () => {
       unsubProgress();
-      if (kHandler) document.removeEventListener('keydown', kHandler);
     };
   }
 
   // AppRootComponent — composes the shell
   function bootstrap() {
     const root = document.querySelector("app-root");
-    root.classList.add("app-shell");
+    root.classList.add("app-shell", "home-mode");
     root.innerHTML = `
+      <header class="app-header" id="app-header">
+        <button class="hdr-back" id="hdr-back">← Study Lab</button>
+        <span class="hdr-div">|</span>
+        <span class="hdr-area-dot" id="hdr-dot"></span>
+        <span class="hdr-area" id="hdr-area"></span>
+        <span class="hdr-sep" id="hdr-sep" style="display:none">›</span>
+        <span class="hdr-topic" id="hdr-topic"></span>
+      </header>
       <aside class="sidebar"></aside>
       <main class="main"></main>
     `;
+
+    // toggle home-mode based on route
+    Router.current.subscribe(({ path }) => {
+      const isHome = path === '/';
+      root.classList.toggle('home-mode', isHome);
+    });
+
+    // header back button → home
+    root.querySelector('#hdr-back').addEventListener('click', () => Router.navigate('/'));
+
     SidebarComponent(root.querySelector(".sidebar"));
     TopicDetailComponent(root.querySelector(".main"));
 
-    // Ctrl+K — focus sidebar search (when on topic page, home handles its own)
+    // Ctrl+K — focus search
     document.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        const sideSearch = root.querySelector('#sidebar-search');
         const homeSearch = document.querySelector('#home-search-input');
+        const sideSearch = root.querySelector('#sidebar-search');
         if (homeSearch) { e.preventDefault(); homeSearch.focus(); homeSearch.select(); }
         else if (sideSearch) { e.preventDefault(); sideSearch.focus(); sideSearch.select(); }
       }
