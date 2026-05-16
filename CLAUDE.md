@@ -12,7 +12,8 @@ Topic = `visual(mount)` function. Must have:
 - hovering should show proper detail of the topic what why etc code also
 - for each topic complete flow cycle is imp
 - multiple animation styles examles for each
-
+- create bytebytego type of animations differed 
+- use miro type art for visuals 
 
 
 ## 2 · Reusable Generalized Service Pattern
