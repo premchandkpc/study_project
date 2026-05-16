@@ -8,6 +8,8 @@ Topic = `visual(mount)` function. Must have:
 - Color-coded states: active=orange/blue, success=green, error=red, waiting=gray
 - Step/Play/Reset controls (user paced)
 - Info bar: updates per state, explains WHY
+- animations are must and imp
+
 
 ## 2 · Reusable Generalized Service Pattern
 Write `visual()` to port to Angular services:

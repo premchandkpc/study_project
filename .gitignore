@@ -40,3 +40,4 @@ build/
 .agent/cache/
 .claude/cache/
 .continue/cache/
+inputs/
