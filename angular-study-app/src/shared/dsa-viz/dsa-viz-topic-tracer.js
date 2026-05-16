@@ -1171,14 +1171,14 @@ const result = jobSequencing(jobs);`,
             return;
           }
 
-          const speed = Number(speedSel.value) || 500;
           const rt = window.DSAViz.runtime.create(output, {
             code,
             title: key,
             timeComplexity: entry.time,
             spaceComplexity: entry.space,
           });
-          activeCtrl = rt.animate(steps, { speed });
+          activeCtrl = rt.animate(steps, { speed: Number(speedSel.value) || 500 });
+          speedSel.onchange = () => { if (activeCtrl) activeCtrl.setSpeed(Number(speedSel.value)); };
         } catch (err) {
           output.innerHTML = `<div style="color:#f85149;padding:12px;font-size:12px">Error: ${err.message}</div>`;
         } finally {
