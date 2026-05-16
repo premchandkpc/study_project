@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dpx-decode-ways",
     area: "dsa",
@@ -13,11 +14,27 @@
 **Key insight:** dp[i] = (1-digit decode of s[i-1] valid ? dp[i-1] : 0) + (2-digit decode of s[i-2..i-1] ∈ [10,26] ? dp[i-2] : 0).
 **Scenario:** SMS decoder — count how many English-word interpretations a compressed digit string has.`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'dpx', problem: 'decodeWays' });
-      } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
-      }
+      window.DSAViz.topic.render(mount, {
+        title: 'dpx.decodeWays',
+        time:  'O(n)',
+        space: 'O(n)',
+        code: `function numDecodings(s) {
+  if (!s || s[0] === '0') return 0;
+  const n = s.length;
+  const dp = new Array(n + 1).fill(0);
+  dp[0] = 1;
+  dp[1] = 1;
+  for (let i = 2; i <= n; i++) {
+    const one = parseInt(s[i - 1]);
+    const two = parseInt(s.substring(i - 2, i));
+    if (one >= 1) dp[i] += dp[i - 1];
+    if (two >= 10 && two <= 26) dp[i] += dp[i - 2];
+  }
+  return dp[n];
+}
+const s = "226";
+const result = numDecodings(s);`,
+      });
     }
   }]);
 })();

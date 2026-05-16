@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-bs-search-rotated",
     area: "dsa",
@@ -13,11 +14,30 @@
 **Key insight:** At any midpoint, either the left half or right half is perfectly sorted. Use that to decide which side to search.
 **Scenario:** Circular buffer lookup — data wrapped around a ring buffer.`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'bsearch', problem: 'searchRotated' });
-      } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
-      }
+      window.DSAViz.topic.render(mount, {
+        title: 'bsearch.searchRotated',
+        time:  'O(log n)',
+        space: 'O(1)',
+        code: `function search(nums, target) {
+  let left = 0;
+  let right = nums.length - 1;
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2);
+    if (nums[mid] === target) return mid;
+    if (nums[left] <= nums[mid]) {
+      if (target >= nums[left] && target < nums[mid]) right = mid - 1;
+      else left = mid + 1;
+    } else {
+      if (target > nums[mid] && target <= nums[right]) left = mid + 1;
+      else right = mid - 1;
+    }
+  }
+  return -1;
+}
+const nums = [4, 5, 6, 7, 0, 1, 2];
+const target = 0;
+const result = search(nums, target);`,
+      });
     }
   }]);
 })();

@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-tp-container-water",
     area: "dsa",
@@ -13,11 +14,27 @@
 **Key insight:** Always move the pointer with the shorter height inward. Moving the taller one can only make things worse.
 **Scenario:** Tank designer — pick two walls to maximize water volume.`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'twoptr', problem: 'containerWater' });
-      } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
-      }
+      window.DSAViz.topic.render(mount, {
+        title: 'twoptr.containerWater',
+        time:  'O(n)',
+        space: 'O(1)',
+        code: `function maxArea(height) {
+  let left = 0;
+  let right = height.length - 1;
+  let maxWater = 0;
+  while (left < right) {
+    const h = Math.min(height[left], height[right]);
+    const w = right - left;
+    const water = h * w;
+    if (water > maxWater) maxWater = water;
+    if (height[left] < height[right]) left++;
+    else right--;
+  }
+  return maxWater;
+}
+const height = [1, 8, 6, 2, 5, 4, 8, 3, 7];
+const result = maxArea(height);`,
+      });
     }
   }]);
 })();

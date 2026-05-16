@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-greedy-coin",
     area: "dsa",
@@ -11,11 +12,26 @@
 **Hint:** Greedy is fast but needs a canonical coin system. Compare with DP Coin Change for counterexamples.
 **Scenario:** Works for standard currencies; fails on non-canonical coin sets.`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'greedy', problem: 'greedyCoin' });
-      } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
-      }
+      window.DSAViz.topic.render(mount, {
+        title: 'greedy.greedyCoin',
+        time:  'O(n)',
+        space: 'O(1)',
+        code: `function greedyCoinChange(coins, amount) {
+  coins.sort((a, b) => b - a);
+  let count = 0;
+  let remaining = amount;
+  for (const coin of coins) {
+    while (remaining >= coin) {
+      remaining -= coin;
+      count++;
+    }
+  }
+  return remaining === 0 ? count : -1;
+}
+const coins = [25, 10, 5, 1];
+const amount = 41;
+const result = greedyCoinChange(coins, amount);`,
+      });
     }
   }]);
 })();

@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-sw2-perm-in-str",
     area: "dsa",
@@ -13,11 +14,29 @@
 **Hint:** Window size = len(p). Slide and compare frequency maps instead of sorting.
 **Scenario:** Anagram detector — is any rearrangement of a keyword hiding in this text?`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'sliding2', problem: 'permInStr' });
-      } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
-      }
+      window.DSAViz.topic.render(mount, {
+        title: 'sliding2.permInStr',
+        time:  'O(n)',
+        space: 'O(1)',
+        code: `function checkInclusion(s1, s2) {
+  if (s1.length > s2.length) return false;
+  const count = new Array(26).fill(0);
+  for (let i = 0; i < s1.length; i++) {
+    count[s1.charCodeAt(i) - 97]++;
+    count[s2.charCodeAt(i) - 97]--;
+  }
+  if (count.every(c => c === 0)) return true;
+  for (let i = s1.length; i < s2.length; i++) {
+    count[s2.charCodeAt(i) - 97]--;
+    count[s2.charCodeAt(i - s1.length) - 97]++;
+    if (count.every(c => c === 0)) return true;
+  }
+  return false;
+}
+const s1 = "ab";
+const s2 = "eidbaooo";
+const result = checkInclusion(s1, s2);`,
+      });
     }
   }]);
 })();

@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-stk-valid-paren",
     area: "dsa",
@@ -13,11 +14,27 @@
 **Key insight:** Closing bracket must match the most recently opened (top of stack) bracket.
 **Scenario:** Code compiler — every opening bracket must be closed in the correct order.`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'stack', problem: 'validParen' });
-      } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
-      }
+      window.DSAViz.topic.render(mount, {
+        title: 'stack.validParen',
+        time:  'O(n)',
+        space: 'O(n)',
+        code: `function isValid(s) {
+  const stack = [];
+  const map = { ')': '(', '}': '{', ']': '[' };
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if ('([{'.includes(ch)) {
+      stack.push(ch);
+    } else {
+      if (stack[stack.length - 1] !== map[ch]) return false;
+      stack.pop();
+    }
+  }
+  return stack.length === 0;
+}
+const s = "({[]})";
+const result = isValid(s);`,
+      });
     }
   }]);
 })();

@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-bt-permutations",
     area: "dsa",
@@ -13,11 +14,26 @@
 **Key insight:** Fix position by position. For position i, try swapping each element from [i..n-1] into position i. Recurse on i+1. Undo the swap (backtrack).
 **Scenario:** Password cracker — generate all orderings of a character set.`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'backtrack', problem: 'permutations' });
-      } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
-      }
+      window.DSAViz.topic.render(mount, {
+        title: 'backtrack.permutations',
+        time:  'O(n!)',
+        space: 'O(n)',
+        code: `function permute(nums) {
+  const result = [];
+  function backtrack(current, remaining) {
+    if (remaining.length === 0) { result.push([...current]); return; }
+    for (let i = 0; i < remaining.length; i++) {
+      current.push(remaining[i]);
+      backtrack(current, [...remaining.slice(0, i), ...remaining.slice(i + 1)]);
+      current.pop();
+    }
+  }
+  backtrack([], nums);
+  return result;
+}
+const nums = [1, 2, 3];
+const result = permute(nums);`,
+      });
     }
   }]);
 })();

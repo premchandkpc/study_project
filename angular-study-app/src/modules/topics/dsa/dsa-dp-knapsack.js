@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dp-knapsack",
     area: "dsa",
@@ -11,11 +12,29 @@
 **Hint:** If the item fits, compare skip vs take; otherwise copy the row above.
 **Scenario:** Capacity planning — every item is a yes/no decision.`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'dp', problem: 'knapsack' });
+      window.DSAViz.topic.render(mount, {
+        title: 'dp.knapsack',
+        time:  'O(nW)',
+        space: 'O(nW)',
+        code: `function knapsack(weights, values, capacity) {
+  const n = weights.length;
+  const dp = Array.from({ length: n + 1 }, () => new Array(capacity + 1).fill(0));
+  for (let i = 1; i <= n; i++) {
+    for (let w = 0; w <= capacity; w++) {
+      if (weights[i - 1] <= w) {
+        dp[i][w] = Math.max(dp[i - 1][w], values[i - 1] + dp[i - 1][w - weights[i - 1]]);
       } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
+        dp[i][w] = dp[i - 1][w];
       }
+    }
+  }
+  return dp[n][capacity];
+}
+const weights = [2, 3, 4, 5];
+const values = [3, 4, 5, 6];
+const capacity = 5;
+const result = knapsack(weights, values, capacity);`,
+      });
     }
   }]);
 })();

@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dp-house-robber",
     area: "dsa",
@@ -11,11 +12,23 @@
 **Hint:** At house i choose max(skip i, rob i + best through i-2).
 **Scenario:** FAANG choose/skip question with adjacency constraint.`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'dp', problem: 'houseRobber' });
-      } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
-      }
+      window.DSAViz.topic.render(mount, {
+        title: 'dp.houseRobber',
+        time:  'O(n)',
+        space: 'O(1)',
+        code: `function rob(nums) {
+  let prev2 = 0;
+  let prev1 = 0;
+  for (const n of nums) {
+    const curr = Math.max(prev1, prev2 + n);
+    prev2 = prev1;
+    prev1 = curr;
+  }
+  return prev1;
+}
+const nums = [2, 7, 9, 3, 1];
+const result = rob(nums);`,
+      });
     }
   }]);
 })();

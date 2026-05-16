@@ -25,6 +25,20 @@
 <script src="src/shared/dsa-viz/dsa-viz-string.js"></script>
 <script src="src/shared/dsa-viz/dsa-viz-runtime.js"></script>
 <script src="src/shared/dsa-viz/dsa-viz-tracer.js"></script>
+<!-- DSA OOP layer: models → animations → templates (load order matters) -->
+<script src="src/shared/dsa-viz/models/dsa-step.model.js"></script>
+<script src="src/shared/dsa-viz/models/dsa-problem.model.js"></script>
+<script src="src/shared/dsa-viz/animations/array.animation.js"></script>
+<script src="src/shared/dsa-viz/animations/graph.animation.js"></script>
+<script src="src/shared/dsa-viz/animations/dp.animation.js"></script>
+<script src="src/shared/dsa-viz/templates/sliding-window.template.js"></script>
+<script src="src/shared/dsa-viz/templates/two-pointer.template.js"></script>
+<script src="src/shared/dsa-viz/templates/binary-search.template.js"></script>
+<script src="src/shared/dsa-viz/templates/dp-problem.template.js"></script>
+<script src="src/shared/dsa-viz/templates/graph-problem.template.js"></script>
+<script src="src/shared/dsa-viz/templates/stack-problem.template.js"></script>
+<script src="src/shared/dsa-viz/templates/backtracking.template.js"></script>
+<script src="src/shared/dsa-viz/templates/greedy-problem.template.js"></script>
 <!-- Angular-style core framework -->
 <script src="src/app/core/signal.js"></script>
 <script src="src/app/core/injector.js"></script>
@@ -182,10 +196,8 @@
     <script src="src/modules/topics/agents/agent-reasoning-react.js"></script>
     <script src="src/modules/topics/agents/agent-mcp-protocol.js"></script>
     <script src="src/modules/topics/agents/agent-skills-tools.js"></script>
-    <!-- DSA core (defines initDSAVisualizer + _dsaRenderViz) must load first -->
-    <script src="src/modules/topics/dsa.js?v=3"></script>
-    <!-- topic tracer patches _dsaRenderViz — must load AFTER dsa.js -->
-    <script src="src/shared/dsa-viz/dsa-viz-topic-tracer.js"></script>
+    <!-- shared topic render helper — exposes DSAViz.topic.render -->
+    <script src="src/shared/dsa-viz/dsa-viz-topic-render.js"></script>
     <!-- Sliding Window -->
     <script src="src/modules/topics/dsa/dsa-sw-max-sum-fixed.js?v=3"></script>
     <script src="src/modules/topics/dsa/dsa-sw-longest-uniq.js?v=3"></script>

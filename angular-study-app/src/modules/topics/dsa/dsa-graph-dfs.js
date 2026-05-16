@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-graph-dfs",
     area: "dsa",
@@ -11,11 +12,23 @@
 **Hint:** The stack models the recursion call stack.
 **Scenario:** Dependency exploration — fully inspect one branch before moving to the next.`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'graph', problem: 'dfs' });
-      } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
-      }
+      window.DSAViz.topic.render(mount, {
+        title: 'graph.dfs',
+        time:  'O(V+E)',
+        space: 'O(V)',
+        code: `const visited = {};
+const order = [];
+function dfs(graph, node) {
+  visited[node] = true;
+  order.push(node);
+  for (const neighbor of graph[node]) {
+    if (!visited[neighbor]) dfs(graph, neighbor);
+  }
+}
+const graph = { 0: [1,2], 1: [0,3,4], 2: [0,5], 3: [1], 4: [1], 5: [2] };
+dfs(graph, 0);
+const result = order;`,
+      });
     }
   }]);
 })();

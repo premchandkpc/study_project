@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-tp-trap-rain",
     area: "dsa",
@@ -13,11 +14,38 @@
 **Key insight:** water[i] = min(maxLeft, maxRight) − height[i]. Process from whichever side has the smaller max.
 **Scenario:** Civil engineering — calculate water retention in a terrain cross-section.`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'twoptr', problem: 'trapRain' });
+      window.DSAViz.topic.render(mount, {
+        title: 'twoptr.trapRain',
+        time:  'O(n)',
+        space: 'O(1)',
+        code: `function trap(height) {
+  let left = 0;
+  let right = height.length - 1;
+  let leftMax = 0;
+  let rightMax = 0;
+  let water = 0;
+  while (left < right) {
+    if (height[left] < height[right]) {
+      if (height[left] >= leftMax) {
+        leftMax = height[left];
       } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
+        water += leftMax - height[left];
       }
+      left++;
+    } else {
+      if (height[right] >= rightMax) {
+        rightMax = height[right];
+      } else {
+        water += rightMax - height[right];
+      }
+      right--;
+    }
+  }
+  return water;
+}
+const height = [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1];
+const result = trap(height);`,
+      });
     }
   }]);
 })();

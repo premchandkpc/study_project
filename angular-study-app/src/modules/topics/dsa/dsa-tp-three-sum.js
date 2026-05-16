@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-tp-three-sum",
     area: "dsa",
@@ -13,11 +14,37 @@
 **Key insight:** Sorting enables skipping duplicates and the two-pointer technique.
 **Scenario:** Financial reconciliation — find three transactions that exactly cancel each other out.`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'twoptr', problem: 'threeSum' });
+      window.DSAViz.topic.render(mount, {
+        title: 'twoptr.threeSum',
+        time:  'O(n²)',
+        space: 'O(1)',
+        code: `function threeSum(nums) {
+  nums.sort((a, b) => a - b);
+  const result = [];
+  for (let i = 0; i < nums.length - 2; i++) {
+    if (i > 0 && nums[i] === nums[i - 1]) continue;
+    let left = i + 1;
+    let right = nums.length - 1;
+    while (left < right) {
+      const sum = nums[i] + nums[left] + nums[right];
+      if (sum === 0) {
+        result.push([nums[i], nums[left], nums[right]]);
+        while (left < right && nums[left] === nums[left + 1]) left++;
+        while (left < right && nums[right] === nums[right - 1]) right--;
+        left++;
+        right--;
+      } else if (sum < 0) {
+        left++;
       } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
+        right--;
       }
+    }
+  }
+  return result;
+}
+const nums = [-1, 0, 1, 2, -1, -4];
+const result = threeSum(nums);`,
+      });
     }
   }]);
 })();

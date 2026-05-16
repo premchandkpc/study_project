@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-bt-comb-sum",
     area: "dsa",
@@ -13,11 +14,28 @@
 **Key insight:** Sort candidates. When a candidate exceeds remaining target, stop trying larger ones (they'll also fail). Allows reuse by recursing at same index.
 **Scenario:** Exact-change problem — which coins (reusable) sum to the exact target?`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'backtrack', problem: 'combSum' });
-      } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
-      }
+      window.DSAViz.topic.render(mount, {
+        title: 'backtrack.combSum',
+        time:  'O(2^t)',
+        space: 'O(t)',
+        code: `function combinationSum(candidates, target) {
+  const result = [];
+  function backtrack(start, current, remaining) {
+    if (remaining === 0) { result.push([...current]); return; }
+    if (remaining < 0) return;
+    for (let i = start; i < candidates.length; i++) {
+      current.push(candidates[i]);
+      backtrack(i, current, remaining - candidates[i]);
+      current.pop();
+    }
+  }
+  backtrack(0, [], target);
+  return result;
+}
+const candidates = [2, 3, 6, 7];
+const target = 7;
+const result = combinationSum(candidates, target);`,
+      });
     }
   }]);
 })();

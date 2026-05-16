@@ -1,4 +1,5 @@
 (function() {
+  'use strict';
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-bs-find-min-rotated",
     area: "dsa",
@@ -13,11 +14,23 @@
 **Key insight:** Compare mid to the rightmost element. If mid > right, minimum is right of mid. Else minimum is left of or at mid.
 **Scenario:** Find the rotation point in a circular log ring buffer.`,
     visual: function(mount) {
-      if (typeof window._dsaRenderViz === 'function') {
-        window._dsaRenderViz(mount, { topic: 'bsearch', problem: 'findMinRotated' });
-      } else {
-        mount.innerHTML = '<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Visualizer core not loaded. Hard-refresh (Ctrl+Shift+R).</div>';
-      }
+      window.DSAViz.topic.render(mount, {
+        title: 'bsearch.findMinRotated',
+        time:  'O(log n)',
+        space: 'O(1)',
+        code: `function findMin(nums) {
+  let left = 0;
+  let right = nums.length - 1;
+  while (left < right) {
+    const mid = Math.floor((left + right) / 2);
+    if (nums[mid] > nums[right]) left = mid + 1;
+    else right = mid;
+  }
+  return nums[left];
+}
+const nums = [3, 4, 5, 1, 2];
+const result = findMin(nums);`,
+      });
     }
   }]);
 })();
