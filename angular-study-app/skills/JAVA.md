@@ -84,26 +84,163 @@ CompletableFuture: supplyAsync→thenApply→thenCombine→exceptionally (pipeli
 
 # High-Value Topics To Add
 
-| Topic | Priority | Visualization |
-|---|---|---|
-| ~~Virtual Threads (Loom)~~ | ~~HIGH~~ | ✅ Built |
-| ~~String Pool~~ | ~~HIGH~~ | ✅ Built |
-| ~~CompletableFuture~~ | ~~HIGH~~ | ✅ Built |
-| ~~Synchronized vs Lock~~ | ~~HIGH~~ | ✅ Built |
-| ~~G1/ZGC/Shenandoah~~ | ~~HIGH~~ | ✅ Built |
-| Java Memory Model | HIGH | Happens-before |
-| ForkJoinPool | HIGH | Work stealing |
-| Bytecode & JVM | HIGH | Java → Bytecode → JIT |
-| Hibernate Internals | HIGH | Session/cache |
-| Netty Internals | HIGH | EventLoop |
-| Kafka Consumer | HIGH | Poll/rebalance |
-| Java NIO | HIGH | Selector loop |
-| Reflection/Proxy | MEDIUM | Dynamic invocation |
-| ClassLoader Chain | MEDIUM | Delegation hierarchy |
-| Spring Transactions | HIGH | Tx propagation |
-| Unsafe/VarHandle | LOW | Direct memory |
-| JNI | LOW | Java ↔ Native |
-| CDS/AppCDS | LOW | Shared metadata |
+| Topic | Priority | Visualization | Status |
+|---|---|---|---|
+| ~~Virtual Threads (Loom)~~ | ~~HIGH~~ | FlowDiagram | ✅ Built |
+| ~~String Pool~~ | ~~HIGH~~ | FlowDiagram | ✅ Built |
+| ~~CompletableFuture~~ | ~~HIGH~~ | FlowDiagram | ✅ Built |
+| ~~Synchronized vs Lock~~ | ~~HIGH~~ | FlowDiagram | ✅ Built |
+| ~~G1/ZGC/Shenandoah~~ | ~~HIGH~~ | FlowDiagram | ✅ Built |
+| Java Memory Model | HIGH | Swimlane — 4 rows | 🔲 Missing |
+| ForkJoinPool & work-stealing | HIGH | Swimlane — 3 rows | 🔲 Missing |
+| ClassLoader Chain | HIGH | FlowDiagram vertical | 🔲 Missing |
+| Spring Transactions | HIGH | FlowDiagram — propagation table | 🔲 Missing |
+| Hibernate / JPA Internals | HIGH | FlowDiagram 5-step | 🔲 Missing |
+| Bytecode & JIT | MEDIUM | FlowDiagram pipeline | 🔲 Missing |
+| Java NIO / Selector | MEDIUM | FlowDiagram selector loop | 🔲 Missing |
+| Reflection / Dynamic Proxy | MEDIUM | ComponentTree | 🔲 Missing |
+| Netty EventLoop | MEDIUM | Swimlane — 2 rows | 🔲 Missing |
+| Kafka Consumer (Java) | MEDIUM | FlowDiagram poll loop | 🔲 Missing |
+| Unsafe / VarHandle | LOW | FlowDiagram | 🔲 Missing |
+
+---
+
+## Detailed Visual Specs — Missing HIGH Priority Topics
+
+### `java-memory-model.js` — Java Memory Model (JMM)
+
+**Suggested visual:** Always-visible swimlane (4 rows) — ref: `inputs/image copy 12.png` (mind map, dark bg)
+
+```
+Rows:
+  Row 1 NO-SYNC (red #f85149):
+    Thread A writes flag=true → CPU cache A → NOT flushed → Thread B reads false (stale)
+    Animated: write stays in cache, dotted "stale read" crosses to Thread B
+  Row 2 VOLATILE (blue #58a6ff):
+    volatile write → memory barrier → main memory → Thread B reads fresh value
+    Animated: write crosses from cache → main mem → Thread B
+  Row 3 SYNCHRONIZED (green #3fb950):
+    Thread A: monitor enter → write → monitor exit (fence) → Thread B: monitor enter → read fresh
+    Animated: lock icon, critical section highlight, release → acquire happens-before edge
+  Row 4 ATOMIC (purple #d2a8ff):
+    AtomicInteger.compareAndSet(0,1) → CAS instruction → hardware-level atomic
+    Animated: CAS arrow, success/fail branch
+
+Concepts to cover:
+  - Happens-before rules (all 8 JMM rules)
+  - Visibility vs atomicity vs ordering (3 separate problems)
+  - volatile guarantees visibility + ordering, NOT atomicity
+  - double-checked locking ONLY safe with volatile field
+  - Reordering: compiler/CPU can reorder stores — memory fence prevents
+```
+
+### `java-forkjoin-workstealing.js` — ForkJoinPool & Work Stealing
+
+**Suggested visual:** Always-visible swimlane (3 rows) — ref: `inputs/image copy 11.png` (Kafka swimlane)
+
+```
+Rows:
+  Row 1 DEQUES (orange #ffa657):
+    Worker 0: [T1,T2,T3,T4] → pushes to head, pops from head (LIFO = cache-friendly)
+    Worker 1: [T5,T6] → idle → steals T4 from Worker 0's TAIL (FIFO steal)
+    Animated: steal arrow from tail of busy worker to idle worker
+  Row 2 FORK/JOIN TREE (blue #58a6ff):
+    fork(left) + fork(right) → parallel subtasks → join() waits → combine results
+    Animated: recursion tree expanding left+right, then merging up
+  Row 3 COMMONPOOL (green #3fb950):
+    parallelStream().map() uses ForkJoinPool.commonPool()
+    Async tasks with ManagedBlocker for blocking IO
+
+Concepts:
+  - RecursiveTask<V> (returns value) vs RecursiveAction (void)
+  - Work-stealing: idle workers steal from TAIL of other workers' deques
+  - LIFO local / FIFO steal = cache-friendly + good load balancing
+  - commonPool vs custom pool (custom for blocking IO to avoid starvation)
+  - ForkJoinPool.ManagedBlocker for blocking operations in commonPool
+```
+
+### `java-classloader.js` — ClassLoader Chain & Delegation
+
+**Suggested visual:** Vertical FlowDiagram (5-step) — ref: `inputs/image copy.png` (green tree hierarchy)
+
+```
+5-step FlowDiagram:
+  Step 1 (render):  Bootstrap ClassLoader — loads rt.jar / java.base. Written in C. Null parent.
+  Step 2 (commit):  Extension/Platform ClassLoader — loads $JAVA_HOME/lib/ext (Java 8) / java.se module (9+)
+  Step 3 (effect):  Application ClassLoader — loads classpath. Default CL for your code.
+  Step 4 (update):  Custom ClassLoader — plugin systems, hot-reload, isolation (Tomcat, OSGi)
+  Step 5 (cleanup): Delegation model: child CL asks parent FIRST. Parent returns class or delegates down.
+
+Delegation algorithm code:
+  protected Class<?> loadClass(String name, boolean resolve) {
+    Class<?> c = findLoadedClass(name);        // 1. cache check
+    if (c == null) {
+      c = parent.loadClass(name, resolve);     // 2. delegate up
+      if (c == null) c = findClass(name);      // 3. find locally
+    }
+    return c;
+  }
+
+FlowDiagram nodes:
+  requestingClass(component) → AppClassLoader(store) → ExtClassLoader(cache)
+  → BootstrapCL(server) → not found → findClass(action) → Class loaded(store)
+
+Gotchas to include:
+  - ClassCastException from different CLs loading same class
+  - Memory leak: Class → ClassLoader → all loaded classes (common in web apps)
+  - TCCL (Thread Context ClassLoader) — Spring uses this for plugin isolation
+```
+
+### `java-spring-transactions.js` — Spring Transactions & Propagation
+
+**Suggested visual:** FlowDiagram + propagation grid table
+
+```
+5-step FlowDiagram:
+  Step 1 (render):  @Transactional on Service method → Spring proxy intercepts
+  Step 2 (commit):  PlatformTransactionManager: begin tx → connection.setAutoCommit(false)
+  Step 3 (effect):  Propagation: REQUIRED (join existing), REQUIRES_NEW (suspend + new), NESTED (savepoint)
+  Step 4 (update):  Exception: @Transactional(rollbackFor=Exception.class). RuntimeException → auto rollback. Checked → commit by default!
+  Step 5 (cleanup): commit → connection.commit() → autoCommit restore → connection returned to pool
+
+Propagation behavior grid (must include):
+  REQUIRED:     outer exists? JOIN it. No outer? CREATE new.
+  REQUIRES_NEW: always CREATE new, SUSPEND outer (separate connection!)
+  SUPPORTS:     outer exists? JOIN it. No outer? non-tx.
+  NOT_SUPPORTED: always run non-tx, suspend outer.
+  MANDATORY:    outer MUST exist, else IllegalTransactionStateException.
+  NEVER:        outer must NOT exist, else exception.
+  NESTED:       savepoint in existing tx. Rollback only rolls back nested.
+
+Gotchas nodes to highlight:
+  - self-invocation bypass: @Transactional on private method = no proxy = no tx
+  - checked exceptions don't rollback by default (Java legacy reason)
+  - REQUIRES_NEW gets new connection = can deadlock if outer holds a row lock
+  - @Transactional only works on Spring-managed beans (not new MyService())
+```
+
+### `java-hibernate-internals.js` — Hibernate / JPA Internals
+
+**Suggested visual:** 5-step FlowDiagram
+
+```
+5-step FlowDiagram:
+  Step 1 (render):  EntityManager / Session — persistence context = 1st level cache. Identity map: id→entity.
+  Step 2 (commit):  Dirty checking: snapshot at load vs current state → auto-generates UPDATE on flush
+  Step 3 (effect):  Lazy loading: proxy object (subclass). Trigger on field access → SELECT. LazyInitializationException outside session.
+  Step 4 (update):  N+1 problem: @OneToMany default LAZY → loop calls .getOrders() → N selects. Fix: @EntityGraph / JOIN FETCH / batch size
+  Step 5 (cleanup): 2nd level cache (EHCache/Infinispan). Shared across sessions. Invalidated on write.
+
+Node types:
+  EntityManager(store), PersistenceContext(cache), dirty-check(selector),
+  proxy(component), N+1-query(action red), 2ndLevelCache(network)
+
+Gotchas to include:
+  - flush modes: COMMIT (default), ALWAYS, MANUAL
+  - open-session-in-view antipattern: keeps connection open during rendering
+  - @Transactional + @Query: queries auto-flush before executing (dirty state visible)
+  - Entity lifecycle states: transient → managed → detached → removed
+```
 
 ---
 
