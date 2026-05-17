@@ -120,6 +120,154 @@ S3:
     cons:["Vendor lock-in (especially DynamoDB, Aurora, EventBridge)","Cost can exceed on-prem at very large scale","Managed service limitations (DynamoDB 400KB item limit, Lambda 15min)"],
     when:"Use managed services by default — the operational savings outweigh the lock-in risk. Only consider self-managed (e.g. self-hosted Kafka) at massive scale (>$1M/month cloud spend) where savings justify operational cost."
   },
+  visual: function(mount) {
+    mount.innerHTML = '';
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'font-family:monospace;background:#0d1117;border-radius:8px;padding:12px;color:#e6edf3;';
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;';
+    var btnStyle = 'padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;';
+
+    var canvas = document.createElement('canvas');
+    canvas.width = 460; canvas.height = 320;
+    canvas.style.cssText = 'width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto;';
+    var ctx = canvas.getContext('2d');
+
+    // Layer definitions (y, h, label, color, nodes)
+    var layers = [
+      { label:'Users',      color:'#8b949e', y:10,  h:32, nodes:[{label:'Web',x:160},{label:'Mobile',x:300}] },
+      { label:'Edge / CDN', color:'#e3b341', y:52,  h:32, nodes:[{label:'CloudFront',x:160},{label:'Route53',x:300}] },
+      { label:'Gateway',    color:'#ffa657', y:94,  h:32, nodes:[{label:'API Gateway',x:160},{label:'ALB',x:300}] },
+      { label:'Security',   color:'#f85149', y:94,  h:180, nodes:[], outline:true },
+      { label:'Compute',    color:'#58a6ff', y:136, h:32, nodes:[{label:'ECS/EKS',x:120},{label:'Lambda',x:230},{label:'Fargate',x:340}] },
+      { label:'Storage',    color:'#bc8cff', y:178, h:32, nodes:[{label:'RDS',x:100},{label:'DynamoDB',x:185},{label:'S3',x:270},{label:'ElastiCache',x:368}] },
+      { label:'Monitoring', color:'#3fb950', y:220, h:28, nodes:[{label:'CloudWatch',x:160},{label:'X-Ray',x:300}] }
+    ];
+
+    var requestTypes = {
+      web:    { label:'Web Request',    path:['Users', 'Edge / CDN', 'Gateway', 'Compute', 'Storage', 'Monitoring'], color:'#58a6ff' },
+      api:    { label:'API Call',       path:['Users', 'Gateway', 'Compute', 'Storage', 'Monitoring'],               color:'#ffa657' },
+      static: { label:'Static Asset',   path:['Users', 'Edge / CDN', 'Storage'],                                     color:'#e3b341' }
+    };
+
+    var currentType = 'web';
+    var dotPos = 0;
+    var dotFrac = 0;
+    var animId = null;
+
+    function layerByLabel(lbl) {
+      return layers.filter(function(l) { return l.label === lbl && !l.outline; })[0];
+    }
+
+    function draw() {
+      if (!document.body.contains(canvas)) { if (animId) cancelAnimationFrame(animId); return; }
+      var W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
+
+      var rt = requestTypes[currentType];
+      var activeLayers = rt.path;
+
+      // Security outline (WAF + VPC + IAM)
+      var sec = layers[3];
+      ctx.strokeStyle = '#f8514944'; ctx.lineWidth = 1; ctx.setLineDash([4,3]);
+      ctx.strokeRect(8, sec.y, W - 16, sec.h);
+      ctx.setLineDash([]);
+      ctx.font = '8px monospace'; ctx.fillStyle = '#f8514977'; ctx.textAlign = 'right';
+      ctx.fillText('IAM + VPC + WAF', W - 12, sec.y + 10);
+
+      // Draw layers
+      layers.filter(function(l) { return !l.outline; }).forEach(function(layer) {
+        var isActive = activeLayers.indexOf(layer.label) >= 0;
+        var alpha = isActive ? 'cc' : '33';
+
+        // Layer background
+        ctx.fillStyle = layer.color + (isActive ? '18' : '0a');
+        ctx.strokeStyle = layer.color + (isActive ? '88' : '33');
+        ctx.lineWidth = isActive ? 1.5 : 1;
+        ctx.beginPath();
+        ctx.roundRect(10, layer.y, W - 20, layer.h, 4);
+        ctx.fill(); ctx.stroke();
+
+        // Layer label (left)
+        ctx.font = 'bold 8px monospace';
+        ctx.fillStyle = layer.color + (isActive ? 'ff' : '77');
+        ctx.textAlign = 'left';
+        ctx.fillText(layer.label, 14, layer.y + layer.h / 2 + 3);
+
+        // Nodes
+        layer.nodes.forEach(function(n) {
+          ctx.fillStyle = layer.color + (isActive ? '33' : '15');
+          ctx.strokeStyle = layer.color + (isActive ? 'cc' : '44');
+          ctx.lineWidth = 1;
+          var nw = 72, nh = 18;
+          ctx.beginPath();
+          ctx.roundRect(n.x - nw/2, layer.y + layer.h/2 - nh/2, nw, nh, 3);
+          ctx.fill(); ctx.stroke();
+          ctx.font = '8px monospace';
+          ctx.fillStyle = layer.color + (isActive ? 'ff' : '66');
+          ctx.textAlign = 'center';
+          ctx.fillText(n.label, n.x, layer.y + layer.h/2 + 3);
+        });
+      });
+
+      // Arrows between active consecutive layers
+      for (var i = 0; i < activeLayers.length - 1; i++) {
+        var la = layerByLabel(activeLayers[i]);
+        var lb = layerByLabel(activeLayers[i+1]);
+        if (!la || !lb) continue;
+        var ax = W / 2, ay = la.y + la.h;
+        var bx = W / 2, by = lb.y;
+        ctx.strokeStyle = rt.color + '99'; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]);
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+        ctx.setLineDash([]);
+        // Step number
+        ctx.fillStyle = rt.color; ctx.font = '9px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('①②③④⑤⑥'[i], ax + 6, ay + (by - ay)/2 + 4);
+      }
+
+      // Animated dot along path
+      var path = activeLayers.map(layerByLabel).filter(Boolean);
+      if (path.length > 1) {
+        var seg = Math.min(Math.floor(dotFrac), path.length - 2);
+        var segFrac = dotFrac - seg;
+        var la = path[seg], lb = path[seg+1];
+        var dx = W/2, dy = la.y + la.h + (lb.y - la.y - la.h) * segFrac;
+        ctx.beginPath(); ctx.arc(dx, dy, 5, 0, Math.PI * 2);
+        ctx.fillStyle = rt.color;
+        ctx.shadowColor = rt.color; ctx.shadowBlur = 10;
+        ctx.fill(); ctx.shadowBlur = 0;
+      }
+
+      // Legend
+      ctx.font = '9px monospace'; ctx.fillStyle = rt.color; ctx.textAlign = 'center';
+      ctx.fillText('▶ ' + rt.label, W/2, H - 4);
+
+      animId = requestAnimationFrame(tick);
+    }
+
+    function tick() {
+      if (!document.body.contains(canvas)) { cancelAnimationFrame(animId); return; }
+      dotFrac += 0.03;
+      var pathLen = requestTypes[currentType].path.map(layerByLabel).filter(Boolean).length;
+      if (dotFrac >= pathLen - 1) dotFrac = 0;
+      draw();
+    }
+
+    ['web','api','static'].forEach(function(key) {
+      var btn = document.createElement('button');
+      btn.textContent = '[' + requestTypes[key].label + ']';
+      btn.style.cssText = btnStyle;
+      btn.addEventListener('click', function() { currentType = key; dotFrac = 0; });
+      btnRow.appendChild(btn);
+    });
+
+    wrap.appendChild(btnRow);
+    wrap.appendChild(canvas);
+    mount.appendChild(wrap);
+    tick();
+  },
   architecture:{
     title:"AWS 3-Tier Web Architecture",
     caption:"CloudFront → ALB → ECS Fargate → Aurora + ElastiCache",

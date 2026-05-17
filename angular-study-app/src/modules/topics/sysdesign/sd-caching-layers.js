@@ -93,6 +93,140 @@ public class ProductService {
     cons:["Cache invalidation is hard","Memory cost","Cache-aside introduces inconsistency window"],
     when:"Cache-aside for most applications. Write-through for config/reference data. Write-back for high-volume counters. Always set TTL — never cache indefinitely without expiry."
   },
+  visual: function(mount) {
+    mount.innerHTML = '';
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'font-family:monospace;padding:10px;background:#0d1117;border-radius:8px;';
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;';
+    var btnStyle = 'padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;';
+    var bHit = document.createElement('button'); bHit.textContent = 'Cache Hit (Redis)'; bHit.style.cssText = btnStyle;
+    var bMiss = document.createElement('button'); bMiss.textContent = 'Cache Miss (DB)'; bMiss.style.cssText = btnStyle;
+    var bReset = document.createElement('button'); bReset.textContent = '↺ Reset'; bReset.style.cssText = btnStyle;
+    btnRow.appendChild(bHit); btnRow.appendChild(bMiss); btnRow.appendChild(bReset);
+    wrap.appendChild(btnRow);
+
+    var canvas = document.createElement('canvas');
+    canvas.width = 460; canvas.height = 320;
+    canvas.style.cssText = 'width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto;';
+    wrap.appendChild(canvas);
+    mount.appendChild(wrap);
+
+    var ctx = canvas.getContext('2d');
+
+    var layers = [
+      {label:'Browser Cache', latency:'0 ms', color:'#3fb950', y:20},
+      {label:'CDN Edge', latency:'5 ms', color:'#58a6ff', y:76},
+      {label:'Redis/Memcached', latency:'1 ms', color:'#ffa657', y:132},
+      {label:'App Cache (L1)', latency:'2 ms', color:'#bc8cff', y:188},
+      {label:'Database', latency:'20 ms', color:'#8b949e', y:244}
+    ];
+    var layerH = 48, layerX = 50, layerW = 320;
+
+    // Packet animation state
+    var packet = null; // {y, dir:'down'/'up', hitLayer, phase, alpha, label}
+    var hitCount = 0, totalCount = 0;
+    var raf;
+
+    function drawRR(x, y, w, h, r, fill, stroke) {
+      ctx.beginPath();
+      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
+      ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+      ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+      ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r); ctx.closePath();
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.5; ctx.stroke(); }
+    }
+
+    function draw() {
+      if (!document.body.contains(canvas)) return;
+      ctx.clearRect(0, 0, 460, 320);
+      ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, 460, 320);
+
+      // Layers
+      layers.forEach(function(l, i) {
+        var isHit = packet && packet.hitLayer === i && packet.phase === 'hit';
+        var borderColor = isHit ? (packet.dir === 'up' ? l.color : l.color) : '#30363d';
+        var bgColor = isHit ? l.color + '33' : '#161b22';
+        drawRR(layerX, l.y, layerW, layerH - 4, 6, bgColor, borderColor);
+        ctx.fillStyle = l.color; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'left';
+        ctx.fillText(l.label, layerX + 10, l.y + 16);
+        ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
+        ctx.fillText('latency: ' + l.latency, layerX + 10, l.y + 30);
+
+        // Arrow from this layer to next (down)
+        if (i < layers.length - 1) {
+          ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(layerX + layerW/2, l.y + layerH - 4); ctx.lineTo(layerX + layerW/2, layers[i+1].y); ctx.stroke();
+          ctx.fillStyle = '#30363d'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
+          ctx.fillText('miss →', layerX + layerW/2 + 20, l.y + layerH + 4);
+        }
+      });
+
+      // Latency bar on right
+      ctx.fillStyle = '#8b949e'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'left';
+      ctx.fillText('Latency', 385, 30);
+      layers.forEach(function(l, i) {
+        var barW = [2, 10, 3, 4, 40][i];
+        ctx.fillStyle = l.color;
+        ctx.fillRect(385, l.y + 14, barW, 10);
+        ctx.fillStyle = '#8b949e'; ctx.font = '9px monospace';
+        ctx.fillText(l.latency, 385, l.y + 36);
+      });
+
+      // Packet
+      if (packet) {
+        var py = packet.y;
+        var pcol = packet.phase === 'hit' ? '#3fb950' : (packet.phase === 'return' ? '#3fb950' : layers[Math.min(4, Math.floor((py - 20)/56))].color);
+        ctx.beginPath(); ctx.arc(layerX + layerW/2, py, 9, 0, Math.PI*2);
+        ctx.fillStyle = pcol; ctx.fill();
+        ctx.fillStyle = '#0d1117'; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+        ctx.fillText(packet.label, layerX + layerW/2, py + 3);
+      }
+
+      // Hit rate counter
+      var rate = totalCount > 0 ? Math.round(hitCount/totalCount*100) : 0;
+      ctx.fillStyle = '#e6edf3'; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'left';
+      ctx.fillText('Cache Hit Rate: ' + rate + '%', 50, 306);
+      ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
+      ctx.fillText('hits:' + hitCount + '  reqs:' + totalCount, 220, 306);
+    }
+
+    function animateHit(stopLayerIdx) {
+      totalCount++;
+      if (stopLayerIdx < 4) hitCount++;
+      var targetY = layers[stopLayerIdx].y + (layerH-4)/2;
+      packet = {y: layers[0].y + (layerH-4)/2, dir:'down', hitLayer: stopLayerIdx, phase:'falling', label:'REQ'};
+      var raf2;
+      function step() {
+        if (!document.body.contains(canvas)) return;
+        if (packet.phase === 'falling') {
+          packet.y += 3;
+          if (packet.y >= targetY) {
+            packet.y = targetY; packet.phase = 'hit';
+            packet.label = stopLayerIdx < 4 ? 'HIT' : 'DB';
+            setTimeout(function() {
+              if (!packet) return;
+              packet.phase = 'return'; packet.label = 'RES';
+            }, 400);
+          }
+        } else if (packet.phase === 'return') {
+          packet.y -= 4;
+          if (packet.y <= layers[0].y) { packet = null; draw(); return; }
+        }
+        draw();
+        raf2 = requestAnimationFrame(step);
+      }
+      step();
+    }
+
+    bHit.addEventListener('click', function() { if (!packet) animateHit(2); }); // Redis = index 2
+    bMiss.addEventListener('click', function() { if (!packet) animateHit(4); }); // DB = index 4
+    bReset.addEventListener('click', function() { packet = null; hitCount = 0; totalCount = 0; draw(); });
+
+    draw();
+  },
   architecture:{
     title:"Caching Layers — Full Hierarchy",
     caption:"Each cache layer serves a subset of traffic; DB sees only cache misses",

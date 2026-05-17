@@ -71,6 +71,140 @@ public class OrderRepository {
     pros:["Framework clarifies trade-offs before choosing a DB","Consistency levels let you tune per-operation"],
     cons:["CAP oversimplifies — network partitions are not binary","PACELC is more practical for latency-conscious systems"],
     when:"Choose CP for: financial transactions, distributed locks, config management. Choose AP for: social feeds, shopping carts, notifications, analytics."
+  },
+  visual: function(mount) {
+    mount.innerHTML = '';
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'font-family:monospace;padding:10px;background:#0d1117;border-radius:8px;';
+
+    var btns = document.createElement('div');
+    btns.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;';
+    var btnStyle = 'padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;';
+    var bCP = document.createElement('button'); bCP.textContent = 'Show CP'; bCP.style.cssText = btnStyle;
+    var bAP = document.createElement('button'); bAP.textContent = 'Show AP'; bAP.style.cssText = btnStyle;
+    var bPart = document.createElement('button'); bPart.textContent = 'Network Partition'; bPart.style.cssText = btnStyle;
+    btns.appendChild(bCP); btns.appendChild(bAP); btns.appendChild(bPart);
+    wrap.appendChild(btns);
+
+    var canvas = document.createElement('canvas');
+    canvas.width = 460; canvas.height = 340;
+    canvas.style.cssText = 'width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto;';
+    wrap.appendChild(canvas);
+    mount.appendChild(wrap);
+
+    var ctx = canvas.getContext('2d');
+    var mode = 'none'; // 'cp','ap','partition'
+    var boltAnim = 0;
+    var raf;
+
+    function draw() {
+      if (!document.body.contains(canvas)) return;
+      ctx.clearRect(0, 0, 460, 340);
+      ctx.fillStyle = '#0d1117';
+      ctx.fillRect(0, 0, 460, 340);
+
+      var cx = 230, top = 30, bL = 60, bR = 400, bY = 290;
+      // Triangle vertices: top=Partition, bottomLeft=Consistency, bottomRight=Availability
+      var vP = {x: cx, y: top};
+      var vC = {x: bL, y: bY};
+      var vA = {x: bR, y: bY};
+
+      // Zone overlays
+      if (mode === 'cp') {
+        ctx.beginPath();
+        ctx.moveTo(vP.x, vP.y); ctx.lineTo(vC.x, vC.y); ctx.lineTo(cx, bY); ctx.closePath();
+        ctx.fillStyle = 'rgba(88,166,255,0.18)'; ctx.fill();
+      }
+      if (mode === 'ap') {
+        ctx.beginPath();
+        ctx.moveTo(vP.x, vP.y); ctx.lineTo(vA.x, vA.y); ctx.lineTo(cx, bY); ctx.closePath();
+        ctx.fillStyle = 'rgba(63,185,80,0.18)'; ctx.fill();
+      }
+
+      // Impossible center zone (CA — no partition tolerance)
+      ctx.beginPath();
+      ctx.arc(cx, 190, 28, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(248,81,73,0.18)'; ctx.fill();
+      ctx.strokeStyle = '#f85149'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = '#f85149'; ctx.font = '10px monospace'; ctx.textAlign = 'center';
+      ctx.fillText('Impossible', cx, 187);
+      ctx.fillText('Zone', cx, 200);
+
+      // Main triangle
+      ctx.beginPath();
+      ctx.moveTo(vP.x, vP.y); ctx.lineTo(vC.x, vC.y); ctx.lineTo(vA.x, vA.y); ctx.closePath();
+      ctx.strokeStyle = '#30363d'; ctx.lineWidth = 2; ctx.stroke();
+
+      // Corner labels
+      ctx.font = 'bold 13px monospace'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffa657';
+      ctx.fillText('Partition', vP.x, vP.y - 16);
+      ctx.fillText('Tolerance', vP.x, vP.y - 3);
+      ctx.fillStyle = '#58a6ff';
+      ctx.textAlign = 'right';
+      ctx.fillText('Consistency', vC.x - 2, vC.y + 16);
+      ctx.fillStyle = '#3fb950';
+      ctx.textAlign = 'left';
+      ctx.fillText('Availability', vA.x + 2, vA.y + 16);
+
+      // DB labels
+      ctx.font = '11px monospace'; ctx.fillStyle = '#e6edf3';
+      // CP zone (left side near C+P)
+      var cpDBs = ['MongoDB','HBase','Redis','etcd','Zookeeper'];
+      ctx.textAlign = 'left';
+      ctx.fillStyle = mode === 'cp' ? '#58a6ff' : '#8b949e';
+      ctx.font = 'bold 11px monospace';
+      ctx.fillText('CP Systems:', 68, 140);
+      ctx.font = '11px monospace';
+      cpDBs.forEach(function(d, i) { ctx.fillText('• ' + d, 72, 156 + i*14); });
+
+      // AP zone (right side near A+P)
+      var apDBs = ['Cassandra','CouchDB','DynamoDB'];
+      ctx.textAlign = 'right';
+      ctx.fillStyle = mode === 'ap' ? '#3fb950' : '#8b949e';
+      ctx.font = 'bold 11px monospace';
+      ctx.fillText('AP Systems:', 392, 140);
+      ctx.font = '11px monospace';
+      apDBs.forEach(function(d, i) { ctx.fillText('• ' + d, 392, 156 + i*14); });
+
+      // CA zone (bottom, near C+A)
+      var caDBs = ['PostgreSQL (single)','MySQL'];
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#8b949e';
+      ctx.font = 'bold 11px monospace';
+      ctx.fillText('CA (No Partition):', cx, 248);
+      ctx.font = '11px monospace';
+      caDBs.forEach(function(d, i) { ctx.fillText(d, cx, 262 + i*14); });
+
+      // Network partition lightning bolt animation
+      if (mode === 'partition') {
+        boltAnim = (boltAnim + 0.07) % 1;
+        var alpha = 0.6 + 0.4 * Math.sin(boltAnim * Math.PI * 2);
+        // Draw split line across middle of triangle
+        var midY = (vP.y + vC.y) / 2;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = '#f85149'; ctx.lineWidth = 3;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath(); ctx.moveTo(bL + 20, midY); ctx.lineTo(bR - 20, midY); ctx.stroke();
+        ctx.setLineDash([]);
+        // Bolt icon
+        ctx.fillStyle = '#f85149'; ctx.font = 'bold 22px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('⚡', cx, midY - 6);
+        ctx.font = '11px monospace';
+        ctx.fillText('Network Split! CP refuses requests, AP serves stale', cx, midY + 18);
+        ctx.restore();
+        raf = requestAnimationFrame(draw);
+      }
+    }
+
+    bCP.addEventListener('click', function() { mode = mode === 'cp' ? 'none' : 'cp'; boltAnim = 0; draw(); });
+    bAP.addEventListener('click', function() { mode = mode === 'ap' ? 'none' : 'ap'; boltAnim = 0; draw(); });
+    bPart.addEventListener('click', function() {
+      if (mode === 'partition') { mode = 'none'; draw(); }
+      else { mode = 'partition'; draw(); }
+    });
+    draw();
   }
 };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);

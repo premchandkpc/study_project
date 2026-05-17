@@ -111,6 +111,186 @@ func main() {
       {from:"ws",to:"uc-chat",label:"Bidirectional",detail:"Chat requires client→server messages; SSE is unidirectional."},
       {from:"sse",to:"uc-feed",label:"Server push only",detail:"Live dashboards, notifications — no client messages needed."}
     ]
+  },
+  visual: function(mount) {
+    var W = 460, H = 320;
+
+    var rows = [
+      {
+        label: 'HTTP/1.1', badge: 'TCP', color: '#f85149',
+        sublabel: 'Sequential · HOL Blocking',
+        streams: 3, parallel: false, extraBadge: null
+      },
+      {
+        label: 'HTTP/2', badge: 'TCP', color: '#58a6ff',
+        sublabel: 'Multiplexed Streams · HPACK',
+        streams: 3, parallel: true, extraBadge: 'HPACK'
+      },
+      {
+        label: 'HTTP/3', badge: 'QUIC/UDP', color: '#3fb950',
+        sublabel: 'QUIC (UDP) · 0-RTT · No HOL Block',
+        streams: 3, parallel: true, extraBadge: '0-RTT'
+      }
+    ];
+
+    var ctrl = document.createElement('div');
+    ctrl.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px;justify-content:center';
+    var playBtn = document.createElement('button');
+    playBtn.textContent = '▶ Play';
+    playBtn.style.cssText = 'padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:13px';
+    var resetBtn = document.createElement('button');
+    resetBtn.textContent = '↺ Reset';
+    resetBtn.style.cssText = 'padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:13px';
+    ctrl.appendChild(playBtn); ctrl.appendChild(resetBtn);
+    mount.appendChild(ctrl);
+
+    var canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    canvas.style.cssText = 'width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto';
+    mount.appendChild(canvas);
+    var ctx = canvas.getContext('2d');
+
+    var ROW_H = 78, ROW_START_Y = 28;
+    var LABEL_W = 100, PIPE_X = 108, PIPE_W = 310;
+    // Each row: 3 packets as dots animating left to right
+    // HTTP/1.1: sequential (one at a time, each waits)
+    // HTTP/2 & /3: parallel (all 3 at same time)
+
+    // packet state: progress 0..1 per packet
+    var packets = rows.map(function(row) {
+      return [0, 0, 0];
+    });
+    var running = false, rafId = null;
+
+    function drawScene() {
+      ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
+
+      // title
+      ctx.fillStyle = '#e6edf3'; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center';
+      ctx.fillText('HTTP Protocol Comparison', W/2, 18);
+
+      rows.forEach(function(row, ri) {
+        var baseY = ROW_START_Y + ri * ROW_H + 14;
+
+        // Row background
+        ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(4, baseY - 6, W - 8, ROW_H - 8, 6)
+                      : ctx.rect(4, baseY - 6, W - 8, ROW_H - 8);
+        ctx.fillStyle = '#0d1117';
+        ctx.strokeStyle = row.color + '44'; ctx.lineWidth = 1.5; ctx.fill(); ctx.stroke();
+
+        // Protocol label
+        ctx.fillStyle = row.color; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'left';
+        ctx.fillText(row.label, 10, baseY + 8);
+
+        // Badge
+        ctx.fillStyle = row.color + '33';
+        ctx.fillRect(10, baseY + 14, 72, 14);
+        ctx.strokeStyle = row.color + '88'; ctx.lineWidth = 1; ctx.strokeRect(10, baseY + 14, 72, 14);
+        ctx.fillStyle = row.color; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+        ctx.fillText(row.badge, 46, baseY + 23);
+
+        // Sub label
+        ctx.fillStyle = '#8b949e'; ctx.font = '9px monospace'; ctx.textAlign = 'left';
+        ctx.fillText(row.sublabel, 10, baseY + 40);
+
+        // Extra badge
+        if (row.extraBadge) {
+          ctx.fillStyle = row.color + '22';
+          ctx.fillRect(10, baseY + 46, 48, 13);
+          ctx.strokeStyle = row.color + '66'; ctx.lineWidth = 1; ctx.strokeRect(10, baseY + 46, 48, 13);
+          ctx.fillStyle = row.color; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+          ctx.fillText(row.extraBadge, 34, baseY + 56);
+        }
+
+        // Pipeline track
+        var trackY = baseY + 26;
+        ctx.beginPath(); ctx.moveTo(PIPE_X, trackY);
+        ctx.lineTo(PIPE_X + PIPE_W, trackY);
+        ctx.strokeStyle = '#21262d'; ctx.lineWidth = 2; ctx.stroke();
+
+        // Pipe start/end markers
+        ctx.fillStyle = '#30363d';
+        ctx.fillRect(PIPE_X - 4, trackY - 6, 6, 12);
+        ctx.fillRect(PIPE_X + PIPE_W - 2, trackY - 6, 6, 12);
+        ctx.fillStyle = '#58a6ff'; ctx.font = '8px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('C', PIPE_X - 1, trackY + 3);
+        ctx.fillStyle = '#3fb950';
+        ctx.fillText('S', PIPE_X + PIPE_W + 1, trackY + 3);
+
+        // Packets
+        var pktColors = [row.color, row.color + 'cc', row.color + '88'];
+        packets[ri].forEach(function(prog, pi) {
+          if (prog <= 0) return;
+          var px = PIPE_X + prog * PIPE_W;
+          var py = trackY + (row.parallel ? (pi - 1) * 8 : 0);
+          ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI*2);
+          ctx.fillStyle = pktColors[pi]; ctx.fill();
+          ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI*2);
+          ctx.strokeStyle = '#e6edf3'; ctx.lineWidth = 1; ctx.stroke();
+          // label
+          ctx.fillStyle = '#e6edf3'; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center';
+          ctx.fillText('R' + (pi+1), px, py + 2.5);
+        });
+
+        // HOL blocking annotation for HTTP/1.1
+        if (ri === 0 && packets[0][0] > 0 && packets[0][0] < 1) {
+          ctx.fillStyle = '#f8514988';
+          ctx.font = '8px monospace'; ctx.textAlign = 'center';
+          ctx.fillText('⛔ R2, R3 blocked', PIPE_X + PIPE_W/2, trackY + 18);
+        }
+      });
+
+      // Legend
+      ctx.fillStyle = '#8b949e'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
+      ctx.fillText('C = Client  S = Server  R1/R2/R3 = 3 concurrent requests', W/2, H - 8);
+    }
+
+    var speed11 = 0.004, speed2 = 0.006, speed3 = 0.009;
+
+    function frame() {
+      if (!document.body.contains(canvas)) return;
+
+      // HTTP/1.1: sequential — R2 starts only when R1 done, R3 when R2 done
+      packets[0][0] = Math.min(1, packets[0][0] + speed11);
+      if (packets[0][0] >= 1) packets[0][1] = Math.min(1, packets[0][1] + speed11);
+      if (packets[0][1] >= 1) packets[0][2] = Math.min(1, packets[0][2] + speed11);
+
+      // HTTP/2: all 3 in parallel
+      for (var i = 0; i < 3; i++) packets[1][i] = Math.min(1, packets[1][i] + speed2);
+
+      // HTTP/3: all 3 in parallel, faster
+      for (var j = 0; j < 3; j++) packets[2][j] = Math.min(1, packets[2][j] + speed3);
+
+      drawScene();
+
+      if (running) {
+        // auto-reset when all done
+        var allDone = packets[2][2] >= 1;
+        if (allDone) {
+          setTimeout(function() {
+            packets = rows.map(function() { return [0,0,0]; });
+          }, 800);
+        }
+        rafId = requestAnimationFrame(frame);
+      } else {
+        rafId = requestAnimationFrame(frame);
+      }
+    }
+
+    playBtn.addEventListener('click', function() {
+      if (running) { running = false; playBtn.textContent = '▶ Play'; }
+      else { running = true; playBtn.textContent = '⏸ Pause'; if (!rafId) rafId = requestAnimationFrame(frame); }
+    });
+
+    resetBtn.addEventListener('click', function() {
+      running = false; playBtn.textContent = '▶ Play';
+      packets = rows.map(function() { return [0,0,0]; });
+      drawScene();
+    });
+
+    drawScene();
+    rafId = requestAnimationFrame(frame);
   }
 };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);

@@ -102,6 +102,288 @@ public class OrderController {
     cons:["Cardinality explosion in metrics if labels not controlled","Trace sampling needed at high volume (100% tracing = 10% overhead)","Storage costs for logs + traces at scale"],
     when:"Instrument from day one. Retrofitting observability into production is painful. Use OpenTelemetry standard — avoids vendor lock-in. Set SLOs before you set alerts."
   },
+  visual: function(mount) {
+    mount.innerHTML = '';
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'font-family:monospace;background:#0d1117;border-radius:8px;padding:12px;color:#e6edf3;';
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;';
+    var btnStyle = 'padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;';
+
+    var canvas = document.createElement('canvas');
+    canvas.width = 460; canvas.height = 320;
+    canvas.style.cssText = 'width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto;';
+    var ctx = canvas.getContext('2d');
+
+    var currentTab = 'traces';
+    var animFrame = 0;
+    var animId = null;
+
+    // Trace spans: [name, startMs, durationMs, depth, color]
+    var spans = [
+      { name:'Client Request',  start:0,   dur:250, depth:0, color:'#58a6ff' },
+      { name:'API Gateway',     start:0,   dur:10,  depth:1, color:'#3fb950' },
+      { name:'Auth Service',    start:10,  dur:20,  depth:1, color:'#ffa657' },
+      { name:'Order Service',   start:30,  dur:170, depth:1, color:'#58a6ff' },
+      { name:'DB Query',        start:80,  dur:50,  depth:2, color:'#bc8cff' },
+      { name:'Redis GET',       start:50,  dur:10,  depth:2, color:'#3fb950' },
+      { name:'Response',        start:240, dur:10,  depth:1, color:'#3fb950' }
+    ];
+    var totalMs = 250;
+
+    function drawTraces() {
+      var W = canvas.width, H = canvas.height;
+      var leftPad = 115, rightPad = 12;
+      var chartW = W - leftPad - rightPad;
+      var rowH = 28, startY = 30;
+
+      ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#8b949e'; ctx.textAlign = 'left';
+      ctx.fillText('Span', 8, startY - 6);
+      ctx.textAlign = 'right';
+      ctx.fillText('0ms', leftPad, startY - 6);
+      ctx.fillText('250ms', W - rightPad, startY - 6);
+      ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1;
+      ctx.setLineDash([2,4]);
+      [0.25, 0.5, 0.75].forEach(function(t) {
+        var x = leftPad + chartW * t;
+        ctx.beginPath(); ctx.moveTo(x, startY); ctx.lineTo(x, startY + spans.length * rowH); ctx.stroke();
+        ctx.font = '7px monospace'; ctx.fillStyle = '#30363d'; ctx.textAlign = 'center';
+        ctx.fillText(Math.round(t * totalMs) + 'ms', x, startY + spans.length * rowH + 10);
+      });
+      ctx.setLineDash([]);
+
+      spans.forEach(function(s, i) {
+        var y = startY + i * rowH;
+        var appear = animFrame > i * 12;
+
+        // Row bg
+        ctx.fillStyle = i % 2 === 0 ? '#ffffff08' : '#00000000';
+        ctx.fillRect(0, y, W, rowH - 2);
+
+        // Indent + label
+        var indent = s.depth * 10;
+        ctx.font = '9px monospace';
+        ctx.fillStyle = appear ? s.color : '#30363d';
+        ctx.textAlign = 'left';
+        ctx.fillText((s.depth > 0 ? '└ ' : '') + s.name, 8 + indent, y + 16);
+
+        if (!appear) return;
+
+        // Bar
+        var bx = leftPad + (s.start / totalMs) * chartW;
+        var bw = Math.max(4, (s.dur / totalMs) * chartW);
+        var progress = Math.min(1, (animFrame - i * 12) / 18);
+        bw = bw * progress;
+
+        ctx.fillStyle = s.color + '44';
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.roundRect(bx, y + 4, bw, 14, 3); ctx.fill(); ctx.stroke();
+
+        // Duration label
+        if (progress >= 1) {
+          ctx.font = '8px monospace'; ctx.fillStyle = s.color; ctx.textAlign = 'left';
+          ctx.fillText(s.dur + 'ms', bx + bw + 2, y + 14);
+        }
+      });
+
+      // TraceId
+      ctx.font = '8px monospace'; ctx.fillStyle = '#8b949e'; ctx.textAlign = 'left';
+      ctx.fillText('TraceId: 4a7f2c…9d31  |  Total: 250ms', 8, H - 8);
+    }
+
+    // Metrics: Prometheus scrape flow
+    function drawMetrics() {
+      var W = canvas.width, H = canvas.height;
+      var nodes = [
+        { label:'Service\n/metrics', x:80,  y:100, color:'#58a6ff' },
+        { label:'Prometheus\nscrape', x:230, y:100, color:'#ffa657' },
+        { label:'AlertManager', x:380, y:60,  color:'#f85149', small:true },
+        { label:'Grafana\nDashboard',x:380, y:140, color:'#3fb950', small:true }
+      ];
+      var arrows = [
+        { from:0, to:1, label:'pull /metrics\nevery 15s', color:'#ffa657' },
+        { from:1, to:2, label:'alert rules', color:'#f85149' },
+        { from:1, to:3, label:'PromQL queries', color:'#3fb950' }
+      ];
+
+      ctx.font = 'bold 10px monospace'; ctx.fillStyle = '#ffa657'; ctx.textAlign = 'center';
+      ctx.fillText('Prometheus Metrics Pipeline', W/2, 22);
+
+      // RED method box
+      ctx.fillStyle = '#161b22'; ctx.strokeStyle = '#ffa65766'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.roundRect(10, 36, 170, 40, 4); ctx.fill(); ctx.stroke();
+      ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#ffa657'; ctx.textAlign = 'center';
+      ctx.fillText('RED Method', 95, 52);
+      ctx.font = '8px monospace'; ctx.fillStyle = '#8b949e';
+      ctx.fillText('Rate · Errors · Duration', 95, 68);
+
+      arrows.forEach(function(a, ai) {
+        var fn = nodes[a.from], tn = nodes[a.to];
+        if (animFrame < ai * 25) return;
+        var progress = Math.min(1, (animFrame - ai * 25) / 20);
+        var mx = fn.x + (tn.x - fn.x) * progress;
+        var my = fn.y + (tn.y - fn.y) * progress;
+
+        ctx.strokeStyle = a.color + '88'; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]);
+        ctx.beginPath(); ctx.moveTo(fn.x + 30, fn.y); ctx.lineTo(tn.x - 30, tn.y); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Moving dot
+        ctx.beginPath(); ctx.arc(mx, my, 4, 0, Math.PI*2);
+        ctx.fillStyle = a.color; ctx.shadowColor = a.color; ctx.shadowBlur = 8;
+        ctx.fill(); ctx.shadowBlur = 0;
+
+        ctx.font = '8px monospace'; ctx.fillStyle = a.color; ctx.textAlign = 'center';
+        var lx = (fn.x + tn.x)/2, ly = (fn.y + tn.y)/2 - 10;
+        a.label.split('\n').forEach(function(l, li) { ctx.fillText(l, lx, ly + li*11); });
+      });
+
+      nodes.forEach(function(n) {
+        var nw = n.small ? 80 : 90, nh = n.small ? 30 : 44;
+        ctx.fillStyle = n.color + '22'; ctx.strokeStyle = n.color + 'aa'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.roundRect(n.x - nw/2, n.y - nh/2, nw, nh, 6); ctx.fill(); ctx.stroke();
+        ctx.font = '9px monospace'; ctx.fillStyle = n.color; ctx.textAlign = 'center';
+        n.label.split('\n').forEach(function(l, li) {
+          ctx.fillText(l, n.x, n.y - 4 + li * 14);
+        });
+      });
+
+      // Cardinality warning
+      ctx.fillStyle = '#f8514922'; ctx.strokeStyle = '#f8514966'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.roundRect(8, 210, W - 16, 50, 4); ctx.fill(); ctx.stroke();
+      ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#f85149'; ctx.textAlign = 'left';
+      ctx.fillText('⚠ Cardinality Warning', 16, 228);
+      ctx.font = '8px monospace'; ctx.fillStyle = '#8b949e';
+      ctx.fillText('Never use userId as a metric label.', 16, 242);
+      ctx.fillText('1M users × 10 metrics = 10M time series = OOM', 16, 255);
+    }
+
+    // Logs: pipeline flow
+    function drawLogs() {
+      var W = canvas.width, H = canvas.height;
+      ctx.font = 'bold 10px monospace'; ctx.fillStyle = '#bc8cff'; ctx.textAlign = 'center';
+      ctx.fillText('Structured Log Pipeline', W/2, 22);
+
+      // Log example box
+      ctx.fillStyle = '#161b22'; ctx.strokeStyle = '#bc8cff44'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.roundRect(8, 34, W - 16, 52, 4); ctx.fill(); ctx.stroke();
+      ctx.font = '8px monospace'; ctx.textAlign = 'left';
+      var logLine = '{"level":"ERROR","service":"payment","orderId":"42","latencyMs":234,"traceId":"4a7f2c"}';
+      var parts = [
+        { t:'"level":', c:'#e3b341' }, { t:'"ERROR"', c:'#f85149' },
+        { t:'  "service":', c:'#e3b341' }, { t:'"payment"', c:'#3fb950' },
+        { t:'  "orderId":', c:'#e3b341' }, { t:'"42"', c:'#58a6ff' },
+        { t:'  "latencyMs":', c:'#e3b341' }, { t:'234', c:'#ffa657' },
+        { t:'  "traceId":', c:'#e3b341' }, { t:'"4a7f2c…"', c:'#bc8cff' }
+      ];
+      var lx = 14, ly = 52;
+      ctx.fillStyle = '#8b949e'; ctx.fillText('{', lx, ly); lx += 8;
+      parts.forEach(function(p) {
+        ctx.fillStyle = p.c; ctx.fillText(p.t, lx, ly);
+        lx += ctx.measureText(p.t).width + 2;
+        if (lx > W - 20) { lx = 22; ly += 13; }
+      });
+
+      // Pipeline nodes
+      var pnodes = [
+        { label:'App\n(stdout)', x:70,  y:148, color:'#58a6ff' },
+        { label:'Fluent\nBit', x:185, y:148, color:'#bc8cff' },
+        { label:'Elastic\nsearch', x:300, y:148, color:'#ffa657' },
+        { label:'Kibana', x:400, y:148, color:'#3fb950', small:true }
+      ];
+
+      for (var i = 0; i < pnodes.length - 1; i++) {
+        var fn = pnodes[i], tn = pnodes[i+1];
+        if (animFrame < i * 22) continue;
+        var pr = Math.min(1, (animFrame - i * 22) / 18);
+        var dx = fn.x + (tn.x - fn.x) * pr, dy = fn.y;
+        ctx.strokeStyle = fn.color + '66'; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]);
+        ctx.beginPath(); ctx.moveTo(fn.x + 28, fn.y); ctx.lineTo(tn.x - 28, tn.y); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.beginPath(); ctx.arc(dx, dy, 4, 0, Math.PI*2);
+        ctx.fillStyle = fn.color; ctx.shadowColor = fn.color; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0;
+      }
+
+      pnodes.forEach(function(n) {
+        var nw = n.small ? 60 : 72, nh = 38;
+        ctx.fillStyle = n.color + '22'; ctx.strokeStyle = n.color + 'aa'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.roundRect(n.x - nw/2, n.y - nh/2, nw, nh, 6); ctx.fill(); ctx.stroke();
+        ctx.font = '9px monospace'; ctx.fillStyle = n.color; ctx.textAlign = 'center';
+        n.label.split('\n').forEach(function(l, li) { ctx.fillText(l, n.x, n.y - 4 + li*14); });
+      });
+
+      // Correlation ID tip
+      ctx.fillStyle = '#161b22'; ctx.strokeStyle = '#58a6ff44'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.roundRect(8, 186, W - 16, 36, 4); ctx.fill(); ctx.stroke();
+      ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#58a6ff'; ctx.textAlign = 'left';
+      ctx.fillText('Correlation ID: X-Request-ID', 14, 204);
+      ctx.font = '8px monospace'; ctx.fillStyle = '#8b949e';
+      ctx.fillText('Propagate through ALL services → log on every line → find in Kibana', 14, 216);
+
+      // Log levels
+      var levels = [
+        { l:'TRACE', c:'#8b949e' }, { l:'DEBUG', c:'#58a6ff' }, { l:'INFO', c:'#3fb950' },
+        { l:'WARN', c:'#e3b341' }, { l:'ERROR', c:'#f85149' }
+      ];
+      ctx.font = '8px monospace'; ctx.textAlign = 'center';
+      var lstart = 14;
+      levels.forEach(function(lv) {
+        ctx.fillStyle = lv.c + '33'; ctx.strokeStyle = lv.c; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.roundRect(lstart, 232, 76, 16, 3); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = lv.c;
+        ctx.fillText(lv.l, lstart + 38, 244);
+        lstart += 82;
+      });
+      ctx.font = '8px monospace'; ctx.fillStyle = '#8b949e'; ctx.textAlign = 'center';
+      ctx.fillText('Production: INFO minimum →', W/2, 263);
+
+      ctx.font = '8px monospace'; ctx.fillStyle = '#8b949e';
+      ctx.textAlign = 'center';
+      ctx.fillText('30-day hot retention → S3/Glacier cold archive', W/2, H - 6);
+    }
+
+    function draw() {
+      if (!document.body.contains(canvas)) { if (animId) cancelAnimationFrame(animId); return; }
+      var W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
+
+      if (currentTab === 'traces') drawTraces();
+      else if (currentTab === 'metrics') drawMetrics();
+      else drawLogs();
+
+      animId = requestAnimationFrame(tick);
+    }
+
+    function tick() {
+      if (!document.body.contains(canvas)) { cancelAnimationFrame(animId); return; }
+      animFrame++;
+      if (currentTab === 'metrics' && animFrame > 120) animFrame = 0;
+      if (currentTab === 'logs' && animFrame > 110) animFrame = 0;
+      if (currentTab === 'traces' && animFrame > spans.length * 12 + 30) animFrame = spans.length * 12 + 30;
+      draw();
+    }
+
+    var tabs = [
+      { key:'traces',  label:'[Traces]' },
+      { key:'metrics', label:'[Metrics]' },
+      { key:'logs',    label:'[Logs]' }
+    ];
+    tabs.forEach(function(t) {
+      var btn = document.createElement('button');
+      btn.textContent = t.label;
+      btn.style.cssText = btnStyle;
+      btn.addEventListener('click', function() { currentTab = t.key; animFrame = 0; });
+      btnRow.appendChild(btn);
+    });
+
+    wrap.appendChild(btnRow);
+    wrap.appendChild(canvas);
+    mount.appendChild(wrap);
+    tick();
+  },
   architecture:{
     title:"Observability Stack",
     caption:"Three pillars: metrics (Prometheus), logs (ELK), traces (Jaeger) unified by OpenTelemetry",

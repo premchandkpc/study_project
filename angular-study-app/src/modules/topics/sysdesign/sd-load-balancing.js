@@ -94,6 +94,210 @@ server {
       {path:["lb","s1"],label:"Routed to Server 1 (least-conn)",detail:"Server 1 has fewest active connections. LB forwards request, increments connection counter."},
       {path:["s1","client"],label:"Response returned",detail:"Server 1 responds. LB decrements connection counter. Result flows back to client."}
     ]
+  },
+  visual: function(mount) {
+    var W = 460, H = 320;
+
+    var algo = 'roundrobin';
+    var servers = [
+      { label: 'S1', color: '#3fb950', x: 340, y: 80,  conns: 0, served: 0, healthy: true  },
+      { label: 'S2', color: '#58a6ff', x: 340, y: 160, conns: 0, served: 0, healthy: true  },
+      { label: 'S3', color: '#ffa657', x: 340, y: 240, conns: 0, served: 0, healthy: false }
+    ];
+    var rrIdx = 0;
+
+    var clientX = 60, lbX = 190;
+    var clientY = 160, lbY = 160;
+
+    var ctrl = document.createElement('div');
+    ctrl.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:8px;justify-content:center;flex-wrap:wrap';
+
+    function makeBtn(text, key, color) {
+      var b = document.createElement('button');
+      b.textContent = text;
+      b.style.cssText = 'padding:5px 12px;border-radius:6px;border:1px solid #30363d;background:' + (algo===key ? '#30363d' : '#21262d') + ';color:' + (color || '#e6edf3') + ';cursor:pointer;font-size:12px';
+      b.addEventListener('click', function() {
+        algo = key;
+        allBtns.forEach(function(bb) { bb.style.background = '#21262d'; });
+        b.style.background = '#30363d';
+        // reset connections
+        servers.forEach(function(s) { s.conns = 0; });
+        rrIdx = 0;
+        drawScene();
+      });
+      return b;
+    }
+
+    var b1 = makeBtn('⟳ Round Robin', 'roundrobin', '#e6edf3');
+    var b2 = makeBtn('≤ Least Conn', 'leastconn', '#58a6ff');
+    var b3 = makeBtn('# IP Hash', 'iphash', '#bc8cff');
+    var sendBtn = document.createElement('button');
+    sendBtn.textContent = '→ Send Request';
+    sendBtn.style.cssText = 'padding:5px 12px;border-radius:6px;border:1px solid #3fb950;background:#21262d;color:#3fb950;cursor:pointer;font-size:12px';
+
+    var allBtns = [b1, b2, b3];
+    ctrl.appendChild(b1); ctrl.appendChild(b2); ctrl.appendChild(b3); ctrl.appendChild(sendBtn);
+    mount.appendChild(ctrl);
+
+    var canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    canvas.style.cssText = 'width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto';
+    mount.appendChild(canvas);
+    var ctx = canvas.getContext('2d');
+
+    // Packet animation
+    var packet = null; // { fromX, fromY, toX, toY, prog, color, phase }
+    var lastRouted = -1;
+    var rafId = null;
+
+    function pickServer() {
+      var healthy = servers.filter(function(s) { return s.healthy; });
+      if (!healthy.length) return null;
+      if (algo === 'roundrobin') {
+        var h = healthy[rrIdx % healthy.length]; rrIdx++; return h;
+      } else if (algo === 'leastconn') {
+        return healthy.reduce(function(a, b) { return a.conns <= b.conns ? a : b; });
+      } else {
+        // IP hash — always routes to same index (simulate same IP)
+        return healthy[1] || healthy[0];
+      }
+    }
+
+    function sendRequest() {
+      if (packet) return;
+      var target = pickServer();
+      if (!target) return;
+      target.conns++;
+      lastRouted = servers.indexOf(target);
+      packet = { fromX: clientX + 22, fromY: clientY, midX: lbX + 28, midY: lbY, toX: target.x - 26, toY: target.y, prog: 0, phase: 'toLB', color: target.color, target: target };
+    }
+
+    function drawRoundedRect(x, y, w, h, r) {
+      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+      else { ctx.beginPath(); ctx.rect(x, y, w, h); }
+    }
+
+    function drawScene() {
+      ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
+
+      // Title
+      ctx.fillStyle = '#e6edf3'; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center';
+      var algoLabel = algo === 'roundrobin' ? 'Round Robin' : algo === 'leastconn' ? 'Least Connections' : 'IP Hash';
+      ctx.fillText('Load Balancing — ' + algoLabel, W/2, 18);
+
+      // Client
+      drawRoundedRect(clientX - 24, clientY - 20, 48, 40, 4);
+      ctx.fillStyle = '#161b22'; ctx.fill();
+      ctx.strokeStyle = '#58a6ff'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#58a6ff'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center';
+      ctx.fillText('Client', clientX, clientY + 4);
+
+      // LB
+      drawRoundedRect(lbX - 30, lbY - 26, 60, 52, 4);
+      ctx.fillStyle = '#161b22'; ctx.fill();
+      ctx.strokeStyle = '#ffa657'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#ffa657'; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
+      ctx.fillText('Load', lbX, lbY - 6);
+      ctx.fillText('Balancer', lbX, lbY + 6);
+      ctx.fillStyle = '#8b949e'; ctx.font = '8px monospace';
+      ctx.fillText('L7', lbX, lbY + 18);
+
+      // Lines from LB to servers
+      servers.forEach(function(s, i) {
+        ctx.beginPath();
+        ctx.moveTo(lbX + 30, lbY);
+        ctx.lineTo(s.x - 26, s.y);
+        ctx.strokeStyle = i === lastRouted ? s.color + 'aa' : '#21262d';
+        ctx.lineWidth = i === lastRouted ? 2 : 1;
+        ctx.setLineDash(s.healthy ? [] : [4, 4]);
+        ctx.stroke(); ctx.setLineDash([]);
+      });
+
+      // Line from Client to LB
+      ctx.beginPath(); ctx.moveTo(clientX + 24, clientY); ctx.lineTo(lbX - 30, lbY);
+      ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1; ctx.stroke();
+
+      // Servers
+      servers.forEach(function(s, i) {
+        var BW = 88, BH = 48;
+        drawRoundedRect(s.x - BW/2, s.y - BH/2, BW, BH, 4);
+        ctx.fillStyle = s.healthy ? '#161b22' : '#1a0f0f';
+        ctx.fill();
+        ctx.strokeStyle = s.healthy ? s.color : '#f8514966';
+        ctx.lineWidth = i === lastRouted ? 2.5 : 1.5; ctx.stroke();
+
+        ctx.fillStyle = s.healthy ? s.color : '#f85149';
+        ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center';
+        ctx.fillText(s.label, s.x, s.y - 10);
+
+        if (!s.healthy) {
+          ctx.fillStyle = '#f85149'; ctx.font = 'bold 9px monospace';
+          ctx.fillText('UNHEALTHY', s.x, s.y + 2);
+        } else {
+          // Conn count bar
+          ctx.fillStyle = '#8b949e'; ctx.font = '8px monospace';
+          ctx.fillText('conns: ' + s.conns, s.x, s.y + 2);
+          // Served
+          ctx.fillStyle = '#3fb950'; ctx.font = '8px monospace';
+          ctx.fillText('served: ' + s.served, s.x, s.y + 14);
+        }
+
+        // IP hash indicator
+        if (algo === 'iphash' && s.healthy && i === 1) {
+          ctx.fillStyle = '#bc8cff'; ctx.font = '8px monospace'; ctx.textAlign = 'center';
+          ctx.fillText('hash(IP)→', s.x - 55, s.y);
+        }
+      });
+
+      // Moving packet
+      if (packet) {
+        var px, py;
+        if (packet.phase === 'toLB') {
+          px = packet.fromX + packet.prog * (packet.midX - packet.fromX);
+          py = packet.fromY + packet.prog * (packet.midY - packet.fromY);
+        } else {
+          px = packet.midX + packet.prog * (packet.toX - packet.midX);
+          py = packet.midY + packet.prog * (packet.toY - packet.midY);
+        }
+        ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI*2);
+        ctx.fillStyle = packet.color; ctx.fill();
+        ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI*2);
+        ctx.strokeStyle = '#e6edf3'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.fillStyle = '#0d1117'; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+        ctx.fillText('Req', px, py + 3);
+      }
+
+      // Algo explanation at bottom
+      var hint = algo === 'roundrobin' ? 'Cycles S1→S2→S1→S2 (S3 unhealthy, skipped)'
+               : algo === 'leastconn' ? 'Routes to server with fewest active connections'
+               : 'hash(client IP) → always same server (stable affinity)';
+      ctx.fillStyle = '#8b949e'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
+      ctx.fillText(hint, W/2, H - 8);
+    }
+
+    function frame() {
+      if (!document.body.contains(canvas)) return;
+      if (packet) {
+        packet.prog += 0.05;
+        if (packet.prog >= 1) {
+          if (packet.phase === 'toLB') {
+            packet.phase = 'toServer'; packet.prog = 0;
+          } else {
+            // arrived at server
+            packet.target.served++;
+            setTimeout(function() { packet.target.conns = Math.max(0, packet.target.conns - 1); packet = null; }, 300);
+            packet = null;
+          }
+        }
+      }
+      drawScene();
+      rafId = requestAnimationFrame(frame);
+    }
+
+    sendBtn.addEventListener('click', sendRequest);
+
+    drawScene();
+    rafId = requestAnimationFrame(frame);
   }
 };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);
