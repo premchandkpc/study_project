@@ -27,11 +27,11 @@
 
   LayeredRenderer.prototype.render = function (mount, cfg) {
     var mountWidth = Math.round(mount.clientWidth || mount.getBoundingClientRect().width || 460);
-    var W        = Math.max(520, mountWidth);
+    var W        = Math.max(780, mountWidth);
     var layers   = cfg.layers || [];
-    var lH       = 70;
-    var padTop   = cfg.title ? 32 : 12;
-    var H        = padTop + layers.length * (lH + 8) + 24;
+    var lH       = 100;
+    var padTop   = cfg.title ? 44 : 18;
+    var H        = padTop + layers.length * (lH + 12) + 32;
 
     var canvas   = U.makeCanvas(mount, W, H);
     var ctrl     = U.makeCtrlRow(mount);
@@ -64,7 +64,7 @@
 
     function drawStatic() {
       U.clearBg(ctx, W, H);
-      if (cfg.title) U.text(ctx, cfg.title, W/2, 18, U.C.blue, 12, 'center', 'bold');
+      if (cfg.title) U.text(ctx, cfg.title, W/2, 28, U.C.blue, 18, 'center', 'bold');
 
       layers.forEach(function (layer, i) {
         var y   = layerTop(i);
@@ -72,30 +72,30 @@
         var svcs = layer.services || [];
 
         // Layer band bg
-        U.roundRect(ctx, 4, y, W - 8, lH, 5, col + '14', col + '44', 1.5);
+        U.roundRect(ctx, 6, y, W - 12, lH, 8, col + '14', col + '44', 1.5);
 
         // Left accent
-        ctx.fillStyle = col; ctx.fillRect(4, y + 2, 3, lH - 4);
+        ctx.fillStyle = col; ctx.fillRect(6, y + 3, 5, lH - 6);
 
         // Label
-        U.text(ctx, layer.label, 14, y + 16, col, 10, 'left', 'bold');
-        if (layer.protocols) U.text(ctx, layer.protocols, 14, y + 28, U.C.gray, 8, 'left');
+        U.wrapText(ctx, layer.label, 20, y + 30, 120, 15, col, 13, 'left', 'bold', 2);
+        if (layer.protocols) U.wrapText(ctx, layer.protocols, 20, y + 62, 120, 13, U.C.gray, 11, 'left', 'normal', 2);
 
         // Services
-        var svcW = Math.min(96, Math.max(64, Math.floor((W - 220) / Math.max(svcs.length, 4))));
-        var svcH = 34;
-        var startX = 120, endX = W - 20;
+        var svcW = Math.min(150, Math.max(104, Math.floor((W - 240) / Math.max(svcs.length, 4))));
+        var svcH = 58;
+        var startX = 155, endX = W - 26;
         var spacing = svcs.length > 1 ? (endX - startX - svcW) / (svcs.length - 1) : 0;
         svcs.forEach(function (svc, j) {
           var sx = startX + j * spacing;
           var sy = y + (lH - svcH) / 2;
           var inPath = activeFlow && activeFlow.path.indexOf(svc.id) !== -1 &&
                        activeFlow.path.indexOf(svc.id) <= activeStepIdx;
-          U.roundRect(ctx, sx, sy, svcW, svcH, 4,
+          U.roundRect(ctx, sx, sy, svcW, svcH, 7,
             inPath ? col + '44' : U.C.card,
             inPath ? col : U.C.border, inPath ? 2 : 1);
-          if (svc.icon) U.text(ctx, svc.icon, sx + 6, sy + 18, null, 10, 'left');
-          U.text(ctx, svc.label, sx + svcW/2, sy + 18, inPath ? col : U.C.text, 8, 'center', inPath ? 'bold' : 'normal');
+          if (svc.icon) U.text(ctx, svc.icon, sx + 12, sy + 24, null, 16, 'left');
+          U.wrapText(ctx, svc.label, sx + svcW/2 + (svc.icon ? 8 : 0), sy + svcH/2 + 4, svcW - 20, 14, inPath ? col : U.C.text, 12, 'center', inPath ? 'bold' : '600', 2);
 
           svcPos[svc.id] = { x: sx + svcW/2, y: sy + svcH/2 };
         });

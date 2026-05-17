@@ -23,7 +23,7 @@
     ).join('');
     return `
       <div class="section flow-section">
-        <h2>0 · Interactive flow</h2>
+        <h2 id="interactive-flow">0 · Interactive flow</h2>
         <div class="flow-lab" data-flow-lab>
           <div class="flow-title">
             <strong>${esc(flow.title || topic.title)}</strong>
@@ -73,7 +73,7 @@
     }).join('');
     return `
       <div class="section uml-section">
-        <h2>0.1 · UML sequence simulation</h2>
+        <h2 id="uml-sequence">0.1 · UML sequence simulation</h2>
         <div class="uml-lab" data-uml-lab>
           <div class="uml-title">
             <strong>${esc(uml.title || topic.title)}</strong>
@@ -128,7 +128,7 @@
       </button>`).join('');
     return `
       <div class="section arch-section">
-        <h2>0.2 · Architecture map</h2>
+        <h2 id="architecture-map">0.2 · Architecture map</h2>
         <div class="arch-lab" data-arch-lab>
           <div class="arch-title">
             <strong>${esc(arch.title || topic.title)}</strong>
@@ -145,6 +145,45 @@
             <strong data-arch-label>${esc(firstNode.label || 'Architecture node')}</strong>
             <span data-arch-detail>${esc(firstNode.detail || firstNode.hint || 'Click a node or path to inspect.')}</span>
           </div>
+        </div>
+      </div>`;
+  }
+
+  function docsPath(topic) {
+    if (!topic || !topic.id || !topic.area) return null;
+    return topic.docs || `docs/topics/${topic.area}/${topic.id}.md`;
+  }
+
+  function renderSystemDesignOverview(topic, esc) {
+    if (topic.area !== 'sysdesign') return '';
+    const flowCount = topic.flow?.steps?.length || 0;
+    const actorCount = topic.uml?.actors?.length || 0;
+    const archCount = topic.architecture?.lanes?.reduce((sum, lane) => sum + (lane.nodes || []).length, 0) || 0;
+    const docs = docsPath(topic);
+    return `
+      <div class="section sysdesign-overview">
+        <h2 id="system-design-workbench">0 · System design workbench</h2>
+        <div class="sysdesign-grid">
+          <a class="sysdesign-card" href="#interactive-flow">
+            <span class="sysdesign-kicker">Runtime</span>
+            <strong>${flowCount || 'Ready'} flow steps</strong>
+            <small>Play request path, async handoff, persistence, and recovery.</small>
+          </a>
+          <a class="sysdesign-card" href="#uml-sequence">
+            <span class="sysdesign-kicker">UML</span>
+            <strong>${actorCount || 'Ready'} actors</strong>
+            <small>Step through service-to-service messages in sequence.</small>
+          </a>
+          <a class="sysdesign-card" href="#architecture-map">
+            <span class="sysdesign-kicker">Architecture</span>
+            <strong>${archCount || 'Ready'} nodes</strong>
+            <small>Inspect lanes, ownership, sync paths, and async paths.</small>
+          </a>
+          <a class="sysdesign-card docs" href="${esc(docs)}" target="_blank" rel="noreferrer">
+            <span class="sysdesign-kicker">Docs</span>
+            <strong>Open Markdown</strong>
+            <small>Full concept notes, Mermaid diagrams, drills, trade-offs, and gotchas.</small>
+          </a>
         </div>
       </div>`;
   }
@@ -397,6 +436,7 @@
              ${topic.tradeoffs.when ? `<div class="trade-card" style="grid-column:1/-1"><h4>When to use</h4>${md(topic.tradeoffs.when)}</div>` : ''}
            </div>`
         : md(topic.tradeoffs || '');
+      const docsHref = docsPath(topic);
 
       host.innerHTML = `
         <div class="crumbs">${esc(areaLabel)} <span class="sep">›</span> ${esc(topic.tag || 'Topic')}</div>
@@ -406,14 +446,16 @@
         </div>
         <div class="toolbar">
           <button class="btn primary" data-mark>${done ? '✓ Completed' : 'Mark as completed'}</button>
+          ${docsHref ? `<a class="btn docs-btn" href="${esc(docsHref)}" target="_blank" rel="noreferrer">Open docs</a>` : ''}
           <span class="meta">${esc(topic.id)}</span>
         </div>
+        ${renderSystemDesignOverview(topic, esc)}
         ${renderFlowLab(topic, esc)}
         ${renderUmlLab(topic, esc)}
         ${renderArchitectureLab(topic, esc)}
-        ${topic.visual ? `<div class="section visual-section"><h2>0.3 · Live Canvas Diagram</h2><div class="viz-mount"></div></div>` : ''}
-        <div class="section concept"><h2>1 · Concept</h2><div class="prose">${md(topic.concept || '')}</div></div>
-        <div class="section why"><h2>2 · Why it matters (production)</h2><div class="prose">${md(topic.why || '')}</div></div>
+        ${topic.visual ? `<div class="section visual-section"><h2 id="live-diagram">0.3 · Live Canvas Diagram</h2><div class="viz-mount"></div></div>` : ''}
+        <div class="section concept"><h2 id="concept">1 · Concept</h2><div class="prose">${md(topic.concept || '')}</div></div>
+        <div class="section why"><h2 id="production-notes">2 · Why it matters (production)</h2><div class="prose">${md(topic.why || '')}</div></div>
         ${topic.example ? `
           <div class="section code">
             <h2>3 · Example — ${esc(topic.example.language || 'code')}</h2>

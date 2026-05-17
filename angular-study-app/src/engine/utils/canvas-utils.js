@@ -54,9 +54,37 @@
 
     text: function (ctx, str, x, y, color, size, align, weight) {
       ctx.fillStyle  = color  || '#e6edf3';
-      ctx.font       = (weight || 'normal') + ' ' + (size || 12) + 'px monospace';
+      ctx.font       = (weight || 'normal') + ' ' + (size || 13) + 'px "Inter", "JetBrains Mono", monospace';
       ctx.textAlign  = align  || 'center';
+      ctx.textBaseline = 'alphabetic';
       ctx.fillText(str, x, y);
+    },
+
+    wrapText: function (ctx, str, x, y, maxWidth, lineHeight, color, size, align, weight, maxLines) {
+      var text = String(str || '');
+      var words = text.split(/\s+/);
+      var lines = [];
+      var line = '';
+      ctx.fillStyle = color || '#e6edf3';
+      ctx.font = (weight || 'normal') + ' ' + (size || 13) + 'px "Inter", "JetBrains Mono", monospace';
+      ctx.textAlign = align || 'center';
+      for (var i = 0; i < words.length; i++) {
+        var test = line ? line + ' ' + words[i] : words[i];
+        if (ctx.measureText(test).width > maxWidth && line) {
+          lines.push(line);
+          line = words[i];
+        } else {
+          line = test;
+        }
+      }
+      if (line) lines.push(line);
+      if (maxLines && lines.length > maxLines) {
+        lines = lines.slice(0, maxLines);
+        lines[maxLines - 1] = lines[maxLines - 1].replace(/\s+\S*$/, '') + '...';
+      }
+      var startY = y - ((lines.length - 1) * lineHeight) / 2;
+      lines.forEach(function (l, idx) { ctx.fillText(l, x, startY + idx * lineHeight); });
+      return lines.length * lineHeight;
     },
 
     arrow: function (ctx, x1, y1, x2, y2, color, lw, dashed) {
@@ -93,7 +121,7 @@
       var c = document.createElement('canvas');
       c.width = width;
       c.height = h;
-      c.style.cssText = 'width:100%;height:' + h + 'px;max-width:none;border-radius:10px;background:#0d1117;display:block;margin:0 auto;box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);';
+      c.style.cssText = 'width:100%;height:' + h + 'px;max-width:none;border-radius:14px;background:#0d1117;display:block;margin:0 auto;box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 18px 50px rgba(0,0,0,.28);';
       mount.appendChild(c);
       return c;
     },
@@ -101,22 +129,22 @@
     makeBtn: function (label, color) {
       var b = document.createElement('button');
       b.textContent = label;
-      b.style.cssText = 'padding:5px 14px;border-radius:6px;border:1px solid ' +
-        (color ? color + '55' : '#30363d') + ';background:#21262d;color:' +
-        (color || '#e6edf3') + ';cursor:pointer;font-size:12px;font-family:monospace';
+      b.style.cssText = 'padding:7px 14px;border-radius:8px;border:1px solid ' +
+        (color ? color + '66' : '#30363d') + ';background:#1f2937;color:' +
+        (color || '#e6edf3') + ';cursor:pointer;font-size:13px;font-weight:700;font-family:"Inter",system-ui,sans-serif';
       return b;
     },
 
     makeCtrlRow: function (mount) {
       var d = document.createElement('div');
-      d.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px;justify-content:center;flex-wrap:wrap';
+      d.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:12px;justify-content:center;flex-wrap:wrap';
       mount.appendChild(d);
       return d;
     },
 
     makeStatus: function (mount) {
       var d = document.createElement('div');
-      d.style.cssText = 'text-align:center;font-family:monospace;font-size:11px;color:#8b949e;margin-top:6px;min-height:16px';
+      d.style.cssText = 'text-align:center;font-family:"Inter",system-ui,sans-serif;font-size:13px;color:#9aaabb;margin-top:10px;min-height:18px';
       mount.appendChild(d);
       return d;
     },

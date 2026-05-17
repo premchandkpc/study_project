@@ -178,24 +178,35 @@ h1.topic-title { font-size: 28px; margin: 0; letter-spacing: -0.2px; }
   border-left-color: var(--sysdesign);
   background: rgba(38,217,255,.06);
 }
+.app-shell.area-sysdesign .section {
+  border-color: rgba(38,217,255,.18);
+}
+.app-shell.area-sysdesign .section.visual-section h2::before {
+  background: var(--sysdesign);
+}
 .app-shell.area-sysdesign .flow-edge.active::before {
   background: linear-gradient(90deg, var(--sysdesign), var(--ok));
 }
 .viz-mount {
   width: 100%;
-  min-height: 420px;
+  min-height: 560px;
   overflow: hidden;
   border-radius: 12px;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  padding: 16px;
-  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+  padding: 18px;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(38,217,255,.08), transparent 34%),
+    linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.015));
+  border: 1px solid rgba(255,255,255,.06);
 }
 .viz-mount canvas {
   width: 100% !important;
-  height: auto !important;
+  min-height: 480px;
+  height: auto;
   max-width: 100% !important;
+  border-radius: 14px !important;
 }
 
 .section {
@@ -263,10 +274,69 @@ pre[class*="language-"] {
 }
 .toolbar .btn:hover { border-color: var(--accent); }
 .toolbar .btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); border:none; color:#fff; }
+.toolbar .docs-btn {
+  display: inline-flex;
+  align-items: center;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+.toolbar .docs-btn:hover { border-color: var(--accent); text-decoration: none; }
 .toolbar .meta { color: var(--muted); font-size: 12.5px; margin-left:auto; }
 
 .progress-bar { height: 4px; background: var(--panel-2); border-radius: 3px; overflow:hidden; margin: 8px 0 16px; }
 .progress-bar > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .25s; }
+
+/* System design workbench */
+.sysdesign-overview {
+  background:
+    linear-gradient(135deg, rgba(38,217,255,.12), rgba(61,214,140,.035)),
+    var(--panel);
+}
+.sysdesign-overview h2::before { background: var(--sysdesign); }
+.sysdesign-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.sysdesign-card {
+  min-height: 126px;
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  padding: 13px;
+  border: 1px solid rgba(38,217,255,.22);
+  border-radius: 10px;
+  background: rgba(13,19,32,.68);
+  color: var(--text);
+  transition: transform .16s, border-color .16s, background .16s;
+}
+.sysdesign-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(38,217,255,.66);
+  background: rgba(38,217,255,.08);
+  text-decoration: none;
+}
+.sysdesign-card.docs { border-color: rgba(61,214,140,.26); }
+.sysdesign-card.docs:hover { border-color: rgba(61,214,140,.7); background: rgba(61,214,140,.08); }
+.sysdesign-kicker {
+  width: max-content;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .9px;
+  text-transform: uppercase;
+  color: #001a20;
+  background: var(--sysdesign);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+.sysdesign-card.docs .sysdesign-kicker { background: var(--ok); color: #06281a; }
+.sysdesign-card strong { color:#fff; font-size: 14px; line-height: 1.25; }
+.sysdesign-card small { color: var(--muted); font-size: 12px; line-height: 1.45; }
 
 /* Microservices interactive flow lab */
 .flow-lab { display: grid; gap: 12px; }
@@ -586,10 +656,16 @@ pre[class*="language-"] {
   .flow-progress { grid-column: 1 / -1; }
   .arch-board { grid-template-columns: 1fr; }
   .arch-links { border-left:0; border-top:1px solid rgba(255,255,255,.07); padding-left:0; padding-top:12px; }
+  .sysdesign-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .home-hero { padding: 28px 20px 22px; }
   .home-content { padding: 20px 20px 40px; }
   .home-grid { grid-template-columns: 1fr; }
   .home-stats { gap: 8px; }
+}
+@media (max-width: 520px) {
+  .title-row { align-items:flex-start; flex-direction:column; gap: 8px; }
+  .toolbar .meta { width:100%; margin-left:0; }
+  .sysdesign-grid { grid-template-columns: 1fr; }
 }
 
 /* ── New Home: Area Card Grid ──────────────────────────────────── */

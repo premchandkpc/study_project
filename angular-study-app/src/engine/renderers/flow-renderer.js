@@ -28,8 +28,8 @@
     var conns = cfg.connections || [];
     var scenarios = cfg.scenarios || [];
     var dir = cfg.direction || 'horizontal';
-    var W = Math.max(520, mountWidth, nodes.length * 120);
-    var H = dir === 'vertical' ? Math.max(420, 120 + nodes.length * 90) : 360;
+    var W = Math.max(760, mountWidth, nodes.length * 160);
+    var H = dir === 'vertical' ? Math.max(520, 150 + nodes.length * 116) : 440;
 
     var ctrl   = U.makeCtrlRow(mount);
     var canvas = U.makeCanvas(mount, W, H);
@@ -39,12 +39,12 @@
     // Layout nodes
     var layout = {};
     if (dir === 'horizontal') {
-      var pad = 60, spacing = (W - pad * 2) / Math.max(nodes.length - 1, 1);
+      var pad = 90, spacing = (W - pad * 2) / Math.max(nodes.length - 1, 1);
       nodes.forEach(function (n, i) {
         layout[n.id] = { x: pad + i * spacing, y: H / 2 };
       });
     } else {
-      var padV = 40, spacingV = (H - padV * 2) / Math.max(nodes.length - 1, 1);
+      var padV = 64, spacingV = (H - padV * 2) / Math.max(nodes.length - 1, 1);
       nodes.forEach(function (n, i) {
         layout[n.id] = { x: W / 2, y: padV + i * spacingV };
       });
@@ -85,7 +85,7 @@
 
       // Title
       if (cfg.title) {
-        U.text(ctx, cfg.title, W/2, 18, U.C.blue, 12, 'center', 'bold');
+        U.text(ctx, cfg.title, W/2, 26, U.C.blue, 18, 'center', 'bold');
       }
 
       // Draw connections
@@ -96,7 +96,7 @@
         U.arrow(ctx, a.x, a.y, b.x, b.y, col, 1.5, c.dashed);
         if (c.label) {
           var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-          U.text(ctx, c.label, mx, my - 8, col, 9);
+          U.text(ctx, c.label, mx, my - 12, col, 12, 'center', 'bold');
         }
       });
 
@@ -105,14 +105,14 @@
         var p = layout[n.id];
         var isActive = activePath.indexOf(n.id) <= activeNodeIdx && activeNodeIdx >= 0;
         var col = n.color || U.C.blue;
-        var boxW = 80, boxH = 32;
+        var boxW = 132, boxH = 68;
         U.roundRect(ctx, p.x - boxW/2, p.y - boxH/2, boxW, boxH, 6,
           isActive ? col + '33' : U.C.card,
           isActive ? col : U.C.border, isActive ? 2 : 1.5);
 
-        if (n.icon) U.text(ctx, n.icon, p.x - 26, p.y + 4, null, 13, 'left');
-        U.text(ctx, n.label, p.x, p.y + 4, isActive ? col : U.C.text, 11, 'center', isActive ? 'bold' : 'normal');
-        if (n.sublabel) U.text(ctx, n.sublabel, p.x, p.y + boxH/2 + 12, U.C.gray, 9);
+        if (n.icon) U.text(ctx, n.icon, p.x - boxW/2 + 12, p.y - 12, null, 17, 'left');
+        U.wrapText(ctx, n.label, p.x + (n.icon ? 8 : 0), p.y - 2, boxW - 24, 15, isActive ? col : U.C.text, 13, 'center', isActive ? 'bold' : '600', 2);
+        if (n.sublabel) U.wrapText(ctx, n.sublabel, p.x, p.y + boxH/2 + 18, boxW + 20, 13, U.C.gray, 11, 'center', 'normal', 2);
       });
 
       // Moving dot
