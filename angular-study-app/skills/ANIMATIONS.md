@@ -382,3 +382,496 @@ When adding new sysdesign/kafka visuals, prefer `ReactViz.FlowDiagram` or inline
 ```
 
 **Critical:** engines (steps 1-4) MUST load before topic files (step 6).
+
+---
+
+# 🚀 Advanced Interactive Visualization Layer
+
+## Goal
+
+Transform learning from:
+
+```txt
+Reading concepts → Watching systems alive
+Static diagrams → Interactive simulations
+Simple animations → Production-grade cinematic flows
+```
+
+Inspired by:
+- ByteByteGo
+- Excalidraw
+- Miro
+- Linear
+- Figma
+- Vercel
+- Arc Browser
+
+---
+
+# Interactive Whiteboard Engine
+
+Directory:
+```txt
+src/shared/whiteboard/
+```
+
+Files:
+```txt
+whiteboard-core.js
+whiteboard-canvas.js
+whiteboard-node.js
+whiteboard-edge.js
+whiteboard-packets.js
+whiteboard-draw.js
+whiteboard-sticky.js
+whiteboard-grid.js
+whiteboard-minimap.js
+whiteboard-timeline.js
+```
+
+Features:
+- Infinite zoom canvas
+- Pan + drag
+- Mini-map navigation
+- Sticky notes
+- Excalidraw-style hand drawing
+- Animated packet flow
+- Architecture diagrams
+- Real-time highlights
+- Multi-select nodes
+- Smooth transitions
+- Focus mode
+- Playback timeline
+
+---
+
+# Whiteboard Canvas
+
+```js
+const board = Whiteboard.Canvas.create(mount, {
+  zoom: true,
+  pan: true,
+  minimap: true,
+  infinite: true,
+  darkMode: true,
+  smoothScroll: true,
+  grid: true,
+});
+```
+
+Visual Feel:
+- Miro-style infinite board
+- Figma smooth zoom
+- Linear animations
+- Glassmorphism panels
+- Floating controls
+
+---
+
+# Architecture Nodes
+
+```js
+Whiteboard.Node.create({
+  id: 'api-gateway',
+  label: 'API Gateway',
+  type: 'gateway',
+  x: 200,
+  y: 100,
+  glow: true,
+  draggable: true,
+});
+```
+
+Supported Node Types:
+```txt
+service
+gateway
+database
+cache
+kafka
+lambda
+kubernetes
+pod
+external-api
+ai-agent
+vector-db
+queue
+cdn
+dns
+browser
+mobile
+```
+
+Animations:
+- Glow pulse
+- Border beam
+- Traffic flash
+- Queue shaking
+- CPU spike effect
+- Failure blinking
+- Auto scaling pulse
+- Packet highlight
+
+---
+
+# Animated Packet Flow
+
+```js
+Whiteboard.PacketFlow.animate(board, {
+  from: 'browser',
+  to: 'cdn',
+  label: 'GET /feed',
+  speed: 2,
+  repeat: true,
+});
+```
+
+Visualizes:
+- HTTP
+- HTTPS
+- gRPC
+- Kafka messages
+- DB queries
+- DNS resolution
+- Kubernetes networking
+- Service mesh traffic
+- Redis cache calls
+- AI agent flows
+
+Effects:
+- Moving packets
+- Beam trails
+- Retry loops
+- Circuit breaker open
+- Slow latency
+- Failure drops
+- Queue buffering
+
+---
+
+# Cinematic System Design Engine
+
+Directory:
+```txt
+src/shared/sysdesign-cinematic/
+```
+
+Files:
+```txt
+cinematic-core.js
+cinematic-camera.js
+cinematic-focus.js
+cinematic-traffic.js
+cinematic-failure.js
+cinematic-scale.js
+cinematic-load.js
+```
+
+Purpose:
+Create ByteByteGo-style animated system storytelling.
+
+---
+
+# Example Flow
+
+```js
+CineFlow.play({
+  title: 'Instagram Feed Request',
+  scenes: [
+    {
+      zoomTo: 'mobile-client',
+      narration: 'User opens Instagram',
+    },
+    {
+      animatePacket: {
+        from: 'client',
+        to: 'cdn',
+      }
+    },
+    {
+      zoomTo: 'feed-service',
+      narration: 'Feed service builds personalized feed',
+    }
+  ]
+});
+```
+
+Effects:
+- Smooth camera zoom
+- Focus glow
+- Traffic animation
+- Load spikes
+- Failure explosions
+- Retry storms
+- Queue congestion
+- Slow motion debugging
+- Dynamic highlights
+
+---
+
+# Interactive Timeline Playback
+
+```js
+Timeline.play([
+  {
+    t: 0,
+    action: 'dns-lookup',
+  },
+  {
+    t: 100,
+    action: 'tcp-handshake',
+  },
+  {
+    t: 200,
+    action: 'tls-negotiation',
+  },
+  {
+    t: 400,
+    action: 'http-request',
+  }
+]);
+```
+
+Useful For:
+- Browser lifecycle
+- Kubernetes scheduling
+- Kafka rebalance
+- Raft election
+- JVM GC
+- Lambda cold starts
+- TCP/IP
+- CDN routing
+- DNS resolution
+
+---
+
+# Live Architecture Playground
+
+Directory:
+```txt
+src/shared/arch-playground/
+```
+
+Features:
+- Drag microservices
+- Connect APIs
+- Create Kafka topics
+- Simulate scaling
+- Introduce failures
+- Add latency
+- Kill pods
+- Watch retries
+- Simulate autoscaling
+- Observe bottlenecks
+
+Example:
+```js
+ArchPlayground.create(mount, {
+  services: [
+    { id: 'gateway', replicas: 2 },
+    { id: 'feed-service', replicas: 5 },
+    { id: 'redis', replicas: 3 },
+  ],
+});
+```
+
+---
+
+# Production Monitoring Layer
+
+Visualize:
+- Grafana metrics
+- Prometheus stats
+- Distributed tracing
+- Jaeger spans
+- Kafka lag
+- Pod CPU
+- Memory spikes
+- GC pauses
+- Error rates
+- Request throughput
+
+Example:
+```js
+MetricsPanel.render({
+  rps: 1240,
+  latency: '82ms',
+  cpu: '67%',
+  errors: '0.2%',
+});
+```
+
+---
+
+# Kubernetes Simulation Engine
+
+Visualize:
+```txt
+Scheduler
+kubelet
+API server
+etcd
+controller manager
+HPA
+Ingress
+DNS
+Service mesh
+Pod lifecycle
+Rolling deployments
+Autoscaling
+```
+
+Animations:
+- Pod spawning
+- CrashLoopBackOff
+- Traffic balancing
+- Node failure
+- Self healing
+- Rolling updates
+- Scaling bursts
+
+---
+
+# Kafka Cinematic Visualization
+
+Visualize:
+```txt
+Producer
+Broker
+Partition
+Leader election
+ISR
+Replication
+Consumer groups
+Lag
+Retries
+DLQ
+Rebalancing
+```
+
+Animations:
+- Message movement
+- Partition writes
+- Replica sync
+- Consumer lag
+- Leader failover
+- Retry storms
+
+---
+
+# AI / LLM Visualization Layer
+
+Visualize:
+```txt
+Token generation
+Attention maps
+Embeddings
+Vector search
+RAG pipelines
+Agents
+Tool calling
+Memory retrieval
+Prompt chaining
+MCP workflows
+```
+
+Animations:
+- Token streaming
+- Attention glow
+- Embedding movement
+- Retrieval pipelines
+- Agent planning graphs
+
+---
+
+# Modern UX Enhancements
+
+Add:
+```txt
+Command palette
+Floating toolbar
+Mini-map
+Playback controls
+Spotlight mode
+Focus mode
+Animated sidebars
+Keyboard shortcuts
+Smooth transitions
+Interactive overlays
+```
+
+---
+
+# Recommended Animation Styles
+
+```css
+.glow {
+  box-shadow:
+    0 0 10px rgba(88,166,255,.5),
+    0 0 20px rgba(88,166,255,.3);
+}
+
+.floating {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+.pulse {
+  animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: .9; }
+  50% { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1); opacity: .9; }
+}
+
+.beam {
+  position: relative;
+  overflow: hidden;
+}
+
+.beam::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 120%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.4),
+    transparent
+  );
+  animation: beamMove 2s infinite;
+}
+
+@keyframes beamMove {
+  100% {
+    left: 120%;
+  }
+}
+```
+
+---
+
+# Best Educational Upgrade
+
+Most powerful improvement:
+
+```txt
+Concepts become simulations.
+Systems become visual stories.
+Infrastructure becomes interactive.
+Learning becomes experiential.
+```
+
+That creates deep intuition instead of memorization.
+
+---

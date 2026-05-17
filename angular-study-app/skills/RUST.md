@@ -1,4 +1,4 @@
-# Rust Topics
+# Rust Topics — Advanced Interactive Visualization Upgrade
 
 **Topic file location:** `src/modules/topics/rust/`
 **Topic array:** `window.RUST_TOPICS`
@@ -6,153 +6,639 @@
 
 ---
 
-## Topics Built
+# 🚀 Goal
 
-| File | Title | Tag | Visual Status |
-|------|-------|-----|---------------|
-| `rust-ownership-borrowing.js` | Rust Ownership & Borrowing | Memory | Placeholder |
-| `rust-lifetimes.js` | Rust Lifetimes | Memory | Placeholder |
-| `rust-enums-structs.js` | Rust Enums & Structs | Type System | Placeholder |
-| `rust-traits-generics.js` | Rust Traits & Generics | Type System | Placeholder |
-| `rust-pattern-matching.js` | Rust Pattern Matching | Type System | Placeholder |
-| `rust-error-handling.js` | Rust Error Handling | Reliability | Placeholder |
-| `rust-closures-iterators.js` | Rust Closures & Iterators | Functional | Placeholder |
-| `rust-concurrency.js` | Rust Concurrency | Concurrency | Placeholder |
-| `rust-async-tokio.js` | Rust Async & Tokio | Async | Placeholder |
-| `rust-smart-pointers.js` | Rust Smart Pointers | Memory | Placeholder |
-| `rust-memory-model.js` | Rust Memory Model | Memory | Placeholder |
-| `rust-unsafe.js` | Rust Unsafe | Low-Level | Placeholder |
+Transform Rust learning into:
 
-> All 12 topics have stub placeholder visuals. All need real animations built.
+```txt
+Reading ownership rules → Watching memory ownership move visually
+Learning async → Seeing Future polling alive
+Studying lifetimes → Understanding scope relationships visually
+Reading borrow checker errors → Experiencing why they happen
+```
+
+Inspired by:
+- Rust compiler visualizations
+- ByteByteGo
+- Excalidraw
+- Tokio console
+- Miro
+- Cargo ecosystem tooling
+- Linear/Vercel UI animations
 
 ---
 
-## Rust Topics Still to Add
+# Existing Topics
+
+| File | Title | Tag | Visual Type |
+|------|-------|-----|-------------|
+| `rust-ownership-borrowing.js` | Ownership & Borrowing | Memory | Ownership flow animation |
+| `rust-lifetimes.js` | Lifetimes | Memory | Lifetime scope visualization |
+| `rust-enums-structs.js` | Enums & Structs | Type System | Enum memory layout |
+| `rust-traits-generics.js` | Traits & Generics | Type System | Trait dispatch flow |
+| `rust-pattern-matching.js` | Pattern Matching | Type System | Match branching |
+| `rust-error-handling.js` | Error Handling | Reliability | Result propagation |
+| `rust-closures-iterators.js` | Closures & Iterators | Functional | Iterator pipelines |
+| `rust-concurrency.js` | Concurrency | Concurrency | Thread/message flow |
+| `rust-async-tokio.js` | Async & Tokio | Async | Future polling |
+| `rust-smart-pointers.js` | Smart Pointers | Memory | Heap ownership graph |
+| `rust-memory-model.js` | Memory Model | Memory | Stack/heap layout |
+| `rust-unsafe.js` | Unsafe Rust | Low-Level | Raw memory access |
+
+---
+
+# High-Value Rust Topics To Add
 
 | Topic | Priority | Suggested Animation |
 |-------|----------|-------------------|
-| Rust compiler internals (MIR/HIR/LLVM) | LOW | FlowDiagram: source → HIR → MIR → LLVM IR → binary |
-| Macro system (macro_rules! + proc macros) | MEDIUM | FlowDiagram: token stream → expansion → AST |
-| Wasm with Rust | MEDIUM | FlowDiagram: Rust → wasm32 target → WASM module → JS bridge |
-| Rust FFI (calling C) | LOW | FlowDiagram: extern "C" → link → unsafe call |
-| Cargo workspace & features | LOW | FlowDiagram: workspace → crates → feature flags |
-| Pin & Unpin (async internals) | HIGH | FlowDiagram: self-referential struct → Pin → heap vs stack |
-| RAII pattern | HIGH | ComponentTree: Drop trait → scope exit → cleanup |
+| Pin & Unpin | HIGH | Self-referential future memory layout |
+| Tokio Runtime Internals | HIGH | Scheduler + worker queues |
+| MIR/HIR/LLVM Pipeline | HIGH | Rust compiler phases |
+| Borrow Checker Internals | HIGH | Lifetime graph analysis |
+| Rust WASM | HIGH | Rust → WASM → JS bridge |
+| RAII & Drop | HIGH | Scope exit cleanup |
+| Zero-Cost Abstractions | HIGH | Iterator fusion |
+| Async Executor Internals | HIGH | Task wakeup queues |
+| Arc/Mutex Internals | HIGH | Atomic ref counting |
+| Lock-Free Programming | MEDIUM | Atomic CAS loops |
+| FFI with C | MEDIUM | ABI bridge |
+| Proc Macros | MEDIUM | Token stream expansion |
+| Cargo Workspaces | LOW | Dependency graph |
+| Embedded Rust | LOW | Bare-metal memory map |
+| Rust Networking | HIGH | Async socket pipeline |
+| Tower/Tonic gRPC | HIGH | Middleware stack |
+| Hyper HTTP Internals | HIGH | Request processing |
 
 ---
 
-## Animation Plan for Existing Topics
+# Advanced Visualization Layers
 
-### rust-ownership-borrowing — Suggested: FlowDiagram
-```
-Nodes: owner variable, borrowed reference, function call, heap value
-Steps:
-  1. let s = String::from("hi") → s owns heap allocation
-  2. let r = &s → immutable borrow (multiple allowed)
-  3. let r2 = &mut s → mutable borrow (exclusive)
-  4. drop(s) → heap freed, r now dangling (compiler rejects)
-  5. Move into function → owner transferred, original invalid
-Phase colors: own=blue, borrow=green, move=orange, error=red
-```
+---
 
-### rust-lifetimes — Suggested: FlowDiagram
-```
-Nodes: reference r, data x, function scope, return value
-Steps:
-  1. fn longest<'a>(x: &'a str, y: &'a str) → lifetime annotation
-  2. 'a = min(lifetime_x, lifetime_y)
-  3. returned ref valid as long as shortest input lives
-  4. caller tries to use after owner drops → compile error
+# 1. Ownership & Borrowing Cinematic Visualization
+
+Purpose:
+Make ownership feel intuitive visually.
+
+Visualize:
+```txt id="v4knq4"
+Stack variables
+Heap allocations
+Owners
+Immutable borrows
+Mutable borrows
+Moves
+Drops
+Dangling references
 ```
 
-### rust-async-tokio — Suggested: FlowDiagram
-```
-async fn → Future created (lazy)
-.await → polls Future
-Tokio runtime → thread pool → work-stealing executor
-Steps: spawn → pending → waker registered → event ready → woken → polled again → ready
-Nodes: Future(component), Tokio Runtime(store), Thread(network), Waker(hook)
-```
+Animations:
+- Ownership transfer
+- Borrow arrows
+- Heap allocation glow
+- Scope destruction
+- Compiler rejection flashes
+- Invalid access highlighting
 
-### rust-smart-pointers — Suggested: ComponentTree
-```
-Box<T> → heap allocation, single owner
-Rc<T> → reference counted, shared ownership, single thread
-Arc<T> → atomic ref count, multi-thread safe
-RefCell<T> → interior mutability, runtime borrow check
-Mutex<T> → interior mutability + thread safety
-tree: { name: 'Smart Pointers', children: [Box, Rc, Arc, RefCell, Mutex] }
-```
+---
 
-### rust-concurrency — Suggested: FlowDiagram
-```
-Fearless concurrency: Send + Sync traits enforced at compile time
-Steps:
-  1. thread::spawn(|| { ... }) → new OS thread
-  2. move closure → ownership transferred to thread
-  3. Arc::clone() → shared ownership across threads
-  4. Mutex::lock() → exclusive access
-  5. join() → wait for thread completion
-```
+## Example Animation
 
-### rust-error-handling — Suggested: FlowDiagram
-```
-Result<T, E> → Ok(val) or Err(e)
-? operator → propagate error up call stack
-Steps:
-  1. fn parse() → Result<i32, ParseError>
-  2. let n = parse()? → on Err, return Err from caller
-  3. .map_err() → convert error type
-  4. thiserror derive → implement Error trait
-  5. anyhow::Context → add context to errors
+```js id="sh0qyx"
+ReactViz.FlowDiagram.render(el,
+[
+  { id:'owner', label:'String s', type:'memory', active:true },
+  { id:'heap', label:'Heap Allocation', type:'heap' },
+  { id:'borrow', label:'&s', type:'reference' },
+],
+[
+  { from:'owner', to:'heap', label:'owns', active:true },
+  { from:'borrow', to:'heap', label:'borrows' },
+],
+{ layout:'horizontal' });
 ```
 
 ---
 
-## Rust Topic File Pattern
+# 2. Lifetime Visualization Engine
 
-```js
-(function () {
-  'use strict';
+Purpose:
+Teach lifetime relationships visually.
 
-  window.RUST_TOPICS = (window.RUST_TOPICS || []).concat([{
-    id:    'rust-<topic>',
-    area:  'rust',
-    title: '<Title>',
-    tag:   '<Tag>',
-    tags:  ['rust', '<keyword1>', '<keyword2>'],
-
-    concept: `<explanation>`,
-    why:     `<production relevance>`,
-
-    example: {
-      language: 'rust',
-      code: `// Rust code`,
-    },
-
-    interview: ['Question 1?', 'Question 2?'],
-    tradeoffs: { pros: ['...'], cons: ['...'] },
-    gotchas: ['Gotcha 1'],
-
-    visual: function (mount) {
-      var steps = [ ... ];
-      window.ReactViz.panel(mount, {
-        title: '<title>',
-        time:  'O(1)',
-        space: 'O(1)',
-        steps: steps,
-        renderStep: function (vizEl, codeEl, step) {
-          if (step.nodes) {
-            window.ReactViz.FlowDiagram.render(vizEl, step.nodes, step.edges, { layout: 'vertical' });
-          } else if (step.tree) {
-            window.ReactViz.ComponentTree.render(vizEl, step.tree);
-          }
-          codeEl.innerHTML =
-            window.ReactViz.label('CODE') +
-            window.ReactViz.codeBlock(step.code, 'rust');
-        },
-      });
-    },
-  }]);
-})();
+Visualize:
+```txt id="y7b6pw"
+Scopes
+Lifetime regions
+Borrow duration
+Reference validity
+Dropped values
 ```
+
+Animations:
+- Scope enter/exit
+- Lifetime shrinking
+- Reference invalidation
+- Borrow expiration
+- Compiler error pulse
+
+---
+
+## Example
+
+```js id="g1f3hm"
+LifetimeViz.render({
+  scopes:['main','inner'],
+  references:['r','x'],
+  activeLifetime:'a,
+});
+```
+
+Interactive:
+- Extend scopes
+- Drop owners early
+- Observe invalid references
+- Compare valid vs invalid lifetimes
+
+---
+
+# 3. Async / Tokio Runtime Visualization
+
+Purpose:
+Show how async actually works.
+
+Visualize:
+```txt id="46cw4t"
+Future
+Poll
+Pending
+Ready
+Waker
+Tokio Runtime
+Task Queue
+Worker Threads
+IO Driver
+```
+
+Animations:
+- Future polling
+- Task wakeup
+- Thread scheduling
+- Queue movement
+- Event readiness
+- Waker notifications
+
+---
+
+## Example
+
+```js id="zps89w"
+TokioViz.render({
+  workers:4,
+  tasks:120,
+  polling:true,
+});
+```
+
+Interactive:
+- Spawn tasks
+- Add IO latency
+- Trigger wakeups
+- Observe work stealing
+
+---
+
+# 4. Pin & Unpin Visualization
+
+Purpose:
+Teach hardest Rust async concept visually.
+
+Visualize:
+```txt id="r3dd3t"
+Stack memory
+Heap memory
+Pinned futures
+Self references
+Memory movement
+```
+
+Animations:
+- Memory relocation
+- Pin stabilization
+- Unsafe movement rejection
+- Future state machine
+
+---
+
+## Example
+
+```js id="v9pph8"
+PinViz.render({
+  future:'asyncTask',
+  pinned:true,
+});
+```
+
+---
+
+# 5. Smart Pointer Deep Visualization
+
+Visualize:
+```txt id="wdn8z0"
+Box<T>
+Rc<T>
+Arc<T>
+RefCell<T>
+Mutex<T>
+RwLock<T>
+```
+
+Animations:
+- Heap allocation
+- Reference counting
+- Atomic increments
+- Lock acquisition
+- Runtime borrow panic
+
+---
+
+## Example
+
+```js id="u9xv51"
+PointerTree.render({
+  root:'Arc<Mutex<Vec<i32>>>',
+});
+```
+
+Interactive:
+- Clone Arc
+- Drop references
+- Observe ref count
+- Trigger deadlock
+
+---
+
+# 6. Rust Concurrency Visualization
+
+Purpose:
+Teach fearless concurrency.
+
+Visualize:
+```txt id="hgnm4o"
+Threads
+Ownership transfer
+Arc sharing
+Mutex locking
+Channels
+Message passing
+```
+
+Animations:
+- Thread spawning
+- Ownership move
+- Lock waiting
+- Channel send/recv
+- Deadlock detection
+
+---
+
+## Example
+
+```js id="hmh0m8"
+ConcurrencyViz.render({
+  threads:8,
+  shared:'Arc<Mutex<T>>',
+});
+```
+
+---
+
+# 7. Tokio Executor Internals
+
+Visualize:
+```txt id="3o5qpn"
+Global queue
+Local queue
+Task stealing
+Worker threads
+Runtime scheduler
+```
+
+Animations:
+- Queue balancing
+- Task migration
+- Work stealing
+- Wake scheduling
+
+---
+
+# 8. Rust Compiler Pipeline
+
+Visualize:
+```txt id="jlwmz5"
+Rust Source
+↓
+Lexer
+↓
+Parser
+↓
+HIR
+↓
+MIR
+↓
+Borrow Checker
+↓
+LLVM IR
+↓
+Machine Code
+```
+
+Animations:
+- AST creation
+- MIR lowering
+- Borrow analysis
+- Optimization passes
+- LLVM codegen
+
+---
+
+## Example
+
+```js id="tfsp7w"
+CompilerPipeline.render({
+  stages:[
+    'Parse',
+    'HIR',
+    'MIR',
+    'LLVM',
+    'Binary'
+  ]
+});
+```
+
+---
+
+# 9. Error Handling Visualization
+
+Visualize:
+```txt id="mo3utn"
+Result<T,E>
+Option<T>
+?
+map_err
+anyhow
+thiserror
+```
+
+Animations:
+- Error propagation
+- Early returns
+- Stack unwinding
+- Context layering
+
+---
+
+## Example
+
+```js id="57g82v"
+ErrorFlow.render({
+  chain:[
+    'parse',
+    'validate',
+    'save',
+  ]
+});
+```
+
+---
+
+# 10. Iterator & Closure Pipeline
+
+Visualize:
+```txt id="uy4vfq"
+iter()
+map()
+filter()
+flat_map()
+fold()
+collect()
+```
+
+Animations:
+- Lazy evaluation
+- Iterator fusion
+- Pipeline execution
+- Parallel iterators
+
+---
+
+# 11. Rust Memory Model
+
+Visualize:
+```txt id="7v6oq8"
+Stack
+Heap
+Static memory
+Ownership graph
+Borrow graph
+```
+
+Animations:
+- Allocation
+- Move semantics
+- Scope cleanup
+- Drop order
+
+---
+
+# 12. Unsafe Rust Visualization
+
+Visualize:
+```txt id="j41b8v"
+Raw pointers
+Unsafe blocks
+FFI
+Manual allocation
+Aliasing
+Undefined behavior
+```
+
+Animations:
+- Pointer dereference
+- Invalid memory access
+- UB explosions
+- Memory corruption
+
+---
+
+# 13. WASM with Rust
+
+Visualize:
+```txt id="xv9ty6"
+Rust
+↓
+wasm32 target
+↓
+WASM module
+↓
+JS bridge
+↓
+Browser runtime
+```
+
+Animations:
+- Memory bridge
+- JS ↔ WASM calls
+- Linear memory growth
+
+---
+
+# 14. Cargo Workspace Visualization
+
+Visualize:
+```txt id="slj4ew"
+Workspace
+Crates
+Dependencies
+Feature flags
+Build graph
+```
+
+Animations:
+- Dependency resolution
+- Feature activation
+- Incremental compilation
+
+---
+
+# 15. Networking & Hyper/Tonic Visualization
+
+Visualize:
+```txt id="6r0hmg"
+TCP sockets
+Async requests
+HTTP parsing
+Middleware layers
+gRPC streams
+```
+
+Animations:
+- Packet movement
+- Async request flow
+- Stream multiplexing
+
+---
+
+# 16. Interactive Playground Features
+
+Allow users to:
+- Trigger borrow errors
+- Move ownership
+- Create deadlocks
+- Spawn async tasks
+- Simulate runtime scheduling
+- Trigger memory leaks
+- Observe ref counts
+- Compare sync vs async
+
+---
+
+# 17. Production Debugging Layer
+
+Add:
+```txt id="pdjtrg"
+Tokio console
+Heap explorer
+Async trace viewer
+Deadlock detector
+Memory allocation profiler
+Task scheduling timeline
+```
+
+---
+
+# 18. Modern UX Enhancements
+
+Inspired by:
+```txt id="q8m5l9"
+Rust Analyzer
+Tokio Console
+ByteByteGo
+Excalidraw
+Miro
+Linear
+```
+
+Add:
+- Infinite canvas
+- Mini-map
+- Timeline playback
+- Glow effects
+- Interactive overlays
+- Animated packet flow
+- Smooth zoom/pan
+- Floating controls
+
+---
+
+# 19. Suggested Animation CSS
+
+```css id="54x6n8"
+.rust-glow {
+  box-shadow:
+    0 0 10px rgba(255,140,0,.5),
+    0 0 20px rgba(255,140,0,.3);
+}
+
+.borrow-line {
+  animation: borrowPulse 1.5s infinite;
+}
+
+@keyframes borrowPulse {
+  0%   { opacity: .4; }
+  50%  { opacity: 1; }
+  100% { opacity: .4; }
+}
+
+.future-poll {
+  animation: pollGlow 1s infinite;
+}
+
+@keyframes pollGlow {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.packet-flow {
+  offset-path: path("M0,0 C100,0 200,100 300,100");
+  animation: packetMove 3s linear infinite;
+}
+
+@keyframes packetMove {
+  100% {
+    offset-distance: 100%;
+  }
+}
+```
+
+---
+
+# 20. Best Learning Upgrade
+
+Most important improvement:
+
+```txt id="r4zivj"
+Not just teaching Rust syntax.
+
+Teach:
+- Ownership intuition
+- Memory movement
+- Borrow checking reasoning
+- Async execution internals
+- Runtime scheduling
+- Compiler thinking
+- Fearless concurrency
+- Production-grade systems understanding
+```
+
+That creates deep Rust systems intuition instead of memorization.

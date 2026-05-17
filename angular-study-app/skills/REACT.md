@@ -22,6 +22,11 @@
 | `react-performance.js` | React Performance | Performance | ComponentTree (memo/key optimization) |
 | `react-forms.js` | React Forms | Patterns | FlowDiagram (controlled vs uncontrolled) |
 | `react-testing.js` | React Testing (RTL) | Testing | FlowDiagram (query → render → assert) |
+| `react-router-v6.js` | React Router v6 | Routing | FlowDiagram (URL → match → Outlet → loader) |
+| `react-error-boundaries.js` | Error Boundaries | Reliability | ComponentTree (error propagation, fallback) |
+| `react-lazy-suspense.js` | React.lazy + Suspense | Performance | FlowDiagram (code split → lazy load → render) |
+| `react-zustand.js` | Zustand Deep Dive | State | FlowDiagram (store → subscribe → selector) |
+| `react-query.js` | React Query (TanStack) | Data Fetching | FlowDiagram (cache → stale → refetch) |
 
 ---
 
@@ -40,6 +45,11 @@
 | React Performance | 5 | unoptimized → React.memo → useCallback → virtualization → keys |
 | React Forms | 4 | controlled → uncontrolled → RHF → render comparison |
 | React Testing (RTL) | 5 | render → queries → userEvent → async → msw |
+| React Router v6 | 5 | URL enter → route match → loader → Outlet chain → navigate |
+| Error Boundaries | 5 | normal render → throw → boundary catches → fallback → retry |
+| React.lazy + Suspense | 5 | initial load → suspend+throw Promise → chunk download → resolve → nested Suspense |
+| Zustand Deep Dive | 5 | store create → subscribe with selector → action dispatch → pub-sub notify → async+middleware |
+| React Query (TanStack) | 5 | cache miss+fetch → cache store → stale+background refetch → mutation+invalidate → gcTime |
 
 ---
 
@@ -47,14 +57,9 @@
 
 | Topic | Priority | Suggested Animation |
 |-------|----------|-------------------|
-| React Router v6 | HIGH | FlowDiagram: URL → Router → Route match → Component |
-| Error Boundaries | HIGH | ComponentTree: error propagation, fallback |
-| React.lazy + Suspense | HIGH | FlowDiagram: code split → lazy load → render |
 | Portals | MEDIUM | ComponentTree: out-of-tree rendering |
 | StrictMode internals | MEDIUM | ComponentTree: double-invoke render |
 | React DevTools Profiler | LOW | HookTimeline: commit timing |
-| Zustand deep dive | HIGH | FlowDiagram: store → subscribe → selector |
-| React Query (TanStack) | HIGH | FlowDiagram: cache → stale → refetch |
 | Vite vs Webpack (build) | MEDIUM | FlowDiagram: bundle pipeline |
 | React Native bridge | LOW | FlowDiagram: JS thread → bridge → native |
 
