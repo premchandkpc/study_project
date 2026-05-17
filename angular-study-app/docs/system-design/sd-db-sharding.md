@@ -132,8 +132,8 @@ Notes:
 Twitter's Snowflake: 41-bit timestamp + 10-bit worker + 12-bit sequence = 64-bit ID. Time-sortable, no coordination needed.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. How would you shard a users table for a social network with 500M users?

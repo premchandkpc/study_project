@@ -155,8 +155,8 @@ Notes:
 Always persist saga state before and after each step. On crash, restart mechanism can resume from last known state and retry or compensate.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. When would you choose choreography saga over orchestration saga?

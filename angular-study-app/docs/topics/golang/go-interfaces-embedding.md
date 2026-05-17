@@ -123,8 +123,8 @@ Notes:
 Interface satisfaction is checked at compile time when you assign a concrete type to an interface variable. Use `var _ Storer = (*MemStore)(nil)` as a compile-time assertion.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. What is an interface nil trap?

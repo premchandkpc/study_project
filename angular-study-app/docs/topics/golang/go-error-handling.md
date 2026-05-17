@@ -125,8 +125,8 @@ Notes:
 Use `%w` (not `%v`) when you want callers to be able to inspect the wrapped error. Don't wrap errors that shouldn't be inspected by callers - it couples them to internal types.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. What is the difference between errors.Is and errors.As?

@@ -122,8 +122,8 @@ Notes:
 The **outbox pattern** is the safe alternative to `@Transactional` across DB + Kafka: write the event to an `outbox` table in the same DB transaction, then a separate relay polls and publishes to Kafka. Eliminates dual-write failure modes.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. How does Kafka achieve exactly-once delivery?

@@ -145,8 +145,8 @@ Notes:
 In Kubernetes: set `terminationGracePeriodSeconds` to accommodate the drain sleep. Separate liveness and readiness - a temporarily overloaded pod should fail readiness (stops traffic) but not liveness (avoids unnecessary restart).
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. What is the difference between liveness and readiness probes?

@@ -129,8 +129,8 @@ Notes:
 Prefer standard library `slices` and `maps` packages (Go 1.21) over reimplementing generic utilities. Generic code compiles to dictionaries/GC shapes - not C++ templates; one instantiation per GC shape, not per type.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. When would you NOT use generics?

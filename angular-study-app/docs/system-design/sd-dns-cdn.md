@@ -126,8 +126,8 @@ Notes:
 Cloudflare Workers run at edge PoPs in V8 isolates - ~0ms cold start vs Lambda's 100ms+
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. How does DNS-based load balancing work? What are its limitations?

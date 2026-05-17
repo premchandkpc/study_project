@@ -126,8 +126,8 @@ Notes:
 Use `monkeypatch` for patching in fixtures - it automatically reverts after the test. Prefer `AsyncMock` over `MagicMock` for coroutines. Run with `pytest --cov=myapp --cov-branch` for branch coverage.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. What is fixture scope and when would you use session scope?

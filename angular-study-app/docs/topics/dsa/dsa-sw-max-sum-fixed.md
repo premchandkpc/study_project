@@ -15,7 +15,7 @@ Given an integer array and k, find the maximum sum of any contiguous subarray of
 **Scenario:** Traffic dashboard - find busiest exact k-minute interval.
 
 ## Why It Matters
-Classic first sliding window problem. Instead of recomputing sum from scratch for each window O(n-k), maintain a running sum and update in O(1) per slide.
+Classic first sliding window problem. Instead of recomputing sum from scratch for each window O(n*k), maintain a running sum and update in O(1) per slide.
 
 ## Architecture / Mental Model
 ```mermaid
@@ -83,12 +83,12 @@ Add arr[i], subtract arr[i-k]. Window slides in O(1) per step.
 
 ## Complexity And Performance
 - O(n)
-- O(n-k)
+- O(n*k)
 - O(1)
 
 ## Interview Drills
 1. Why is sliding window faster than brute force here?
-   Answer: Brute force recomputes each window sum from scratch -> O(n-k). Sliding window maintains running sum, updating in O(1) per step -> O(n) total.
+   Answer: Brute force recomputes each window sum from scratch -> O(n*k). Sliding window maintains running sum, updating in O(1) per step -> O(n) total.
    Follow-ups: What if k > arr.length?; Handle negative numbers?
 
 2. What changes for a variable-size window?

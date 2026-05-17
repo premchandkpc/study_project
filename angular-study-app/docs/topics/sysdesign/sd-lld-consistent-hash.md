@@ -150,8 +150,8 @@ Notes:
 With 150 vnodes per server, standard deviation of load across servers is <10%. With 1 vnode it can be 200%+.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. How does consistent hashing minimise key remapping when a node is added?

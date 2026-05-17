@@ -188,8 +188,8 @@ Notes:
 Create these constraints: `unique(idempotency_keys.client_key)`, `unique(outbox_events.id)`, and `unique(inbox_messages.event_id, inbox_messages.consumer_name)`. For payments, the idempotency key must also be sent to the payment provider so your boundary and the external provider share the same retry identity.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. Is idempotency the same as exactly-once processing?

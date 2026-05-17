@@ -165,8 +165,8 @@ Notes:
 Keep total retry budget smaller than the caller's deadline. If the application timeout is 800 ms, a mesh policy with 3 attempts at 500 ms each is a bug. Use trace IDs to prove the retry behavior you configured is the behavior actually happening.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. What belongs in the mesh vs in application code?

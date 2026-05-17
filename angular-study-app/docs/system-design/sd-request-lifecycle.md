@@ -135,8 +135,8 @@ Notes:
 Timeouts on every server are non-negotiable - missing them causes Goroutine/thread leaks under slow-client attacks.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. Walk me through what happens when a user types https://example.com in a browser.

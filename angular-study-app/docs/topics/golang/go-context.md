@@ -121,8 +121,8 @@ Notes:
 Never store contexts in structs - pass them as the first function argument. Use typed unexported keys for context values to prevent key collisions across packages.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. What's the difference between context.Background() and context.TODO()?

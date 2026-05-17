@@ -125,8 +125,8 @@ Notes:
 Rule of thumb: W + R > N guarantees strong consistency. With N=3, W=2, R=2: 2+2=4 > 3 -> every read sees the latest write.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. Explain the CAP theorem with a real-world example.

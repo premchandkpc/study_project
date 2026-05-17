@@ -127,8 +127,8 @@ Notes:
 Kong runs as a reverse proxy in front of all services. Plugin chain executes in order: auth -> rate-limit -> transform -> log.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. How would you implement rate limiting in an API gateway for distributed servers?

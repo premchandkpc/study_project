@@ -8,7 +8,7 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
-**Scale:** 2B+ MAU - 100M+ photos/day - 4M likes/second - 500M Stories/day
+**Scale:** 2B+ MAU * 100M+ photos/day * 4M likes/second * 500M Stories/day
 
 **Four core flows to master:**
 

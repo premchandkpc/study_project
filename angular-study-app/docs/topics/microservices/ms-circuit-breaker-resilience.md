@@ -143,8 +143,8 @@ Notes:
 Apply resilience decorators in the right order (outer to inner): TimeLimiter -> CircuitBreaker -> Retry -> Bulkhead. Retry inside CircuitBreaker would reset the timeout. Add jitter to retry delays to prevent thundering herd: `Duration.ofMillis(200 + random.nextInt(100))`.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. What is the difference between a circuit breaker and a retry?

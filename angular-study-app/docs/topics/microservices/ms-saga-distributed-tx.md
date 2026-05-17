@@ -130,8 +130,8 @@ Notes:
 Temporal persists workflow state in its DB - the workflow survives crashes and resumes mid-execution. Compensating transactions must be **idempotent**: calling `refund(chargeId)` twice should be safe. Use unique idempotency keys derived from the saga ID.
 
 ## Complexity And Performance
-- Time/space complexity depends on deployment, data size, and chosen implementation.
-- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+- Time/space complexity depends on input size, data volume, and implementation choices.
+- Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
 1. What problems does the Saga pattern NOT solve?
