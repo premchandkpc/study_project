@@ -23,11 +23,13 @@
   function FlowRenderer() {}
 
   FlowRenderer.prototype.render = function (mount, cfg) {
-    var W = 460, H = 300;
+    var mountWidth = Math.round(mount.clientWidth || mount.getBoundingClientRect().width || 460);
     var nodes = cfg.nodes || [];
     var conns = cfg.connections || [];
     var scenarios = cfg.scenarios || [];
     var dir = cfg.direction || 'horizontal';
+    var W = Math.max(520, mountWidth, nodes.length * 120);
+    var H = dir === 'vertical' ? Math.max(420, 120 + nodes.length * 90) : 360;
 
     var ctrl   = U.makeCtrlRow(mount);
     var canvas = U.makeCanvas(mount, W, H);
@@ -37,12 +39,12 @@
     // Layout nodes
     var layout = {};
     if (dir === 'horizontal') {
-      var pad = 40, spacing = (W - pad * 2) / Math.max(nodes.length - 1, 1);
+      var pad = 60, spacing = (W - pad * 2) / Math.max(nodes.length - 1, 1);
       nodes.forEach(function (n, i) {
         layout[n.id] = { x: pad + i * spacing, y: H / 2 };
       });
     } else {
-      var padV = 30, spacingV = (H - padV * 2) / Math.max(nodes.length - 1, 1);
+      var padV = 40, spacingV = (H - padV * 2) / Math.max(nodes.length - 1, 1);
       nodes.forEach(function (n, i) {
         layout[n.id] = { x: W / 2, y: padV + i * spacingV };
       });

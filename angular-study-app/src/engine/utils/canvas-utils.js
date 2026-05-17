@@ -87,9 +87,13 @@
     },
 
     makeCanvas: function (mount, w, h) {
+      var rect = mount.getBoundingClientRect();
+      var width = Math.round(rect.width || mount.clientWidth || w);
+      if (width < w) width = w;
       var c = document.createElement('canvas');
-      c.width = w; c.height = h;
-      c.style.cssText = 'width:100%;max-width:' + w + 'px;border-radius:8px;background:#0d1117;display:block;margin:0 auto';
+      c.width = width;
+      c.height = h;
+      c.style.cssText = 'width:100%;height:' + h + 'px;max-width:none;border-radius:10px;background:#0d1117;display:block;margin:0 auto;box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);';
       mount.appendChild(c);
       return c;
     },

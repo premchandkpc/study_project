@@ -49,6 +49,7 @@ src/
     dsa-viz/                      # DSA visualizer engine
     react-viz/                    # ReactViz animation engine
   styles/
+docs/system-design/               # MD docs per system-design concept + Mermaid diagrams
 server/agents/server.js           # Express agent backend (port 3001)
 skills/                           # MD documentation per topic area
 ```

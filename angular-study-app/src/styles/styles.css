@@ -164,7 +164,39 @@ h1.topic-title { font-size: 28px; margin: 0; letter-spacing: -0.2px; }
 .tag.area-microservices { color:#fff; background: linear-gradient(135deg,#7541c4,#a162e8); border-color: transparent; }
 .tag.area-sysdesign { color:#001a20; background: linear-gradient(135deg,#00b8d4,#00e5ff); border-color: transparent; }
 .section.visual-section h2::before { background: linear-gradient(90deg,var(--sysdesign),var(--accent)); }
-.viz-mount { min-height: 40px; overflow: hidden; border-radius: 8px; }
+.app-shell.area-sysdesign .section.flow-section h2::before,
+.app-shell.area-sysdesign .section.uml-section h2::before,
+.app-shell.area-sysdesign .section.arch-section h2::before {
+  background: var(--sysdesign);
+}
+.app-shell.area-sysdesign .toolbar .btn.primary {
+  background: linear-gradient(135deg,#00b8d4,#00e5ff);
+}
+.app-shell.area-sysdesign .flow-readout,
+.app-shell.area-sysdesign .uml-readout,
+.app-shell.area-sysdesign .arch-readout {
+  border-left-color: var(--sysdesign);
+  background: rgba(38,217,255,.06);
+}
+.app-shell.area-sysdesign .flow-edge.active::before {
+  background: linear-gradient(90deg, var(--sysdesign), var(--ok));
+}
+.viz-mount {
+  width: 100%;
+  min-height: 420px;
+  overflow: hidden;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+}
+.viz-mount canvas {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+}
 
 .section {
   background: var(--panel); border:1px solid var(--border); border-radius: 12px;

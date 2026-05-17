@@ -26,11 +26,12 @@
   function LayeredRenderer() {}
 
   LayeredRenderer.prototype.render = function (mount, cfg) {
-    var W        = 460;
+    var mountWidth = Math.round(mount.clientWidth || mount.getBoundingClientRect().width || 460);
+    var W        = Math.max(520, mountWidth);
     var layers   = cfg.layers || [];
-    var lH       = 58;
-    var padTop   = cfg.title ? 28 : 8;
-    var H        = padTop + layers.length * (lH + 4) + 20;
+    var lH       = 70;
+    var padTop   = cfg.title ? 32 : 12;
+    var H        = padTop + layers.length * (lH + 8) + 24;
 
     var canvas   = U.makeCanvas(mount, W, H);
     var ctrl     = U.makeCtrlRow(mount);
@@ -48,6 +49,7 @@
     (cfg.flows || []).forEach(function (fl) {
       var b = U.makeBtn(fl.name, fl.color || U.C.orange);
       b.addEventListener('click', function () {
+        stopAnimation();
         activeFlow = fl; activeStepIdx = -1; dotT = 0;
         running = true; playBtn.textContent = '⏸ Pause';
         raf();
@@ -80,8 +82,9 @@
         if (layer.protocols) U.text(ctx, layer.protocols, 14, y + 28, U.C.gray, 8, 'left');
 
         // Services
-        var svcW = 62, svcH = 28;
-        var startX = 110, endX = W - 8;
+        var svcW = Math.min(96, Math.max(64, Math.floor((W - 220) / Math.max(svcs.length, 4))));
+        var svcH = 34;
+        var startX = 120, endX = W - 20;
         var spacing = svcs.length > 1 ? (endX - startX - svcW) / (svcs.length - 1) : 0;
         svcs.forEach(function (svc, j) {
           var sx = startX + j * spacing;
@@ -99,6 +102,14 @@
       });
     }
 
+    function stopAnimation() {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      running = false;
+    }
+
     function raf() {
       if (!running || !document.body.contains(canvas)) return;
       if (!activeFlow || !activeFlow.path.length) return;
@@ -112,7 +123,8 @@
           activeStepIdx = activeFlow.path.length - 1;
           dotPos = null;
           drawStatic();
-          running = false; playBtn.textContent = '▶ Play';
+          stopAnimation();
+          playBtn.textContent = '▶ Play';
           return;
         }
 
@@ -134,9 +146,13 @@
 
     playBtn.addEventListener('click', function () {
       if (running) {
-        running = false; cancelAnimationFrame(rafId); playBtn.textContent = '▶ Play'; drawStatic();
+        stopAnimation();
+        playBtn.textContent = '▶ Play';
+        drawStatic();
       } else {
         if (!activeFlow && cfg.flows && cfg.flows.length) activeFlow = cfg.flows[0];
+        if (!activeFlow || !activeFlow.path.length) return;
+        stopAnimation();
         dotT = 0; activeStepIdx = -1; running = true; playBtn.textContent = '⏸ Pause';
         raf();
       }

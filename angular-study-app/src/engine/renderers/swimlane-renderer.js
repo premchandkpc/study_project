@@ -25,10 +25,11 @@
 
   SwimlaneRenderer.prototype.render = function (mount, cfg) {
     var lanes   = cfg.lanes || [];
-    var laneH   = 72;
-    var padTop  = cfg.title ? 30 : 10;
-    var W       = 460;
-    var H       = padTop + lanes.length * (laneH + 8) + 20;
+    var laneH   = 80;
+    var padTop  = cfg.title ? 36 : 14;
+    var mountWidth = Math.round(mount.clientWidth || mount.getBoundingClientRect().width || 460);
+    var W       = Math.max(520, mountWidth);
+    var H       = padTop + lanes.length * (laneH + 10) + 24;
 
     var canvas  = U.makeCanvas(mount, W, H);
     var ctrl    = U.makeCtrlRow(mount);
@@ -67,19 +68,21 @@
 
         // Nodes
         if (nodes.length) {
-          var startX = 110, endX = W - 80, spacing = (endX - startX) / Math.max(nodes.length - 1, 1);
+          var startX = 120, endX = W - 80;
+          var nodeW = Math.min(96, Math.max(64, Math.floor((endX - startX) / Math.max(nodes.length, 5))));
+          var spacing = nodes.length > 1 ? (endX - startX - nodeW) / (nodes.length - 1) : 0;
           nodes.forEach(function (n, j) {
-            var nx = startX + j * spacing, ny = y + laneH / 2;
+            var nx = startX + j * spacing + nodeW / 2, ny = y + laneH / 2;
             var nCol = n.color || col;
-            U.roundRect(ctx, nx - 28, ny - 12, 56, 24, 4, nCol + '22', nCol, 1);
-            if (n.icon) U.text(ctx, n.icon, nx - 16, ny + 4, null, 10, 'left');
-            U.text(ctx, n.label, nx, ny + 4, U.C.text, 9, 'center');
-            if (n.sublabel) U.text(ctx, n.sublabel, nx, ny + 20, U.C.gray, 8);
+            U.roundRect(ctx, nx - nodeW / 2, ny - 14, nodeW, 28, 6, nCol + '22', nCol, 1);
+            if (n.icon) U.text(ctx, n.icon, nx - nodeW / 2 + 10, ny + 4, null, 10, 'left');
+            U.text(ctx, n.label, nx, ny + 4, U.C.text, 10, 'center');
+            if (n.sublabel) U.text(ctx, n.sublabel, nx, ny + 22, U.C.gray, 8);
 
             // Arrow to next node
             if (j < nodes.length - 1) {
-              var nx2 = startX + (j + 1) * spacing;
-              U.arrow(ctx, nx + 28, ny, nx2 - 28, ny, col + 'aa', 1, false);
+              var nx2 = startX + (j + 1) * spacing + nodeW / 2;
+              U.arrow(ctx, nx + nodeW / 2, ny, nx2 - nodeW / 2, ny, col + 'aa', 1, false);
             }
           });
         }

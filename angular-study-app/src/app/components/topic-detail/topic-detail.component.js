@@ -309,7 +309,11 @@
         if (host._homeCleanup) { host._homeCleanup(); host._homeCleanup = null; }
         if (host._coderCleanup) { host._coderCleanup(); host._coderCleanup = null; }
         const shell = document.querySelector('app-root');
-        if (shell) shell.classList.add('coder-mode');
+        if (shell) {
+          const areas = ['java','golang','python','microservices','sysdesign','dsa','kafka','rust','angular','react','databases'];
+          shell.classList.remove(...areas.map(a => `area-${a}`));
+          shell.classList.add('coder-mode');
+        }
         const sepEl = document.getElementById('hdr-sep');
         const topicEl = document.getElementById('hdr-topic');
         const dotEl = document.getElementById('hdr-dot');
@@ -336,6 +340,11 @@
       const topic = TopicsService.byId(id);
       if (!topic) {
         if (host._homeActive) return;
+        const shell = document.querySelector('app-root');
+        if (shell) {
+          const areas = ['java','golang','python','microservices','sysdesign','dsa','kafka','rust','angular','react','databases'];
+          shell.classList.remove(...areas.map(a => `area-${a}`));
+        }
         host._homeActive = true;
         lastTopicId = null;
         host.innerHTML = '';
@@ -356,6 +365,12 @@
       const areaEl = document.getElementById('hdr-area');
       const topicEl = document.getElementById('hdr-topic');
       const sepEl = document.getElementById('hdr-sep');
+      const shell = document.querySelector('app-root');
+      if (shell) {
+        const areas = ['java','golang','python','microservices','sysdesign','dsa','kafka','rust','angular','react','databases'];
+        shell.classList.remove(...areas.map(a => `area-${a}`));
+        shell.classList.add(`area-${topic.area}`);
+      }
       if (dotEl) dotEl.style.background = areaColor;
       if (areaEl) { areaEl.textContent = areaLabel; areaEl.style.color = areaColor; }
       if (topicEl) topicEl.textContent = topic.title;
