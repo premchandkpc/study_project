@@ -46,31 +46,104 @@ All 7 topics currently placeholder. Build in this order:
 
 ### PRIORITY 2
 
-| Topic | Visual Type | Key Animation |
-|---|---|---|
-| `go-interfaces-embedding.js` | ComponentTree | Concrete struct → implicit interface satisfaction. No "implements". Duck typing: if it has the method, it satisfies |
-| `go-error-handling.js` | FlowDiagram | error→fmt.Errorf wrap→errors.Is→errors.As→sentinel check chain |
-| `go-http-rest.js` | FlowDiagram | Request→middleware chain (Logger→Auth→RateLimit→Handler)→Response |
+| Topic | Visual Type | Key Animation | Key Concept |
+|---|---|---|---|
+| `go-interfaces-embedding.js` | ComponentTree | Concrete struct → implicit interface satisfaction | No "implements" keyword. Duck typing: method set match = implicit satisfaction. Embedding composes interfaces. io.ReadWriter = io.Reader + io.Writer |
+| `go-error-handling.js` | FlowDiagram | error→fmt.Errorf wrap→errors.Is→errors.As→sentinel check | fmt.Errorf("op: %w", err) wraps. errors.Is checks chain. errors.As extracts type. Sentinel: var ErrNotFound = errors.New("not found") |
+| `go-http-rest.js` | Swimlane (always-visible) | Middleware chain: request flows outbound, response inbound | Row1: Request→Logger→Auth→RateLimit→Handler. Row2: Response←Logger←Auth←RateLimit←Handler |
+
+#### go-interfaces-embedding visual spec
+```
+ComponentTree:
+  root: { name: 'FileServer (concrete)', type: 'component' }
+  children:
+    - { name: 'io.Reader', sublabel: 'Read(p []byte)', type: 'store' }    // satisfied implicitly
+    - { name: 'io.Writer', sublabel: 'Write(p []byte)', type: 'store' }   // satisfied implicitly
+    - { name: 'io.Closer', sublabel: 'Close() error', type: 'store' }     // satisfied implicitly
+    - { name: 'io.ReadWriteCloser', sublabel: 'embedded composition', type: 'selector' }  // composed
+
+Steps:
+  1. Define concrete type with methods → auto-satisfies any matching interface
+  2. Embedding: type ReadWriteCloser interface { Reader; Writer; Closer }
+  3. No "implements" — compiler checks method set at use site
+  4. Interface as input param: func Process(r io.Reader) — accept any type
+```
+
+#### go-error-handling visual spec
+```
+5-step FlowDiagram:
+  Step 1 (render):  err := db.Query() → nil check → if err != nil
+  Step 2 (commit):  fmt.Errorf("fetch user: %w", err) — wraps with context
+  Step 3 (effect):  errors.Is(err, sql.ErrNoRows) — unwraps chain, checks identity
+  Step 4 (update):  errors.As(err, &pgErr) — extracts concrete type from chain
+  Step 5 (cleanup): Sentinel errors: var ErrNotFound = errors.New("not found") — pkg-level, comparable
+Nodes: error(action), wrappedErr(reducer), errors.Is(selector), errors.As(cache), sentinel(store)
+```
+
+#### go-http-rest visual spec
+```
+Swimlane (always-visible, 2 rows):
+  Row 1 REQUEST (blue #58a6ff): Client → LoggingMiddleware → AuthMiddleware → RateLimitMiddleware → Handler
+  Row 2 RESPONSE (green #3fb950): Handler → RateLimitMiddleware → AuthMiddleware → LoggingMiddleware → Client
+
+Middleware code pattern:
+  func Logging(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+      log.Println(r.Method, r.URL.Path)   // before
+      next.ServeHTTP(w, r)                 // chain
+      log.Println("done")                  // after
+    })
+  }
+
+Animated dots: request packet (blue) moves left→right outbound. Response packet (green) right→left inbound.
+```
 
 ### PRIORITY 3
 
-| Topic | Visual Type | Key Animation |
-|---|---|---|
-| `go-generics.js` | FlowDiagram | Type param → constraint check → monomorphization → specialized fn |
+| Topic | Visual Type | Key Animation | Key Concept |
+|---|---|---|---|
+| `go-generics.js` | FlowDiagram | Type param → constraint → instantiation → specialized fn | `func Map[T, U any](s []T, f func(T) U) []U`. Constraints: `comparable`, `~int \| ~string`, custom interface constraints. No runtime cost (compile-time monomorphization) |
+
+#### go-generics visual spec
+```
+4-step FlowDiagram:
+  Step 1 (render):  func Map[T, U any](...) — type parameter declaration
+  Step 2 (commit):  constraint check: T must satisfy comparable / ~int / custom interface
+  Step 3 (effect):  instantiation: Map[string, int] → compiler generates specialized version
+  Step 4 (update):  zero-cost abstraction: no interface boxing, no reflect — direct call
+Nodes: typeParam(action), constraint(hook), instantiated(component), specialized(store)
+```
+
+---
 
 ## Go Topics Still to Add
 
-| Topic | Priority | Suggested Animation |
-|-------|----------|-------------------|
-| Go GC (tricolor mark-sweep) | HIGH | FlowDiagram: white/gray/black sets → concurrent GC phases |
-| Select statement | HIGH | FlowDiagram: multiple channel cases, default branch |
-| sync.Mutex vs RWMutex | HIGH | FlowDiagram: goroutine contention → lock/unlock |
-| defer, panic, recover | HIGH | FlowDiagram: stack unwind → deferred calls → recover |
-| go tool / build system | MEDIUM | FlowDiagram: go build → compile → link |
-| Reflection (reflect package) | MEDIUM | FlowDiagram: interface → reflect.Type → Value |
-| Testing (table-driven, benchmarks) | MEDIUM | FlowDiagram: test cases → t.Run() → benchmark loop |
-| gRPC streaming | HIGH | FlowDiagram: unary → server-stream → client-stream → bidi |
-| pprof profiling | MEDIUM | FlowDiagram: CPU/heap profile → flame graph |
+### HIGH PRIORITY (interview-critical, no JS file yet)
+
+| Topic | Suggested File | Visual Type | Key Concepts | Animation |
+|-------|---------------|-------------|--------------|-----------|
+| defer / panic / recover | `go-defer-panic.js` | FlowDiagram | defer runs LIFO after fn returns. defer in loop = deferred until fn end (not loop iteration). panic unwinds stack. recover() in deferred fn catches panic | Step1: fn calls→defers stack (LIFO). Step2: panic→stack unwind. Step3: recover() in defer catches panic→return normal flow |
+| Select statement | `go-select.js` | FlowDiagram | select blocks until one case ready. Random tie-break when multiple ready. `default:` = non-blocking. Timeout with `time.After`. Fan-in with select | 3-node: ch1←data / ch2←data / time.After(1s). First ready wins. Default = fallthrough immediately |
+| Go GC (tricolor mark-sweep) | `go-gc.js` | Swimlane | 3 phases: mark setup (STW<1ms), concurrent mark, mark termination (STW<1ms). Tricolor: white(unreachable)/gray(frontier)/black(reachable). Write barrier during concurrent mark | Row1: white objects→gray frontier→black reachable. Row2: GC goroutines running concurrent with app. STW pause indicators |
+| Go build system | `go-build.js` | FlowDiagram | `go build` pipeline: parse→typecheck→SSA→optimize→codegen→link. go.mod/go.sum. `go mod tidy`. Build tags. `//go:generate`. CGO | Step1: source→AST parse. Step2: type check. Step3: SSA IR. Step4: machine code. Step5: link→binary |
+| gRPC in Go | `go-grpc.js` | Swimlane | protobuf IDL→generated stubs. 4 streaming types: unary/server-stream/client-stream/bidi. Interceptors (middleware for gRPC). Metadata propagation | Row1 Unary: client req→server handler→response. Row2 Server-stream: req→stream of responses. Row3 Client-stream: stream of reqs→response. Row4 Bidi: full duplex |
+
+### MEDIUM PRIORITY
+
+| Topic | Suggested File | Visual Type | Key Concepts |
+|-------|---------------|-------------|--------------|
+| Go testing | `go-testing.js` | FlowDiagram | `go test ./...`. Table-driven tests: `[]struct{in, want}`. `t.Run()` subtests. Benchmarks: `b.ResetTimer()`. `testify/assert`. `goleak.VerifyNone(t)` for goroutine leak detection |
+| pprof profiling | `go-pprof.js` | FlowDiagram | `runtime/pprof` or `net/http/pprof`. CPU profile: flame graph. Heap profile: alloc_objects vs inuse_objects. Goroutine profile: `go tool pprof`. `go tool trace` for scheduler events |
+| Reflection (reflect package) | `go-reflect.js` | FlowDiagram | `reflect.TypeOf(x)` → Type. `reflect.ValueOf(x)` → Value. `.Kind()` enum. `.Field(i)` struct tags. Use cases: JSON encoder, ORM, dependency injection |
+| sync.Map internals | `go-syncmap.js` | FlowDiagram | read-only shard (atomic load, lock-free reads). dirty map (mutex for writes). Promotion: dirty→read-only on read miss threshold. When to prefer over RWMutex map |
+
+### LOW PRIORITY
+
+| Topic | Suggested File | Key Concepts |
+|-------|---------------|--------------|
+| Go modules (go.mod) | `go-modules.js` | semantic versioning, replace directives, workspace mode (go.work), vendor/ |
+| CGO | `go-cgo.js` | calling C from Go, overhead (~100ns/call), when to avoid, alternative: pure Go or plugin |
+| Go plugins | `go-plugins.js` | `plugin.Open()`, symbol lookup, limitations (same Go version, POSIX only) |
 
 ---
 
