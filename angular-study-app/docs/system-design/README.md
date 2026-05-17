@@ -43,3 +43,4 @@ Generated companion docs for every system design topic. Each file contains conce
 | [Saga Pattern - Distributed Transactions Without 2PC](sd-saga-patterns.md) | Architecture | yes | yes | yes |
 | [Security - OAuth2, JWT, mTLS & RBAC](sd-security-auth.md) | Security | yes | yes | yes |
 
+All topic docs: [../topics/README.md](../topics/README.md).

@@ -1,0 +1,82 @@
+# Combination Sum
+
+## Quick Facts
+- Area: DSA
+- Tag: Backtracking
+- Source: `src/modules/topics/dsa/dsa-bt-comb-sum.js`
+- Tags: `backtracking`, `recursion`, `pruning`, `combination`, `faang`, `lc39`
+- Visual coverage: live visual
+
+## Concept
+Find all unique combinations of numbers that sum to a target. Numbers can be reused.
+
+ **Kid explanation:** You have coins: [2, 3, 6, 7]. You want to make exactly $7. You can reuse coins! Try putting a coin in your wallet. Keep adding coins until you either hit the target (success!) or go over (fail -> backtrack and try a different coin). This explores every possible combination without trying ones that are obviously wrong.
+
+**Pattern:** Backtracking with early pruning - O(n^(target/min))
+**Key insight:** Sort candidates. When a candidate exceeds remaining target, stop trying larger ones (they'll also fail). Allows reuse by recursing at same index.
+**Scenario:** Exact-change problem - which coins (reusable) sum to the exact target?
+
+## Why It Matters
+_No notes yet._
+
+## Architecture / Mental Model
+```mermaid
+flowchart LR
+  n0["Problem input"]
+  n1["Pattern choice"]
+  n2["State structure"]
+  n3["Loop/recursion"]
+  n4["Answer"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
+
+## Runtime / Sequence
+```mermaid
+sequenceDiagram
+  participant a0 as Problem input
+  participant a1 as Pattern choice
+  participant a2 as State structure
+  participant a3 as Loop/recursion
+  participant a4 as Answer
+  a0->>a1: start
+  a1->>a2: process
+  a2->>a3: process
+  a3->>a4: process
+  a4-->>a3: result
+  a3-->>a2: return
+  a2-->>a1: return
+  a1-->>a0: return
+```
+
+## Animation Plan
+- Flow lab can use generated mental model steps above.
+- UML sequence can use generated sequence diagram above.
+- Architecture map can use generated area mental model above.
+- Live visual exists in app: topic-specific canvas/ReactViz animation.
+
+Flow steps:
+
+1. Problem input
+2. Pattern choice
+3. State structure
+4. Loop/recursion
+5. Answer
+
+## Example
+_No code example configured._
+
+## Complexity And Performance
+- O(n^(target/min)
+
+## Interview Drills
+_No interview drills configured._
+
+## Trade-offs
+_No trade-offs configured._
+
+## Gotchas
+_No gotchas configured._
+

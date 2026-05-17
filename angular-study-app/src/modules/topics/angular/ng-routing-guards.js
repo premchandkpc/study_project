@@ -24,7 +24,7 @@
 
 **Angular 14+ functional guards:** plain functions with \`inject()\` — no class needed.
 
-**Route data:** \`route.data\`, \`route.params\`, \`route.queryParams\`, \`route.snapshot` vs \`paramMap\` observable.`,
+**Route data:** \`route.data\`, \`route.params\`, \`route.queryParams\`, \`route.snapshot\` vs \`paramMap\` observable.`,
 
     why: `Guards are the security layer of Angular SPA navigation. Without them, users can navigate to /admin by typing the URL. Resolvers prevent loading spinners by fetching data before the component renders. Lazy loading is critical for large apps — split bundle by feature route.`,
 

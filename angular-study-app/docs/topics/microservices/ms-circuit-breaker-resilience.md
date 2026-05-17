@@ -1,0 +1,174 @@
+# Circuit Breaker, Retry & Bulkhead Patterns
+
+## Quick Facts
+- Area: Microservices
+- Tag: Resilience
+- Source: `src/modules/topics/microservices/ms-circuit-breaker-resilience.js`
+- Tags: `circuit breaker`, `retry`, `bulkhead`, `timeout`, `resilience4j`, `failover`
+- Visual coverage: generated diagrams only
+
+## Concept
+Resilience patterns prevent a failing dependency from cascading into a total outage:
+- **Timeout**: never wait forever. Fail fast.
+- **Retry with exponential backoff + jitter**: recover from transient failures without thundering herd.
+- **Circuit Breaker**: half-open -> open (stop calls) -> closed (calls allowed). States tracked by failure rate / count. Prevents hammering a sick service.
+- **Bulkhead**: isolate thread pools or semaphores per dependency - one slow service can't exhaust all connections.
+- **Fallback**: cached result, degraded response, or queue for later.
+Libraries: **Resilience4j** (Java), **Polly** (.NET), **go-circuit** (Go).
+
+## Why It Matters
+In a 10-service call chain, if each service has 99.9% uptime, the composite uptime is 99% - a 10x amplification. Without circuit breakers, a slow database causes request threads to pile up behind the slow DB call, exhausting the thread pool and making the entire service unresponsive. The circuit breaker is the first line of defense.
+
+## Architecture / Mental Model
+```mermaid
+flowchart LR
+  n0["Client"]
+  n1["Gateway"]
+  n2["Service boundary"]
+  n3["Async/data path"]
+  n4["Observability"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
+
+## Runtime / Sequence
+```mermaid
+sequenceDiagram
+  participant a0 as Client
+  participant a1 as Gateway
+  participant a2 as Service boundary
+  participant a3 as Async/data path
+  participant a4 as Observability
+  a0->>a1: start
+  a1->>a2: process
+  a2->>a3: process
+  a3->>a4: process
+  a4-->>a3: result
+  a3-->>a2: return
+  a2-->>a1: return
+  a1-->>a0: return
+```
+
+## Animation Plan
+- Flow lab can use generated mental model steps above.
+- UML sequence can use generated sequence diagram above.
+- Architecture map can use generated area mental model above.
+
+Flow steps:
+
+1. Client
+2. Gateway
+3. Service boundary
+4. Async/data path
+5. Observability
+
+## Example
+```java
+// Resilience4j: circuit breaker + retry + bulkhead + timeout
+import io.github.resilience4j.circuitbreaker.*;
+import io.github.resilience4j.retry.*;
+import io.github.resilience4j.bulkhead.*;
+import io.github.resilience4j.timelimiter.*;
+import java.time.Duration;
+import java.util.concurrent.*;
+import java.util.function.Supplier;
+
+public class PaymentClient {
+    private final CircuitBreaker cb;
+    private final Retry retry;
+    private final Bulkhead bulkhead;
+    private final TimeLimiter timeLimiter;
+    private final ScheduledExecutorService scheduler;
+
+    public PaymentClient() {
+        cb = CircuitBreaker.of("payment", CircuitBreakerConfig.custom()
+            .failureRateThreshold(50)           // open at 50% failure rate
+            .waitDurationInOpenState(Duration.ofSeconds(10))
+            .slidingWindowSize(10)
+            .permittedNumberOfCallsInHalfOpenState(3)
+            .build());
+
+        retry = Retry.of("payment", RetryConfig.custom()
+            .maxAttempts(3)
+            .waitDuration(Duration.ofMillis(200))
+            .exponentialBackoff(2, Duration.ofSeconds(1))
+            .retryOnException(e -> e instanceof TransientException)
+            .build());
+
+        bulkhead = Bulkhead.of("payment", BulkheadConfig.custom()
+            .maxConcurrentCalls(20)             // max parallel calls
+            .maxWaitDuration(Duration.ofMillis(100))
+            .build());
+
+        timeLimiter = TimeLimiter.of(TimeLimiterConfig.custom()
+            .timeoutDuration(Duration.ofMillis(500))
+            .build());
+
+        scheduler = Executors.newScheduledThreadPool(4);
+    }
+
+    public String charge(String userId, String amount) {
+        Supplier<CompletableFuture<String>> futureSupplier = () ->
+            CompletableFuture.supplyAsync(() -> callPaymentService(userId, amount));
+
+        Supplier<CompletableFuture<String>> decorated =
+            Bulkhead.decorateSupplier(bulkhead,
+                CircuitBreaker.decorateSupplier(cb,
+                    Retry.decorateSupplier(retry, futureSupplier)));
+
+        try {
+            return timeLimiter.executeFutureSupplier(decorated);
+        } catch (CallNotPermittedException e) {
+            return fallback(userId, amount);  // circuit open
+        } catch (Exception e) {
+            return fallback(userId, amount);
+        }
+    }
+
+    private String callPaymentService(String userId, String amount) {
+        // actual HTTP call
+        return "charge-id-123";
+    }
+
+    private String fallback(String userId, String amount) {
+        // queue for async retry or return cached approval
+        return "PENDING";
+    }
+}
+```
+
+Notes:
+Apply resilience decorators in the right order (outer to inner): TimeLimiter -> CircuitBreaker -> Retry -> Bulkhead. Retry inside CircuitBreaker would reset the timeout. Add jitter to retry delays to prevent thundering herd: `Duration.ofMillis(200 + random.nextInt(100))`.
+
+## Complexity And Performance
+- Time/space complexity depends on deployment, data size, and chosen implementation.
+- Track p50/p95/p99 latency, throughput, memory, saturation, and error rate for production topics.
+
+## Interview Drills
+1. What is the difference between a circuit breaker and a retry?
+   Answer: **Retry** recovers from transient failures (brief network glitch) by re-attempting. **Circuit breaker** detects sustained failure and stops calling the service entirely, giving it time to recover. Retry without a circuit breaker can overwhelm a failing service with retried requests. Together: retry handles transient errors; circuit breaker handles sustained outages. The circuit breaker also gives callers fast failures instead of timeouts.
+   Follow-ups: What is the half-open state for?; How do you tune circuit breaker thresholds?
+
+2. What is a bulkhead and why does it matter?
+   Answer: A **bulkhead** isolates thread pools or semaphores per dependency (named after ship watertight compartments). Without it, a slow dependency fills your single thread pool, blocking all requests - even to healthy services. With bulkheads, the slow service gets at most N threads; healthy services are unaffected. In Java, use a separate `ExecutorService` per dependency or Resilience4j's `Bulkhead`.
+   Follow-ups: Semaphore bulkhead vs thread pool bulkhead?; How does Hystrix implement bulkheads?
+
+## Trade-offs
+Pros:
+- Circuit breaker gives fast failure instead of connection timeout pile-up.
+- Bulkheads limit blast radius - one bad service can't kill all traffic.
+- Fallback enables graceful degradation - partial service beats total outage.
+
+Cons:
+- Misconfigured thresholds cause false positives (circuit opens on healthy service).
+- Retry amplifies load under real failure - must limit retries and add backoff.
+- Distributed circuit breaker state (Envoy, Redis) adds complexity.
+
+When to use:
+Apply **timeout** everywhere. Apply **retry** for idempotent calls with transient errors. Apply **circuit breaker** for any synchronous call to external services. Apply **bulkhead** for shared thread pools serving multiple dependencies.
+
+## Gotchas
+_No gotchas configured._
+
