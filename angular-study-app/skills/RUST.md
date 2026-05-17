@@ -28,6 +28,34 @@ Inspired by:
 
 ---
 
+## Visual Style References (inputs/)
+
+| Image | Apply to Rust topics |
+|---|---|
+| `inputs/image copy 11.png` — Kafka swimlane (colored rows, animated dots) | **Ownership:** 3 rows = Move / Borrow (shared &T) / Borrow (exclusive &mut T). Dots show value moving owner-to-owner or reference lifetime scope. **Async/Tokio:** rows = tokio worker threads, tasks queued/polled/parked |
+| `inputs/image copy 7.png` — Blueprint colored bands, numbered callouts | **Rust compile pipeline:** colored bands per phase ①Parsing→②HIR→③MIR→④LLVM IR→⑤Machine code. Borrow checker runs on MIR band |
+| `inputs/image copy 9.png` — YouTube numbered circular loop | **Future polling loop:** ①poll()→②Pending→③Waker registered→④Wake called→⑤poll() again→⑥Ready. Tokio reactor drives the loop |
+| `inputs/image copy 3.png` — Architecture wheel, center hub + radial | **Rust safety guarantees:** center = "Safe Rust", branches = No data races / No null / No dangling ptr / No buffer overflow / No use-after-free — each with mini violation example |
+| `inputs/image copy 12.png` — SQL mind map (dark bg, radial color branches) | **Rust smart pointers:** center = "Heap Allocation", branches = Box/Rc/Arc/RefCell/Mutex/Cow — each with when-to-use |
+| `inputs/image copy.png` — Green tree hierarchy | **Lifetime hierarchy:** 'static → 'a → 'b lifetime scopes as nested boxes, references must not outlive owner |
+
+## Animation Priority for Existing Topics
+
+| Topic | Current | Target Visual | Style Ref | Key Animation |
+|---|---|---|---|---|
+| `rust-ownership-borrowing.js` | Placeholder | Swimlane | image copy 11 | 3 rows: Move (dot vanishes from src) / &T (multiple read dots) / &mut T (exclusive, others dimmed) |
+| `rust-async-tokio.js` | Placeholder | Circular FlowDiagram | image copy 9 | Numbered loop: poll→Pending→Waker→Wake→poll→Ready. Tokio reactor node drives loop |
+| `rust-memory-model.js` | Placeholder | Blueprint bands | image copy 7 | Stack frame / Heap / BSS / Text as colored horizontal bands. Variables placed in correct region |
+| `rust-lifetimes.js` | Placeholder | Nested scope boxes | image copy.png | Lifetime scopes as nested colored rectangles. Reference arrow must not escape its box |
+| `rust-concurrency.js` | Placeholder | Swimlane | image copy 11 | Row 1: Send+Sync thread safety. Row 2: Arc<Mutex> shared state. Row 3: channel message passing |
+| `rust-smart-pointers.js` | Placeholder | Radial mind map | image copy 12 | Center = heap alloc, branches = Box/Rc/Arc/RefCell/Mutex with ref-count badges |
+| `rust-traits-generics.js` | Placeholder | FlowDiagram | — | Static dispatch (monomorphize → concrete fn) vs dynamic dispatch (vtable lookup → fn ptr) |
+| `rust-error-handling.js` | Placeholder | FlowDiagram | — | Result<T,E> chain: Ok flows right, Err short-circuits with ? operator, map_err transform |
+| `rust-closures-iterators.js` | Placeholder | FlowDiagram | — | Iterator adapters pipeline: source→filter→map→flat_map→take→collect, lazy evaluation dots |
+| `rust-enums-structs.js` | Placeholder | Blueprint bands | image copy 7 | Enum memory layout: tag byte + largest variant size. Each variant = colored band with fields |
+| `rust-pattern-matching.js` | Placeholder | FlowDiagram | — | Match arms: value enters top, falls to first matching arm, others dim |
+| `rust-unsafe.js` | Placeholder | FlowDiagram | — | Safe boundary → unsafe block → raw ptr dereference → back to safe. Red zone for unsafe |
+
 # Existing Topics
 
 | File | Title | Tag | Visual Type |

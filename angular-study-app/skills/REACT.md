@@ -65,6 +65,44 @@
 
 ---
 
+## Visual Style References (inputs/)
+
+| Image | What it shows | Apply to React topics |
+|---|---|---|
+| `inputs/image copy 9.png` | YouTube numbered circular flow (ByteByteGo) — numbered arrows following loop path, color-coded node types | React lifecycle circular flow: trigger→render→reconcile→commit→effect. Use for `react-fiber-reconciler.js` |
+| `inputs/image copy 3.png` | Architecture Styles Wheel — center hub + radial branches | React mental model: center = "State" hub, branches = hooks/fiber/scheduler/reconciler. Use for overview topic |
+| `inputs/image copy 7.png` | System Design Blueprint — colored section boxes, numbered callouts, icon+bullet style | React rendering pipeline sections: Trigger/Render/Commit/Effect as colored bands with bullet points |
+| `inputs/image copy 12.png` | SQL mind map — dark bg, radial branches, color per category | React hooks mind map: center = "React Hooks", branches = State/Effect/Context/Performance/Ref |
+
+## Always-Visible Swimlane Pattern (ByteByteGo Style)
+
+Use this pattern for topics where showing ALL states simultaneously beats step-by-step. Reference: how `sd-kafka-arch.js` was built.
+
+```js
+// ByteByteGo swimlane: multiple horizontal colored rows, animated dots
+visual: function(mount) {
+  var rows = [
+    { label: 'useState', color: '#58a6ff', delay: 0,
+      nodes: [{icon:'📦',label:'Initial State'}, {icon:'🔄',label:'setState()'},
+              {icon:'🎨',label:'Re-render'}, {icon:'✅',label:'DOM Updated'}],
+      desc: 'Synchronous state update triggers re-render' },
+    { label: 'useEffect', color: '#3fb950', delay: 0.5,
+      nodes: [{icon:'🎨',label:'Render'}, {icon:'🖥️',label:'DOM Commit'},
+              {icon:'🎬',label:'Paint'}, {icon:'⚡',label:'useEffect fires'}],
+      desc: 'Effect runs AFTER paint — async, non-blocking' },
+    { label: 'useMemo', color: '#d2a8ff', delay: 1.0,
+      nodes: [{icon:'🔢',label:'Expensive fn'}, {icon:'🔍',label:'Deps changed?'},
+              {icon:'💾',label:'Return cached'}, {icon:'✨',label:'Or recompute'}],
+      desc: 'Memoize expensive computation — skip if deps unchanged' },
+  ];
+  // render swimlane HTML with animated dots per row
+}
+```
+
+When to use always-visible vs step-by-step:
+- **Swimlane (always-visible):** Multiple parallel concepts (Kafka use cases, hook types, CD modes)
+- **Step-by-step (ReactViz.panel):** Single concept lifecycle that must be followed sequentially
+
 ## ReactViz Panel — Step Data Shape
 
 Each step can have any custom fields. Recommended shape:

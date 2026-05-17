@@ -22,6 +22,42 @@
 
 ---
 
+## Visual Style References (inputs/)
+
+| Image | Apply to Go topics |
+|---|---|
+| `inputs/image copy 11.png` — Kafka swimlane (5 colored rows, animated dots) | **Goroutines scheduler:** 3 rows — G (goroutines), P (logical processors), M (OS threads). Dots show G mounting on P, P on M, work-stealing |
+| `inputs/image copy 7.png` — Blueprint colored section boxes + bullet lists | **Go HTTP middleware:** each middleware = colored band (Logger→Auth→RateLimit→Handler→Response), request packet moves through |
+| `inputs/image copy 9.png` — YouTube numbered circular loop | **Context propagation:** circular flow ①Background→②WithTimeout→③WithCancel→④goroutine→⑤Done() signal back |
+| `inputs/image copy 3.png` — Architecture wheel, center hub + radial | **Go interfaces:** center = concrete struct, radial branches = all interfaces it satisfies (io.Reader/Writer/Closer/Stringer) |
+| `inputs/image copy.png` — Green tree hierarchy | **Goroutine tree:** parent goroutine spawns children, context cancellation propagates down tree |
+
+## Animation Implementation Priority
+
+All 7 topics currently placeholder. Build in this order:
+
+### PRIORITY 1 — Highest interview + visual value
+
+| Topic | Visual Type | Style Ref | Key Animation |
+|---|---|---|---|
+| `go-goroutines-channels.js` | Swimlane (always-visible) | image copy 11 | 3 rows: G pool → P (GOMAXPROCS) → M (OS threads). Dots show scheduling, work-stealing arrow when P idle |
+| `go-context.js` | Vertical FlowDiagram | image copy 9 — numbered | Background→WithTimeout→WithCancel→WithValue→goroutines. Cancel signal propagates DOWN, goroutines check Done() |
+| `go-memory-model-sync.js` | Swimlane | image copy 11 | 3 rows: No-sync (data race red flash), sync.Mutex (lock/unlock dots), atomic (CAS green), channel (handoff blue) |
+
+### PRIORITY 2
+
+| Topic | Visual Type | Key Animation |
+|---|---|---|
+| `go-interfaces-embedding.js` | ComponentTree | Concrete struct → implicit interface satisfaction. No "implements". Duck typing: if it has the method, it satisfies |
+| `go-error-handling.js` | FlowDiagram | error→fmt.Errorf wrap→errors.Is→errors.As→sentinel check chain |
+| `go-http-rest.js` | FlowDiagram | Request→middleware chain (Logger→Auth→RateLimit→Handler)→Response |
+
+### PRIORITY 3
+
+| Topic | Visual Type | Key Animation |
+|---|---|---|
+| `go-generics.js` | FlowDiagram | Type param → constraint check → monomorphization → specialized fn |
+
 ## Go Topics Still to Add
 
 | Topic | Priority | Suggested Animation |

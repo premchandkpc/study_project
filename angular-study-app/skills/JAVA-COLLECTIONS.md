@@ -1,8 +1,41 @@
 # Java Collections — New Topics Plan
 
-**Files to create:**
+**Status:** ✅ Both files built — `java-collection-types.js` + `java-concurrent-collections.js`
+
+**Files created:**
 - `src/modules/topics/java/java-collection-types.js`
 - `src/modules/topics/java/java-concurrent-collections.js`
+
+---
+
+## Visual Style References (inputs/)
+
+| Image | Apply to Java Collections topics |
+|---|---|
+| `inputs/image copy 3.png` — Architecture Styles Wheel (center hub + radial branches) | **Collection hierarchy overview:** center = "Collection", radial branches = List/Set/Queue/Map/Deque. Each branch has implementations as leaf nodes. Use as always-visible intro panel |
+| `inputs/image copy 8.png` — DB Scaling wheel (7 pie segments, mini-diagrams) | **Collection comparison wheel:** center = "Choose Collection", 6 segments = ArrayList/LinkedList/HashMap/TreeMap/HashSet/PriorityQueue. Click segment → expands to show Big-O + when-to-use |
+| `inputs/image copy 11.png` — Kafka swimlane (5 colored rows, animated dots) | **Concurrent Collections:** already built as 4 swimlane rows. Pattern is correct — keep and enhance |
+| `inputs/image copy 12.png` — SQL mind map (dark bg, radial color branches) | **Collection types mind map:** add as overview panel before step-by-step — shows all types at once |
+| `inputs/image copy 7.png` — Blueprint numbered callouts, colored section boxes | **ArrayList resize:** numbered ① initial array ② add beyond capacity ③ grow 50% ④ System.arraycopy ⑤ new element inserted |
+
+## Enhancement Plan for Built Topics
+
+### java-collection-types.js — Enhancements
+
+Current: 5-step ReactViz.panel (ComponentTree hierarchy + FlowDiagram internals)
+
+Add after current steps:
+- **Step 6 — Collection Selection Wheel** (ByteByteGo style from image copy 8): when to use which collection. SVG pie chart, 6 segments, click → mini Big-O table appears
+- **Always-visible summary bar** below steps: quick-reference table (Collection | Order | Duplicates | Null | Thread-safe | O(get) | O(add))
+
+### java-concurrent-collections.js — Enhancements
+
+Current: 4-step swimlane (ConcurrentHashMap / compute ops / CopyOnWrite / BlockingQueue + LongAdder)
+
+Add after current lanes:
+- **Step 5 — When to use which** (ByteByteGo comparison style): comparison table row per collection with use-case, throughput, trade-off
+
+---
 
 ---
 

@@ -26,6 +26,45 @@
 
 ---
 
+## Visual Style References (inputs/)
+
+| Image | What it shows | Apply to Angular topics |
+|---|---|---|
+| `inputs/image copy 7.png` | System Design Blueprint — colored section boxes, bullet lists per service, numbered callouts | Angular DI injector tree: colored band per injector scope (Root/Platform/Module/Component), bubble-up lookup animation |
+| `inputs/image copy 10.png` | Microservice domain boxes — grouped services inside colored borders, side panels | Angular module grouping: CoreModule/SharedModule/FeatureModules as colored domain boxes, imports/exports as connectors |
+| `inputs/image copy 11.png` | Kafka swimlane — horizontal colored rows per use case, animated dots | Angular CD modes: 2 rows (Default CD vs OnPush CD), animated check-cycle dots sweeping through component tree |
+| `inputs/image copy 3.png` | Architecture Styles Wheel — center hub + radial branches | Angular lifecycle hub: center = "Component", branches = ngOnInit/ngOnChanges/ngDoCheck/ngOnDestroy/CD/DI |
+
+## Animation Implementation Priority
+
+All 11 topics currently placeholder. Build in this order:
+
+### PRIORITY 1 — Build These First (highest interview value)
+
+| Topic | Visual Type | Style Reference | Key Animation |
+|---|---|---|---|
+| `ng-change-detection.js` | Swimlane (always-visible) | image copy 11 — 2 rows: Default vs OnPush | Animated dots sweep all nodes (Default) vs only marked nodes (OnPush) |
+| `ng-di-services.js` | Vertical FlowDiagram | image copy 7 — colored section per injector level | Token lookup bubbles UP the chain: Component→Module→Root→Not Found |
+| `ng-ngrx.js` | Circular FlowDiagram | image copy 9 — numbered circular flow | Action①→Reducer②→Store③→Selector④→Component⑤→Action① loop |
+| `ng-signals.js` | FlowDiagram | image copy 12 — radial branches | signal()→computed()→effect() dependency graph, set() triggers glow propagation |
+| `ng-routing-guards.js` | Vertical FlowDiagram | image copy 7 — pipeline stages | URL→CanActivate→CanActivateChild→Resolve→CanDeactivate, each guard = colored band |
+
+### PRIORITY 2 — Build Next
+
+| Topic | Visual Type | Key Animation |
+|---|---|---|
+| `ng-reactive-forms.js` | FlowDiagram | FormControl→FormGroup→Validator→status stream |
+| `ng-http-interceptors.js` | Swimlane | Request interceptors (outbound) vs Response interceptors (inbound) as 2 rows |
+| `ng-components-templates.js` | ComponentTree | Input binding→template render→Output emit cycle |
+
+### PRIORITY 3 — Build Last
+
+| Topic | Visual Type | Key Animation |
+|---|---|---|
+| `ng-directives.js` | FlowDiagram | Structural (@if/@for) vs Attribute directive lifecycle |
+| `ng-pipes.js` | FlowDiagram | Pure pipe cache → Impure pipe every CD cycle |
+| `ng-testing.js` | FlowDiagram | TestBed → component instantiate → fixture → detect changes → assert |
+
 ## Angular Topics Still to Add
 
 | Topic | Priority | Suggested Animation |

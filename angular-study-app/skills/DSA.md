@@ -6,6 +6,41 @@
 
 All DSA problems use the tracer-based OOP system. See [ANIMATIONS.md](ANIMATIONS.md) for the engine.
 
+## Visual Style References (inputs/)
+
+| Image | Apply to DSA topics |
+|---|---|
+| `inputs/image copy.png` — Green tree hierarchy (Main→Controller→Application) | **Tree problems:** BST/AVL/Trie node layout, BFS level order tree, recursion tree for DP. Use green box style for tree nodes |
+| `inputs/image copy 7.png` — Blueprint numbered callouts, colored sections | **Algorithm steps:** each phase = colored band (initialize/scan/compute/return). Numbered ① ② ③ on array cells showing active index |
+| `inputs/image copy 3.png` — Wheel: center hub + radial categories | **Pattern overview page:** center = "DSA Patterns", branches = Sliding Window/Two Pointer/Binary Search/DP/Graph/Stack/Backtracking/Greedy |
+| `inputs/image copy 12.png` — SQL mind map (dark bg, colored radial branches) | **Complexity overview:** center = "Big-O", branches = O(1)/O(logn)/O(n)/O(nlogn)/O(n²)/O(2ⁿ) with examples per branch |
+| `inputs/image copy 5.png` — Obsidian organic mind map | **Problem relationship map:** problems grouped by pattern, edges = "same technique", click → problem opens |
+
+## Visualization Style for DSA Problems
+
+Every DSA visual already uses DSAViz tracer. Apply ByteByteGo style to the **narration and phase labels**:
+
+```
+Phase labels (colored badges):         Numbered step callouts in array:
+  scan   → gray                          arr[i] shows ① badge when active
+  found  → green                         arr[j] shows ② badge
+  expand → blue                          window shows colored highlight band
+  shrink → orange
+  base   → purple (DP)
+  fill   → teal (DP)
+```
+
+Always-visible summary panel (add to each problem below the 3-panel viz):
+
+```
+┌─ PATTERN ──────────────────────────────────────┐
+│  Sliding Window — Fixed Size                   │
+│  When: contiguous subarray, fixed/variable k   │
+│  Key: expand right, shrink left, track max/min │
+│  Template: while(right < n) { ... right++; }   │
+└────────────────────────────────────────────────┘
+```
+
 ---
 
 ## Problems Built

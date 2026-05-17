@@ -53,6 +53,35 @@ Netflix Tech UI
 
 ---
 
+## Visual Style References (inputs/)
+
+| Image | Apply to Java topics |
+|---|---|
+| `inputs/image copy 11.png` — Kafka swimlane (5 colored rows, animated dots) | **Java Concurrency:** rows = Thread states (NEW/RUNNABLE/BLOCKED/WAITING/TERMINATED). Dots show thread transitions. **Virtual Threads:** rows = Platform threads (limited) vs Virtual threads (millions). **Concurrent Collections:** rows = ConcurrentHashMap/CopyOnWrite/BlockingQueue/LongAdder |
+| `inputs/image copy 7.png` — Blueprint colored section boxes, numbered callouts | **JVM Memory:** colored bands per memory region (Eden/S0/S1/OldGen/Metaspace/CodeCache/DirectBuffers). Numbered arrows show object lifecycle ①allocate→②minor GC→③promote→④major GC |
+| `inputs/image copy 8.png` — DB Scaling Cheatsheet wheel (7 strategies pie) | **GC Collectors:** center = "GC Collectors", pie segments = G1/ZGC/Shenandoah/Serial/Parallel/CMS. Each segment → mini-diagram of pause/concurrent phases |
+| `inputs/image copy 9.png` — YouTube numbered circular loop | **Spring Boot request:** circular numbered flow ①Client→②Filter Chain→③DispatcherServlet→④Controller→⑤Service→⑥Repository→⑦DB→⑧back |
+| `inputs/image copy 3.png` — Architecture wheel, center hub + radial | **Java Collections hierarchy:** center = "Collection", radial branches = List/Set/Queue/Map/Deque with implementations |
+| `inputs/image copy.png` — Green tree hierarchy | **ClassLoader chain:** Bootstrap→Extension→Application→Custom. Delegation model tree |
+| `inputs/image copy 12.png` — SQL mind map (dark bg, radial color branches) | **Java Memory Model:** center = "JMM", branches = happens-before/volatile/synchronized/atomic/reordering |
+
+## Always-Visible Swimlane Pattern for Java Topics
+
+Use ByteByteGo swimlane (like `sd-kafka-arch.js`) for topics comparing multiple variants:
+
+```
+GC Collectors topic:      3 rows (G1 / ZGC / Shenandoah) — pause phases animated
+Virtual Threads topic:    2 rows (Platform threads / Virtual threads) — scaling comparison  
+Concurrent Collections:  4 rows (already built this way in java-concurrent-collections.js)
+Lock types topic:         3 rows (synchronized / ReentrantLock / StampedLock)
+```
+
+Use `ReactViz.panel` step-by-step for single-lifecycle topics:
+```
+JVM Memory GC:   allocation→minor GC→promotion→major GC (sequential steps)
+CompletableFuture: supplyAsync→thenApply→thenCombine→exceptionally (pipeline steps)
+```
+
 # High-Value Topics To Add
 
 | Topic | Priority | Visualization |
