@@ -432,8 +432,14 @@
       if (topic.visual) {
         const mount = host.querySelector('.viz-mount');
         if (mount) {
-          try { topic.visual(mount); }
-          catch (e) { mount.innerHTML = `<div style="color:#f85149;padding:16px;font-family:monospace;font-size:12px">Visualizer error: ${e.message}</div>`; }
+          if (typeof topic.visual === 'function') {
+            // Legacy imperative Canvas
+            try { topic.visual(mount); }
+            catch (e) { mount.innerHTML = `<div style="color:#f85149;padding:16px;font-family:monospace;font-size:12px">Visualizer error: ${e.message}</div>`; }
+          } else if (window.VizEngine) {
+            // Declarative engine config
+            VizEngine.render(mount, topic.visual);
+          }
         }
       }
 
