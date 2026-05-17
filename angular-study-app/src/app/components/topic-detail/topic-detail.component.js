@@ -364,12 +364,16 @@
       const done = ProgressService.isDone(topic.id);
       const isTopicChange = topic.id !== lastTopicId;
 
-      const interviewHtml = (topic.interview || []).map(qa => `
-        <div class="qa">
-          <div class="q">Q. ${esc(qa.question)}</div>
-          <div class="a">${md(qa.answer)}</div>
-          ${qa.followUps?.length ? `<div class="followups"><strong>Follow-ups:</strong> ${qa.followUps.map(esc).join(' · ')}</div>` : ''}
-        </div>`).join('');
+      const interviewHtml = (topic.interview || []).map(qa => {
+        var q = typeof qa === 'string' ? qa : (qa.question || '');
+        var a = typeof qa === 'string' ? '' : (qa.answer || '');
+        var fu = typeof qa === 'object' && qa.followUps ? qa.followUps : [];
+        return `<div class="qa">
+          <div class="q">Q. ${esc(q)}</div>
+          ${a ? `<div class="a">${md(a)}</div>` : ''}
+          ${fu.length ? `<div class="followups"><strong>Follow-ups:</strong> ${fu.map(esc).join(' · ')}</div>` : ''}
+        </div>`;
+      }).join('');
 
       const tradeHtml = topic.tradeoffs && typeof topic.tradeoffs === 'object'
         ? `<div class="tradeoff-grid">
