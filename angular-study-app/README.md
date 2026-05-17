@@ -1,133 +1,87 @@
-# 📚 Senior SDE Study Lab
+# Senior SDE Study Lab
 
-Visual, interactive, dynamic study platform for **Java · Go · Python · Microservices · System Design**.
+Visual, interactive, dynamic study platform for **Java · Go · Python · Rust · React · Angular · Microservices · Databases · Kafka · System Design · DSA**.
 
-Built with vanilla JavaScript in Angular-inspired architecture—no build step required.
+Vanilla JavaScript, Angular-inspired architecture — no build step.
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
-# Install dependencies
-npm install
-
-# Start frontend (http://localhost:8080)
-npm run dev
-
-# Start backend agent server (http://localhost:3001)
-npm run server
+npm install          # install dependencies (first time only)
+npm run dev          # frontend at http://localhost:8080  (auto-opens browser)
+npm run server:dev   # agent backend at http://localhost:3001  (optional, auto-reload)
 ```
 
-## 📁 Project Structure
+Or use Make:
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed breakdown.
+```bash
+make install   # npm install
+make dev       # frontend only
+make server    # agent backend only
+make run       # frontend + backend together
+make stop      # kill both servers
+```
+
+## Available Scripts
+
+| Command | What it does |
+|---------|-------------|
+| `npm run dev` | Frontend — http-server port 8080, no cache, auto-open |
+| `npm run start` | Frontend — http-server port 8080, no auto-open |
+| `npm run server` | Agent backend — node server/agents/server.js |
+| `npm run server:dev` | Agent backend — auto-reload on file change |
+| `npm run lint` | ESLint fix |
+| `npm run format` | Prettier format `src/**/*.{js,css,html}` |
+
+## Project Structure
 
 ```
-public/                  # Static HTML
+index.html                        # entry point
 src/
-  ├── app.js            # Main framework
-  ├── modules/          # Features (agents, topics)
-  ├── services/         # Business logic
-  ├── styles/           # CSS
-  └── assets/           # Images/icons
-server/                  # Express backend
-config/                  # Configuration
-docs/                    # Documentation
-tests/                   # Test suite
+  app/                            # framework core (signals, DI, router, store)
+  features/                       # coder page, agent service
+  modules/topics/                 # all topic JS files
+    angular/   golang/   java/
+    python/    rust/     react/
+    databases/ kafka/    microservices/
+    sysdesign/ agents/   dsa/
+  shared/
+    dsa-viz/                      # DSA visualizer engine
+    react-viz/                    # ReactViz animation engine
+  styles/
+server/agents/server.js           # Express agent backend (port 3001)
+skills/                           # MD documentation per topic area
 ```
 
-## 🎯 Features
+## Topics
 
-- **Angular-style Mini Framework**: Signal API, DI container, components
-- **Multi-Agent System**: Specialist agents for Java, Go, Python, Microservices
-- **Study Modules**: Interactive content for each domain
-- **No Build Step**: Direct browser execution
-- **Express Backend**: Optional agent API server
+| Area | Topics |
+|------|--------|
+| Java | JVM/GC, Concurrency, Spring Boot, Streams, Collections, Virtual Threads, Locks |
+| Go | Goroutines/Channels, Context, Memory Model, Interfaces, Error Handling, Generics |
+| Python | GIL/Concurrency, Memory GC, Decorators, Type Hints, Pydantic, FastAPI, Testing |
+| Rust | Ownership, Lifetimes, Traits, Smart Pointers, Async/Tokio, Concurrency |
+| React | Hooks, Fiber, Concurrent Mode, Server Components, Performance, Router |
+| Angular | Change Detection, DI, NgRx, Signals, Routing Guards |
+| Databases | ACID, MVCC, Indexes, WAL, B-Tree/LSM, Replication, Sharding, Postgres/Mongo/Redis |
+| Kafka | Producer/Consumer, Replication/ISR, Consumer Groups, Streams, RabbitMQ, WarpStream |
+| Microservices | API Gateway, Saga, Circuit Breaker, gRPC, CQRS, Service Mesh |
+| System Design | DNS/CDN, Load Balancing, Caching, CAP, Kubernetes, Observability, Security |
+| DSA | Sliding Window, Two Pointers, DP, Backtracking, Graphs, Binary Search, Stack |
 
-## 📖 Available Topics
+## Architecture
 
-- **Java**: JVM, GC, Concurrency, Spring, Streams, Records
-- **Go**: Goroutines, Channels, Interfaces, Error Handling
-- **Python**: Async/await, Decorators, Type hints, FastAPI
-- **Microservices**: Architecture, Patterns, Communication
-- **System Design**: Scalability, Reliability, Database Design
-- **Agents**: Multi-agent orchestration, Skills registry
+### Frontend
+- `index.html` — loads all topic scripts + core framework, no bundler
+- `src/app/core/signal.js` — Angular-style signal reactivity
+- `src/app/core/injector.js` — dependency injection container
+- `src/shared/react-viz/react-viz-core.js` — ReactViz animation engine (FlowDiagram, Swimlane, ComponentTree)
 
-## 🛠️ Development
+### Backend (optional)
+- `server/agents/server.js` — Express.js, port 3001
+- Multi-agent system with skills registry
+- CORS enabled for local dev
 
-### Code Quality
-
-```bash
-npm run lint      # Fix linting issues
-npm run format    # Format with Prettier
-```
-
-### Available Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `npm run dev` | Start frontend with auto-open |
-| `npm run start` | Start frontend only |
-| `npm run server` | Start backend |
-| `npm run server:dev` | Start backend with auto-reload |
-| `npm run lint` | Fix ESLint issues |
-| `npm run format` | Format code |
-
-### Environment Variables
-
-Copy `.env.example` to `.env` and customize:
-
-```bash
-cp .env.example .env
-```
-
-## 🏗️ Architecture Highlights
-
-### Frontend Layer
-- **index.html**: Entry point in `public/`
-- **app.js**: Angular-inspired framework
-- **Modules**: Topic and agent features
-- **Services**: Reusable business logic
-- **No dependencies**: Pure vanilla JavaScript
-
-### Backend Layer (Optional)
-- **Express.js**: HTTP server
-- **Multi-Agent System**: Knowledge bases for each domain
-- **CORS**: Enabled for development
-- **Port**: 3001
-
-### Signal API (Angular 17 style)
-```javascript
-const state = signal(initial);
-state.set(newValue);
-state.subscribe((value) => doSomething(value));
-```
-
-### Dependency Injection
-```javascript
-const service = Injector.inject("ServiceName");
-```
-
-## 📋 Next Steps
-
-- [ ] Add TypeScript
-- [ ] Implement Jest tests
-- [ ] Set up Webpack/Vite build
-- [ ] Add CI/CD pipeline
-- [ ] Deploy frontend (Vercel/GitHub Pages)
-- [ ] Deploy backend (Heroku/AWS Lambda)
-
-## 📝 Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing`)
-3. Commit changes (`git commit -am 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing`)
-5. Open Pull Request
-
-## 📄 License
+## License
 
 MIT © 2025
-
----
-
-**Built with** ❤️ for senior SDE interview prep.
