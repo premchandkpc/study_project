@@ -117,6 +117,132 @@ public class OrderConsumer {
       {from:"broker2",to:"fulfillment",label:"Consume P2",detail:"Consumer 3 reads partition 2 in parallel.",type:"async"},
       {from:"broker1",to:"analytics",label:"Consume all (offset 0)",detail:"Analytics group independently reads from beginning if needed (replay).",type:"async"}
     ]
+  },
+
+  visual: function(mount) {
+    var lanes = [
+      {
+        label: 'Log Analysis',
+        color: '#58a6ff',
+        bg: 'rgba(88,166,255,0.06)',
+        delay: 0,
+        nodes: [
+          { icon: '🛒', label: 'Shopping Cart' },
+          { icon: '📦', label: 'Order Service' },
+          { icon: '💳', label: 'Payment Svc' },
+          { icon: '🟠', label: 'Kafka', kafka: true },
+          { icon: '🔍', label: 'Elastic' },
+          { icon: '📊', label: 'Kibana' },
+        ],
+        desc: 'Aggregate service logs via Kafka → index in Elasticsearch → visualize in Kibana'
+      },
+      {
+        label: 'Data Streaming\n& Recommendations',
+        color: '#a855f7',
+        bg: 'rgba(168,85,247,0.06)',
+        delay: 0.4,
+        nodes: [
+          { icon: '👆', label: 'User Clickstream' },
+          { icon: '🟠', label: 'Kafka', kafka: true },
+          { icon: '⚡', label: 'Flink' },
+          { icon: '🗄️', label: 'Data Lake' },
+          { icon: '🤖', label: 'ML Models' },
+        ],
+        desc: 'Real-time click events → Kafka → Flink aggregation → Data Lake → ML recommendations'
+      },
+      {
+        label: 'System Monitoring\n& Alerting',
+        color: '#f85149',
+        bg: 'rgba(248,81,73,0.06)',
+        delay: 0.8,
+        nodes: [
+          { icon: '🔧', label: 'Services+Agents' },
+          { icon: '🟠', label: 'Kafka', kafka: true },
+          { icon: '⚡', label: 'Flink' },
+          { icon: '🚨', label: 'Alerting' },
+        ],
+        desc: 'Service metrics via agents → Kafka → Flink stream processing → real-time alerts'
+      },
+      {
+        label: 'Change Data\nCapture (CDC)',
+        color: '#ffa657',
+        bg: 'rgba(255,166,87,0.06)',
+        delay: 1.2,
+        nodes: [
+          { icon: '🗃️', label: 'Source DB' },
+          { icon: '📜', label: 'Txn Log' },
+          { icon: '🟠', label: 'Kafka', kafka: true },
+          { icon: '🔌', label: 'Connectors' },
+          { icon: '🔍', label: 'Elastic' },
+          { icon: '🔴', label: 'Redis' },
+        ],
+        desc: 'DB transaction log (Debezium) → Kafka → connectors fan-out to Elastic/Redis/replica DBs'
+      },
+      {
+        label: 'System Migration\n(Shadow Write)',
+        color: '#3fb950',
+        bg: 'rgba(63,185,80,0.06)',
+        delay: 1.6,
+        nodes: [
+          { icon: '🔵', label: 'v1 Services' },
+          { icon: '🟠', label: 'Kafka', kafka: true },
+          { icon: '🟢', label: 'v2 Services' },
+          { icon: '✅', label: 'Reconcile' },
+        ],
+        desc: 'v1 writes to Kafka → v2 consumes in parallel → compare outputs → migrate safely with zero downtime'
+      },
+    ];
+
+    mount.innerHTML = '<style>' +
+      '#kfu-wrap{font-family:"JetBrains Mono",monospace;padding:12px;background:#0d1117;border-radius:10px;overflow:hidden}' +
+      '#kfu-wrap h3{color:#e6edf3;font-size:13px;margin:0 0 12px;text-transform:uppercase;letter-spacing:1px;opacity:.6}' +
+      '.kfu-lane{display:flex;align-items:center;margin-bottom:10px;border-radius:8px;padding:10px 14px;position:relative;overflow:hidden}' +
+      '.kfu-label{min-width:110px;font-size:10px;font-weight:700;line-height:1.3;text-transform:uppercase;letter-spacing:.5px;white-space:pre-line;padding-right:12px}' +
+      '.kfu-flow{display:flex;align-items:center;flex:1;gap:0;position:relative}' +
+      '.kfu-node{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:58px;cursor:pointer;transition:transform .2s}' +
+      '.kfu-node:hover{transform:translateY(-3px)}' +
+      '.kfu-icon{font-size:20px;line-height:1;filter:drop-shadow(0 0 6px currentColor)}' +
+      '.kfu-node-label{font-size:9px;color:#8b949e;text-align:center;white-space:nowrap;max-width:62px;overflow:hidden;text-overflow:ellipsis}' +
+      '.kfu-kafka .kfu-icon{animation:kafkaPulse 1.5s ease-in-out infinite}' +
+      '@keyframes kafkaPulse{0%,100%{filter:drop-shadow(0 0 4px #ffa657);transform:scale(1)}50%{filter:drop-shadow(0 0 12px #ffa657);transform:scale(1.12)}}' +
+      '.kfu-arrow{flex:1;position:relative;height:20px;min-width:28px;display:flex;align-items:center}' +
+      '.kfu-arrow-line{flex:1;height:2px;background:linear-gradient(90deg,transparent,currentColor,transparent);opacity:.4}' +
+      '.kfu-dot{position:absolute;width:8px;height:8px;border-radius:50%;top:50%;transform:translateY(-50%);animation:kfuDot 1.8s linear infinite}' +
+      '@keyframes kfuDot{0%{left:0;opacity:0}20%{opacity:1}80%{opacity:1}100%{left:calc(100% - 8px);opacity:0}}' +
+      '.kfu-desc{font-size:9.5px;color:#6e7681;line-height:1.4;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.05)}' +
+      '.kfu-left-bar{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px}' +
+      '.kfu-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1c2128;border:1px solid #30363d;padding:6px 8px;border-radius:6px;font-size:10px;color:#e6edf3;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s;z-index:10}' +
+      '.kfu-node:hover .kfu-tooltip{opacity:1}' +
+      '</style>' +
+      '<div id="kfu-wrap">' +
+      '<h3>Top 5 Kafka Use Cases</h3>' +
+      lanes.map(function(lane) {
+        var nodesHtml = lane.nodes.map(function(n, i) {
+          var nodeClass = 'kfu-node' + (n.kafka ? ' kfu-kafka' : '');
+          var nodeHtml = '<div class="' + nodeClass + '" style="color:' + lane.color + '">' +
+            '<div class="kfu-icon">' + n.icon + '</div>' +
+            '<div class="kfu-node-label">' + n.label + '</div>' +
+            '</div>';
+          var arrowHtml = '';
+          if (i < lane.nodes.length - 1) {
+            arrowHtml = '<div class="kfu-arrow" style="color:' + lane.color + '">' +
+              '<div class="kfu-arrow-line" style="background:' + lane.color + ';opacity:.3"></div>' +
+              '<div class="kfu-dot" style="background:' + lane.color + ';animation-delay:' + (i * 0.3 + lane.delay) + 's"></div>' +
+              '</div>';
+          }
+          return nodeHtml + arrowHtml;
+        }).join('');
+
+        return '<div class="kfu-lane" style="background:' + lane.bg + '">' +
+          '<div class="kfu-left-bar" style="background:' + lane.color + '"></div>' +
+          '<div class="kfu-label" style="color:' + lane.color + '">' + lane.label + '</div>' +
+          '<div style="flex:1">' +
+            '<div class="kfu-flow">' + nodesHtml + '</div>' +
+            '<div class="kfu-desc">' + lane.desc + '</div>' +
+          '</div>' +
+          '</div>';
+      }).join('') +
+      '</div>';
   }
 };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);

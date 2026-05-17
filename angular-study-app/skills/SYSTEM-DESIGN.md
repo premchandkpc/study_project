@@ -21,6 +21,109 @@ All architecture visualizations MUST draw from these reference images:
 | `inputs/image copy 6.png` | Circle-node mind map — dark bg, overlapping circles with icons, connection lines | Mental Map node visual style — use for node circle design + overlap physics |
 | `inputs/image copy.png` | Green tree hierarchy — Main Program → Controller → Application layers | Fallback for hierarchy views (classloader chain, DNS delegation, etc.) |
 | `inputs/Screenshot 2026-05-16 at 7.41.55 AM.png` | App UI — current topic page showing placeholder TODOs | Reminder of current state — all TODOs need real visuals |
+| `inputs/image copy 7.png` | ByteByteGo: System Design Blueprint Ultimate Guide — full mega-architecture: DNS resolution flow (root→TLD→authoritative), Load Balancing (API GW + LB + Frontend + CDN/Edge), Distributed ID generator, Resource Locking, Message Dispatcher (pub/sub), Object Storage, Processing Workers, Upload Media pipeline, Distributed Cache (in-memory), Fan-out Services (Notification/Search/Analytics/Payment) | **Master reference for full system design topics** — panel layout per layer, colored section boxes, numbered callouts, icon-per-service style |
+| `inputs/image copy 8.png` | ByteByteGo: Database Scaling Cheatsheet — central pie/wheel with 7 DB scaling strategies radiating outward: Indexing (orange), Materialized Views (green), Vertical Scaling (pink), Sharding (blue), Replication (red), Caching (yellow), Denormalization (purple). Each section has mini-diagram + description | **DB scaling topic visual reference** — use wheel layout for `sd-db-*` topics. Replicate color-per-strategy approach |
+| `inputs/image copy 9.png` | ByteByteGo: How to Design YouTube — numbered circular flow (①Upload Request → LB → ②Raw to Object Store → ③API Server saves Metadata → ④Video to Transcoding Server → ⑤Transcoded to Object Store → ⑥Notification → ⑦Metadata updated → ⑧Streaming Request via CDN → ⑨CDN fetches from Object Store). Light background, color-coded nodes (green=storage, red=cache, blue=api) | **Case study visual reference for video platform** — numbered arrows on circular/loop flow, reuse for `sd-case-video-platform.js` |
+| `inputs/image copy 10.png` | ByteByteGo: Microservice Architecture — Client (Web/Mobile/PC) → CDN → API Gateway → Domain A (Services A1/A2/A3 + DB A) + Domain B (Services B1/B2 + DB B). Side: Identity Provider ↔ API GW, Service Registry & Discovery ↔ services. Light green background sections per domain | **Microservice architecture reference** — grouped domain boxes, service registry side panel, identity provider callout. Use for `sd-microservice-design.js` |
+| `inputs/image copy 11.png` | ByteByteGo: Top 5 Kafka Use Cases — 5 horizontal swimlane rows: (1) Log Analysis: services→Kafka→Elastic→Kibana, (2) Data Streaming Recommendations: clickstream→Kafka→Flink→Data Lake→ML, (3) System Monitoring: services+agents→Kafka→Flink→Alerting, (4) CDC: source DB→transaction log→Kafka→Connectors (ES/Redis/DB)→Sinks, (5) System Migration: v1 services→Kafka→v2 services (shadow write) | **Kafka use cases reference** — horizontal swimlane per use case, color-coded rows (blue/orange/red/yellow/purple). Use for `sd-kafka-arch.js` and any Kafka topic visual |
+| `inputs/image copy 12.png` | ByteByteGo: How to Learn SQL — radial mind map on dark bg: SQL center → 6 branches: DDL (Database/Table/Constraints/View/Index + Create/Delete/Update/Rename), DQL (SELECT + FROM with all JOIN types + WHERE/GROUP BY/HAVING/ORDER BY/LIMIT), DML (INSERT/UPDATE/DELETE), DCL (GRANT/REVOKE), TCL (START/COMMIT/ROLLBACK), Operators (logical AND/OR/NOT + Update + Rename), Functions (Numeric/String/Datetime/Null), Data Types (Numeric/String/Datetime/Boolean/JSON). Color coded: DDL=brown, DQL=gold, DML=teal, DCL=blue, TCL=orange | **SQL/Database learning topic reference** — radial mind map with color-coded branches. Use for database topics visual style |
+
+---
+
+## System Design Blueprint Layout (image copy 7.png)
+
+Master reference for full-system topics. Key design decisions to copy:
+
+```
+Section boxes:        colored rounded-rect with label top-left (LOAD BALANCING, DATABASES, etc.)
+Service nodes:        icon + label + bullet-list of responsibilities inside the node
+Numbered callouts:    ① ② ③ circles on connection arrows showing request order
+Connection arrows:    bidirectional where applicable, labeled with protocol/data type
+Sub-sections:         nested boxes (e.g. "Microservices" box containing Domain A + B)
+Side callouts:        floating boxes listing features/considerations per component
+Color scheme:
+  DNS/Networking:     pink (#ff9a9a) section bg
+  Load Balancing:     light blue (#e8f4fd) section bg
+  Databases:          light purple (#f0e8fd) section bg
+  Messaging:          light yellow (#fdf8e8) section bg
+  Storage:            light green (#e8fdf0) section bg
+  Fan-out Services:   light orange (#fdf0e8) section bg
+```
+
+Apply this layout to: `sd-request-lifecycle.js`, `sd-load-balancing.js`, `sd-api-gateway.js`, all case study topics.
+
+## Database Scaling Wheel Layout (image copy 8.png)
+
+Use for all DB scaling topics. Wheel structure:
+
+```
+Center circle:  "DB Scaling Strategies" label
+7 pie segments: each segment = one strategy, different color
+Outer sections: mini-diagram + explanation paragraph per strategy
+Layout:         2-column (wheel center-left, explanations surround)
+Colors:         orange/green/pink/blue/red/yellow/purple (one per strategy)
+```
+
+Implement as: SVG pie chart with clickable segments → expands to show mini-diagram + explanation.
+
+## YouTube-style Numbered Flow (image copy 9.png)
+
+Use for all case study topics with circular/pipeline flows:
+
+```
+Node shapes:    rounded rectangles, colored by type (green=storage, red=cache, blue=api, yellow=processing)
+Numbered steps: ① ② ③ circles on arrows in sequence order
+Arrow style:    curved arrows following circular path
+Background:     light gray (#f8f9fa)
+Flow direction: clockwise circle with some cross-connections
+```
+
+Apply to: `sd-case-video-platform.js`, `sd-case-url-shortener.js`, upload/transcode pipelines.
+
+## Kafka Use Cases Swimlane Layout (image copy 11.png)
+
+Use for Kafka and messaging topics:
+
+```
+Layout:         horizontal swimlanes, one per use case
+Row colors:     alternating colored left-border (blue/orange/red/yellow/purple)
+Row label:      left side, vertical text or bold label
+Flow direction: left → right within each row
+Node icons:     service icons (Kafka logo, Elastic logo, etc.)
+Arrow style:    thick connector arrows with protocol/data label
+```
+
+Apply to: `sd-kafka-arch.js`, `sd-messaging-patterns.js`, `sd-event-driven.js`.
+
+## Microservice Domain Box Layout (image copy 10.png)
+
+Use for microservice architecture topics:
+
+```
+Domain boxes:   grouped services inside rounded colored border (green tint per domain)
+Side panels:    Identity Provider + Service Registry as floating side boxes with dotted connections
+DB per service: each domain has its own DB directly below
+Color coding:   Domain A = teal tint, Domain B = purple tint
+Client tier:    Web/Mobile/PC icons top row
+Gateway:        single API GW box between client tier and service domains
+```
+
+Apply to: `sd-microservice-design.js`, `sd-proxies-mesh.js`, `sd-security-auth.js`.
+
+## SQL Mind Map Layout (image copy 12.png)
+
+Use for database internal topics:
+
+```
+Center node:    large colored circle with subject label
+Branches:       6-8 main branches radiating, each different color
+Sub-branches:   2-3 levels deep, leaf nodes = smallest pills
+Dark bg:        #1a1a2e or #0d1117
+Connector lines: dashed colored lines matching branch color
+Node shapes:    rounded rect pills, colored bg per branch
+```
+
+Apply to: `sd-db-relational.js`, `sd-db-nosql.js`, database internals topics.
 
 ---
 
@@ -858,4 +961,610 @@ mount.innerHTML = `<style>
   @keyframes flow { 0%{left:0} 100%{left:calc(100% - 20px)} }
   .packet { position:absolute; animation: flow 2s infinite; }
 </style>...`;
+```
+
+---
+
+# DECOUPLED VISUALIZATION ENGINE ARCHITECTURE
+
+## Problem
+
+Current architecture mixes rendering, animation, state, protocol styling, business flows, hover handling, and side panels inside topic implementations. Impossible to scale once 100+ topics exist, multiple visualization modes exist, plugins/themes appear, reusable animations needed.
+
+## Full Engine Architecture
+
+```txt
+┌────────────────────────────────────────────┐
+│              Topic Definition              │
+│  (pure config only — NO rendering logic)  │
+└────────────────────────────────────────────┘
+                     │
+                     ▼
+┌────────────────────────────────────────────┐
+│            Visualization Engine            │
+│                                            │
+│  Reads topic config                        │
+│  Resolves templates                        │
+│  Resolves animations                       │
+│  Resolves protocols                        │
+│  Resolves themes                           │
+│  Resolves interactions                     │
+└────────────────────────────────────────────┘
+                     │
+                     ▼
+┌────────────────────────────────────────────┐
+│             Rendering Layer                │
+│                                            │
+│  Layered renderer                          │
+│  Mental map renderer                       │
+│  Flow renderer                             │
+│  Timeline renderer                         │
+│  Sequence renderer                         │
+└────────────────────────────────────────────┘
+                     │
+                     ▼
+┌────────────────────────────────────────────┐
+│             Runtime Systems                │
+│                                            │
+│  Animation engine                          │
+│  Event bus                                 │
+│  State manager                             │
+│  Overlay manager                           │
+│  Tooltip manager                           │
+│  Story orchestrator                        │
+└────────────────────────────────────────────┘
+```
+
+## Full Decoupled Module Structure
+
+```txt
+src/engine/
+├── core/
+│   ├── VizEngine.js
+│   ├── EventBus.js
+│   ├── StateStore.js
+│   ├── RendererRegistry.js
+│   ├── ThemeRegistry.js
+│   ├── ProtocolRegistry.js
+│   ├── AnimationRegistry.js
+│   └── PluginManager.js
+│
+├── renderers/
+│   ├── LayeredRenderer.js
+│   ├── MentalMapRenderer.js
+│   ├── FlowRenderer.js
+│   ├── TimelineRenderer.js
+│   ├── SequenceRenderer.js
+│   └── ClusterRenderer.js
+│
+├── animations/
+│   ├── packet-flow.js
+│   ├── async-dash.js
+│   ├── pulse-alert.js
+│   ├── traffic-wave.js
+│   ├── retry-bounce.js
+│   ├── kafka-stream.js
+│   ├── shard-rebalance.js
+│   └── autoscale-grow.js
+│
+├── protocols/
+│   ├── rest.protocol.js
+│   ├── grpc.protocol.js
+│   ├── websocket.protocol.js
+│   ├── kafka.protocol.js
+│   └── mqtt.protocol.js
+│
+├── themes/
+│   ├── github-dark.js
+│   ├── cyberpunk.js
+│   ├── kubernetes-blue.js
+│   ├── aws-cloud.js
+│   └── observability-neon.js
+│
+├── overlays/
+│   ├── MetricsOverlay.js
+│   ├── FailureOverlay.js
+│   ├── TrafficOverlay.js
+│   ├── LatencyOverlay.js
+│   └── SecurityOverlay.js
+│
+└── templates/
+    ├── ServiceBox.template.js
+    ├── HoverCard.template.js
+    ├── ProtocolLine.template.js
+    ├── AsyncConnector.template.js
+    ├── StoryPanel.template.js
+    └── LayerBand.template.js
+```
+
+## Golden Rule: Topics = Pure Config
+
+**BAD** — topic file contains rendering logic:
+```js
+visual: function(mount) {
+  mount.innerHTML = `<div>...`;
+}
+```
+
+**GOOD** — topic file is pure declarative config:
+```js
+visual: {
+  type: 'layered-architecture',
+  layers: [...],
+  connections: [...],
+  overlays: ['metrics', 'security'],
+  animations: ['packet-flow', 'traffic-wave'],
+  interactions: {
+    hover: true,
+    zoom: true,
+    pan: true,
+    protocolInspector: true,
+  }
+}
+```
+
+Engine decides HOW to render. Topics only describe WHAT.
+
+---
+
+# ADDITIONAL VISUALIZATION MODES
+
+| Visualization | Purpose |
+|---|---|
+| Sequence Diagram | Request lifecycle, OAuth, Saga |
+| Timeline View | Kafka/event replay, Raft, GC |
+| Cluster Topology | Kubernetes nodes/pods |
+| Network Topology | VPC/subnets/security groups |
+| Failure Simulation | Chaos engineering |
+| Replication View | DB replication lag |
+| Partition Map | Kafka/Cassandra partitions |
+| Autoscaling Simulation | HPA trigger → pod spawn |
+| Memory Layout | Redis/JVM heap regions |
+| Thread Visualization | Concurrency, deadlocks |
+| Consensus Visualization | Raft/Paxos leader election |
+| Query Planner Visualization | DB internals, EXPLAIN plan |
+| CPU Scheduling | OS scheduler, CFS |
+| TCP Packet Flow | Networking internals |
+| Retry Timeline | Circuit breaker states |
+
+## Sequence Diagram Engine
+
+Needed for: OAuth, Payment flows, Saga, WebSocket lifecycle, Kafka rebalance, gRPC calls.
+
+```txt
+Client → API GW → Auth → Redis → DB
+
+Each arrow animated sequentially.
+Responses animate backward.
+Timeouts pulse red.
+Retries bounce.
+Circuit breaker opens visually.
+```
+
+```txt
+renderers/SequenceRenderer.js
+templates/SequenceArrow.template.js
+templates/Lifeline.template.js
+```
+
+---
+
+# FAILURE SIMULATION MODE
+
+Every failure scenario needs animation. System design understanding improves most when failures are visualized.
+
+## Failure Scenarios to Animate
+
+```txt
+Redis down
+Kafka broker failure
+Network partition
+Pod crash + CrashLoopBackOff
+DB failover (primary → replica)
+Region outage (multi-region failover)
+Cache stampede / thundering herd
+Split brain
+Dead letter queue overflow
+Slow consumer lag spike
+Circuit breaker open
+Retry storm cascade
+```
+
+## Kafka Broker Failure Animation
+
+```txt
+1. Broker node flashes red
+2. Producer retries animate (bounce back)
+3. Consumer lag bar increases (red fill)
+4. Partition leader election animation
+5. ISR shrink visualization
+6. New leader highlighted green
+7. Recovery animation — lag drains
+```
+
+---
+
+# REAL-TIME METRICS OVERLAY SYSTEM
+
+Every diagram supports live metric overlays:
+
+```txt
+┌───────────────┐
+│ Order Service │
+│ CPU:  73%     │
+│ RPS:  12k     │
+│ P95:  44ms    │
+│ Err:  0.2%    │
+└───────────────┘
+```
+
+Metrics to overlay:
+- TPS / RPS
+- P50 / P95 / P99 latency
+- Error rate
+- Queue lag
+- Throughput MB/s
+- CPU %
+- Memory %
+- Partition count
+- Replica lag
+
+## Observability Visualization Topics
+
+| Topic | Visualization |
+|---|---|
+| OpenTelemetry | trace span flow |
+| Jaeger | distributed trace waterfall |
+| Prometheus | scrape → metric → alert flow |
+| Loki | log aggregation pipeline |
+| ELK | ingestion pipeline |
+| Grafana | metrics dashboard with live values |
+
+---
+
+# DISTRIBUTED SYSTEMS INTERNALS
+
+## Raft Visualization
+
+```txt
+Leader election animation
+Heartbeat packets (green dots, 150ms cadence)
+Term changes (badge increment)
+Log replication (entries move leader→follower)
+Commit index movement (blue line advances)
+Follower lag (gray bars fall behind)
+Split vote visualization (red flash, no majority)
+```
+
+## Kafka Internals Visualization
+
+```txt
+Producer batching (messages group → batch)
+Compression (batch shrinks visually)
+Partition routing (hash → bucket selection)
+ISR sync (leader → replica flow)
+Leader election (red → new green leader)
+Consumer group rebalance (partitions reassign with animation)
+Offset commit flow (consumer → broker → ack)
+```
+
+---
+
+# INTERACTIVE DEBUGGING MODE
+
+Click "Debug Production Incident" → simulates:
+- Traffic spike (RPS graph climbs)
+- Pod failures (red crash animation)
+- Retry storms (bouncing arrows multiply)
+- Thundering herd (all clients hit DB simultaneously)
+- DB saturation (connection pool maxes, new req queued)
+
+User traces:
+```txt
+Where latency increased (P99 timeline)
+Where retries exploded (retry counter on service)
+Which dependency failed (dependency graph highlight)
+How cascading failure spread (failure propagation animation)
+```
+
+---
+
+# ACCESSIBILITY SYSTEM
+
+```txt
+Keyboard navigation     — tab through nodes, Enter to select
+Screen reader labels    — aria-label on all SVG nodes/edges
+Reduced motion mode     — respects prefers-reduced-motion
+Colorblind-safe palette — deuteranopia / protanopia variants
+Zoom accessibility      — browser zoom must not break layout
+Mobile responsiveness   — touch gestures for pan/zoom
+High contrast mode      — toggle in toolbar
+```
+
+---
+
+# PERFORMANCE OPTIMIZATION
+
+## Virtual Rendering
+
+Render only visible nodes:
+```txt
+1000 nodes in graph
+Only 80 rendered in viewport
+Lazy-load as camera pans
+```
+
+## Animation Scheduler
+
+Prevent 500 simultaneous animations:
+```js
+requestAnimationFrame batching
+frame throttling (60fps cap)
+offscreen pause (IntersectionObserver)
+priority queues (foreground > background animations)
+```
+
+## Incremental Graph Rendering
+
+Mental map progressively renders:
+```txt
+Initial:    20 nearby nodes + immediate neighbors
+Zoom out:   load 100 more at reduced detail
+Pan:        lazy-load neighbors as they enter viewport
+```
+
+---
+
+# PLUGIN SYSTEM
+
+Allows cloud packs, kafka packs, kubernetes packs, ai/ml packs without touching engine core.
+
+```js
+window.VizPlugins.register({
+  id: 'kafka-deep-plugin',
+  nodes: [...],
+  overlays: [...],
+  animations: [...],
+  stories: [...],
+  interviewQuestions: [...],
+});
+```
+
+---
+
+# STORY ORCHESTRATOR SYSTEM
+
+Story engine with scene-by-scene orchestration:
+
+```txt
+Scene 1 → client request (zoom to client node)
+Scene 2 → gateway auth (packet flow client → GW → Auth)
+Scene 3 → kafka publish (order svc → kafka topic)
+Scene 4 → consumer lag (lag meter fills)
+Scene 5 → retry storm (multiple bouncing arrows)
+Scene 6 → DLQ recovery (failed msgs → DLQ → alert)
+```
+
+Each scene:
+- Camera movement (pan + zoom to focus area)
+- Narration text (bottom bar)
+- Node highlight (glow on active nodes)
+- Animation trigger (packet flow, pulse, etc.)
+- Sound hook (future: subtle click/beep)
+
+---
+
+# CAMERA SYSTEM (Mental Map)
+
+```txt
+Pan         — click+drag or two-finger swipe
+Zoom        — scroll wheel or pinch
+Auto-focus  — animates camera to selected node (300ms ease)
+Node tracking — camera follows active story node
+Cinematic transitions — smooth cubic-bezier camera moves
+Mini-map    — bottom-right corner overview
+```
+
+---
+
+# ADVANCED KUBERNETES VISUALIZATION
+
+| Topic | Visualization |
+|---|---|
+| Scheduler | pod placement animation (node scoring + binding) |
+| HPA | autoscaling timeline (metric → threshold → scale) |
+| Service Mesh | sidecar packet flow (envoy intercept) |
+| Ingress | request routing (host/path rules) |
+| DNS | CoreDNS lookup flow (service → ClusterIP) |
+| CNI | pod networking (veth pairs, overlay) |
+| etcd | raft consensus (leader heartbeat + log) |
+| StatefulSets | persistent identity (pod-0 → pod-1 → pod-2) |
+| DaemonSets | node-wide deployment (one pod per node) |
+| Operators | reconciliation loop (desired vs actual) |
+
+---
+
+# AI/ML SYSTEM DESIGN TOPICS TO ADD
+
+| File | Topic |
+|---|---|
+| `sd-rag-system.js` | RAG Architecture |
+| `sd-vector-db.js` | Vector Databases |
+| `sd-embedding-flow.js` | Embedding Pipeline |
+| `sd-model-serving.js` | LLM Serving |
+| `sd-gpu-scheduling.js` | GPU Scheduling |
+| `sd-feature-store.js` | Feature Store |
+| `sd-stream-inference.js` | Real-time ML inference |
+| `sd-agent-orchestration.js` | AI Agents |
+| `sd-finetuning-pipeline.js` | Fine-tuning pipeline |
+
+## Vector DB Visualization Flow
+
+```txt
+Document chunking → Embedding generation → ANN indexing
+→ Vector similarity search → Reranking
+→ Context assembly → LLM response
+```
+
+---
+
+# MISSING CRITICAL SYSTEM DESIGN TOPICS
+
+## Networking
+- TCP Internals (3-way handshake, congestion control, BBR)
+- QUIC (0-RTT, multiplexed streams, no HOL blocking)
+- NAT (connection tracking, SNAT/DNAT)
+- VPN (tunnel types, overlay)
+- BGP (AS path, route propagation)
+- TLS Handshake (1.2 vs 1.3, 0-RTT)
+- WebRTC (ICE, STUN, TURN, DTLS)
+- Service Discovery (DNS-based, Consul, etcd)
+
+## Distributed Systems
+- Raft (leader election, log replication, split vote)
+- Paxos (prepare/promise/accept/commit)
+- Gossip Protocol (epidemic spread, convergence)
+- Leader Election (ZooKeeper ZAB, bully algorithm)
+- Vector Clocks (causality, happens-before)
+- CRDTs (conflict-free merge, op-based vs state-based)
+- Distributed Transactions (2PC, 3PC, saga vs XA)
+
+## Database Internals
+- MVCC (snapshot isolation, version chains)
+- WAL (write-ahead log, crash recovery)
+- Replication (semi-sync, async, group replication)
+- Query Planner (EXPLAIN, index selection, join order)
+- B+ Trees (insert/split, range scan)
+- LSM Trees (MemTable → SSTable → compaction)
+- Bloom Filters (false positive rate, space tradeoff)
+
+## Kubernetes Deep Dive
+- kube-proxy (iptables vs IPVS)
+- CNI (Flannel/Calico/Cilium packet path)
+- CSI (volume provisioning lifecycle)
+- CRI (containerd shim, OCI spec)
+- etcd internals (raft + BoltDB)
+- Scheduler internals (filter + score + bind)
+
+## Messaging
+- Kafka internals (log segments, index files, zero-copy)
+- RabbitMQ exchanges (direct/topic/fanout/headers)
+- Pulsar architecture (BookKeeper ledgers, cursor)
+- CDC pipelines (Debezium → Kafka → consumers)
+
+## Scalability Patterns
+- Backpressure (token bucket, leaky bucket, windowed)
+- Bulkheads (thread pool isolation, semaphore)
+- Retry storms (exponential backoff, jitter, max attempts)
+- Token bucket algorithm (refill rate, burst)
+- Leaky bucket algorithm (output rate, overflow)
+
+## Security
+- mTLS (mutual cert exchange, SPIFFE SVID)
+- OAuth2 internals (authorization code + PKCE flow)
+- JWT attack vectors (alg:none, weak secrets, expiry)
+- Zero Trust (never trust, always verify, microsegmentation)
+- SPIFFE/SPIRE (workload identity, attestation)
+
+## Cloud
+- Multi-region failover (active-active vs active-passive)
+- Active-active (global load balancing, conflict resolution)
+- DR architecture (RTO/RPO, runbooks, gamedays)
+- Edge computing (edge functions, latency reduction)
+
+---
+
+# EVENT BUS & STATE MANAGEMENT
+
+## Event Bus (all interactions use central bus)
+
+```js
+EventBus.emit('NODE_SELECTED', node);
+EventBus.emit('PROTOCOL_HOVER', protocol);
+EventBus.emit('FAILURE_TRIGGERED', failure);
+EventBus.emit('STORY_NEXT_SCENE');
+EventBus.emit('OVERLAY_TOGGLE', 'metrics');
+EventBus.emit('CAMERA_FOCUS', nodeId);
+```
+
+Prevents tight coupling between renderer ↔ overlay ↔ story ↔ controls.
+
+## State Store (centralized reactive)
+
+```js
+const store = {
+  selectedNode:      null,
+  hoveredProtocol:   null,
+  activeOverlay:     'metrics',
+  storyScene:        0,
+  focusedPath:       [],
+  animationState:    'playing',  // 'playing'|'paused'|'stopped'
+  cameraTransform:   { x: 0, y: 0, scale: 1 },
+  filterClusters:    new Set(['all']),
+};
+```
+
+---
+
+# MOBILE/TABLET RESPONSIVE MODE
+
+- Collapsible layer bands (tap header to collapse)
+- Touch gestures (pinch zoom, two-finger pan)
+- Simplified node rendering (icon only, no sublabels)
+- Compact overlays (metric badge only, no full card)
+- Mini-map navigation (bottom-right corner)
+- Hamburger controls (floating toolbar collapses to icon)
+
+---
+
+# FUTURE ADVANCED FEATURES
+
+| Feature | Purpose |
+|---|---|
+| Time-travel replay | Replay production incidents step by step |
+| Multiplayer collaborative mode | Shared learning sessions |
+| Voice narration | Guided architecture tour with TTS |
+| AI explainer | Dynamic node explanation via LLM |
+| Production metrics import | Real Grafana/Prometheus data |
+| Kubernetes live cluster sync | Real cluster topology via kubeconfig |
+| AWS infra import | Visualize deployed infra from AWS API |
+| GitHub architecture generation | Auto diagrams from repo structure |
+| OpenAPI import | Generate service graph from spec |
+| Terraform visualization | Infra map from .tf files |
+| Kafka topic explorer | Stream topology from broker |
+| JVM memory animation | Live GC visualization |
+| Redis eviction simulator | LFU/LRU animation with real data |
+
+---
+
+# GAME ENGINE RENDER LOOP
+
+Needed for large graphs (1000+ nodes):
+
+```js
+function gameLoop() {
+  updatePhysics();      // force-directed positions
+  updateAnimations();   // packet flows, pulses
+  processEvents();      // click, hover, keyboard
+  render();             // only dirty nodes
+  requestAnimationFrame(gameLoop);
+}
+```
+
+Massively smoother than scattered DOM timers. Prevents jank under load.
+
+---
+
+# FINAL GOLDEN PRINCIPLE
+
+```txt
+TOPICS SHOULD DESCRIBE.
+ENGINE SHOULD RENDER.
+
+Never mix rendering, animation, DOM, business logic,
+or topic data inside topic files.
+
+Pure declarative configs only.
+
+This is the key scalability architecture principle.
 ```

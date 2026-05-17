@@ -875,3 +875,384 @@ Learning becomes experiential.
 That creates deep intuition instead of memorization.
 
 ---
+
+# 6. Whiteboard Canvas Engine
+
+Directory: `src/shared/whiteboard/`
+
+## Files
+
+```txt
+whiteboard-core.js
+whiteboard-canvas.js
+whiteboard-node.js
+whiteboard-edge.js
+whiteboard-packets.js
+whiteboard-draw.js
+whiteboard-sticky.js
+whiteboard-grid.js
+whiteboard-minimap.js
+whiteboard-timeline.js
+```
+
+## API
+
+```js
+const board = Whiteboard.Canvas.create(mount, {
+  zoom: true,
+  pan: true,
+  minimap: true,
+  infinite: true,
+  darkMode: true,
+  smoothScroll: true,
+  grid: true,
+});
+```
+
+Visual feel: Miro infinite board + Figma smooth zoom + Linear animations + glassmorphism panels + floating controls.
+
+## Node Types
+
+```txt
+service · gateway · database · cache · kafka · lambda
+kubernetes · pod · external-api · ai-agent · vector-db
+queue · cdn · dns · browser · mobile
+```
+
+## Node Animations
+
+| Animation | When |
+|---|---|
+| Glow pulse | active/selected node |
+| Border beam | traffic flowing through node |
+| Traffic flash | request arrives |
+| Queue shaking | queue full / backpressure |
+| CPU spike effect | high load metric |
+| Failure blinking | error / crash state |
+| Auto scaling pulse | new replica spawning |
+| Packet highlight | packet passing through |
+
+## Packet Flow API
+
+```js
+Whiteboard.PacketFlow.animate(board, {
+  from: 'browser',
+  to: 'cdn',
+  label: 'GET /feed',
+  protocol: 'HTTPS',  // colors from PROTOCOL_COLORS
+  speed: 2,
+  repeat: true,
+});
+```
+
+Packet effects: moving dot, beam trail, retry loop, circuit-breaker-open fade, slow-latency stretch, failure drop, queue buffer stack.
+
+---
+
+# 7. Cinematic System Design Engine
+
+Directory: `src/shared/sysdesign-cinematic/`
+
+## Files
+
+```txt
+cinematic-core.js
+cinematic-camera.js
+cinematic-focus.js
+cinematic-traffic.js
+cinematic-failure.js
+cinematic-scale.js
+cinematic-load.js
+```
+
+## CineFlow API
+
+```js
+CineFlow.play({
+  title: 'Instagram Feed Request',
+  scenes: [
+    { zoomTo: 'mobile-client', narration: 'User opens Instagram' },
+    { animatePacket: { from: 'client', to: 'cdn', protocol: 'HTTPS' } },
+    { animatePacket: { from: 'cdn', to: 'api-gateway', protocol: 'HTTPS' } },
+    { zoomTo: 'feed-service', narration: 'Feed service builds personalized feed' },
+    { animatePacket: { from: 'feed-service', to: 'redis', protocol: 'TCP', label: 'GET feed:user:123' } },
+    { animatePacket: { from: 'redis', to: 'feed-service', label: 'MISS → fallback to DB' } },
+    { zoomTo: 'cassandra', narration: 'Timeline fetched from Cassandra' },
+  ],
+});
+```
+
+Camera effects: smooth cubic-bezier pan/zoom, focus glow, dim non-active nodes.
+Traffic effects: packet moving dot, load spike bar, failure explosion, retry storm bouncing arrows, queue congestion fill, slow-motion debug.
+
+---
+
+# 8. Interactive Timeline Playback Engine
+
+Needed for: browser lifecycle, Kubernetes scheduling, Kafka rebalance, Raft election, JVM GC, Lambda cold starts, TCP/IP, CDN routing, DNS resolution.
+
+```js
+Timeline.play([
+  { t: 0,   action: 'dns-lookup',       label: 'DNS resolve api.example.com' },
+  { t: 50,  action: 'tcp-handshake',    label: 'SYN → SYN-ACK → ACK' },
+  { t: 80,  action: 'tls-negotiation',  label: 'TLS 1.3 handshake (1-RTT)' },
+  { t: 130, action: 'http-request',     label: 'GET /feed HTTP/2' },
+  { t: 180, action: 'server-process',   label: 'Auth → cache lookup → DB' },
+  { t: 300, action: 'response',         label: '200 OK (compressed, 82ms)' },
+]);
+```
+
+Timeline renders as horizontal swimlane. Each action = labeled block at time offset. Active action = highlighted. Scrubbar to jump to any point.
+
+---
+
+# 9. Failure Simulation Animation System
+
+Each failure scenario has a defined animation sequence. Reference for building failure overlays.
+
+## Kafka Broker Failure
+
+```txt
+1. Broker box → flash red (#f85149)
+2. Producer arrows → bounce back (rejected)
+3. Consumer lag bar → fill orange → red
+4. Partition leader election → dotted circle animation around replicas
+5. ISR badge → shrinks (3 → 2 → 1)
+6. New leader → highlight green
+7. Lag bar → drain (recovery)
+```
+
+## Thundering Herd
+
+```txt
+1. Cache node → gray flash (MISS)
+2. All client arrows → simultaneous rush to DB
+3. DB connection pool → red fill (saturated)
+4. New requests → queue up (stacking dots)
+5. DB response → slow (stretched timeline bar)
+6. Cache → fill green (warming)
+7. New requests → hit cache (fast green arrows)
+```
+
+## Circuit Breaker Open
+
+```txt
+1. Downstream service → error flash red
+2. Error counter → increment rapidly
+3. Circuit breaker node → open animation (switch icon flips)
+4. New requests → deflect to fallback (dashed arrow)
+5. Fallback → response (cached/static)
+6. Timer → counts down (half-open attempt)
+7. Probe request → success → circuit closes (switch flips back)
+```
+
+## Pod CrashLoopBackOff
+
+```txt
+1. Pod box → red flash + "OOMKilled" label
+2. Restart counter badge → increments
+3. Backoff timer → exponential delay bar grows
+4. Traffic → rerouted to healthy pods (balancer arrows shift)
+5. After N restarts → pod dims with "CrashLoopBackOff" badge
+6. Alert fires → Prometheus → Alertmanager → PagerDuty
+```
+
+---
+
+# 10. Production Monitoring Layer
+
+## MetricsPanel API
+
+```js
+MetricsPanel.render(el, {
+  rps:      1240,
+  latency:  { p50: '12ms', p95: '44ms', p99: '120ms' },
+  cpu:      67,     // percent
+  memory:   58,     // percent
+  errors:   0.2,    // percent
+  queueLag: 4500,   // ms
+});
+```
+
+Renders as overlay card on service node. Live update via setInterval or WebSocket.
+
+## Overlay Types
+
+| Overlay | Shows |
+|---|---|
+| MetricsOverlay | RPS, latency, CPU, memory, error rate |
+| FailureOverlay | error flash, crash state, retry count |
+| TrafficOverlay | packet flow rate, hot paths highlighted |
+| LatencyOverlay | P50/P95/P99 heat bands on connections |
+| SecurityOverlay | mTLS badge, auth flow, VPC boundary |
+
+---
+
+# 11. Kubernetes Simulation Engine
+
+## Pod Lifecycle Animation
+
+```txt
+Pending → (scheduler scores nodes) → Scheduled → (kubelet pulls image) → Running → (probe passes) → Ready
+```
+
+## Autoscaling Animation (HPA)
+
+```txt
+1. CPU metric bar → climbs past threshold (70%)
+2. HPA → trigger (badge pulses)
+3. New pod → spawns (box appears, scales from 0 to 1)
+4. Scheduler → binds to node (arrow to node)
+5. Readiness probe → passes (green check)
+6. Load balancer → includes new pod (traffic arrows fan out)
+7. CPU per pod → drops (green bars fall)
+```
+
+## Rolling Deployment Animation
+
+```txt
+v1 pods: [■ ■ ■ ■] → terminate one
+v2 pod:  [■ ■ ■ □] [▣] spawning
+         [■ ■ □ □] [▣ ■] v2 ready
+         [□ □ □ □] [■ ■ ■ ■] complete
+```
+
+---
+
+# 12. AI/LLM Visualization Layer
+
+## Token Generation Animation
+
+```txt
+Prompt tokens → input embedding matrix (animated cells fill)
+Attention → heat map (colored attention weights matrix)
+FFN layer → transform (node activations)
+Output logits → softmax → sampled token → appears in stream
+```
+
+## RAG Pipeline Animation
+
+```txt
+Query → embedding model → query vector
+query vector → ANN search → top-K chunks (similarity scores)
+chunks + query → LLM context assembly
+LLM → streamed response (token by token)
+```
+
+## Agent Tool Call Animation
+
+```txt
+LLM → plan step (thought bubble)
+plan → tool call (arrow to tool node)
+tool → result (arrow back)
+LLM → integrate result (glow)
+loop: next step OR final answer
+```
+
+---
+
+# 13. Animation CSS Standards
+
+Global animation CSS classes. Apply consistently across all visualizations.
+
+```css
+/* Glow: active/selected nodes */
+.viz-glow {
+  box-shadow:
+    0 0 10px rgba(88,166,255,.5),
+    0 0 20px rgba(88,166,255,.3);
+}
+
+/* Floating: idle interactive nodes */
+.viz-float {
+  animation: vizFloat 4s ease-in-out infinite;
+}
+@keyframes vizFloat {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+/* Pulse: health check / heartbeat */
+.viz-pulse {
+  animation: vizPulse 1.8s infinite;
+}
+@keyframes vizPulse {
+  0%   { transform: scale(1);    opacity: .9; }
+  50%  { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1);    opacity: .9; }
+}
+
+/* Beam: traffic flowing through node */
+.viz-beam {
+  position: relative;
+  overflow: hidden;
+}
+.viz-beam::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -120%;
+  width: 120%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
+  animation: vizBeam 2s infinite;
+}
+@keyframes vizBeam { 100% { left: 120%; } }
+
+/* Error flash: failure state */
+.viz-error-flash {
+  animation: vizErrorFlash 0.3s ease-in-out 3;
+}
+@keyframes vizErrorFlash {
+  0%   { background: inherit; }
+  50%  { background: rgba(248,81,73,.4); }
+  100% { background: inherit; }
+}
+
+/* Packet dot: moving along SVG path */
+.viz-packet {
+  offset-path: path('M0,0 L300,0');  /* override per connection */
+  animation: vizPacket 1.5s linear infinite;
+}
+@keyframes vizPacket { 100% { offset-distance: 100%; } }
+
+/* Async dash: Kafka/queue connections */
+.viz-async-dash {
+  stroke-dasharray: 8 4;
+  animation: vizDash 1s linear infinite;
+}
+@keyframes vizDash { 100% { stroke-dashoffset: -24; } }
+
+/* Scale spawn: new pod/replica appearing */
+.viz-spawn {
+  animation: vizSpawn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes vizSpawn {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* Lag fill: queue lag indicator */
+.viz-lag-fill {
+  transition: width 0.5s ease-in-out, background 0.5s;
+}
+/* js: el.style.width = lagPercent + '%'; */
+/* js: el.style.background = lagPercent > 80 ? '#f85149' : '#ffa657'; */
+```
+
+---
+
+# 14. Animation Orchestration Priorities
+
+When multiple animations compete, apply priority queue:
+
+| Priority | Animation type | Notes |
+|---|---|---|
+| 1 (highest) | Failure/error flash | Always visible, interrupts others |
+| 2 | User-selected node highlight | Interactive feedback |
+| 3 | Story/cinematic scenes | Narrated flows |
+| 4 | Packet flow (foreground) | Active connections |
+| 5 | Metrics overlay update | Live values |
+| 6 | Packet flow (background) | Idle connections |
+| 7 (lowest) | Float/pulse/idle | Ambient animations, pause when offscreen |
+
+Use `IntersectionObserver` to pause priority 6-7 when node off-screen. Use `requestAnimationFrame` batching — never `setInterval` for visual animations.
