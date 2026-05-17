@@ -43,6 +43,13 @@ Netflix Tech UI
 | `java-webflux.js` | WebFlux/Reactor | Marble diagrams |
 | `java-records-sealed-patterns.js` | Records/Sealed | Pattern matching |
 | `java-jit-performance.js` | JIT Compilation | C1/C2 flow |
+| `java-virtual-threads.js` | Virtual Threads (Project Loom) | FlowDiagram: VT mount/unmount on carrier threads |
+| `java-string-pool.js` | String Pool Internals | FlowDiagram: pool lookup, heap vs pool objects |
+| `java-locks.js` | synchronized vs ReentrantLock | FlowDiagram: monitor, deadlock, condition queues |
+| `java-completablefuture.js` | CompletableFuture Pipeline | FlowDiagram: async stages, fan-out, error handling |
+| `java-gc-collectors.js` | GC Collectors: G1, ZGC, Shenandoah | FlowDiagram: region layout, colored pointers, pause phases |
+| `java-collection-types.js` | Java Collection Types Deep Dive | ComponentTree: hierarchy + FlowDiagram: ArrayList resize, Set buckets, PriorityQueue heap, Map comparison |
+| `java-concurrent-collections.js` | Concurrent Collections | FlowDiagram: ConcurrentHashMap bucket CAS, CopyOnWrite snapshot, BlockingQueue producer/consumer, LongAdder stripes |
 
 ---
 
@@ -50,12 +57,12 @@ Netflix Tech UI
 
 | Topic | Priority | Visualization |
 |---|---|---|
-| Virtual Threads (Loom) | HIGH | Carrier thread mounting |
-| String Pool | HIGH | Heap + intern pool |
-| CompletableFuture | HIGH | Async DAG |
+| ~~Virtual Threads (Loom)~~ | ~~HIGH~~ | ✅ Built |
+| ~~String Pool~~ | ~~HIGH~~ | ✅ Built |
+| ~~CompletableFuture~~ | ~~HIGH~~ | ✅ Built |
+| ~~Synchronized vs Lock~~ | ~~HIGH~~ | ✅ Built |
+| ~~G1/ZGC/Shenandoah~~ | ~~HIGH~~ | ✅ Built |
 | Java Memory Model | HIGH | Happens-before |
-| Synchronized vs Lock | HIGH | Contention flow |
-| G1/ZGC/Shenandoah | HIGH | Region GC |
 | ForkJoinPool | HIGH | Work stealing |
 | Bytecode & JVM | HIGH | Java → Bytecode → JIT |
 | Hibernate Internals | HIGH | Session/cache |
