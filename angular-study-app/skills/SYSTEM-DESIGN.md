@@ -1615,3 +1615,703 @@ Pure declarative configs only.
 
 This is the key scalability architecture principle.
 ```
+
+
+
+# SYSTEM_DESIGN.md
+
+# 🏗️ System Design Architecture
+
+> System design principles, scalability models, distributed architecture patterns, and infrastructure planning for the Interactive Engineering Learning Platform.
+
+---
+
+# 🌟 Vision
+
+Build a platform capable of supporting:
+
+- interactive engineering learning
+- realtime simulations
+- AI-assisted tutoring
+- distributed visualizations
+- semantic knowledge search
+- collaborative learning
+- large-scale topic rendering
+
+with production-grade scalability.
+
+---
+
+# 🎯 Primary Goals
+
+The platform architecture should support:
+
+```text
+Scalability
+Realtime Interaction
+Low Latency
+High Availability
+Distributed Processing
+AI Workloads
+Visualization Rendering
+```
+
+---
+
+# 🧠 System Design Philosophy
+
+The platform is designed as:
+
+```text
+Knowledge Infrastructure
++
+Visualization Platform
++
+Simulation Engine
++
+AI Learning System
+```
+
+rather than a traditional static website.
+
+---
+
+# 🔥 High-Level System Architecture
+
+```text
+                           ┌──────────────────┐
+                           │      Users       │
+                           └────────┬─────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │        CDN          │
+                         └────────┬────────────┘
+                                  │
+                                  ▼
+                      ┌──────────────────────────┐
+                      │     Frontend Client      │
+                      └──────────┬───────────────┘
+                                 │
+                                 ▼
+                    ┌────────────────────────────┐
+                    │        API Gateway         │
+                    └──────────┬─────────────────┘
+                               │
+       ┌───────────────────────┼────────────────────────┐
+       ▼                       ▼                        ▼
+┌──────────────┐      ┌────────────────┐      ┌────────────────┐
+│ Topic Service│      │ Visualization  │      │   AI Service   │
+└──────────────┘      └────────────────┘      └────────────────┘
+       │                       │                        │
+       ▼                       ▼                        ▼
+┌──────────────┐      ┌────────────────┐      ┌────────────────┐
+│ PostgreSQL   │      │ Redis Cache   │      │ Vector Database │
+└──────────────┘      └────────────────┘      └────────────────┘
+```
+
+---
+
+# 🧩 Core Services
+
+# 1. API Gateway
+
+# Responsibilities
+
+- request routing
+- authentication
+- rate limiting
+- API aggregation
+- request logging
+- security filtering
+
+---
+
+# Recommended Technologies
+
+| Area | Technology |
+|---|---|
+| Gateway | Kong |
+| Alternative | Envoy |
+| Auth | JWT/OAuth2 |
+
+---
+
+# Example Request Flow
+
+```text
+Client Request
+   ↓
+API Gateway
+   ↓
+Authentication
+   ↓
+Rate Limiting
+   ↓
+Service Routing
+```
+
+---
+
+# 2. Topic Service
+
+# Responsibilities
+
+- topic management
+- markdown parsing
+- topic metadata
+- dependency graph
+- topic search
+- content rendering
+
+---
+
+# Topic Service Architecture
+
+```text
+Topic Request
+   ↓
+Topic Loader
+   ↓
+Schema Parser
+   ↓
+Renderer
+   ↓
+Frontend Response
+```
+
+---
+
+# Database Design
+
+## Tables
+
+### topics
+
+```sql
+CREATE TABLE topics (
+  id UUID PRIMARY KEY,
+  title TEXT,
+  category TEXT,
+  difficulty TEXT
+);
+```
+
+---
+
+### topic_relations
+
+```sql
+CREATE TABLE topic_relations (
+  source_topic UUID,
+  target_topic UUID
+);
+```
+
+---
+
+# 3. Visualization Service
+
+# Responsibilities
+
+- animation orchestration
+- graph rendering
+- runtime simulations
+- packet movement
+- execution replay
+
+---
+
+# Visualization Flow
+
+```text
+Simulation Event
+   ↓
+Event Engine
+   ↓
+Animation Timeline
+   ↓
+Frontend Rendering
+```
+
+---
+
+# Planned Features
+
+- replay system
+- realtime simulation
+- event injection
+- speed controls
+- failure simulation
+
+---
+
+# 4. AI Service
+
+# Responsibilities
+
+- semantic search
+- AI tutoring
+- interview simulation
+- debugging assistance
+- architecture review
+
+---
+
+# AI Service Architecture
+
+```text
+User Query
+   ↓
+Embedding Generation
+   ↓
+Vector Search
+   ↓
+Context Retrieval
+   ↓
+LLM
+   ↓
+AI Response
+```
+
+---
+
+# AI Databases
+
+| Database | Purpose |
+|---|---|
+| Qdrant | Vector embeddings |
+| PostgreSQL | Metadata |
+| Redis | AI caching |
+| ElasticSearch | Search |
+
+---
+
+# 5. Search Service
+
+# Responsibilities
+
+- full-text search
+- semantic search
+- topic recommendations
+- autocomplete
+- ranking
+
+---
+
+# Search Flow
+
+```text
+Query
+   ↓
+ElasticSearch
+   ↓
+Semantic Ranking
+   ↓
+Results
+```
+
+---
+
+# 6. Analytics Service
+
+# Responsibilities
+
+- learning analytics
+- topic engagement
+- simulation metrics
+- AI interaction tracking
+
+---
+
+# Metrics Examples
+
+- topic completion
+- learning progression
+- simulation usage
+- AI usage
+- replay frequency
+
+---
+
+# ⚡ Event-Driven Architecture
+
+# Goal
+
+Use asynchronous systems for scalability.
+
+---
+
+# Event Flow
+
+```text
+User Action
+   ↓
+Kafka Event
+   ↓
+Analytics Consumer
+   ↓
+Metrics Storage
+```
+
+---
+
+# Planned Kafka Usage
+
+| Use Case | Purpose |
+|---|---|
+| analytics | learning metrics |
+| AI workflows | async AI tasks |
+| notifications | realtime alerts |
+| collaboration | shared sessions |
+| simulation events | distributed runtime events |
+
+---
+
+# 🗄️ Database Architecture
+
+# PostgreSQL
+
+Used for:
+
+- user data
+- topic metadata
+- relationships
+- configurations
+
+---
+
+# Redis
+
+Used for:
+
+- caching
+- sessions
+- realtime state
+- rate limiting
+
+---
+
+# ElasticSearch
+
+Used for:
+
+- search
+- indexing
+- autocomplete
+
+---
+
+# Qdrant
+
+Used for:
+
+- embeddings
+- semantic search
+- AI retrieval
+
+---
+
+# S3 Storage
+
+Used for:
+
+- diagrams
+- assets
+- animation files
+- uploaded content
+
+---
+
+# ☁️ Infrastructure Design
+
+# Planned Cloud Architecture
+
+```text
+CloudFront CDN
+        ↓
+Frontend App
+        ↓
+Kubernetes Cluster
+        ↓
+Microservices
+        ↓
+Databases
+```
+
+---
+
+# Kubernetes Deployment
+
+```text
+Ingress
+   ↓
+API Gateway
+   ↓
+Services
+   ↓
+Pods
+```
+
+---
+
+# Planned Kubernetes Components
+
+| Component | Purpose |
+|---|---|
+| Ingress | routing |
+| HPA | autoscaling |
+| ConfigMaps | configuration |
+| Secrets | credentials |
+| StatefulSets | databases |
+
+---
+
+# 🚀 Scalability Strategy
+
+# Horizontal Scaling
+
+Services should scale independently.
+
+Example:
+
+```text
+AI Service → High CPU scaling
+Visualization → GPU scaling
+Search → Query scaling
+```
+
+---
+
+# Caching Strategy
+
+# Redis Layers
+
+| Layer | Purpose |
+|---|---|
+| topic cache | fast rendering |
+| AI response cache | reduce costs |
+| visualization cache | replay optimization |
+
+---
+
+# CDN Strategy
+
+Use CDN for:
+
+- static assets
+- diagrams
+- animation bundles
+- topic media
+
+---
+
+# 🔒 Security Architecture
+
+# Authentication
+
+- JWT
+- OAuth2
+- role-based access
+
+---
+
+# API Security
+
+- rate limiting
+- request validation
+- CORS protection
+- bot protection
+
+---
+
+# Data Security
+
+- encrypted storage
+- secrets management
+- secure AI APIs
+
+---
+
+# 📊 Observability Architecture
+
+# Logging
+
+| Tool | Purpose |
+|---|---|
+| Loki | logs |
+| FluentBit | log shipping |
+
+---
+
+# Metrics
+
+| Tool | Purpose |
+|---|---|
+| Prometheus | metrics |
+| Grafana | dashboards |
+
+---
+
+# Tracing
+
+| Tool | Purpose |
+|---|---|
+| OpenTelemetry | tracing |
+| Jaeger | distributed tracing |
+
+---
+
+# Example Trace
+
+```text
+Frontend
+ ↓
+Gateway
+ ↓
+AI Service
+ ↓
+Vector Search
+ ↓
+LLM
+```
+
+---
+
+# 🧠 Knowledge Graph Architecture
+
+# Goal
+
+Connect engineering concepts.
+
+---
+
+# Example Graph
+
+```text
+Threads
+   ↓
+Executors
+   ↓
+CompletableFuture
+   ↓
+Reactive Systems
+```
+
+---
+
+# Topic Dependency Engine
+
+Used for:
+
+- learning paths
+- recommendations
+- prerequisite validation
+
+---
+
+# 🎬 Realtime Collaboration Design
+
+# Future Features
+
+- shared whiteboards
+- collaborative simulations
+- pair debugging
+- architecture review rooms
+
+---
+
+# Collaboration Flow
+
+```text
+User Action
+   ↓
+WebSocket Event
+   ↓
+Collaboration Service
+   ↓
+Realtime Broadcast
+```
+
+---
+
+# 🤖 AI System Scaling
+
+# Challenges
+
+- embedding generation
+- LLM latency
+- vector search
+- context assembly
+
+---
+
+# Optimization Strategies
+
+- response caching
+- semantic chunking
+- reranking
+- prompt compression
+
+---
+
+# 🔥 Failure Handling
+
+# Planned Resilience Features
+
+- retries
+- circuit breakers
+- fallback responses
+- DLQ
+- graceful degradation
+
+---
+
+# Example Failure Flow
+
+```text
+AI Service Failure
+   ↓
+Fallback Cache
+   ↓
+Static Explanation
+```
+
+---
+
+# 🧪 Future Advanced Systems
+
+# Planned Features
+
+- distributed simulation engine
+- multiplayer engineering sandbox
+- AI-generated visualizations
+- execution replay engine
+- architecture validation engine
+
+---
+
+# 🚀 Long-Term System Vision
+
+Build:
+
+```text
+Interactive Engineering Knowledge Infrastructure
+```
+
+capable of supporting:
+
+- millions of learning interactions
+- realtime engineering simulations
+- AI-assisted education
+- collaborative architecture learning
+
+---
+
+# 💡 Core System Design Principle
+
+```text
+Every engineering concept
+should be explorable
+as a living interactive system.
+```

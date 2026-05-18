@@ -1,701 +1,573 @@
-# 🚀 Study Lab — Enterprise Interactive Learning Platform
+# ARCHITECTURE.md
 
-> Interactive engineering learning platform with:
->
-> - 🎨 Visual simulations
-> - 🤖 AI multi-agent orchestration
-> - ⚡ Signal-based reactivity
-> - 🧠 Interview-driven learning
-> - 🧩 Modular architecture
-> - 📚 Runnable Java/Go/Python examples
-> - 🕹️ Interactive animations
-> - ☁️ Enterprise scalability
+# 🏗️ Study Project Architecture
+
+> Deep-dive architecture documentation for the Interactive Engineering Learning Platform.
 
 ---
 
-# 🌍 Vision
+# 🌟 Architecture Vision
 
-Study Lab is NOT a notes website.
-
-It is:
+The platform is designed as a:
 
 ```text
-Interactive Engineering Brain Simulator
+Modular
+Interactive
+Visualization-Driven
+AI-Powered
+Engineering Knowledge System
 ```
 
-Users should:
+The system focuses on:
 
-- SEE systems working
-- PLAY with internals
-- BREAK systems intentionally
-- WATCH failures happen
-- UNDERSTAND production tradeoffs
-- LEARN visually + interactively
-
----
-
-# 🧠 Core Learning Philosophy
-
-```text
-Toy Analogy
-    ↓
-Visual Animation
-    ↓
-Interactive State Changes
-    ↓
-Runnable Code
-    ↓
-Production Scenario
-    ↓
-Interview Questions
-    ↓
-Deep Internals
-```
+- Deep technical learning
+- Interactive visualizations
+- Runtime execution simulations
+- AI-assisted understanding
+- Scalable topic rendering
+- Distributed systems education
 
 ---
 
-# 🏗️ High-Level System Architecture
+# 🔥 High-Level Architecture
 
 ```text
-┌──────────────────────────────────────────────────────┐
-│                  CLIENT BROWSER                      │
-│                                                      │
-│  ┌──────────────────────────────────────────────┐    │
-│  │              UI Layer                        │    │
-│  │                                              │    │
-│  │  Web Components                              │    │
-│  │  Interactive Simulations                     │    │
-│  │  Animated Flows                              │    │
-│  │  Interview Mode                              │    │
-│  │  Multi-Tab Visualizations                    │    │
-│  └──────────────────────────────────────────────┘    │
-│                                                      │
-│  ┌──────────────────────────────────────────────┐    │
-│  │         Reactive Runtime Layer               │    │
-│  │                                              │    │
-│  │  Signals                                     │    │
-│  │  Dependency Injection                        │    │
-│  │  Event Bus                                   │    │
-│  │  Simulation Engine                           │    │
-│  └──────────────────────────────────────────────┘    │
-└──────────────────────────┬───────────────────────────┘
-                           │
-                           ▼
-┌──────────────────────────────────────────────────────┐
-│                EXPRESS BACKEND                       │
-│                                                      │
-│  Agent APIs                                          │
-│  Content APIs                                        │
-│  Interview APIs                                      │
-│  Vector Search                                       │
-│  RAG Pipelines                                       │
-│                                                      │
-└──────────────────────────┬───────────────────────────┘
-                           │
-                           ▼
-┌──────────────────────────────────────────────────────┐
-│                  AI AGENT LAYER                      │
-│                                                      │
-│  Java Expert Agent                                  │
-│  Go Runtime Agent                                   │
-│  Python ML Agent                                    │
-│  Kubernetes Agent                                   │
-│  System Design Agent                                │
-│  DSA Agent                                          │
-│                                                      │
-└──────────────────────────────────────────────────────┘
+                    ┌─────────────────────┐
+                    │      Browser        │
+                    └─────────┬───────────┘
+                              │
+                              ▼
+                 ┌─────────────────────────┐
+                 │    Frontend Engine      │
+                 └─────────────────────────┘
+                              │
+         ┌────────────────────┼────────────────────┐
+         ▼                    ▼                    ▼
+ ┌──────────────┐    ┌────────────────┐    ┌────────────────┐
+ │ Topic Engine │    │ Visual Engine  │    │ AI Assistant   │
+ └──────────────┘    └────────────────┘    └────────────────┘
+         │                    │                    │
+         ▼                    ▼                    ▼
+ ┌──────────────┐    ┌────────────────┐    ┌────────────────┐
+ │ Topic Files  │    │ Animations     │    │ AI Backend     │
+ └──────────────┘    └────────────────┘    └────────────────┘
 ```
 
 ---
 
-# 📂 Enterprise Directory Structure
+# 📦 Current Project Structure
 
 ```text
-study-lab/
+study_project/
 │
-├── public/
+├── frontend/
 │   ├── index.html
-│   ├── favicon.ico
-│   └── robots.txt
-│
-├── src/
-│   │
 │   ├── app.js
-│   │
-│   ├── core/
-│   │   ├── injector.js
-│   │   ├── signal.js
-│   │   ├── router.js
-│   │   ├── event-bus.js
-│   │   ├── lifecycle.js
-│   │   └── app-config.js
-│   │
-│   ├── services/
-│   │   ├── SimulationService.js
-│   │   ├── RenderService.js
-│   │   ├── TopicsService.js
-│   │   ├── InterviewService.js
-│   │   └── AnimationService.js
-│   │
-│   ├── modules/
-│   │   │
-│   │   ├── java/
-│   │   │   ├── hashmap/
-│   │   │   ├── jvm/
-│   │   │   ├── threads/
-│   │   │   └── gc/
-│   │   │
-│   │   ├── golang/
-│   │   │   ├── goroutines/
-│   │   │   ├── channels/
-│   │   │   └── scheduler/
-│   │   │
-│   │   ├── kubernetes/
-│   │   │   ├── pods/
-│   │   │   ├── scheduler/
-│   │   │   ├── networking/
-│   │   │   └── autoscaling/
-│   │   │
-│   │   ├── dsa/
-│   │   │   ├── sliding-window/
-│   │   │   ├── dp/
-│   │   │   ├── graphs/
-│   │   │   └── trees/
-│   │   │
-│   │   └── agents/
-│   │       ├── orchestrator.js
-│   │       ├── skills-registry.js
-│   │       ├── agent-widget.js
-│   │       └── agents/
-│   │           ├── java-agent.js
-│   │           ├── golang-agent.js
-│   │           ├── sysdesign-agent.js
-│   │           └── dsa-agent.js
-│   │
-│   ├── visuals/
-│   │   ├── animations/
-│   │   ├── palettes/
-│   │   ├── components/
-│   │   └── templates/
-│   │
 │   ├── styles/
-│   │   ├── global.css
-│   │   ├── animations.css
-│   │   └── themes.css
-│   │
-│   └── assets/
-│       ├── icons/
-│       ├── fonts/
-│       └── images/
+│   └── modules/
 │
-├── server/
-│   ├── api/
-│   ├── agents/
-│   ├── rag/
-│   ├── vector-db/
-│   └── server.js
+├── topics/
+│   ├── java/
+│   ├── golang/
+│   ├── kafka/
+│   ├── kubernetes/
+│   ├── ai/
+│   └── system-design/
+│
+├── backend/
+│   ├── server.js
+│   └── ai-agent/
 │
 ├── docs/
-│   ├── VISUAL-DESIGN.md
-│   ├── ARCHITECTURE.md
-│   ├── CONTRIBUTING.md
-│   └── TOPIC-STANDARDS.md
 │
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
-│
-├── package.json
-├── .env
-├── .gitignore
-└── README.md
+└── assets/
 ```
 
 ---
 
-# ⚡ Frontend Runtime Architecture
+# 🧠 Core Architectural Principles
 
-## Bootstrap Flow
+## 1. Modular Topic System
+
+Every topic is isolated and independently renderable.
+
+Example:
 
 ```text
-Browser Opens index.html
-          │
-          ▼
-Load app.js
-          │
-          ▼
-Initialize Dependency Injector
-          │
-          ▼
-Register Global Services
-          │
-          ▼
-Initialize Signal Store
-          │
-          ▼
-Initialize Router
-          │
-          ▼
-Load Feature Modules
-          │
-          ▼
-Register Web Components
-          │
-          ▼
-Render Initial UI
-          │
-          ▼
-Attach Simulation Engines
+Java
+Kafka
+Kubernetes
+Redis
+System Design
 ```
+
+Each module contains:
+
+- explanations
+- diagrams
+- animations
+- examples
+- interview questions
+- production scenarios
 
 ---
 
-# 🧠 Signal-Based Reactivity
+## 2. Visualization-First Learning
 
-## WHY Signals?
+Traditional platforms use static text.
 
-Traditional DOM flow:
+This platform prioritizes:
 
 ```text
-State Changes
-    ↓
-Manual DOM Manipulation
-    ↓
-Bug Risk
+Animation
+Execution Flow
+Realtime Visualization
+Interactive Simulation
 ```
-
-Signal flow:
-
-```text
-State Changes
-    ↓
-Subscribers Auto Triggered
-    ↓
-Reactive UI Update
-```
-
----
-
-## Signal Implementation
-
-```javascript
-function signal(initialValue) {
-  let value = initialValue;
-  const subscribers = new Set();
-
-  return {
-    get() {
-      return value;
-    },
-
-    set(newValue) {
-      value = newValue;
-
-      subscribers.forEach((fn) => {
-        fn(value);
-      });
-    },
-
-    subscribe(fn) {
-      subscribers.add(fn);
-
-      return () => subscribers.delete(fn);
-    },
-  };
-}
-```
-
----
-
-# 🧩 Dependency Injection Architecture
-
-## Injector Implementation
-
-```javascript
-const Injector = (() => {
-  const services = new Map();
-
-  return {
-    provide(name, instance) {
-      services.set(name, instance);
-    },
-
-    inject(name) {
-      if (!services.has(name)) {
-        throw new Error(`Service ${name} not found`);
-      }
-
-      return services.get(name);
-    },
-  };
-})();
-```
-
----
-
-# 🎨 Visual Simulation Engine
-
-## Core Philosophy
-
-```text
-Every Concept
-    =
-Visual Simulation
-```
-
-NOT:
-
-```text
-Wall of Text
-```
-
----
-
-# SimulationService
-
-```javascript
-class SimulationService {
-  constructor(steps = []) {
-    this.steps = steps;
-    this.current = 0;
-    this.subscribers = [];
-  }
-
-  step() {
-    if (this.current < this.steps.length - 1) {
-      this.current++;
-      this.notify();
-    }
-  }
-
-  reset() {
-    this.current = 0;
-    this.notify();
-  }
-
-  play(interval = 1000) {
-    this.timer = setInterval(() => {
-      this.step();
-    }, interval);
-  }
-
-  subscribe(fn) {
-    this.subscribers.push(fn);
-  }
-
-  notify() {
-    const state = this.steps[this.current];
-
-    this.subscribers.forEach((fn) => fn(state));
-  }
-}
-```
-
----
-
-# 🤖 Multi-Agent AI Architecture
-
-## Agent Flow
-
-```text
-User Question
-      │
-      ▼
-Orchestrator
-      │
-      ├── Java Agent
-      ├── Kubernetes Agent
-      ├── DSA Agent
-      ├── Golang Agent
-      └── System Design Agent
-              │
-              ▼
-      Knowledge Retrieval
-              │
-              ▼
-      Best Response Generated
-```
-
----
-
-# Skills Registry
-
-```javascript
-const skillsRegistry = {
-  java: ["jvm", "gc", "multithreading", "spring"],
-
-  golang: ["goroutines", "channels", "grpc"],
-
-  kubernetes: ["pods", "scheduler", "ingress"],
-};
-```
-
----
-
-# 🧠 Topic Learning Structure
-
-Every topic MUST include:
-
-- ELI8 analogy
-- Interactive visualization
-- Runnable code
-- Real-world example
-- Failure scenarios
-- Interview questions
-- Complexity analysis
-- Production gotchas
-
----
-
-# 📚 Example Topic Structure
-
-```text
-HashMap Topic
-│
-├── L1 → ELI8 Toy Analogy
-├── L2 → Internal Mechanism
-├── L3 → Collision Failures
-├── L4 → JVM Bucket Treeification
-│
-├── Scenario A → Happy Path
-├── Scenario B → Collision
-├── Scenario C → Concurrent Issue
-│
-├── Visual Animation
-├── Runnable Java Code
-├── Runnable Go Code
-├── Interview Q&A
-└── Production Gotchas
-```
-
----
-
-# ⚙️ Interactive Learning Rules
-
-Every topic MUST support:
-
-| Feature             | Required |
-| ------------------- | -------- |
-| Visual Simulation   | ✅       |
-| Step Controls       | ✅       |
-| Play/Pause          | ✅       |
-| Reset               | ✅       |
-| Failure Scenario    | ✅       |
-| Comparison Mode     | ✅       |
-| Interview Questions | ✅       |
-| Runnable Code       | ✅       |
-| Complexity Analysis | ✅       |
-| Production Story    | ✅       |
-
----
-
-# ☕ Java Visualization Standards
-
-Every Java topic MUST animate:
-
-- JVM stack/heap
-- GC mark & sweep
-- Thread lifecycle
-- Deadlocks
-- HashMap collisions
-- String pool
-- Volatile memory sync
-- Exceptions stack unwinding
-
----
-
-# 👦 8th-Grade Learning Rules
-
-Always explain using toy analogies FIRST.
 
 Examples:
 
-| Concept      | Analogy                |
-| ------------ | ---------------------- |
-| Thread       | McDonald's worker      |
-| synchronized | One register at a time |
-| HashMap      | Dictionary tabs        |
-| GC           | Janitor cleaning toys  |
-| Stack        | Plate pile             |
-| Queue        | Movie ticket line      |
-| Interface    | Job description        |
-| Class        | Actual worker          |
+- Kafka message movement
+- Kubernetes pod scheduling
+- JVM garbage collection
+- Redis cache eviction
 
 ---
 
-# 🐳 Docker Architecture
+## 3. Execution-Based Understanding
 
-## Frontend Dockerfile
-
-```dockerfile
-FROM nginx:alpine
-
-COPY ./public /usr/share/nginx/html
-
-EXPOSE 80
-```
-
----
-
-## Backend Dockerfile
-
-```dockerfile
-FROM node:20
-
-WORKDIR /app
-
-COPY package*.json ./
-
-RUN npm install
-
-COPY . .
-
-EXPOSE 3001
-
-CMD ["npm", "run", "server"]
-```
-
----
-
-# ☸️ Kubernetes Deployment Flow
+The system teaches:
 
 ```text
-Developer Pushes Code
-        │
-        ▼
-GitHub Actions Pipeline
-        │
-        ▼
-Docker Image Build
-        │
-        ▼
-Push to ECR/DockerHub
-        │
-        ▼
-Kubernetes Deployment Update
-        │
-        ▼
-Rolling Update Begins
-        │
-        ▼
-Pods Replaced One-by-One
-        │
-        ▼
-Traffic Switched Safely
+What happens internally
+step-by-step
+during runtime.
+```
+
+Instead of:
+
+```text
+Theory only
 ```
 
 ---
 
-# ☁️ Production Cloud Architecture
+# 🎬 Frontend Architecture
+
+# Frontend Responsibilities
+
+The frontend handles:
+
+- topic rendering
+- navigation
+- visualization rendering
+- animations
+- state management
+- interactive simulations
+- AI chat interaction
+
+---
+
+# Current Frontend Flow
 
 ```text
-                CloudFront CDN
-                       │
-                       ▼
-                Frontend Hosting
-             (Vercel / Netlify)
-                       │
-                       ▼
-                 API Gateway
-                       │
-        ┌──────────────┴──────────────┐
-        ▼                             ▼
-   Express API                 AI Agent API
-        │                             │
-        ▼                             ▼
- PostgreSQL                    Vector Database
-        │                             │
-        └──────────────┬──────────────┘
-                       ▼
-                    Redis Cache
+Browser
+   ↓
+index.html
+   ↓
+app.js
+   ↓
+Topic Loader
+   ↓
+Renderer
+   ↓
+DOM Updates
 ```
 
 ---
 
-# 🚀 Future Enterprise Roadmap
-
-## Phase 1
-
-- Vanilla JS
-- Web Components
-- Signals
-- Multi-Agent Routing
-
----
-
-## Phase 2
-
-- TypeScript
-- Jest Testing
-- API Integration
-- Better State Management
-
----
-
-## Phase 3
-
-- Docker
-- Kubernetes
-- Authentication
-- RBAC
-- AI Streaming
-- Redis
-- PostgreSQL
-
----
-
-## Phase 4
-
-- RAG Pipelines
-- Vector Database
-- Autonomous Agents
-- Semantic Search
-- Agent Memory
-- LLM Orchestration
-
----
-
-# 🎯 Final Summary
-
-Study Lab combines:
+# Future Frontend Architecture
 
 ```text
-Angular Concepts
-+
-Signal Reactivity
-+
-Web Components
-+
-AI Agent Routing
-+
+Frontend
+│
+├── Core Engine
+│   ├── Router
+│   ├── State Manager
+│   ├── Event Bus
+│   └── Rendering Engine
+│
+├── Visualization Engine
+│   ├── Graph Renderer
+│   ├── Animation Timeline
+│   ├── Packet Simulation
+│   └── Runtime Simulator
+│
+├── Topic Engine
+│   ├── Topic Loader
+│   ├── Markdown Parser
+│   ├── Topic Registry
+│   └── Dependency Graph
+│
+└── AI Layer
+    ├── Chat UI
+    ├── Semantic Search
+    └── AI Explanations
+```
+
+---
+
+# 🎨 Visualization Engine
+
+# Goal
+
+Transform engineering concepts into:
+
+```text
+Interactive visual learning experiences
+```
+
+---
+
+# Visualization Types
+
+## 1. Flow Visualizations
+
+Example:
+
+```text
+Client
+ ↓
+Gateway
+ ↓
+Service
+ ↓
+Kafka
+ ↓
+Worker
+```
+
+---
+
+## 2. Runtime Simulations
+
+Examples:
+
+- Kafka rebalance
+- Thread scheduling
+- Distributed locking
+- Kubernetes autoscaling
+
+---
+
+## 3. Interactive Graphs
+
+Examples:
+
+- service dependency graphs
+- network topology
+- architecture diagrams
+
+---
+
+# Animation Pipeline
+
+```text
+Topic Event
+   ↓
+Animation Queue
+   ↓
+Timeline Engine
+   ↓
+Renderer
+   ↓
+DOM / Canvas Update
+```
+
+---
+
+# 🧩 Topic Engine
+
+# Purpose
+
+The Topic Engine manages:
+
+- loading topics
+- parsing topic content
+- rendering visualizations
+- dependency management
+- learning progression
+
+---
+
+# Topic Flow
+
+```text
+Topic Selected
+   ↓
+Topic Loader
+   ↓
+Schema Parser
+   ↓
+Renderer
+   ↓
+Visualization Injection
+   ↓
+Interactive UI
+```
+
+---
+
+# Topic Structure
+
+Example:
+
+```js
+{
+  id: "kafka-intro",
+  title: "Kafka Fundamentals",
+  difficulty: "Intermediate",
+
+  concepts: [],
+  visualizations: [],
+  codeExamples: [],
+  interviewQuestions: [],
+  productionScenarios: []
+}
+```
+
+---
+
+# 🤖 AI Architecture
+
+# AI Goals
+
+The AI layer provides:
+
+- concept explanations
+- architecture guidance
+- debugging assistance
+- interview simulation
+- semantic topic search
+
+---
+
+# Current AI Layer
+
+```text
+Frontend
+  ↓
+Simple Prompt API
+  ↓
+Basic AI Responses
+```
+
+---
+
+# Future AI Architecture
+
+```text
+Topic Docs
+   ↓
+Chunking
+   ↓
+Embeddings
+   ↓
+Vector Database
+   ↓
+Retriever
+   ↓
+LLM
+   ↓
+Generated Explanation
+```
+
+---
+
+# Planned AI Features
+
+## AI Tutor
+
+- explain concepts
+- generate examples
+- simplify topics
+
+---
+
+## AI Interviewer
+
+- ask questions
+- evaluate answers
+- generate follow-ups
+
+---
+
+## AI Architecture Reviewer
+
+Detect:
+
+- SPOFs
+- scaling issues
+- retry problems
+- bottlenecks
+
+---
+
+# ⚡ Backend Architecture
+
+# Current Backend
+
+```text
+Express Server
+   ↓
+Static APIs
+   ↓
+Topic Responses
+```
+
+---
+
+# Future Backend Architecture
+
+```text
+API Gateway
+   ↓
+Topic Service
+   ↓
+Visualization Service
+   ↓
+AI Service
+   ↓
+Search Service
+   ↓
+Analytics Service
+```
+
+---
+
+# Planned Services
+
+| Service | Purpose |
+|---|---|
+| Topic Service | Manage topic content |
+| AI Service | AI orchestration |
+| Search Service | Semantic search |
+| Visualization Service | Animation rendering |
+| Analytics Service | User learning analytics |
+| Auth Service | Authentication |
+
+---
+
+# 🗄️ Database Architecture
+
+# Planned Databases
+
+| Database | Purpose |
+|---|---|
+| PostgreSQL | Metadata & users |
+| Redis | Caching |
+| ElasticSearch | Full-text search |
+| Qdrant | Vector embeddings |
+| S3 | Assets & diagrams |
+
+---
+
+# ⚡ Event-Driven Architecture
+
+Future architecture will use:
+
+```text
+Kafka
+RabbitMQ
+Event Streams
+```
+
+for:
+
+- analytics
+- AI workflows
+- simulations
+- user events
+- realtime collaboration
+
+---
+
+# ☁️ Infrastructure Architecture
+
+# Planned Cloud Stack
+
+| Area | Technology |
+|---|---|
+| Cloud | AWS |
+| Containers | Docker |
+| Orchestration | Kubernetes |
+| CI/CD | GitHub Actions |
+| Monitoring | Prometheus + Grafana |
+| Logging | Loki |
+| CDN | CloudFront |
+
+---
+
+# 🚀 Scalability Goals
+
+The platform should eventually support:
+
+- thousands of topics
+- realtime simulations
+- concurrent visualizations
+- AI-assisted tutoring
+- collaborative learning
+- distributed execution environments
+
+---
+
+# 🔥 Future Architectural Evolution
+
+# Phase 1 — Static Learning
+
+```text
+Topic Rendering
+Simple Visuals
+Static Explanations
+```
+
+---
+
+# Phase 2 — Interactive Learning
+
+```text
+Animations
+Execution Flows
 Interactive Simulations
-+
-Interview Learning
-+
-Enterprise Architecture
-+
-Production Visualizations
 ```
-
-into one platform for:
-
-- Interview preparation
-- Deep engineering learning
-- System design mastery
-- Production architecture understanding
-- Interactive visual education
-- AI-assisted explanations
 
 ---
 
-# 🔥 Golden Rule
+# Phase 3 — Intelligent Learning
 
 ```text
-DON'T JUST EXPLAIN.
+AI Tutor
+Semantic Search
+Adaptive Learning
+```
 
-SIMULATE.
-VISUALIZE.
-ANIMATE.
-INTERACT.
+---
+
+# Phase 4 — Engineering Knowledge OS
+
+```text
+Realtime System Simulators
+AI Architecture Assistant
+Distributed Learning Graph
+Interactive Engineering Sandbox
+```
+
+---
+
+# 💡 Core Architectural Goal
+
+```text
+Transform engineering education
+from static reading
+into interactive system understanding.
 ```
