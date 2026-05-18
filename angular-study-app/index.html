@@ -61,6 +61,31 @@
 <!-- Coder feature -->
 <script src="src/features/coder/coder.component.js"></script>
 
+<!-- ── Runtime Architecture Layer (load order matters) ──────────────────────
+     1. color-system   — semantic palette + CSS vars (no deps)
+     2. events         — EVENTS constants
+     3. event-bus      — central pub/sub
+     4. state-store    — layered signals (depends: App.signal, EventBus, EVENTS)
+     5. replay-engine  — timeline record/playback
+     6. simulation-module — base class for all sims
+     7. websocket-client  — reconnecting WS
+     8. layout-engine  — topology layout + collision detection
+     9. canvas-engine  — infinite pan/zoom canvas
+    10. packet-engine  — packet animation over canvas
+    11. metrics-collector — telemetry aggregation
+ ──────────────────────────────────────────────────────────────────────────-->
+<script src="src/core/color-system.js"></script>
+<script src="src/runtime/events.js"></script>
+<script src="src/runtime/event-bus.js"></script>
+<script src="src/state/state-store.js"></script>
+<script src="src/replay/replay-engine.js"></script>
+<script src="src/simulations/simulation-module.js"></script>
+<script src="src/infrastructure/websocket-client.js"></script>
+<script src="src/visualizations/layout-engine.js"></script>
+<script src="src/visualizations/canvas-engine.js"></script>
+<script src="src/visualizations/packet-engine.js"></script>
+<script src="src/observability/metrics-collector.js"></script>
+
 <!-- VizEngine — declarative visualization engine -->
 <script src="src/engine/utils/canvas-utils.js"></script>
 <script src="src/engine/viz-engine.js"></script>
@@ -89,6 +114,11 @@
     <script src="src/modules/topics/java/java-gc-collectors.js"></script>
     <script src="src/modules/topics/java/java-collection-types.js"></script>
     <script src="src/modules/topics/java/java-concurrent-collections.js"></script>
+    <script src="src/modules/topics/java/java-memory-model.js"></script>
+    <script src="src/modules/topics/java/java-forkjoin-workstealing.js"></script>
+    <script src="src/modules/topics/java/java-classloader.js"></script>
+    <script src="src/modules/topics/java/java-spring-transactions.js"></script>
+    <script src="src/modules/topics/java/java-hibernate-internals.js"></script>
     <script src="src/modules/topics/golang/go-goroutines-channels.js"></script>
     <script src="src/modules/topics/golang/go-memory-model-sync.js"></script>
     <script src="src/modules/topics/golang/go-interfaces-embedding.js"></script>
