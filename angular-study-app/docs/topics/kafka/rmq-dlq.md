@@ -1,6 +1,7 @@
 # RabbitMQ Dead Letter Queues
 
 ## Quick Facts
+
 - Area: Kafka and Messaging
 - Tag: Reliability
 - Source: `src/modules/topics/kafka/rmq-dlq.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 <div style="font-family:monospace;color:#cdd9e5;max-width:860px">
   <h2 style="color:#f59134;margin-bottom:6px">Dead Letter Queues (DLQ)</h2>
   <p style="color:#768390;margin-bottom:18px">Messages that can't be delivered go to a <em style="color:#f59134">Dead Letter Exchange</em> -> routed to a DLQ. Think of it as a morgue for failed messages.</p>
@@ -58,6 +60,7 @@ channel.assertExchange('dlx.payment', 'direct', { durable: true });
 // Dead letter queue - bound to DLX
 channel.assertQueue('payment.dlq', { durable: true });
 channel.bindQueue('payment.dlq', 'dlx.payment', 'payment.dead');</pre>
+
   </div>
 
   <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px">
@@ -72,15 +75,18 @@ channel.assertQueue('payment.retry', {
 });
 
 // On nack - send to retry queue
-channel.nack(msg, false, false);                   // requeue=false -> DLX
+channel.nack(msg, false, false); // requeue=false -> DLX
 // DLX routes to retry queue, waits 5s, re-publishes to work queue</pre>
+
   </div>
 </div>
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Producer"]
@@ -95,6 +101,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Producer
@@ -113,6 +120,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -127,13 +135,16 @@ Flow steps:
 5. Sink/DLQ
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How to implement exponential backoff with RabbitMQ?
 
 2. What triggers dead-lettering - all three reasons?
@@ -143,11 +154,12 @@ _No code example configured._
 4. Difference between classic and quorum queue dead-lettering guarantees?
 
 ## Trade-offs
+
 DLQ pros: no message loss, retry visibility, debugging. Cons: operational overhead, DLQ must be monitored, retry pattern adds latency. Alternative: idempotent consumer + discard.
 
 ## Gotchas
+
 - DLX on DLQ = infinite loop
 - x-death count can reset on routing key change
 - Per-message expiration must be string not number
 - DLQ not monitored = silent message loss
-

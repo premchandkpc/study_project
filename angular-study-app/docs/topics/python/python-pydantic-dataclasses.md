@@ -1,6 +1,7 @@
 # Pydantic v2, dataclasses & Data Validation
 
 ## Quick Facts
+
 - Area: Python
 - Tag: Pydantic
 - Source: `src/modules/topics/python/python-pydantic-dataclasses.js`
@@ -8,7 +9,9 @@
 - Visual coverage: generated diagrams only
 
 ## Concept
+
 **Pydantic v2** rewrites validation in Rust (`pydantic-core`) - 5-50x faster than v1. Core concepts:
+
 - **`BaseModel`**: auto-validates on construction; `model_validate`, `model_dump`, `model_json_schema`.
 - **`Field`**: metadata - constraints, aliases, defaults, `exclude`.
 - **`@field_validator`, `@model_validator`**: custom validation at field or model level.
@@ -17,9 +20,11 @@
 - **`TypeAdapter`**: validate arbitrary types without a model class.
 
 ## Why It Matters
+
 Pydantic is used by FastAPI, LangChain, AWS CDK, and hundreds of data pipelines for runtime validation of external data. Incorrect validation of untrusted input (APIs, Kafka messages, CSV files) is a security and reliability risk. Pydantic v2's Rust core makes it viable even in tight loops.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Caller"]
@@ -34,6 +39,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Caller
@@ -52,6 +58,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -65,6 +72,7 @@ Flow steps:
 5. Result/test
 
 ## Example
+
 ```python
 from datetime import datetime
 from decimal import Decimal
@@ -74,7 +82,7 @@ from pydantic import (
     ConfigDict, computed_field, TypeAdapter
 )
 
-#  Reusable annotated type 
+#  Reusable annotated type
 PositiveMoney = Annotated[Decimal, Field(gt=0, decimal_places=2, max_digits=10)]
 
 class OrderLine(BaseModel):
@@ -108,11 +116,11 @@ class CreateOrder(BaseModel):
             raise ValueError(f"order total {total} exceeds limit")
         return self
 
-#  TypeAdapter: validate without a model 
+#  TypeAdapter: validate without a model
 ListOfInts = TypeAdapter(list[int])
 data = ListOfInts.validate_python(["1", "2", "3"])  # coerces strings
 
-#  ORM mode: from SQLAlchemy/Django ORM objects 
+#  ORM mode: from SQLAlchemy/Django ORM objects
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
@@ -123,10 +131,12 @@ Notes:
 Use `model_config = ConfigDict(strict=True)` when you don't want Pydantic to coerce types (e.g., string -> int). Use `model_dump(mode="json")` to get JSON-serializable dicts for Redis/Kafka.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What changed between Pydantic v1 and v2?
    Answer: V2 rewrites the validation core in Rust - 5-50x faster. API changes: `@validator` -> `@field_validator` (class method, explicit `mode='before'|'after'`), `orm_mode` -> `from_attributes`, `.dict()` -> `.model_dump()`, `.json()` -> `.model_dump_json()`. Validator order changed. `@root_validator` -> `@model_validator`. Many v1 workarounds (custom `__get_validators__`) have cleaner v2 equivalents via `Annotated`.
    Follow-ups: How do you migrate a large codebase from v1 to v2?; What is a Pydantic TypeAdapter?
@@ -136,12 +146,15 @@ Use `model_config = ConfigDict(strict=True)` when you don't want Pydantic to coe
    Follow-ups: How do you handle lazy-loaded relationships?; Pydantic vs marshmallow?
 
 ## Trade-offs
+
 Pros:
+
 - Rust core: sub-microsecond validation for hot paths.
 - JSON Schema auto-generation - OpenAPI integration.
 - Annotated types compose reusable constraints.
 
 Cons:
+
 - v1 -> v2 migration is significant (breaking API changes).
 - Frozen models add immutability overhead for large nested objects.
 - Complex cross-field validators can be hard to test in isolation.
@@ -150,5 +163,5 @@ When to use:
 **Pydantic** for validating external data (API, Kafka, CSV). **dataclasses** for internal data structures that don't need validation. **TypedDict** for lightweight dict typing without runtime overhead.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

@@ -1,6 +1,7 @@
 # Redis - Data Structures, Patterns & Cluster
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Caching
 - Source: `src/modules/topics/sysdesign/sd-redis-patterns.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 Redis is an in-memory data structure store - far more than a simple cache.
 
 **Core data structures and use cases:**
@@ -27,6 +29,7 @@ Redis is an in-memory data structure store - far more than a simple cache.
 **Leaderboard:** ZADD leaderboard score userId + ZREVRANGE leaderboard 0 9 -> top 10 in O(log N)
 
 **Sliding window rate limit:**
+
 ```lua
 -- Atomic Lua script for sliding window
 local key = KEYS[1]
@@ -48,9 +51,11 @@ return 0
 **Redis Cluster:** 16384 hash slots distributed across nodes. Consistent hashing. Automatic failover via gossip protocol. Minimum 3 primary + 3 replica nodes.
 
 ## Why It Matters
+
 Redis is the most commonly used cache and real-time data structure in backend systems. Every platform (Airbnb, Twitter, GitHub) uses it for rate limiting, sessions, and pub/sub.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Client"]
@@ -76,6 +81,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as App
@@ -93,6 +99,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -107,6 +114,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```java
 // Redis patterns with Spring Data Redis + Lettuce
 @Component
@@ -115,7 +123,7 @@ public class RedisPatterns {
     @Autowired private RedisTemplate<String, String> redis;
     @Autowired private StringRedisTemplate str;
 
-    //  Leaderboard 
+    //  Leaderboard
     public void addScore(String userId, double score) {
         redis.opsForZSet().add("game:leaderboard", userId, score);
     }
@@ -124,7 +132,7 @@ public class RedisPatterns {
             .reverseRangeWithScores("game:leaderboard", 0, 9);
     }
 
-    //  Distributed Lock 
+    //  Distributed Lock
     public boolean acquireLock(String resource, String token, long ttlMs) {
         Boolean result = redis.opsForValue()
             .setIfAbsent("lock:" + resource, token,
@@ -139,7 +147,7 @@ public class RedisPatterns {
             List.of("lock:" + resource), token);
     }
 
-    //  HyperLogLog - unique daily visitors 
+    //  HyperLogLog - unique daily visitors
     public void trackVisit(String date, String userId) {
         redis.opsForHyperLogLog().add("visits:" + date, userId);
     }
@@ -147,7 +155,7 @@ public class RedisPatterns {
         return redis.opsForHyperLogLog().size("visits:" + date);
     }
 
-    //  Pub/Sub 
+    //  Pub/Sub
     public void publish(String channel, String message) {
         redis.convertAndSend(channel, message);
     }
@@ -158,29 +166,34 @@ Notes:
 Always use Lua scripts for multi-step atomic operations. MULTI/EXEC (transactions) don't support conditional logic - Lua does.
 
 ## Complexity And Performance
+
 - O(log N)
 
 ## Interview Drills
+
 1. How does Redis achieve persistence without sacrificing speed?
    Answer: Redis offers two persistence mechanisms:
-   
+
    **RDB (snapshot):** Fork the process, write a point-in-time snapshot to disk. Zero overhead on main thread. Fork takes ~10ms for 10GB dataset. Data loss up to last snapshot interval (every 60s-900s).
-   
+
    **AOF (Append-Only File):** Log every write command. Replayable on restart. `fsync` policy options:
    - `always` - fsync every write (safe, ~1ms overhead)
    - `everysec` - fsync every second (common choice - max 1s data loss)
    - `no` - OS decides (fastest, most data loss)
-   
+
    **In production:** Enable both - RDB for fast restart, AOF for durability. Use `appendfsync everysec`.
    Follow-ups: What is Redis replication and how is it different from persistence?; Explain Redis Sentinel vs Redis Cluster.
 
 ## Trade-offs
+
 Pros:
+
 - Sub-millisecond latency for all data structures
 - Rich atomic operations via Lua
 - Versatile - cache, queue, pub-sub, rate-limiter in one
 
 Cons:
+
 - Data must fit in RAM (cluster helps but adds complexity)
 - Eventual consistency across replicas
 - Single-threaded command processing (I/O threaded since Redis 6)
@@ -189,5 +202,5 @@ When to use:
 Use Redis for: session store, rate limiting, leaderboards, pub-sub, distributed locks, job queues. Don't use as primary DB - use as cache/complement.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

@@ -1,6 +1,7 @@
 # Context: Cancellation, Deadlines & Values
 
 ## Quick Facts
+
 - Area: Go
 - Tag: Context
 - Source: `src/modules/topics/golang/go-context.js`
@@ -8,7 +9,9 @@
 - Visual coverage: generated diagrams only
 
 ## Concept
+
 `context.Context` is Go's standard mechanism for:
+
 - **Cancellation**: `context.WithCancel` - cancel when parent operation completes.
 - **Deadlines / timeouts**: `context.WithDeadline`, `context.WithTimeout`.
 - **Request-scoped values**: `context.WithValue` - carry trace IDs, auth tokens (use unexported key types to avoid collisions).
@@ -16,9 +19,11 @@
 A Context is **immutable** and forms a tree - cancelling a parent cancels all children. The zero value (`context.Background()`) never cancels; `context.TODO()` signals placeholder intent.
 
 ## Why It Matters
+
 Without context, you can't cleanly cancel in-flight requests when a client disconnects or a timeout fires. In microservices, context propagates **distributed traces** (OpenTelemetry injects span IDs via `context.WithValue`). Goroutines that ignore context leak resources until the process dies.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Request"]
@@ -33,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Request
@@ -51,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -64,6 +71,7 @@ Flow steps:
 5. Response/error
 
 ## Example
+
 ```go
 package main
 
@@ -121,10 +129,12 @@ Notes:
 Never store contexts in structs - pass them as the first function argument. Use typed unexported keys for context values to prevent key collisions across packages.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What's the difference between context.Background() and context.TODO()?
    Answer: Semantically equivalent at runtime - both return a non-nil, empty context. **`Background()`** is the root of any context tree (used in main, init, tests). **`TODO()`** signals "I know this should carry a context but I haven't plumbed one yet" - it's a code search anchor for future refactoring. Linters can flag `TODO` to track tech debt.
    Follow-ups: When should context.WithValue be avoided?; How does OpenTelemetry use context?
@@ -134,12 +144,15 @@ Never store contexts in structs - pass them as the first function argument. Use 
    Follow-ups: What happens to child goroutines if the parent context is cancelled?; goroutine leak + context?
 
 ## Trade-offs
+
 Pros:
+
 - Uniform cancellation and deadline propagation across stdlib (http, sql, grpc).
 - No global state - context carries request-scoped metadata cleanly.
 - Context.Err() distinguishes cancellation from deadline exceeded.
 
 Cons:
+
 - context.WithValue is untyped - runtime panics on bad casts, not compile errors.
 - Verbose to plumb through every function signature in large codebases.
 - Cannot add context to callback-style or event-driven APIs retro-actively.
@@ -148,5 +161,5 @@ When to use:
 Pass context to every function that does I/O, sleeps, or spawns goroutines. Use context values only for request-scoped metadata (trace IDs, auth), never for optional function arguments.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

@@ -1,6 +1,7 @@
 # Word Break
 
 ## Quick Facts
+
 - Area: DSA
 - Tag: DP Extended
 - Source: `src/modules/topics/dsa/dsa-dpx-word-break.js`
@@ -8,18 +9,21 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Can the string be segmented into words from a dictionary?
 
- **Kid explanation:** Imagine "leetcode" has no spaces. Can you cut it into dictionary words? "leet" + "code" = YES! Use a DP array where dp[i] means "I can make a valid cut at position i". Start from position 0 (always reachable). For every position, check if any dictionary word ends exactly there AND the position before it was also reachable.
+**Kid explanation:** Imagine "leetcode" has no spaces. Can you cut it into dictionary words? "leet" + "code" = YES! Use a DP array where dp[i] means "I can make a valid cut at position i". Start from position 0 (always reachable). For every position, check if any dictionary word ends exactly there AND the position before it was also reachable.
 
 **Pattern:** 1D reachability DP - O(n x m) where m = avg word length
 **Key insight:** dp[i] = true if there exists j < i where dp[j]=true AND s[j..i-1] is a dictionary word.
 **Scenario:** NLP tokenizer - can a run-together string be split into valid dictionary words?
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Problem input"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Problem input
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,17 +72,21 @@ Flow steps:
 5. Answer
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - O(n x m)
 
 ## Interview Drills
+
 _No interview drills configured._
 
 ## Trade-offs
+
 _No trade-offs configured._
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

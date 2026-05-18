@@ -1,6 +1,7 @@
 # Service Mesh, mTLS & Observability
 
 ## Quick Facts
+
 - Area: Microservices
 - Tag: Mesh
 - Source: `src/modules/topics/microservices/ms-service-mesh-observability.js`
@@ -8,7 +9,9 @@
 - Visual coverage: generated diagrams only
 
 ## Concept
+
 A **service mesh** moves east-west networking concerns into infrastructure proxies such as Envoy. The app still owns business logic, while the mesh can enforce:
+
 - **mTLS**: workload identity and encrypted service-to-service traffic.
 - **Traffic policy**: retries, timeouts, outlier detection, canaries, mirrors, and fault injection.
 - **Authorization policy**: service A can call service B only on approved paths or ports.
@@ -18,9 +21,11 @@ A **service mesh** moves east-west networking concerns into infrastructure proxi
 Modern meshes may use sidecars, node proxies, or ambient modes, but the conceptual goal is the same: make cross-service traffic visible, secure, and controllable.
 
 ## Why It Matters
+
 When a system grows from 5 services to 50, every team reimplementing TLS, retries, tracing headers, authz, and traffic shifting becomes inconsistent. A mesh gives platform teams one control plane for shared policies. The danger is overusing mesh retries or hiding complexity: if every layer retries blindly, a partial outage becomes a retry storm. Mesh policy should complement application-level timeouts and idempotency, not replace them.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Client"]
@@ -35,6 +40,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Client
@@ -53,6 +59,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,6 +73,7 @@ Flow steps:
 5. Observability
 
 ## Example
+
 ```yaml
 # Istio-style production policies for an order/payment path
 apiVersion: security.istio.io/v1
@@ -87,14 +95,14 @@ spec:
     matchLabels:
       app: payment-service
   rules:
-  - from:
-    - source:
-        principals:
-        - cluster.local/ns/shop/sa/order-service
-    to:
-    - operation:
-        methods: ["POST"]
-        paths: ["/v1/charges"]
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/shop/sa/order-service
+      to:
+        - operation:
+            methods: ["POST"]
+            paths: ["/v1/charges"]
 ---
 apiVersion: networking.istio.io/v1
 kind: DestinationRule
@@ -115,12 +123,12 @@ spec:
     tls:
       mode: ISTIO_MUTUAL
   subsets:
-  - name: stable
-    labels:
-      version: v1
-  - name: canary
-    labels:
-      version: v2
+    - name: stable
+      labels:
+        version: v1
+    - name: canary
+      labels:
+        version: v2
 ---
 apiVersion: networking.istio.io/v1
 kind: VirtualService
@@ -129,22 +137,22 @@ metadata:
   namespace: shop
 spec:
   hosts:
-  - payment-service.shop.svc.cluster.local
+    - payment-service.shop.svc.cluster.local
   http:
-  - timeout: 700ms
-    retries:
-      attempts: 2
-      perTryTimeout: 250ms
-      retryOn: connect-failure,refused-stream,5xx
-    route:
-    - destination:
-        host: payment-service.shop.svc.cluster.local
-        subset: stable
-      weight: 90
-    - destination:
-        host: payment-service.shop.svc.cluster.local
-        subset: canary
-      weight: 10
+    - timeout: 700ms
+      retries:
+        attempts: 2
+        perTryTimeout: 250ms
+        retryOn: connect-failure,refused-stream,5xx
+      route:
+        - destination:
+            host: payment-service.shop.svc.cluster.local
+            subset: stable
+          weight: 90
+        - destination:
+            host: payment-service.shop.svc.cluster.local
+            subset: canary
+          weight: 10
 ---
 apiVersion: telemetry.istio.io/v1
 kind: Telemetry
@@ -153,22 +161,24 @@ metadata:
   namespace: shop
 spec:
   tracing:
-  - providers:
-    - name: otel-tracing
-    randomSamplingPercentage: 10
+    - providers:
+        - name: otel-tracing
+      randomSamplingPercentage: 10
   accessLogging:
-  - providers:
-    - name: envoy
+    - providers:
+        - name: envoy
 ```
 
 Notes:
 Keep total retry budget smaller than the caller's deadline. If the application timeout is 800 ms, a mesh policy with 3 attempts at 500 ms each is a bug. Use trace IDs to prove the retry behavior you configured is the behavior actually happening.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What belongs in the mesh vs in application code?
    Answer: Put transport concerns in the mesh: mTLS, L7 routing, traffic splitting, coarse retries, outlier detection, access logs, and baseline telemetry. Keep business authorization, idempotency, compensation, domain fallbacks, and user-facing error semantics in application code. The mesh can say "order-service may call payment-service"; the app must still decide whether this user may charge this card.
    Follow-ups: How do mesh retries interact with idempotency?; What is the sidecar resource overhead?
@@ -178,12 +188,15 @@ Keep total retry budget smaller than the caller's deadline. If the application t
    Follow-ups: What is trace sampling?; What are high-cardinality metric labels?
 
 ## Trade-offs
+
 Pros:
+
 - mTLS and workload identity become platform defaults instead of per-team projects.
 - Canaries, mirrors, and fault injection can happen without changing application code.
 - Standard telemetry gives a service graph and consistent RED metrics.
 
 Cons:
+
 - Sidecars add CPU, memory, connection, and operational overhead.
 - Misconfigured retries or timeouts can amplify incidents.
 - Debugging now includes app code, proxy config, and control-plane state.
@@ -192,5 +205,5 @@ When to use:
 Use a mesh when you have many services, zero-trust requirements, cross-team platform standards, or complex rollout policies. For a tiny system, start with gateway + good app instrumentation before adding mesh complexity.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

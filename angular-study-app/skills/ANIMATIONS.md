@@ -10,29 +10,29 @@ Core tracer-based system for algorithm visualization.
 
 ### Files
 
-| File | Exposes | Purpose |
-|------|---------|---------|
-| `dsa-viz-core.js` | `window.DSAViz` namespace | Base namespace |
-| `dsa-viz-tracer.js` | `DSAViz.tracer.run(code, opts)` | Executes JS code, captures variable/array snapshots |
-| `dsa-viz-runtime.js` | `DSAViz.runtime.create(mount, opts)` | 3-panel layout: code \| viz \| controls |
-| `dsa-viz-array.js` | `DSAViz.array.*` | Array cell rendering, pointers, windows |
-| `dsa-viz-graph.js` | `DSAViz.graph.*` | Graph node/edge SVG rendering |
-| `dsa-viz-tree.js` | `DSAViz.tree.*` | Binary tree rendering |
-| `dsa-viz-dp.js` | `DSAViz.dp.*` | DP table (1D/2D) rendering |
-| `dsa-viz-matrix.js` | `DSAViz.matrix.*` | Grid/matrix rendering |
-| `dsa-viz-string.js` | `DSAViz.string.*` | String character visualization |
-| `dsa-viz-topic-render.js` | `DSAViz.topic.render(mount, opts)` | Simple helper: render without OOP |
+| File                      | Exposes                              | Purpose                                             |
+| ------------------------- | ------------------------------------ | --------------------------------------------------- |
+| `dsa-viz-core.js`         | `window.DSAViz` namespace            | Base namespace                                      |
+| `dsa-viz-tracer.js`       | `DSAViz.tracer.run(code, opts)`      | Executes JS code, captures variable/array snapshots |
+| `dsa-viz-runtime.js`      | `DSAViz.runtime.create(mount, opts)` | 3-panel layout: code \| viz \| controls             |
+| `dsa-viz-array.js`        | `DSAViz.array.*`                     | Array cell rendering, pointers, windows             |
+| `dsa-viz-graph.js`        | `DSAViz.graph.*`                     | Graph node/edge SVG rendering                       |
+| `dsa-viz-tree.js`         | `DSAViz.tree.*`                      | Binary tree rendering                               |
+| `dsa-viz-dp.js`           | `DSAViz.dp.*`                        | DP table (1D/2D) rendering                          |
+| `dsa-viz-matrix.js`       | `DSAViz.matrix.*`                    | Grid/matrix rendering                               |
+| `dsa-viz-string.js`       | `DSAViz.string.*`                    | String character visualization                      |
+| `dsa-viz-topic-render.js` | `DSAViz.topic.render(mount, opts)`   | Simple helper: render without OOP                   |
 
 ### DSAViz.tracer.run(code, opts)
 
 ```js
 const steps = DSAViz.tracer.run(code, {
   arrays: {
-    arr:    true,   // capture this array name
-    nums:   true,
+    arr: true, // capture this array name
+    nums: true,
     result: true,
   },
-  vars: ['i', 'j', 'left', 'right', 'sum', 'result'],
+  vars: ["i", "j", "left", "right", "sum", "result"],
 });
 // returns: [{ line, variables, arrays, codeLine, ... }, ...]
 ```
@@ -41,10 +41,10 @@ const steps = DSAViz.tracer.run(code, {
 
 ```js
 const rt = DSAViz.runtime.create(mount, {
-  title:           'sliding.maxSumFixed',
-  code:            `function maxSum(arr, k) { ... }`,  // populates code panel
-  timeComplexity:  'O(n)',
-  spaceComplexity: 'O(1)',
+  title: "sliding.maxSumFixed",
+  code: `function maxSum(arr, k) { ... }`, // populates code panel
+  timeComplexity: "O(n)",
+  spaceComplexity: "O(1)",
 });
 rt.animate(steps);
 ```
@@ -55,11 +55,11 @@ rt.animate(steps);
 
 ```js
 DSAViz.topic.render(mount, {
-  title: 'myAlgo',
-  time:  'O(n)',
-  space: 'O(1)',
-  code:  `function myAlgo(arr) { ... }\nconst result = myAlgo([1,2,3]);`,
-  tracer: { arrays: { arr: true }, vars: ['i', 'sum'] },
+  title: "myAlgo",
+  time: "O(n)",
+  space: "O(1)",
+  code: `function myAlgo(arr) { ... }\nconst result = myAlgo([1,2,3]);`,
+  tracer: { arrays: { arr: true }, vars: ["i", "sum"] },
 });
 ```
 
@@ -78,11 +78,15 @@ OOP base classes that use DSAViz tracer internally.
 
 ```js
 class MyProblem extends window.DSA.Problem {
-  getPatternLabel() { return 'My Pattern'; }
-  getTracerOpts()   { return { arrays: {arr: true}, vars: ['i','sum'] }; }
+  getPatternLabel() {
+    return "My Pattern";
+  }
+  getTracerOpts() {
+    return { arrays: { arr: true }, vars: ["i", "sum"] };
+  }
   postProcess(steps) {
-    return steps.map(step => {
-      if (!step.phase) step.phase = 'scan';
+    return steps.map((step) => {
+      if (!step.phase) step.phase = "scan";
       return step;
     });
   }
@@ -90,12 +94,13 @@ class MyProblem extends window.DSA.Problem {
 ```
 
 Usage in `visual(mount)`:
+
 ```js
 new MyProblem(mount, {
-  title: 'myAlgo',
-  time:  'O(n)',
-  space: 'O(1)',
-  code:  `...algorithm code...\nconst result = myAlgo(arr);`,
+  title: "myAlgo",
+  time: "O(n)",
+  space: "O(1)",
+  code: `...algorithm code...\nconst result = myAlgo(arr);`,
 }).render();
 ```
 
@@ -107,22 +112,22 @@ new MyProblem(mount, {
 Fields: `line, variables, arrays, highlight, pointers, windowRange, phase, codeLine, narration, timeLabel, ops`
 
 ```js
-DSA.Step.fromTracer(rawStep)   // convert tracer output
-step.with({ phase: 'found' })  // immutable update
+DSA.Step.fromTracer(rawStep); // convert tracer output
+step.with({ phase: "found" }); // immutable update
 ```
 
 ### Template Subclasses
 
-| Class | File | Pattern | Default vars watched |
-|-------|------|---------|---------------------|
-| `DSA.SlidingWindowProblem` | `sliding-window.template.js` | Sliding Window | left, right, windowSum, maxLen, k, i |
-| `DSA.TwoPointerProblem` | `two-pointer.template.js` | Two Pointer | left, right, slow, fast, lo, hi |
-| `DSA.BinarySearchProblem` | `binary-search.template.js` | Binary Search | lo, hi, mid |
-| `DSA.DPProblem` | `dp-problem.template.js` | Dynamic Programming | dp[], memo, coins, nums |
-| `DSA.GraphProblem` | `graph-problem.template.js` | Graph BFS/DFS | queue, visited, path, dist |
-| `DSA.StackProblem` | `stack-problem.template.js` | Monotonic Stack | stack, heights, temps |
-| `DSA.BacktrackingProblem` | `backtracking.template.js` | Backtracking | current, path, results |
-| `DSA.GreedyProblem` | `greedy-problem.template.js` | Greedy | activities, jobs, selected |
+| Class                      | File                         | Pattern             | Default vars watched                 |
+| -------------------------- | ---------------------------- | ------------------- | ------------------------------------ |
+| `DSA.SlidingWindowProblem` | `sliding-window.template.js` | Sliding Window      | left, right, windowSum, maxLen, k, i |
+| `DSA.TwoPointerProblem`    | `two-pointer.template.js`    | Two Pointer         | left, right, slow, fast, lo, hi      |
+| `DSA.BinarySearchProblem`  | `binary-search.template.js`  | Binary Search       | lo, hi, mid                          |
+| `DSA.DPProblem`            | `dp-problem.template.js`     | Dynamic Programming | dp[], memo, coins, nums              |
+| `DSA.GraphProblem`         | `graph-problem.template.js`  | Graph BFS/DFS       | queue, visited, path, dist           |
+| `DSA.StackProblem`         | `stack-problem.template.js`  | Monotonic Stack     | stack, heights, temps                |
+| `DSA.BacktrackingProblem`  | `backtracking.template.js`   | Backtracking        | current, path, results               |
+| `DSA.GreedyProblem`        | `greedy-problem.template.js` | Greedy              | activities, jobs, selected           |
 
 ### Phase Labels (used in postProcess)
 
@@ -150,11 +155,11 @@ Lower-level renderers called inside `renderStep` or template `postProcess`.
 DSA.ArrayAnimation.render(el, arr, opts);
 
 // Opts helpers:
-DSA.ArrayAnimation.windowOpts(left, right, '#58a6ff')   // highlight window
-DSA.ArrayAnimation.twoPointerOpts(leftIdx, rightIdx)     // L=yellow, R=orange
-DSA.ArrayAnimation.binarySearchOpts(lo, mid, hi)         // lo/mid/hi
-DSA.ArrayAnimation.visitedOpts(visitedIndices)            // dim visited
-DSA.ArrayAnimation.renderStack(el, stack)                 // vertical stack viz
+DSA.ArrayAnimation.windowOpts(left, right, "#58a6ff"); // highlight window
+DSA.ArrayAnimation.twoPointerOpts(leftIdx, rightIdx); // L=yellow, R=orange
+DSA.ArrayAnimation.binarySearchOpts(lo, mid, hi); // lo/mid/hi
+DSA.ArrayAnimation.visitedOpts(visitedIndices); // dim visited
+DSA.ArrayAnimation.renderStack(el, stack); // vertical stack viz
 ```
 
 ### DSA.GraphAnimation
@@ -197,13 +202,13 @@ No code tracer — steps are hand-defined in each topic file.
 
 ### Files
 
-| File | Exposes | Purpose |
-|------|---------|---------|
-| `react-viz-core.js` | `window.ReactViz` | Panel engine, play/pause, CSS |
-| `animations/component-tree.animation.js` | `ReactViz.ComponentTree` | React component hierarchy |
-| `animations/hook-timeline.animation.js` | `ReactViz.HookTimeline` | Hook call order grid |
-| `animations/fiber.animation.js` | `ReactViz.FiberTree` | Fiber work loop tree |
-| `animations/flow-diagram.animation.js` | `ReactViz.FlowDiagram` | Architecture flow (Redux, RSC, etc.) |
+| File                                     | Exposes                  | Purpose                              |
+| ---------------------------------------- | ------------------------ | ------------------------------------ |
+| `react-viz-core.js`                      | `window.ReactViz`        | Panel engine, play/pause, CSS        |
+| `animations/component-tree.animation.js` | `ReactViz.ComponentTree` | React component hierarchy            |
+| `animations/hook-timeline.animation.js`  | `ReactViz.HookTimeline`  | Hook call order grid                 |
+| `animations/fiber.animation.js`          | `ReactViz.FiberTree`     | Fiber work loop tree                 |
+| `animations/flow-diagram.animation.js`   | `ReactViz.FlowDiagram`   | Architecture flow (Redux, RSC, etc.) |
 
 ### ReactViz.panel(mount, opts)
 
@@ -249,16 +254,15 @@ ReactViz.panel(mount, {
 
 ```js
 ReactViz.ComponentTree.render(el, {
-  name: 'App',
-  type: 'component',         // 'component'|'dom'|'memo'|'context'|'provider'|'suspense'
+  name: "App",
+  type: "component", // 'component'|'dom'|'memo'|'context'|'provider'|'suspense'
   state: { count: 0, data: null },
-  props: { onClick: 'fn' },
-  rerender: true,            // shows orange "re-render" badge + glow
-  skipped: true,             // dims to 55% + shows "skipped" badge
+  props: { onClick: "fn" },
+  rerender: true, // shows orange "re-render" badge + glow
+  skipped: true, // dims to 55% + shows "skipped" badge
   children: [
-    { name: 'Header', type: 'memo', skipped: true },
-    { name: 'UserList', type: 'component', rerender: true,
-      props: { items: '[...]' } },
+    { name: "Header", type: "memo", skipped: true },
+    { name: "UserList", type: "component", rerender: true, props: { items: "[...]" } },
   ],
 });
 ```
@@ -266,11 +270,16 @@ ReactViz.ComponentTree.render(el, {
 ### ReactViz.HookTimeline.render(el, hooks, renderPhase, renderNum)
 
 ```js
-ReactViz.HookTimeline.render(el, [
-  { name: 'useState', label: 'count', value: 0, active: true, phase: 'render' },
-  { name: 'useEffect', label: 'title', active: false, phase: 'idle', deps: ['count'] },
-  { name: 'useMemo', label: 'sorted', active: false, phase: 'idle', deps: ['items'] },
-], 'render', 1);
+ReactViz.HookTimeline.render(
+  el,
+  [
+    { name: "useState", label: "count", value: 0, active: true, phase: "render" },
+    { name: "useEffect", label: "title", active: false, phase: "idle", deps: ["count"] },
+    { name: "useMemo", label: "sorted", active: false, phase: "idle", deps: ["items"] },
+  ],
+  "render",
+  1
+);
 // renderPhase: 'render'|'commit'|'effect'|'cleanup'
 // renderNum: which render cycle (1, 2, 3...)
 ```
@@ -280,22 +289,32 @@ Hook name colors: useState=#58a6ff, useEffect=#3fb950, useMemo=#d2a8ff, useCallb
 ### ReactViz.FiberTree.render(el, fiberTree, phase, currentFiberName)
 
 ```js
-ReactViz.FiberTree.render(el, {
-  tag: 'HostRoot', name: 'Root', state: 'idle',
-  children: [
-    {
-      tag: 'FunctionComponent', name: 'App', state: 'beginWork',
-      children: [
-        { tag: 'HostComponent', name: 'div', state: 'idle',
-          effectTag: 'UPDATE',
-          children: [
-            { tag: 'HostComponent', name: 'h1', state: 'completeWork' },
-          ]
-        }
-      ]
-    }
-  ]
-}, 'beginWork', 'App');
+ReactViz.FiberTree.render(
+  el,
+  {
+    tag: "HostRoot",
+    name: "Root",
+    state: "idle",
+    children: [
+      {
+        tag: "FunctionComponent",
+        name: "App",
+        state: "beginWork",
+        children: [
+          {
+            tag: "HostComponent",
+            name: "div",
+            state: "idle",
+            effectTag: "UPDATE",
+            children: [{ tag: "HostComponent", name: "h1", state: "completeWork" }],
+          },
+        ],
+      },
+    ],
+  },
+  "beginWork",
+  "App"
+);
 // Fiber states: 'idle'|'beginWork'|'completeWork'|'commit'|'skip'|'error'
 // currentFiberName: highlights this fiber with glow border
 ```
@@ -305,13 +324,16 @@ State colors: idle=gray, beginWork=blue, completeWork=green, commit=orange, skip
 ### ReactViz.FlowDiagram.render(el, nodes, edges, opts)
 
 ```js
-ReactViz.FlowDiagram.render(el, [
-  { id: 'store', label: 'Redux Store', sublabel: '{ count: 5 }', type: 'store', active: true },
-  { id: 'comp',  label: 'Counter', sublabel: 'useSelector', type: 'component', active: true },
-  { id: 'dim',   label: 'UserList', type: 'component', dim: true },
-], [
-  { from: 'store', to: 'comp', label: 'value', active: true, color: '#3fb950' },
-], { layout: 'vertical' }); // 'vertical'|'horizontal'|'grid'
+ReactViz.FlowDiagram.render(
+  el,
+  [
+    { id: "store", label: "Redux Store", sublabel: "{ count: 5 }", type: "store", active: true },
+    { id: "comp", label: "Counter", sublabel: "useSelector", type: "component", active: true },
+    { id: "dim", label: "UserList", type: "component", dim: true },
+  ],
+  [{ from: "store", to: "comp", label: "value", active: true, color: "#3fb950" }],
+  { layout: "vertical" }
+); // 'vertical'|'horizontal'|'grid'
 ```
 
 Node type colors:
@@ -332,10 +354,10 @@ Node type colors:
 ### ReactViz Utility Functions
 
 ```js
-ReactViz.esc(str)             // HTML escape
-ReactViz.codeBlock(code)      // styled <pre> block, JetBrains Mono, 12px
-ReactViz.label(text)          // section header label (10px, uppercase, gray)
-ReactViz.pill(label, color)   // colored badge pill
+ReactViz.esc(str); // HTML escape
+ReactViz.codeBlock(code); // styled <pre> block, JetBrains Mono, 12px
+ReactViz.label(text); // section header label (10px, uppercase, gray)
+ReactViz.pill(label, color); // colored badge pill
 ```
 
 ---
@@ -346,6 +368,7 @@ Some older topic files (sysdesign, kafka, microservices) use inline HTML/CSS ani
 These are self-contained inside the `visual(mount)` function — no shared engine.
 
 Patterns used:
+
 - **Flow diagrams** — CSS flexbox boxes + arrow `::after` pseudo-elements
 - **Timeline animations** — CSS `@keyframes` with `animation-delay` stagger
 - **State machines** — CSS grid with color transitions on JS interval
@@ -358,13 +381,13 @@ When adding new sysdesign/kafka visuals, prefer `ReactViz.FlowDiagram` or inline
 
 ## Naming Conventions
 
-| Thing | Convention | Example |
-|-------|-----------|---------|
-| DSA topic file | `dsa-<pattern>-<problem>.js` | `dsa-sw-max-sum-fixed.js` |
-| React topic file | `react-<concept>.js` | `react-hooks-state-effect.js` |
-| Java topic file | `java-<topic>.js` | `java-jvm-memory-gc.js` |
-| Window global | `window.DSA.*`, `window.ReactViz.*` | — |
-| Topic array | `window.<AREA>_TOPICS` | `window.REACT_TOPICS`, `window.JAVA_TOPICS` |
+| Thing            | Convention                          | Example                                     |
+| ---------------- | ----------------------------------- | ------------------------------------------- |
+| DSA topic file   | `dsa-<pattern>-<problem>.js`        | `dsa-sw-max-sum-fixed.js`                   |
+| React topic file | `react-<concept>.js`                | `react-hooks-state-effect.js`               |
+| Java topic file  | `java-<topic>.js`                   | `java-jvm-memory-gc.js`                     |
+| Window global    | `window.DSA.*`, `window.ReactViz.*` | —                                           |
+| Topic array      | `window.<AREA>_TOPICS`              | `window.REACT_TOPICS`, `window.JAVA_TOPICS` |
 
 ---
 
@@ -398,6 +421,7 @@ Simple animations → Production-grade cinematic flows
 ```
 
 Inspired by:
+
 - ByteByteGo
 - Excalidraw
 - Miro
@@ -411,11 +435,13 @@ Inspired by:
 # Interactive Whiteboard Engine
 
 Directory:
+
 ```txt
 src/shared/whiteboard/
 ```
 
 Files:
+
 ```txt
 whiteboard-core.js
 whiteboard-canvas.js
@@ -430,6 +456,7 @@ whiteboard-timeline.js
 ```
 
 Features:
+
 - Infinite zoom canvas
 - Pan + drag
 - Mini-map navigation
@@ -460,6 +487,7 @@ const board = Whiteboard.Canvas.create(mount, {
 ```
 
 Visual Feel:
+
 - Miro-style infinite board
 - Figma smooth zoom
 - Linear animations
@@ -472,9 +500,9 @@ Visual Feel:
 
 ```js
 Whiteboard.Node.create({
-  id: 'api-gateway',
-  label: 'API Gateway',
-  type: 'gateway',
+  id: "api-gateway",
+  label: "API Gateway",
+  type: "gateway",
   x: 200,
   y: 100,
   glow: true,
@@ -483,6 +511,7 @@ Whiteboard.Node.create({
 ```
 
 Supported Node Types:
+
 ```txt
 service
 gateway
@@ -503,6 +532,7 @@ mobile
 ```
 
 Animations:
+
 - Glow pulse
 - Border beam
 - Traffic flash
@@ -518,15 +548,16 @@ Animations:
 
 ```js
 Whiteboard.PacketFlow.animate(board, {
-  from: 'browser',
-  to: 'cdn',
-  label: 'GET /feed',
+  from: "browser",
+  to: "cdn",
+  label: "GET /feed",
   speed: 2,
   repeat: true,
 });
 ```
 
 Visualizes:
+
 - HTTP
 - HTTPS
 - gRPC
@@ -539,6 +570,7 @@ Visualizes:
 - AI agent flows
 
 Effects:
+
 - Moving packets
 - Beam trails
 - Retry loops
@@ -552,11 +584,13 @@ Effects:
 # Cinematic System Design Engine
 
 Directory:
+
 ```txt
 src/shared/sysdesign-cinematic/
 ```
 
 Files:
+
 ```txt
 cinematic-core.js
 cinematic-camera.js
@@ -576,27 +610,28 @@ Create ByteByteGo-style animated system storytelling.
 
 ```js
 CineFlow.play({
-  title: 'Instagram Feed Request',
+  title: "Instagram Feed Request",
   scenes: [
     {
-      zoomTo: 'mobile-client',
-      narration: 'User opens Instagram',
+      zoomTo: "mobile-client",
+      narration: "User opens Instagram",
     },
     {
       animatePacket: {
-        from: 'client',
-        to: 'cdn',
-      }
+        from: "client",
+        to: "cdn",
+      },
     },
     {
-      zoomTo: 'feed-service',
-      narration: 'Feed service builds personalized feed',
-    }
-  ]
+      zoomTo: "feed-service",
+      narration: "Feed service builds personalized feed",
+    },
+  ],
 });
 ```
 
 Effects:
+
 - Smooth camera zoom
 - Focus glow
 - Traffic animation
@@ -615,24 +650,25 @@ Effects:
 Timeline.play([
   {
     t: 0,
-    action: 'dns-lookup',
+    action: "dns-lookup",
   },
   {
     t: 100,
-    action: 'tcp-handshake',
+    action: "tcp-handshake",
   },
   {
     t: 200,
-    action: 'tls-negotiation',
+    action: "tls-negotiation",
   },
   {
     t: 400,
-    action: 'http-request',
-  }
+    action: "http-request",
+  },
 ]);
 ```
 
 Useful For:
+
 - Browser lifecycle
 - Kubernetes scheduling
 - Kafka rebalance
@@ -648,11 +684,13 @@ Useful For:
 # Live Architecture Playground
 
 Directory:
+
 ```txt
 src/shared/arch-playground/
 ```
 
 Features:
+
 - Drag microservices
 - Connect APIs
 - Create Kafka topics
@@ -665,12 +703,13 @@ Features:
 - Observe bottlenecks
 
 Example:
+
 ```js
 ArchPlayground.create(mount, {
   services: [
-    { id: 'gateway', replicas: 2 },
-    { id: 'feed-service', replicas: 5 },
-    { id: 'redis', replicas: 3 },
+    { id: "gateway", replicas: 2 },
+    { id: "feed-service", replicas: 5 },
+    { id: "redis", replicas: 3 },
   ],
 });
 ```
@@ -680,6 +719,7 @@ ArchPlayground.create(mount, {
 # Production Monitoring Layer
 
 Visualize:
+
 - Grafana metrics
 - Prometheus stats
 - Distributed tracing
@@ -692,12 +732,13 @@ Visualize:
 - Request throughput
 
 Example:
+
 ```js
 MetricsPanel.render({
   rps: 1240,
-  latency: '82ms',
-  cpu: '67%',
-  errors: '0.2%',
+  latency: "82ms",
+  cpu: "67%",
+  errors: "0.2%",
 });
 ```
 
@@ -706,6 +747,7 @@ MetricsPanel.render({
 # Kubernetes Simulation Engine
 
 Visualize:
+
 ```txt
 Scheduler
 kubelet
@@ -722,6 +764,7 @@ Autoscaling
 ```
 
 Animations:
+
 - Pod spawning
 - CrashLoopBackOff
 - Traffic balancing
@@ -735,6 +778,7 @@ Animations:
 # Kafka Cinematic Visualization
 
 Visualize:
+
 ```txt
 Producer
 Broker
@@ -750,6 +794,7 @@ Rebalancing
 ```
 
 Animations:
+
 - Message movement
 - Partition writes
 - Replica sync
@@ -762,6 +807,7 @@ Animations:
 # AI / LLM Visualization Layer
 
 Visualize:
+
 ```txt
 Token generation
 Attention maps
@@ -776,6 +822,7 @@ MCP workflows
 ```
 
 Animations:
+
 - Token streaming
 - Attention glow
 - Embedding movement
@@ -787,6 +834,7 @@ Animations:
 # Modern UX Enhancements
 
 Add:
+
 ```txt
 Command palette
 Floating toolbar
@@ -807,8 +855,8 @@ Interactive overlays
 ```css
 .glow {
   box-shadow:
-    0 0 10px rgba(88,166,255,.5),
-    0 0 20px rgba(88,166,255,.3);
+    0 0 10px rgba(88, 166, 255, 0.5),
+    0 0 20px rgba(88, 166, 255, 0.3);
 }
 
 .floating {
@@ -816,9 +864,15 @@ Interactive overlays
 }
 
 @keyframes float {
-  0%   { transform: translateY(0px); }
-  50%  { transform: translateY(-8px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 .pulse {
@@ -826,9 +880,18 @@ Interactive overlays
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: .9; }
-  50% { transform: scale(1.03); opacity: 1; }
-  100% { transform: scale(1); opacity: .9; }
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
 }
 
 .beam {
@@ -837,18 +900,13 @@ Interactive overlays
 }
 
 .beam::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -120%;
   width: 120%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255,255,255,.4),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   animation: beamMove 2s infinite;
 }
 
@@ -921,25 +979,25 @@ queue · cdn · dns · browser · mobile
 
 ## Node Animations
 
-| Animation | When |
-|---|---|
-| Glow pulse | active/selected node |
-| Border beam | traffic flowing through node |
-| Traffic flash | request arrives |
-| Queue shaking | queue full / backpressure |
-| CPU spike effect | high load metric |
-| Failure blinking | error / crash state |
-| Auto scaling pulse | new replica spawning |
-| Packet highlight | packet passing through |
+| Animation          | When                         |
+| ------------------ | ---------------------------- |
+| Glow pulse         | active/selected node         |
+| Border beam        | traffic flowing through node |
+| Traffic flash      | request arrives              |
+| Queue shaking      | queue full / backpressure    |
+| CPU spike effect   | high load metric             |
+| Failure blinking   | error / crash state          |
+| Auto scaling pulse | new replica spawning         |
+| Packet highlight   | packet passing through       |
 
 ## Packet Flow API
 
 ```js
 Whiteboard.PacketFlow.animate(board, {
-  from: 'browser',
-  to: 'cdn',
-  label: 'GET /feed',
-  protocol: 'HTTPS',  // colors from PROTOCOL_COLORS
+  from: "browser",
+  to: "cdn",
+  label: "GET /feed",
+  protocol: "HTTPS", // colors from PROTOCOL_COLORS
   speed: 2,
   repeat: true,
 });
@@ -969,15 +1027,22 @@ cinematic-load.js
 
 ```js
 CineFlow.play({
-  title: 'Instagram Feed Request',
+  title: "Instagram Feed Request",
   scenes: [
-    { zoomTo: 'mobile-client', narration: 'User opens Instagram' },
-    { animatePacket: { from: 'client', to: 'cdn', protocol: 'HTTPS' } },
-    { animatePacket: { from: 'cdn', to: 'api-gateway', protocol: 'HTTPS' } },
-    { zoomTo: 'feed-service', narration: 'Feed service builds personalized feed' },
-    { animatePacket: { from: 'feed-service', to: 'redis', protocol: 'TCP', label: 'GET feed:user:123' } },
-    { animatePacket: { from: 'redis', to: 'feed-service', label: 'MISS → fallback to DB' } },
-    { zoomTo: 'cassandra', narration: 'Timeline fetched from Cassandra' },
+    { zoomTo: "mobile-client", narration: "User opens Instagram" },
+    { animatePacket: { from: "client", to: "cdn", protocol: "HTTPS" } },
+    { animatePacket: { from: "cdn", to: "api-gateway", protocol: "HTTPS" } },
+    { zoomTo: "feed-service", narration: "Feed service builds personalized feed" },
+    {
+      animatePacket: {
+        from: "feed-service",
+        to: "redis",
+        protocol: "TCP",
+        label: "GET feed:user:123",
+      },
+    },
+    { animatePacket: { from: "redis", to: "feed-service", label: "MISS → fallback to DB" } },
+    { zoomTo: "cassandra", narration: "Timeline fetched from Cassandra" },
   ],
 });
 ```
@@ -993,12 +1058,12 @@ Needed for: browser lifecycle, Kubernetes scheduling, Kafka rebalance, Raft elec
 
 ```js
 Timeline.play([
-  { t: 0,   action: 'dns-lookup',       label: 'DNS resolve api.example.com' },
-  { t: 50,  action: 'tcp-handshake',    label: 'SYN → SYN-ACK → ACK' },
-  { t: 80,  action: 'tls-negotiation',  label: 'TLS 1.3 handshake (1-RTT)' },
-  { t: 130, action: 'http-request',     label: 'GET /feed HTTP/2' },
-  { t: 180, action: 'server-process',   label: 'Auth → cache lookup → DB' },
-  { t: 300, action: 'response',         label: '200 OK (compressed, 82ms)' },
+  { t: 0, action: "dns-lookup", label: "DNS resolve api.example.com" },
+  { t: 50, action: "tcp-handshake", label: "SYN → SYN-ACK → ACK" },
+  { t: 80, action: "tls-negotiation", label: "TLS 1.3 handshake (1-RTT)" },
+  { t: 130, action: "http-request", label: "GET /feed HTTP/2" },
+  { t: 180, action: "server-process", label: "Auth → cache lookup → DB" },
+  { t: 300, action: "response", label: "200 OK (compressed, 82ms)" },
 ]);
 ```
 
@@ -1065,12 +1130,12 @@ Each failure scenario has a defined animation sequence. Reference for building f
 
 ```js
 MetricsPanel.render(el, {
-  rps:      1240,
-  latency:  { p50: '12ms', p95: '44ms', p99: '120ms' },
-  cpu:      67,     // percent
-  memory:   58,     // percent
-  errors:   0.2,    // percent
-  queueLag: 4500,   // ms
+  rps: 1240,
+  latency: { p50: "12ms", p95: "44ms", p99: "120ms" },
+  cpu: 67, // percent
+  memory: 58, // percent
+  errors: 0.2, // percent
+  queueLag: 4500, // ms
 });
 ```
 
@@ -1078,13 +1143,13 @@ Renders as overlay card on service node. Live update via setInterval or WebSocke
 
 ## Overlay Types
 
-| Overlay | Shows |
-|---|---|
-| MetricsOverlay | RPS, latency, CPU, memory, error rate |
-| FailureOverlay | error flash, crash state, retry count |
-| TrafficOverlay | packet flow rate, hot paths highlighted |
-| LatencyOverlay | P50/P95/P99 heat bands on connections |
-| SecurityOverlay | mTLS badge, auth flow, VPC boundary |
+| Overlay         | Shows                                   |
+| --------------- | --------------------------------------- |
+| MetricsOverlay  | RPS, latency, CPU, memory, error rate   |
+| FailureOverlay  | error flash, crash state, retry count   |
+| TrafficOverlay  | packet flow rate, hot paths highlighted |
+| LatencyOverlay  | P50/P95/P99 heat bands on connections   |
+| SecurityOverlay | mTLS badge, auth flow, VPC boundary     |
 
 ---
 
@@ -1159,8 +1224,8 @@ Global animation CSS classes. Apply consistently across all visualizations.
 /* Glow: active/selected nodes */
 .viz-glow {
   box-shadow:
-    0 0 10px rgba(88,166,255,.5),
-    0 0 20px rgba(88,166,255,.3);
+    0 0 10px rgba(88, 166, 255, 0.5),
+    0 0 20px rgba(88, 166, 255, 0.3);
 }
 
 /* Floating: idle interactive nodes */
@@ -1168,9 +1233,15 @@ Global animation CSS classes. Apply consistently across all visualizations.
   animation: vizFloat 4s ease-in-out infinite;
 }
 @keyframes vizFloat {
-  0%   { transform: translateY(0px); }
-  50%  { transform: translateY(-8px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 /* Pulse: health check / heartbeat */
@@ -1178,9 +1249,18 @@ Global animation CSS classes. Apply consistently across all visualizations.
   animation: vizPulse 1.8s infinite;
 }
 @keyframes vizPulse {
-  0%   { transform: scale(1);    opacity: .9; }
-  50%  { transform: scale(1.03); opacity: 1; }
-  100% { transform: scale(1);    opacity: .9; }
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
 }
 
 /* Beam: traffic flowing through node */
@@ -1189,51 +1269,79 @@ Global animation CSS classes. Apply consistently across all visualizations.
   overflow: hidden;
 }
 .viz-beam::after {
-  content: '';
+  content: "";
   position: absolute;
-  top: 0; left: -120%;
-  width: 120%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
+  top: 0;
+  left: -120%;
+  width: 120%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   animation: vizBeam 2s infinite;
 }
-@keyframes vizBeam { 100% { left: 120%; } }
+@keyframes vizBeam {
+  100% {
+    left: 120%;
+  }
+}
 
 /* Error flash: failure state */
 .viz-error-flash {
   animation: vizErrorFlash 0.3s ease-in-out 3;
 }
 @keyframes vizErrorFlash {
-  0%   { background: inherit; }
-  50%  { background: rgba(248,81,73,.4); }
-  100% { background: inherit; }
+  0% {
+    background: inherit;
+  }
+  50% {
+    background: rgba(248, 81, 73, 0.4);
+  }
+  100% {
+    background: inherit;
+  }
 }
 
 /* Packet dot: moving along SVG path */
 .viz-packet {
-  offset-path: path('M0,0 L300,0');  /* override per connection */
+  offset-path: path("M0,0 L300,0"); /* override per connection */
   animation: vizPacket 1.5s linear infinite;
 }
-@keyframes vizPacket { 100% { offset-distance: 100%; } }
+@keyframes vizPacket {
+  100% {
+    offset-distance: 100%;
+  }
+}
 
 /* Async dash: Kafka/queue connections */
 .viz-async-dash {
   stroke-dasharray: 8 4;
   animation: vizDash 1s linear infinite;
 }
-@keyframes vizDash { 100% { stroke-dashoffset: -24; } }
+@keyframes vizDash {
+  100% {
+    stroke-dashoffset: -24;
+  }
+}
 
 /* Scale spawn: new pod/replica appearing */
 .viz-spawn {
   animation: vizSpawn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 @keyframes vizSpawn {
-  from { transform: scale(0); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Lag fill: queue lag indicator */
 .viz-lag-fill {
-  transition: width 0.5s ease-in-out, background 0.5s;
+  transition:
+    width 0.5s ease-in-out,
+    background 0.5s;
 }
 /* js: el.style.width = lagPercent + '%'; */
 /* js: el.style.background = lagPercent > 80 ? '#f85149' : '#ffa657'; */
@@ -1245,14 +1353,14 @@ Global animation CSS classes. Apply consistently across all visualizations.
 
 When multiple animations compete, apply priority queue:
 
-| Priority | Animation type | Notes |
-|---|---|---|
-| 1 (highest) | Failure/error flash | Always visible, interrupts others |
-| 2 | User-selected node highlight | Interactive feedback |
-| 3 | Story/cinematic scenes | Narrated flows |
-| 4 | Packet flow (foreground) | Active connections |
-| 5 | Metrics overlay update | Live values |
-| 6 | Packet flow (background) | Idle connections |
-| 7 (lowest) | Float/pulse/idle | Ambient animations, pause when offscreen |
+| Priority    | Animation type               | Notes                                    |
+| ----------- | ---------------------------- | ---------------------------------------- |
+| 1 (highest) | Failure/error flash          | Always visible, interrupts others        |
+| 2           | User-selected node highlight | Interactive feedback                     |
+| 3           | Story/cinematic scenes       | Narrated flows                           |
+| 4           | Packet flow (foreground)     | Active connections                       |
+| 5           | Metrics overlay update       | Live values                              |
+| 6           | Packet flow (background)     | Idle connections                         |
+| 7 (lowest)  | Float/pulse/idle             | Ambient animations, pause when offscreen |
 
 Use `IntersectionObserver` to pause priority 6-7 when node off-screen. Use `requestAnimationFrame` batching — never `setInterval` for visual animations.

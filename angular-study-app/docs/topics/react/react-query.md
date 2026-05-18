@@ -1,6 +1,7 @@
 # React Query (TanStack)
 
 ## Quick Facts
+
 - Area: React
 - Tag: Data Fetching
 - Source: `src/modules/topics/react/react-query.js`
@@ -8,12 +9,15 @@
 - Visual coverage: live visual
 
 ## Concept
+
 TanStack Query (React Query) manages server state: fetching, caching, synchronizing, and updating async data. useQuery() fetches + caches data keyed by a query key. Data goes stale after staleTime, triggers background refetch on window focus or remount. useMutation() handles writes with optimistic updates. QueryClient holds the cache.
 
 ## Why It Matters
+
 Most React apps manually implement loading/error state, caching, and refetching in useEffect - duplicated everywhere and error-prone. React Query replaces all of this with declarative data subscriptions, automatic background sync, and cache deduplication. Server state (fetched data) is fundamentally different from client state (UI state) - it belongs in a different tool.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["User event"]
@@ -28,6 +32,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as User event
@@ -46,6 +51,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -60,16 +66,17 @@ Flow steps:
 5. DOM/cache
 
 ## Example
+
 ```javascript
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Fetch + cache users
 function UserList() {
   const { data, isLoading, error, isFetching } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => fetch('/api/users').then(r => r.json()),
-    staleTime: 5 * 60 * 1000,   // 5 minutes fresh
-    gcTime: 10 * 60 * 1000,     // 10 min in cache after unmount
+    queryKey: ["users"],
+    queryFn: () => fetch("/api/users").then((r) => r.json()),
+    staleTime: 5 * 60 * 1000, // 5 minutes fresh
+    gcTime: 10 * 60 * 1000, // 10 min in cache after unmount
   });
 
   if (isLoading) return <Spinner />;
@@ -77,7 +84,11 @@ function UserList() {
   return (
     <>
       {isFetching && <div>Refreshing...</div>}
-      <ul>{data.map(u => <li key={u.id}>{u.name}</li>)}</ul>
+      <ul>
+        {data.map((u) => (
+          <li key={u.id}>{u.name}</li>
+        ))}
+      </ul>
     </>
   );
 }
@@ -86,21 +97,23 @@ function UserList() {
 function AddUserForm() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (user) => fetch('/api/users', { method: 'POST', body: JSON.stringify(user) }),
+    mutationFn: (user) => fetch("/api/users", { method: "POST", body: JSON.stringify(user) }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 
-  return <button onClick={() => mutation.mutate({ name: 'Alice' })}>Add</button>;
+  return <button onClick={() => mutation.mutate({ name: "Alice" })}>Add</button>;
 }
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What problem does React Query solve vs useEffect for data fetching?
 
 2. Explain staleTime vs gcTime (cacheTime)
@@ -112,7 +125,9 @@ function AddUserForm() {
 5. What is background refetching and when does it trigger?
 
 ## Trade-offs
+
 Pros:
+
 - Eliminates boilerplate: no manual loading/error/cache state
 - Automatic background refetch on window focus, reconnect, component mount
 - Request deduplication: same queryKey = one request, shared cache
@@ -120,14 +135,15 @@ Pros:
 - Offline support via gcTime
 
 Cons:
+
 - Adds ~12KB to bundle
 - QueryClientProvider required at app root
 - staleTime=0 default means constant refetching - must configure for your app
 - Not a client state manager - still need Zustand/Context for UI state
 
 ## Gotchas
+
 - queryKey must include all variables the queryFn depends on - else stale data on param change
 - staleTime=0 (default) means data is immediately stale - refetches on every mount
 - gcTime (formerly cacheTime): how long unused query stays in cache - defaults to 5 min
 - invalidateQueries triggers background refetch only if query has active subscribers
-

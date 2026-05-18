@@ -1,6 +1,7 @@
 # Fiber & Reconciler
 
 ## Quick Facts
+
 - Area: React
 - Tag: Internals
 - Source: `src/modules/topics/react/react-fiber-reconciler.js`
@@ -8,20 +9,24 @@
 - Visual coverage: live visual
 
 ## Concept
+
 React Fiber is the reconciliation algorithm rewritten in React 16.
 Each component is a "fiber" - a JS object with: type, props, state, effectTag, child, sibling, return (parent).
 Work loop: React traverses fibers in two phases:
-  1. Render phase (beginWork -> completeWork): builds new fiber tree, computes what changed. INTERRUPTIBLE.
-  2. Commit phase: applies changes to real DOM. NOT interruptible (must be atomic).
-Diffing: same type at same position -> update (reuse DOM). Different type -> unmount old, mount new.
-Keys help React identify list items across re-renders without full unmount/remount.
+
+1. Render phase (beginWork -> completeWork): builds new fiber tree, computes what changed. INTERRUPTIBLE.
+2. Commit phase: applies changes to real DOM. NOT interruptible (must be atomic).
+   Diffing: same type at same position -> update (reuse DOM). Different type -> unmount old, mount new.
+   Keys help React identify list items across re-renders without full unmount/remount.
 
 ## Why It Matters
+
 Before Fiber, React used recursive rendering - could not be interrupted.
 Long renders blocked the main thread, causing jank. Fiber makes rendering interruptible/pausable.
 Understanding Fiber explains: why concurrent mode exists, how Suspense works, why keys matter in lists.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["User event"]
@@ -36,6 +41,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as User event
@@ -54,6 +60,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -68,6 +75,7 @@ Flow steps:
 5. DOM/cache
 
 ## Example
+
 ```javascript
 // JSX compiles to React.createElement
 const element = (
@@ -100,10 +108,12 @@ React.createElement('div', { className: 'app' },
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What is a fiber and what does it store?
 
 2. What is the difference between render phase and commit phase?
@@ -117,20 +127,23 @@ React.createElement('div', { className: 'app' },
 6. What is the alternate fiber?
 
 ## Trade-offs
+
 Pros:
+
 - Interruptible rendering enables concurrent features
 - Keys make list reconciliation O(n)
 - Fiber enables Suspense and transitions
 
 Cons:
+
 - Two-fiber system doubles memory
 - Commit phase blocks main thread
 - Diffing is heuristic - can miss optimal solution
 
 ## Gotchas
+
 - Never use array index as key for dynamic lists - causes state/DOM mismatches.
 - Different component type at same position = full unmount/remount (state lost!)
 - Render phase can run multiple times - keep it pure, no side effects.
 - useLayoutEffect runs synchronously in commit phase - avoid heavy work.
 - Strict Mode renders components twice (development) to catch impure renders.
-

@@ -1,6 +1,7 @@
 # useMemo & useCallback
 
 ## Quick Facts
+
 - Area: React
 - Tag: Performance
 - Source: `src/modules/topics/react/react-hooks-memo-callback.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 useMemo caches a computed value. Only recomputes when deps change.
 useCallback caches a function reference. Without it, every render creates a NEW function object.
 React.memo wraps a component - skips re-render if props are shallowly equal.
@@ -15,11 +17,13 @@ Key insight: object/function props break React.memo because new render = new ref
 useCallback stabilizes function refs so memoized children don't re-render unnecessarily.
 
 ## Why It Matters
+
 Without memoization, expensive computations run every render.
 More critically, unstable function refs (onClick, onChange) force all child React.memo components to re-render even when nothing logically changed.
 In large trees, this cascades - one parent re-render triggers hundreds of child re-renders.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["User event"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as User event
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,9 +72,10 @@ Flow steps:
 5. DOM/cache
 
 ## Example
+
 ```javascript
 // Without memoization - runs every render
-const sorted = items.sort((a,b) => a - b); // O(n log n) every time!
+const sorted = items.sort((a, b) => a - b); // O(n log n) every time!
 
 // useMemo - only recomputes when items changes
 const sorted = useMemo(() => {
@@ -76,11 +83,11 @@ const sorted = useMemo(() => {
 }, [items]);
 
 // Without useCallback - new function every render
-const handleClick = () => dispatch({ type: 'INC' }); // new ref!
+const handleClick = () => dispatch({ type: "INC" }); // new ref!
 
 // useCallback - stable reference
 const handleClick = useCallback(() => {
-  dispatch({ type: 'INC' });
+  dispatch({ type: "INC" });
 }, [dispatch]); // only changes if dispatch changes
 
 // React.memo - skips render if props unchanged
@@ -90,10 +97,12 @@ const Child = React.memo(function Child({ value, onClick }) {
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. When does React.memo re-render despite memoization?
 
 2. useMemo vs useCallback - what is the difference?
@@ -107,20 +116,23 @@ const Child = React.memo(function Child({ value, onClick }) {
 6. Can useCallback cause bugs? When?
 
 ## Trade-offs
+
 Pros:
+
 - Prevents expensive recomputation
 - Stabilizes function refs for memo boundaries
 - Critical for large lists
 
 Cons:
+
 - Memory cost to cache
 - Wrong deps = stale cache
 - Premature optimization overhead
 
 ## Gotchas
+
 - useMemo with [] deps = computed once - if the value depends on something else, it will be stale.
 - useCallback does NOT prevent the callback from being called - it prevents creating a new function.
 - React.memo only does shallow comparison - deep objects still break it.
 - Overusing useMemo is worse than not using it - adds memory + complexity.
 - useCallback(fn, [dep]) - if dep is unstable (object), still creates new callback every render.
-

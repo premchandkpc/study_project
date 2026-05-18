@@ -1,6 +1,7 @@
 # LLD: Distributed Task Queue (Celery / BullMQ / Sidekiq)
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: LLD
 - Source: `src/modules/topics/sysdesign/sd-lld-task-queue.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **Requirements:** Enqueue tasks, at-least-once execution, retry on failure, priority queues, dead letter queue (DLQ), autoscale workers.
 
 **Core components:**
@@ -17,11 +19,13 @@ Enqueues a task with: payload (job data), priority (0-10, higher = first), retry
 
 **2. Broker (Redis or RabbitMQ)**
 Stores task queues. With Redis:
+
 - `ZADD priority_queue <priority_score> <task_json>` - sorted set = priority queue.
 - Worker polls: `ZPOPMAX priority_queue` (highest priority first).
 - Or subscribe to keyspace events for push-based consumption.
 
 **3. Worker pool**
+
 - Workers are stateless processes. Horizontally scalable.
 - Each worker: ZPOPMAX -> execute task -> ACK (delete from in-flight set).
 - Heartbeat: worker updates `worker:{id}:heartbeat` every 10s in Redis.
@@ -38,15 +42,18 @@ After max retries (e.g., 3): task moved to `dlq` sorted set with error info atta
 Monitor queue depth (ZCARD priority_queue). If depth > threshold (e.g., 10) -> spawn new worker pod (K8s Horizontal Pod Autoscaler or custom signal). If depth < low threshold -> scale down.
 
 **7. At-least-once vs exactly-once**
+
 - **At-least-once** (default): task may be executed more than once on worker crash mid-execution. Tasks must be idempotent.
 - **Exactly-once**: use distributed lock (Redis SETNX) keyed on task_id before executing. If lock acquired -> execute. Else -> skip. Lock expires after task timeout.
 
 **Task lifecycle:** QUEUED -> IN_FLIGHT -> COMPLETED / FAILED -> (retry) -> DLQ
 
 ## Why It Matters
+
 Task queues are in every backend system - email sending, report generation, image processing, payment webhooks. Understanding retry, DLQ, and autoscaling shows production readiness. Celery is Python's most popular task queue; BullMQ is Node.js; Sidekiq is Ruby.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Client"]
@@ -72,6 +79,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as App
@@ -89,6 +97,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -103,6 +112,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```python
 # Minimal distributed task queue using Redis
 # Producer + Worker + Retry + DLQ
@@ -196,10 +206,12 @@ enqueue("resize_image", {"url": "s3://bucket/img.jpg"}, priority=3, delay=5)
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How do you ensure a task runs exactly once?
    Answer: Exactly-once is hard. Default behavior is at-least-once (safe retries, idempotent tasks). For true exactly-once: use a distributed lock (Redis SETNX) keyed on task_id with TTL = task max execution time. Worker acquires lock before executing. If acquired -> execute -> delete lock. If not acquired -> another worker has it -> skip. This prevents two workers executing the same task concurrently. But: if a worker crashes after acquiring the lock but before completing, the task won't run until TTL expires. Design tasks to be idempotent as the primary defense.
    Follow-ups: What if the worker crashes after the Redis SETNX but before task completion?; How does Celery handle exactly-once with ACKS_LATE?; How do you detect and recover tasks stuck in IN_FLIGHT state?
@@ -217,13 +229,16 @@ enqueue("resize_image", {"url": "s3://bucket/img.jpg"}, priority=3, delay=5)
    Follow-ups: Why does Celery use prefork instead of threads by default?; How does Celery handle database connection pools across worker processes?; What are the trade-offs between RabbitMQ and Redis as Celery brokers?
 
 ## Trade-offs
+
 Pros:
+
 - Decouples producers from consumers - producers don't wait for task completion
 - Retry + DLQ gives operational visibility into failures without losing data
 - Priority queues ensure critical work (payment processing) runs before background work (analytics)
 - Autoscaling workers matches compute cost to actual queue demand
 
 Cons:
+
 - At-least-once delivery means tasks must be idempotent - adds complexity to task handlers
 - Redis as broker has limited durability - AOF persistence helps but adds latency
 - Priority queues can starve low-priority tasks under sustained high-priority load
@@ -233,10 +248,10 @@ When to use:
 Any work that can be deferred from the request path: email sending, image resizing, report generation, ML inference, webhook delivery. Don't use for work that must complete within the HTTP request timeout.
 
 ## Gotchas
+
 - Tasks MUST be idempotent - at-least-once delivery means a task can run twice (worker crash after execution but before ACK). Design tasks to be safe to run multiple times.
 - Don't put large payloads in the queue - store data in S3/DB and pass only the reference ID in the task payload. Keeps broker memory lean.
 - Celery's default is ACKS_EARLY (task acknowledged on receipt, before execution). If worker dies mid-task, task is lost. Use ACKS_LATE for critical tasks.
 - Worker memory leaks: long-running Python workers accumulate memory. Configure max_tasks_per_child to recycle workers after N tasks.
 - Redis ZPOPMAX is not atomic with ZADD to in-flight - use Lua scripts or Redis transactions (MULTI/EXEC) for atomic dequeue + in-flight tracking
 - Queue depth autoscaling has lag - if 1000 tasks arrive simultaneously, it takes time to spin up workers. Pre-warm worker pool for known traffic spikes.
-

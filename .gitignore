@@ -39,5 +39,6 @@ build/
 # AI Tool specific (configs can be tracked, but not cache/temp files)
 .agent/cache/
 .claude/cache/
+.claude/worktrees/
 .continue/cache/
 inputs/

@@ -1,6 +1,7 @@
 # Kafka Replication & ISR
 
 ## Quick Facts
+
 - Area: Kafka and Messaging
 - Tag: replication
 - Source: `src/modules/topics/kafka/kafka-replication-isr.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 **L1 (30s ELI5):** Kafka replicates each partition to N brokers. One is leader (takes writes), others are followers (copy). If leader dies, a follower takes over. No data loss if all ISR have the data.
 
 **L2 (2min core):** ISR = In-Sync Replicas - replicas within replica.lag.time.max.ms of leader. HWM = High Watermark = min(all ISR LEOs) = what consumers can read. LEO = Log End Offset = what's written on each replica. acks=all waits for all ISR to confirm.
@@ -17,9 +19,11 @@
 **L4 (30min deep):** Leader tracks follower fetch offsets via FetchRequest/FetchResponse. Follower sends FetchRequest with its LEO -> leader knows if follower is caught up. Leader's ISR update propagated via ZooKeeper/KRaft. On leader failure: controller reads ISR from metadata, picks highest LEO follower. Follower truncates log to HWM before starting. Epoch-based leader tracking prevents split-brain.
 
 ## Why It Matters
+
 Replication provides durability and availability. Kafka's ISR model trades strict synchrony for performance - followers fetch asynchronously but are tracked. HWM ensures consumers always see consistent state.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Producer"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Producer
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,6 +72,7 @@ Flow steps:
 5. Sink/DLQ
 
 ## Example
+
 ```java
 // Producer config for strong durability
 Properties props = new Properties();
@@ -90,10 +97,12 @@ props.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5);
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Question
 
 2. Question
@@ -103,13 +112,14 @@ props.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5);
 4. Question
 
 ## Trade-offs
+
 Higher replication factor = more durability, more disk/network. acks=all + min.insync.replicas=2 = strong guarantee with ~2x write latency. Unclean election: availability vs consistency trade-off. ISR-based model: better throughput than synchronous replication.
 
 ## Gotchas
+
 - acks=all without min.insync.replicas>=2 = same as acks=1 if ISR has only leader
 - Consumers can only read up to HWM - records between HWM and leader LEO are invisible
 - ISR shrink data loss: data on leader is safe, but ISR shrink allows acks=all with fewer replicas
 - unclean.leader.election=true prevents unavailability but risks data loss - disabled by default
 - Follower truncates to HWM on leader rejoin - data written beyond HWM on old leader is discarded
 - replica.lag.time.max.ms too short -> ISR fluctuates under GC pauses or load spikes
-

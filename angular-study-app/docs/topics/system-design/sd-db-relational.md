@@ -1,6 +1,7 @@
 # Relational DBs - ACID, Indexing & Query Planning
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Database
 - Source: `src/modules/topics/sysdesign/sd-db-relational.js`
@@ -8,7 +9,9 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **ACID properties:**
+
 - **Atomicity** - all statements in a transaction commit or all roll back
 - **Consistency** - transaction brings DB from one valid state to another (constraints, foreign keys enforced)
 - **Isolation** - concurrent transactions appear sequential. Isolation levels: READ UNCOMMITTED < READ COMMITTED < REPEATABLE READ < SERIALIZABLE
@@ -18,9 +21,9 @@
 | Level | Dirty Read | Non-repeatable Read | Phantom Read | Performance |
 |---|---|---|---|---|
 | Read Uncommitted | check | check | check | Fastest |
-| Read Committed |  | check | check | Good (PG default) |
-| Repeatable Read |  |  | check | Moderate (MySQL default) |
-| Serializable |  |  |  | Slowest |
+| Read Committed | | check | check | Good (PG default) |
+| Repeatable Read | | | check | Moderate (MySQL default) |
+| Serializable | | | | Slowest |
 
 **B-Tree index:** default index type. O(log N) lookup, range scans efficient, good for equality + ORDER BY.
 **Hash index:** O(1) point lookup, no range scans (PostgreSQL heap AM only).
@@ -31,9 +34,11 @@
 **Query planner:** EXPLAIN ANALYZE shows plan (seq scan, index scan, bitmap heap scan, nested loop, hash join, merge join). The planner uses table statistics (ANALYZE) to estimate row counts.
 
 ## Why It Matters
+
 70% of backend performance issues trace to missing or wrong indexes. Understanding the planner is essential for debugging slow queries in production.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Application"]
@@ -58,6 +63,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as App
@@ -75,6 +81,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -89,6 +96,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```java
 // Spring Data JPA - indexing and query optimization
 @Entity
@@ -144,23 +152,25 @@ Notes:
 Always run EXPLAIN ANALYZE in staging before deploying queries that touch large tables. Composite index column order matters: put the most selective column first for range queries.
 
 ## Complexity And Performance
+
 - O(log N)
 - O(1)
 
 ## Interview Drills
+
 1. When would you denormalize a database schema?
    Answer: Normalisation (3NF) eliminates redundancy and ensures consistency. Denormalization intentionally adds redundancy for read performance.
-   
+
    **Denormalize when:**
    - JOIN cost is too high at scale (millions of rows x multiple tables)
    - Read-to-write ratio is very high (reporting, analytics)
    - Aggregates are pre-computed (daily order counts cached in user table)
-   
+
    **Techniques:**
    - Duplicate column to avoid JOIN (`user_email` on orders table)
    - Pre-compute aggregates (`order_count` on users table, updated by trigger)
    - Materialized views (auto-maintained in PostgreSQL)
-   
+
    **Risk:** update anomalies - duplicated data must be kept in sync.
    Follow-ups: What is a covering index?; How does MVCC (Multi-Version Concurrency Control) work in PostgreSQL?
 
@@ -170,15 +180,18 @@ Always run EXPLAIN ANALYZE in staging before deploying queries that touch large 
    2. **Stale statistics** - ANALYZE not run after large data change; planner underestimates row count
    3. **Function on indexed column** - `WHERE LOWER(email) = ...` can't use index on `email`; use functional index instead
    4. **Type mismatch** - comparing `VARCHAR` column to `INTEGER` literal forces cast, skips index
-   Follow-ups: How do you force PostgreSQL to use an index?; What is the difference between index scan and bitmap heap scan?
+      Follow-ups: How do you force PostgreSQL to use an index?; What is the difference between index scan and bitmap heap scan?
 
 ## Trade-offs
+
 Pros:
+
 - ACID guarantees for financial/transactional data
 - Rich query language - complex aggregations, JOINs
 - Mature ecosystem - replication, backup, monitoring
 
 Cons:
+
 - Vertical scaling has ceiling
 - Schema migrations on large tables require downtime (use pg_repack / online DDL)
 - Joins across shards are expensive or impossible
@@ -187,5 +200,5 @@ When to use:
 Default choice for transactional data (orders, users, payments). Move to NoSQL only when you need horizontal write scaling, flexible schema, or specific access patterns (time-series, document, graph).
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

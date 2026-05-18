@@ -1,6 +1,7 @@
 # Angular Signals
 
 ## Quick Facts
+
 - Area: Angular
 - Tag: Reactivity
 - Source: `src/modules/topics/angular/ng-signals.js`
@@ -8,9 +9,11 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Angular **Signals** (Angular 16+) are a reactive primitive that eliminates Zone.js for change detection.
 
 **Core APIs:**
+
 - `signal(initialValue)` - writable reactive value. Read: `count()`, Write: `count.set(5)`, Update: `count.update(v => v + 1)`
 - `computed(() => expr)` - derived value, re-evaluated lazily only when dependencies changed
 - `effect(() => { ... })` - runs when any signal read inside changes. Auto-tracks dependencies.
@@ -26,9 +29,11 @@ Angular **Signals** (Angular 16+) are a reactive primitive that eliminates Zone.
 **No Zone.js required:** signal changes trigger fine-grained DOM updates without CD cycle.
 
 ## Why It Matters
+
 Signals replace Zone.js's coarse "check everything on any event" with precise "update only what depends on this value." They compose naturally with RxJS via toSignal/toObservable. Angular 18+ fully supports zoneless applications with signals.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Template event"]
@@ -43,6 +48,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Template event
@@ -61,6 +67,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -75,6 +82,7 @@ Flow steps:
 5. DOM update
 
 ## Example
+
 ```typescript
 import { signal, computed, effect, input, model } from '@angular/core';
 
@@ -112,10 +120,12 @@ export class UserCardComponent {
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What is the difference between signal, computed, and effect?
 
 2. How do signals replace Zone.js change detection?
@@ -129,23 +139,26 @@ export class UserCardComponent {
 6. How do you interop signals with existing RxJS observables?
 
 ## Trade-offs
+
 Pros:
+
 - Fine-grained reactivity - only dependent components/expressions re-evaluate
 - No Zone.js needed - smaller bundle, predictable performance
 - Lazy evaluation - computed only re-runs when dependencies changed AND value is read
 - Cleaner interop with RxJS via toSignal/toObservable
 
 Cons:
+
 - effect() must be called in injection context or passed injector
 - Cannot use signals in constructor before injection context available
 - Mixing signals + Zone.js (hybrid mode) adds mental overhead
 - effect() creates subscriptions - must manage cleanup in long-lived services
 
 ## Gotchas
+
 - computed() is lazy - it only re-computes when a consumer reads it after a dependency change
 - effect() tracks ALL signals read during its execution - no explicit dependency list needed
 - set() vs update(): set(5) overwrites; update(v => v+1) derives from current value
 - Signal inputs (input()) are read-only - parent controls the value, component cannot set()
 - model() creates a writable signal + output pair - use for two-way binding scenarios
 - effect() in a service needs explicit injector or must be called in injection context
-

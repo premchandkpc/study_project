@@ -1,6 +1,7 @@
 # React.lazy + Suspense
 
 ## Quick Facts
+
 - Area: React
 - Tag: Performance
 - Source: `src/modules/topics/react/react-lazy-suspense.js`
@@ -8,12 +9,15 @@
 - Visual coverage: live visual
 
 ## Concept
+
 React.lazy() wraps a dynamic import() to create a lazily-loaded component. Suspense catches the thrown Promise (React's internal mechanism) and renders a fallback while the chunk loads. On first render, the lazy component suspends -> Suspense shows fallback -> chunk loads -> Promise resolves -> component renders. Code splitting reduces initial bundle size.
 
 ## Why It Matters
+
 Large apps ship one giant bundle by default. React.lazy + dynamic import() split code at route or feature boundaries. Users load only code they need - critical for performance on mobile/slow connections. Works with Vite, webpack, and Parcel.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["User event"]
@@ -28,6 +32,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as User event
@@ -46,6 +51,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -60,12 +66,13 @@ Flow steps:
 5. DOM/cache
 
 ## Example
+
 ```javascript
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense } from "react";
 
 // Chunk only loaded when AdminPanel is first rendered
-const AdminPanel = lazy(() => import('./AdminPanel'));
-const UserDashboard = lazy(() => import('./UserDashboard'));
+const AdminPanel = lazy(() => import("./AdminPanel"));
+const UserDashboard = lazy(() => import("./UserDashboard"));
 
 function App() {
   return (
@@ -82,9 +89,9 @@ function App() {
 function Layout() {
   return (
     <>
-      <Navbar />                     {/* always fast */}
+      <Navbar /> {/* always fast */}
       <Suspense fallback={<Skeleton />}>
-        <LazyFeature />               {/* suspends independently */}
+        <LazyFeature /> {/* suspends independently */}
       </Suspense>
     </>
   );
@@ -92,10 +99,12 @@ function Layout() {
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How does React.lazy work internally (what does it throw)?
 
 2. Where must Suspense be placed relative to lazy components?
@@ -107,21 +116,24 @@ function Layout() {
 5. What is the difference between Suspense for data fetching vs code splitting?
 
 ## Trade-offs
+
 Pros:
+
 - Reduces initial bundle - users only load code they visit
 - Zero runtime overhead - pure build-time split
 - Works with any bundler supporting dynamic import()
 - Nested Suspense boundaries give granular loading states
 
 Cons:
+
 - First visit to a lazy route has loading delay (waterfall)
 - React.lazy only works with default exports
 - SSR requires additional setup (dynamic() in Next.js)
 - Chunk waterfall: lazy loads another lazy -> two round trips
 
 ## Gotchas
+
 - React.lazy() must be called at module level - not inside components or conditionals
 - Only default exports supported - wrap named exports: () => import("./X").then(m => ({default: m.Foo}))
 - Suspense fallback renders for ALL suspended children - nest boundaries for granularity
 - Error during chunk load not caught by Suspense - needs ErrorBoundary wrapping it
-

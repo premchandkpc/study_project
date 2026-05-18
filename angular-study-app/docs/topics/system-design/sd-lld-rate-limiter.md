@@ -1,6 +1,7 @@
 # LLD: Rate Limiter - Token Bucket & Sliding Window
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: LLD
 - Source: `src/modules/topics/sysdesign/sd-lld-rate-limiter.js`
@@ -8,11 +9,13 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **Rate limiter** controls the rate of requests to protect services from overload and abuse.
 
 **Algorithm comparison:**
 
 **Fixed Window Counter:**
+
 ```
 Window: [0s - 60s] -> counter=100 -> reset at 60s
 Problem: 100 requests at :59, 100 more at :61 -> 200 in 2 seconds
@@ -27,15 +30,18 @@ Two fixed windows. current_count + previous_count x (1 - overlap).
 ~1% error, O(1) memory. Used by Cloudflare.
 
 **Token Bucket (most common):**
+
 - Bucket holds capacity C tokens. Refilled at rate R tokens/second.
 - Each request consumes 1 token. If empty -> reject (429).
 - Allows bursts up to C. Smooth average of R.
 
 **Leaky Bucket:**
+
 - Requests queued. Processed at fixed rate (leaks). Smooths bursts.
 - Output always at constant rate (good for downstream protection).
 
 **Distributed rate limiting with Redis:**
+
 - Store counters/timestamps in Redis (shared across all app instances)
 - Use Lua script for atomic check-and-increment
 - Key: `ratelimit:{userId}:{window}`
@@ -44,9 +50,11 @@ Two fixed windows. current_count + previous_count x (1 - overlap).
 `INCR` + `EXPIRE` for fixed window. For token bucket: store {tokens, last_refill} in Redis hash, Lua script calculates tokens since last refill.
 
 ## Why It Matters
+
 Rate limiter is the single most common LLD problem. Interviewers expect algorithm knowledge, distributed implementation, and Redis usage.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Client"]
@@ -72,6 +80,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as App
@@ -89,6 +98,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -103,6 +113,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```java
 // Token Bucket - distributed implementation with Redis Lua
 @Component
@@ -184,33 +195,38 @@ Notes:
 Lua scripts execute atomically in Redis - no race conditions between check and increment. Essential for correctness in distributed rate limiting.
 
 ## Complexity And Performance
+
 - O(N)
 - O(1)
 
 ## Interview Drills
+
 1. Design a rate limiter for an API that allows 100 requests per minute per user.
    Answer: **Requirements clarification:**
    - Per user (not global)
    - Distributed (multiple API servers)
    - Algorithm: Token bucket (allows burst up to 100, refills 100/min = 1.67/sec)
-   
+
    **Design:**
    1. **Storage:** Redis hash per user: `{tokens: 95.2, lastRefill: 1701234567890}`
    2. **Algorithm:** On each request, Lua script: calculate elapsed since lastRefill -> add tokens at rate 1.67/s -> if tokens >= 1 -> decrement -> allow; else -> 429
    3. **Headers:** Return `X-RateLimit-Limit: 100`, `X-RateLimit-Remaining: 45`, `X-RateLimit-Reset: 1701234620`
    4. **Scale:** Redis Cluster handles millions of users. Each key is tiny (~50 bytes).
    5. **Edge cases:** Clock skew across servers -> use Redis server time (TIME command). Redis unavailable -> fail open (allow) or fail closed (reject).
-   
+
    **Capacity:** 10M users x 50 bytes/user = 500MB Redis memory. Single Redis node handles 100K ops/s.
    Follow-ups: How do you handle rate limiting across multiple regions?; What are the trade-offs between token bucket and leaky bucket?
 
 ## Trade-offs
+
 Pros:
+
 - Token bucket: allows bursts, smooth average
 - Sliding window: accurate, prevents boundary burst
 - Redis Lua: atomic, no race conditions
 
 Cons:
+
 - Distributed clocks add complexity
 - Redis becomes a dependency - must be HA
 - Too strict limits frustrate legitimate users
@@ -219,5 +235,5 @@ When to use:
 Rate limit at: API gateway (global), per user, per IP. Use token bucket for API rate limiting. Leaky bucket for queue-based downstream protection.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

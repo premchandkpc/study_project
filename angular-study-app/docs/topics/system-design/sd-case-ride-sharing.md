@@ -1,6 +1,7 @@
 # Case Study: Ride Sharing (Uber / Lyft)
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Case Study
 - Source: `src/modules/topics/sysdesign/sd-case-ride-sharing.js`
@@ -8,21 +9,25 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **Requirements:** 5M trips/day, real-time driver location updates (every 4s), sub-5s match time, surge pricing.
 
 **Core challenges:**
+
 1. **Location tracking** - drivers send GPS coordinates every 4 seconds. ~500K active drivers = 125K updates/second.
 2. **Nearby driver search** - given rider location, find available drivers within 5km in <100ms.
 3. **Matching** - assign the best driver (ETA + rating + car type) to rider.
 4. **Real-time communication** - push trip status updates to both rider and driver.
 
 **Geospatial indexing:**
-- **Geohash** - encode lat/lng into a base32 string. Nearby locations share a prefix. 7-char geohash  150m x 150m cell. Query: find drivers in same geohash + 8 neighbors.
+
+- **Geohash** - encode lat/lng into a base32 string. Nearby locations share a prefix. 7-char geohash 150m x 150m cell. Query: find drivers in same geohash + 8 neighbors.
 - **H3 (Uber's hexagonal grid)** - hexagonal cells at multiple resolutions. Hexagons tile uniformly - no distortion at cell boundaries. Used for surge pricing regions.
 - **S2 (Google)** - spherical geometry, quadtree-based. Used by Google Maps.
 - **PostGIS / Redis GEOADD** - store points, radius search with GEORADIUS command.
 
 **Architecture:**
+
 - **Location service** - receives WebSocket/HTTP stream of driver positions. Updates Redis GEOADD (lng,lat per driver). Each driver position = 1 Redis geo write/4s.
 - **Supply service** - GEORADIUS search on Redis. Returns drivers within 5km. Filter: available, correct car type, not in trip.
 - **Dispatch/matching** - ranks candidates by ETA (computed by routing engine). Sends offer to best driver. Driver accepts/declines in 10s. On decline, next candidate offered.
@@ -32,9 +37,11 @@
 **Communication:** WebSocket for real-time push (driver location on map). SSE as fallback.
 
 ## Why It Matters
+
 Uber's architecture covers geospatial, real-time matching, state machines, and event-driven design - touching nearly every system design concept in one problem.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Users"]
@@ -60,6 +67,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant rider as Rider App
@@ -82,6 +90,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -96,6 +105,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```python
 # Location service - FastAPI + Redis Geo
 from fastapi import FastAPI, WebSocket
@@ -182,13 +192,15 @@ Notes:
 GEORADIUS is O(N+log M) where N is elements within radius. For 500K drivers in city, narrow radius (5km) returns ~200 drivers - fast enough for real-time matching.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How would you design the surge pricing system?
    Answer: **Goal:** Dynamically increase prices in areas where demand > supply to incentivise drivers.
-   
+
    **Design:**
    1. **H3 hexagonal grid** - divide city into ~1km hexagonal cells (resolution 8). Hexagons tile uniformly - no distortion.
    2. **Demand signal** - count trip requests per cell in last 5 minutes (Redis ZADD with sliding window).
@@ -197,15 +209,18 @@ GEORADIUS is O(N+log M) where N is elements within radius. For 500K drivers in c
    5. **Cache + refresh** - surge multipliers computed every 60s by a cron job. Cached in Redis per H3 cell ID.
    6. **Display** - rider app fetches surge multiplier for their H3 cell before booking. Shows surge warning.
    7. **Feedback loop** - higher prices -> more drivers enter area -> supply increases -> surge decreases (Uber intentionally shows driver earnings in surge zones).
-   Follow-ups: How do you prevent drivers from colluding to artificially create surge?; How would you handle the matching algorithm when multiple riders request simultaneously?
+      Follow-ups: How do you prevent drivers from colluding to artificially create surge?; How would you handle the matching algorithm when multiple riders request simultaneously?
 
 ## Trade-offs
+
 Pros:
+
 - Redis GEORADIUS: sub-millisecond nearby driver search
 - Geohash/H3: efficient spatial partitioning
 - WebSocket: real-time location updates without polling overhead
 
 Cons:
+
 - Redis is in-memory: 500K driver positions x 64 bytes = 32MB - easily fits but requires HA
 - WebSocket: sticky sessions or pub-sub backplane required
 - Matching race conditions: need atomic claim (ZREM) to prevent double-assignment
@@ -214,5 +229,5 @@ When to use:
 This pattern (Redis geo + WebSocket + event-driven matching) applies to any real-time location-aware service: food delivery, logistics tracking, peer-to-peer marketplace.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

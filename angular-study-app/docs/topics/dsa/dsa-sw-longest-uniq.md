@@ -1,6 +1,7 @@
 # Longest Substr No Repeat
 
 ## Quick Facts
+
 - Area: DSA
 - Tag: Sliding Window
 - Source: `src/modules/topics/dsa/dsa-sw-longest-uniq.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Return the length of the longest substring without repeating characters.
 
 **Pattern:** Variable sliding window + frequency map - O(n)
@@ -15,9 +17,11 @@ Return the length of the longest substring without repeating characters.
 **Scenario:** Session-token scan - keep the longest contiguous clean segment.
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Problem input"]
@@ -32,6 +36,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Problem input
@@ -50,6 +55,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -64,17 +70,21 @@ Flow steps:
 5. Answer
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - O(n)
 
 ## Interview Drills
+
 _No interview drills configured._
 
 ## Trade-offs
+
 _No trade-offs configured._
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

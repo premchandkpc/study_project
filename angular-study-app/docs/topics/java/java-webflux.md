@@ -1,6 +1,7 @@
 # Reactive Spring (WebFlux) & Project Reactor
 
 ## Quick Facts
+
 - Area: Java
 - Tag: Reactive
 - Source: `src/modules/topics/java/java-webflux.js`
@@ -8,15 +9,18 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **L1 (30s):** Reactive = event-loop + backpressure. One thread handles thousands of connections. No blocking allowed.
-**L2 (2min):** `Mono<T>` = 0 or 1 item (like CompletableFuture but lazy + backpressure). `Flux<T>` = 0..N stream. Both are *cold* - nothing runs until subscribed. Reactor's event loop (Netty) demultiplexes I/O; your code runs in non-blocking operator chains. **Backpressure**: subscriber calls `request(n)`; producer emits <= n items.
+**L2 (2min):** `Mono<T>` = 0 or 1 item (like CompletableFuture but lazy + backpressure). `Flux<T>` = 0..N stream. Both are _cold_ - nothing runs until subscribed. Reactor's event loop (Netty) demultiplexes I/O; your code runs in non-blocking operator chains. **Backpressure**: subscriber calls `request(n)`; producer emits <= n items.
 **L3 (10min):** Schedulers: `boundedElastic` for blocking calls (JDBC, files), `parallel` for CPU work. `subscribeOn` switches where the subscription runs; `publishOn` switches where downstream runs. Hot publishers (Sinks, SSE) share items regardless of subscribers. Cold publishers re-run for each subscriber.
 **L4 (30min):** Reactor backpressure internals use Reactive Streams spec - `Publisher/Subscriber/Subscription/Processor`. `flatMap` maintains an internal `FluxFlatMap` with configurable concurrency (default 256). Over-concurrency causes `OutOfMemoryError`. Context propagation replaces ThreadLocal for MDC trace IDs.
 
 ## Why It Matters
+
 **Production case:** Ecommerce checkout aggregates 5 external APIs (shipping, inventory, pricing, fraud, loyalty). With MVC + virtual threads all 5 block a thread each. With WebFlux + WebClient, all 5 fly in parallel on 1 thread. Real perf: 1200 RPS on 2 cores, vs 180 RPS blocking equivalent.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["HTTP Layer"]
@@ -43,6 +47,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant prod as Producer (Flux source)
@@ -60,6 +65,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -74,6 +80,7 @@ Flow steps:
 5. Subscriber receives item - onNext(item) fires - your business logic runs
 
 ## Example
+
 ```java
 @RestController @RequiredArgsConstructor
 class QuoteController {
@@ -99,10 +106,12 @@ class QuoteController {
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Mono vs Flux vs CompletableFuture - key differences?
    Answer: `CompletableFuture` is eager (starts immediately), single result, no backpressure. `Mono` is lazy, 0/1 item, backpressure aware. `Flux` is lazy, 0..N, full reactive streams. Reactor pipelines compose streaming + error handling cleanly.
    Follow-ups: Hot vs cold publisher?; When does subscribeOn vs publishOn matter?
@@ -116,13 +125,16 @@ class QuoteController {
    Follow-ups: Can you mix both in one app?; R2DBC vs JDBC with virtual threads?
 
 ## Trade-offs
+
 Pros:
+
 - Few threads handle massive connection counts
 - First-class backpressure
 - Composable streaming operators
 - WebClient supports connection pooling + timeouts
 
 Cons:
+
 - Steep learning curve, noisy stack traces
 - ThreadLocal requires Context propagation
 - R2DBC ecosystem thinner than JPA
@@ -132,10 +144,10 @@ When to use:
 **Streaming, SSE, WebSocket, high-fanout aggregators.** For CRUD in Java 21+, virtual threads + MVC is simpler and equally scalable.
 
 ## Gotchas
+
 - Never call `.block()` inside a reactive chain - deadlock on the event loop
 - ThreadLocal (MDC, security context) is lost on thread switches - use Reactor Context
 - `.subscribe()` inside `.flatMap()` = fire-and-forget, errors silently swallowed
 - WebClient without `.timeout()` will wait forever - always set a deadline
 - Hot publisher (Sinks) drops items if no subscriber yet - buffer or replay sink needed
 - boundedElastic pool is bounded (default 10xCPU) - too much blocking I/O = queue buildup
-

@@ -1,6 +1,7 @@
 # Event-Driven Architecture - EDA, CQRS & Event Sourcing
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Architecture
 - Source: `src/modules/topics/sysdesign/sd-event-driven.js`
@@ -8,19 +9,23 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **Event-Driven Architecture (EDA):** Services communicate by publishing and consuming events. No direct coupling - publisher doesn't know about consumers.
 
 **Event types:**
+
 - **Domain event** - something that happened (OrderPlaced, PaymentProcessed). Immutable fact.
 - **Command** - intent to change state (PlaceOrder). Can be rejected.
 - **Query** - read request. No side effects.
 
 **CQRS (Command Query Responsibility Segregation):**
 Separate write model (commands -> aggregates -> events) from read model (projections optimised for queries).
+
 - Write side: normalised, event-sourced, strongly consistent
 - Read side: denormalised, eventually consistent, optimised for specific views
 
 **Event Sourcing:** Store state as a sequence of events rather than current state.
+
 ```
 Events: [OrderCreated, ItemAdded, ItemAdded, OrderConfirmed, PaymentFailed, Retried, PaymentSuccess]
 Current state = apply(all events) = {status: PAID, items: [...], total: 99.99}
@@ -33,9 +38,11 @@ Current state = apply(all events) = {status: PAID, items: [...], total: 99.99}
 **Snapshot optimization:** After N events, store a snapshot of current state. Rebuild from snapshot + events since snapshot.
 
 ## Why It Matters
+
 CQRS+ES appears in DDD-heavy organizations (banking, insurance, logistics). Understanding it separates architects from developers in senior interviews.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Sources"]
@@ -61,6 +68,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Producer
@@ -78,6 +86,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -94,6 +103,7 @@ Flow steps:
 7. Return projection - Read model returned. No joining - pre-computed view.
 
 ## Example
+
 ```java
 // Event Sourcing with Axon Framework
 @Aggregate
@@ -163,26 +173,26 @@ Notes:
 Axon stores events in its Event Store. Projections are rebuilt by replaying all events - allows fixing bugs in projections without touching source data.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What are the downsides of event sourcing?
-   Answer: 1. **Eventual consistency** - projections (read models) lag behind the event store. Reads may return stale data.
-   2. **Schema evolution** - once an event is stored, you can't change its structure without upcasters (migration functions that transform old events to new shape).
-   3. **Query complexity** - you can't do ad-hoc SQL queries on event store; must build projections for every query pattern.
-   4. **Performance** - rebuilding state from 10,000 events per aggregate is slow without snapshots.
-   5. **Mental model shift** - team must think in events, not CRUD. High learning curve.
-   6. **Debugging** - a bug manifests across many events; hard to reason about current state.
+   Answer: 1. **Eventual consistency** - projections (read models) lag behind the event store. Reads may return stale data. 2. **Schema evolution** - once an event is stored, you can't change its structure without upcasters (migration functions that transform old events to new shape). 3. **Query complexity** - you can't do ad-hoc SQL queries on event store; must build projections for every query pattern. 4. **Performance** - rebuilding state from 10,000 events per aggregate is slow without snapshots. 5. **Mental model shift** - team must think in events, not CRUD. High learning curve. 6. **Debugging** - a bug manifests across many events; hard to reason about current state.
    Follow-ups: What is an upcaster in event sourcing?; When would you NOT use event sourcing?
 
 ## Trade-offs
+
 Pros:
+
 - Complete audit trail (built-in compliance)
 - Replay events to fix bugs or build new projections
 - Natural fit for event-driven integration
 
 Cons:
+
 - Eventual consistency complexity
 - Schema evolution requires upcasters
 - Overkill for simple CRUD applications
@@ -191,5 +201,5 @@ When to use:
 Use for: complex domains with audit requirements (finance, healthcare), workflows with many state transitions, systems where historical data replay has value. Avoid for: simple CRUD, small teams without DDD experience.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

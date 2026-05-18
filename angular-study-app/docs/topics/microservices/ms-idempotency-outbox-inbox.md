@@ -1,6 +1,7 @@
 # Idempotency Keys, Outbox & Inbox Patterns
 
 ## Quick Facts
+
 - Area: Microservices
 - Tag: Reliability
 - Source: `src/modules/topics/microservices/ms-idempotency-outbox-inbox.js`
@@ -8,9 +9,11 @@
 - Visual coverage: generated diagrams only
 
 ## Concept
+
 Distributed systems retry constantly: browsers retry, gateways retry, clients retry on timeouts, Kafka redelivers after crashes, and jobs rerun after deploys. **Idempotency** makes repeated attempts produce the same business result.
 
 Core patterns:
+
 - **Idempotency key**: client supplies a unique key per intent, such as checkout-123. The server stores the final response for that key and returns it on retries.
 - **Transactional outbox**: write the business row and the event row in one database transaction; a relay publishes later.
 - **Inbox / processed message table**: consumers record event IDs before side effects so redelivery does not duplicate work.
@@ -18,9 +21,11 @@ Core patterns:
 - **TTL and replay policy**: keys cannot live forever; choose retention based on retry windows, refunds, and audit needs.
 
 ## Why It Matters
+
 "Exactly once" is usually an interface promise built from **at-least-once delivery plus idempotent handlers**. Without idempotency, a timeout after a successful payment can lead the client to retry and charge twice. Without outbox, an order can commit but its event can be lost. Without inbox, one Kafka redelivery can reserve stock twice. These are the production bugs that make microservices painful during incidents.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Client"]
@@ -35,6 +40,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Client
@@ -53,6 +59,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,6 +73,7 @@ Flow steps:
 5. Observability
 
 ## Example
+
 ```python
 # FastAPI + PostgreSQL pattern: idempotent command + transactional outbox
 from datetime import datetime, timedelta, timezone
@@ -188,10 +196,12 @@ Notes:
 Create these constraints: `unique(idempotency_keys.client_key)`, `unique(outbox_events.id)`, and `unique(inbox_messages.event_id, inbox_messages.consumer_name)`. For payments, the idempotency key must also be sent to the payment provider so your boundary and the external provider share the same retry identity.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Is idempotency the same as exactly-once processing?
    Answer: No. Idempotency means repeated execution has the same externally visible result. Exactly-once is a stronger end-to-end claim and is rarely available across HTTP, databases, message brokers, and third-party APIs together. In practice, production systems use at-least-once delivery, durable dedupe records, unique constraints, and idempotent side effects to make retries safe.
    Follow-ups: Where should the idempotency key be generated?; How long should keys be retained?
@@ -201,12 +211,15 @@ Create these constraints: `unique(idempotency_keys.client_key)`, `unique(outbox_
    Follow-ups: How do you monitor stuck outbox rows?; When is Debezium better than polling?
 
 ## Trade-offs
+
 Pros:
+
 - Turns retry-heavy HTTP and message flows into safe repeated operations.
 - Outbox removes the dual-write gap between database commits and broker publishes.
 - Inbox tables make at-least-once brokers practical for business side effects.
 
 Cons:
+
 - Adds tables, cleanup jobs, and careful transaction boundaries.
 - Long idempotency retention increases storage and privacy obligations.
 - Returning cached responses can hide changed downstream state if keys are reused incorrectly.
@@ -215,5 +228,5 @@ When to use:
 Use for **payments, checkout, provisioning, inventory, email sends, external API calls, and Kafka consumers**. Skip only for naturally read-only operations or commands that are already protected by a strong unique business key.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

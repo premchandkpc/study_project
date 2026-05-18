@@ -1,6 +1,7 @@
 # Permutation in String
 
 ## Quick Facts
+
 - Area: DSA
 - Tag: Sliding Window II
 - Source: `src/modules/topics/dsa/dsa-sw2-perm-in-str.js`
@@ -8,18 +9,21 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Return true if any permutation (rearrangement) of pattern p exists as a substring of s.
 
- **Kid explanation:** You have the letters "ab". Does "eidbaooo" secretly hide "ba" or "ab" anywhere? Slide a window the same size as your pattern across the string. If the window has the exact same letter counts as your pattern, that's a match!
+**Kid explanation:** You have the letters "ab". Does "eidbaooo" secretly hide "ba" or "ab" anywhere? Slide a window the same size as your pattern across the string. If the window has the exact same letter counts as your pattern, that's a match!
 
 **Pattern:** Fixed-size sliding window + character frequency comparison - O(n)
 **Hint:** Window size = len(p). Slide and compare frequency maps instead of sorting.
 **Scenario:** Anagram detector - is any rearrangement of a keyword hiding in this text?
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Problem input"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Problem input
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,17 +72,21 @@ Flow steps:
 5. Answer
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - O(n)
 
 ## Interview Drills
+
 _No interview drills configured._
 
 ## Trade-offs
+
 _No trade-offs configured._
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

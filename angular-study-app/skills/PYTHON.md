@@ -8,15 +8,15 @@
 
 ## Topics Built
 
-| File | Title | Tag | Visual Status |
-|------|-------|-----|---------------|
-| `python-gil-concurrency.js` | GIL, Threads, Async & Multiprocessing | Concurrency | Placeholder — needs visual |
-| `python-memory-gc.js` | Memory Model & Garbage Collection | Memory | Placeholder — needs visual |
+| File                               | Title                                 | Tag             | Visual Status              |
+| ---------------------------------- | ------------------------------------- | --------------- | -------------------------- |
+| `python-gil-concurrency.js`        | GIL, Threads, Async & Multiprocessing | Concurrency     | Placeholder — needs visual |
+| `python-memory-gc.js`              | Memory Model & Garbage Collection     | Memory          | Placeholder — needs visual |
 | `python-decorators-metaclasses.js` | Decorators, Metaclasses & Descriptors | Metaprogramming | Placeholder — needs visual |
-| `python-type-hints-mypy.js` | Type Hints, mypy & Protocols | Typing | Placeholder — needs visual |
-| `python-pydantic-dataclasses.js` | Pydantic & Dataclasses | Data Validation | Placeholder — needs visual |
-| `python-fastapi.js` | FastAPI Internals | Web | Placeholder — needs visual |
-| `python-testing.js` | Testing: pytest & Patterns | Testing | Placeholder — needs visual |
+| `python-type-hints-mypy.js`        | Type Hints, mypy & Protocols          | Typing          | Placeholder — needs visual |
+| `python-pydantic-dataclasses.js`   | Pydantic & Dataclasses                | Data Validation | Placeholder — needs visual |
+| `python-fastapi.js`                | FastAPI Internals                     | Web             | Placeholder — needs visual |
+| `python-testing.js`                | Testing: pytest & Patterns            | Testing         | Placeholder — needs visual |
 
 > All 7 topics have full concept/example/interview content. Visuals need to be built.
 
@@ -24,13 +24,13 @@
 
 ## Visual Style References (inputs/)
 
-| Image | Apply to Python topics |
-|---|---|
+| Image                                                         | Apply to Python topics                                                                                                                                                      |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `inputs/image copy 11.png` — 5-row swimlane (Kafka use cases) | **`python-gil-concurrency.js`**: 3 rows — Threads (GIL-bound), asyncio (event loop), multiprocessing (separate GIL per process). Animated dots = tasks executing or blocked |
-| `inputs/image copy 7.png` — Blueprint numbered callouts | **`python-memory-gc.js`**: numbered steps ①object alloc→②ref count→③cyclic detection→④generational GC→⑤free. Heap diagram with generations |
-| `inputs/image copy 9.png` — Numbered circular loop | **`python-fastapi.js`**: circular numbered flow ①request→②middleware→③route match→④Pydantic validate→⑤handler→⑥response→⑦client |
-| `inputs/image copy 3.png` — Wheel center hub + radial | **`python-decorators-metaclasses.js`**: center = "Decorator", radial = @functools.wraps/@property/@classmethod/@staticmethod/@lru_cache/custom |
-| `inputs/image copy 12.png` — SQL mind map dark bg radial | **`python-type-hints-mypy.js`**: center = "Type System", radial = Union/Optional/Literal/TypeVar/Protocol/Generic/Final |
+| `inputs/image copy 7.png` — Blueprint numbered callouts       | **`python-memory-gc.js`**: numbered steps ①object alloc→②ref count→③cyclic detection→④generational GC→⑤free. Heap diagram with generations                                  |
+| `inputs/image copy 9.png` — Numbered circular loop            | **`python-fastapi.js`**: circular numbered flow ①request→②middleware→③route match→④Pydantic validate→⑤handler→⑥response→⑦client                                             |
+| `inputs/image copy 3.png` — Wheel center hub + radial         | **`python-decorators-metaclasses.js`**: center = "Decorator", radial = @functools.wraps/@property/@classmethod/@staticmethod/@lru_cache/custom                              |
+| `inputs/image copy 12.png` — SQL mind map dark bg radial      | **`python-type-hints-mypy.js`**: center = "Type System", radial = Union/Optional/Literal/TypeVar/Protocol/Generic/Final                                                     |
 
 ---
 
@@ -38,24 +38,24 @@
 
 ### PRIORITY 1 — Highest interview + visual value
 
-| Topic | Visual Type | Style Ref | Key Animation |
-|---|---|---|---|
-| `python-gil-concurrency.js` | Swimlane (3 rows, always-visible) | image copy 11 | Row1 Threads: GIL token moves between threads — only 1 runs at a time (CPU-bound = no speedup). Row2 asyncio: single thread, event loop tick, I/O tasks yield. Row3 multiprocessing: 2 processes, each with own GIL, true parallel |
-| `python-memory-gc.js` | FlowDiagram (5-step) | image copy 7 numbered | Step1: object created → `sys.getrefcount()`. Step2: ref count drops to 0 → immediate dealloc. Step3: cyclic refs (A→B→A) → ref count never 0 → GC needed. Step4: generational sweep (gen0→gen1→gen2). Step5: `gc.collect()` breaks cycles |
-| `python-fastapi.js` | FlowDiagram (5-step) | image copy 9 circular | Step1: HTTP request. Step2: Starlette ASGI middleware. Step3: route match + path params. Step4: Pydantic validate request body. Step5: async handler → background tasks → response |
+| Topic                       | Visual Type                       | Style Ref             | Key Animation                                                                                                                                                                                                                             |
+| --------------------------- | --------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `python-gil-concurrency.js` | Swimlane (3 rows, always-visible) | image copy 11         | Row1 Threads: GIL token moves between threads — only 1 runs at a time (CPU-bound = no speedup). Row2 asyncio: single thread, event loop tick, I/O tasks yield. Row3 multiprocessing: 2 processes, each with own GIL, true parallel        |
+| `python-memory-gc.js`       | FlowDiagram (5-step)              | image copy 7 numbered | Step1: object created → `sys.getrefcount()`. Step2: ref count drops to 0 → immediate dealloc. Step3: cyclic refs (A→B→A) → ref count never 0 → GC needed. Step4: generational sweep (gen0→gen1→gen2). Step5: `gc.collect()` breaks cycles |
+| `python-fastapi.js`         | FlowDiagram (5-step)              | image copy 9 circular | Step1: HTTP request. Step2: Starlette ASGI middleware. Step3: route match + path params. Step4: Pydantic validate request body. Step5: async handler → background tasks → response                                                        |
 
 ### PRIORITY 2
 
-| Topic | Visual Type | Key Animation |
-|---|---|---|
-| `python-decorators-metaclasses.js` | FlowDiagram | @decorator wraps: outer fn receives fn → returns wrapper. `functools.wraps` preserves metadata. Class decorator. `__call__` protocol |
-| `python-type-hints-mypy.js` | FlowDiagram | TypeVar: generic function. Protocol: structural subtyping (no inheritance needed). `reveal_type()` mypy output. Runtime vs static |
-| `python-pydantic-dataclasses.js` | FlowDiagram | Pydantic model: field validation pipeline → coerce → validators → error collection. vs `@dataclass` (no validation). `model_validator` |
+| Topic                              | Visual Type | Key Animation                                                                                                                          |
+| ---------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `python-decorators-metaclasses.js` | FlowDiagram | @decorator wraps: outer fn receives fn → returns wrapper. `functools.wraps` preserves metadata. Class decorator. `__call__` protocol   |
+| `python-type-hints-mypy.js`        | FlowDiagram | TypeVar: generic function. Protocol: structural subtyping (no inheritance needed). `reveal_type()` mypy output. Runtime vs static      |
+| `python-pydantic-dataclasses.js`   | FlowDiagram | Pydantic model: field validation pipeline → coerce → validators → error collection. vs `@dataclass` (no validation). `model_validator` |
 
 ### PRIORITY 3
 
-| Topic | Visual Type | Key Animation |
-|---|---|---|
+| Topic               | Visual Type | Key Animation                                                                                                           |
+| ------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `python-testing.js` | FlowDiagram | pytest fixture scope: function→class→module→session. `monkeypatch`. `pytest.mark.parametrize`. Coverage: branch vs line |
 
 ---
@@ -178,29 +178,29 @@ Use case split:
 
 ### HIGH PRIORITY (interview-critical, no JS file yet)
 
-| Topic | Suggested File | Visual Type | Key Concepts |
-|-------|---------------|-------------|--------------|
-| Python async internals | `python-async-internals.js` | FlowDiagram | Event loop: selector (epoll/kqueue) → ready callbacks. Coroutine: `__await__` protocol. Task wraps coroutine. Future = promise. `asyncio.gather` vs `asyncio.wait`. `asyncio.Queue` for producer/consumer |
-| Python data model | `python-data-model.js` | ComponentTree | Dunder methods: `__init__/__new__/__repr__/__str__/__eq__/__hash__/__len__/__getitem__/__iter__/__next__`. Protocol without ABC. Operator overloading |
-| Python internals (CPython) | `python-cpython.js` | FlowDiagram | `.py` → bytecode (`dis` module). Stack-based VM. Frame objects. LEGB scope rule. Name lookup: locals→enclosing→globals→builtins |
-| generators & itertools | `python-generators.js` | FlowDiagram | `yield` suspends frame. `send()` resumes with value. `yield from` delegation. `itertools.chain/islice/groupby`. Generator vs list — lazy evaluation, memory |
-| Python packaging | `python-packaging.js` | FlowDiagram | pyproject.toml. pip vs uv vs poetry. virtual env isolation. `__init__.py` vs namespace packages. Wheel vs sdist |
+| Topic                      | Suggested File              | Visual Type   | Key Concepts                                                                                                                                                                                              |
+| -------------------------- | --------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Python async internals     | `python-async-internals.js` | FlowDiagram   | Event loop: selector (epoll/kqueue) → ready callbacks. Coroutine: `__await__` protocol. Task wraps coroutine. Future = promise. `asyncio.gather` vs `asyncio.wait`. `asyncio.Queue` for producer/consumer |
+| Python data model          | `python-data-model.js`      | ComponentTree | Dunder methods: `__init__/__new__/__repr__/__str__/__eq__/__hash__/__len__/__getitem__/__iter__/__next__`. Protocol without ABC. Operator overloading                                                     |
+| Python internals (CPython) | `python-cpython.js`         | FlowDiagram   | `.py` → bytecode (`dis` module). Stack-based VM. Frame objects. LEGB scope rule. Name lookup: locals→enclosing→globals→builtins                                                                           |
+| generators & itertools     | `python-generators.js`      | FlowDiagram   | `yield` suspends frame. `send()` resumes with value. `yield from` delegation. `itertools.chain/islice/groupby`. Generator vs list — lazy evaluation, memory                                               |
+| Python packaging           | `python-packaging.js`       | FlowDiagram   | pyproject.toml. pip vs uv vs poetry. virtual env isolation. `__init__.py` vs namespace packages. Wheel vs sdist                                                                                           |
 
 ### MEDIUM PRIORITY
 
-| Topic | Suggested File | Key Concepts |
-|-------|---------------|--------------|
+| Topic              | Suggested File          | Key Concepts                                                                                                               |
+| ------------------ | ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | Python performance | `python-performance.js` | `cProfile`/`line_profiler`. Numpy vectorization vs loops. `__slots__` vs dict. `functools.lru_cache`. Cython, numba, mypyc |
-| SQLAlchemy ORM | `python-sqlalchemy.js` | Session, Unit of Work, lazy loading, N+1, `relationship()`, Core vs ORM query style |
-| Celery task queue | `python-celery.js` | Task → broker (Redis/RMQ) → worker → result backend. Beat scheduler. Retry with backoff. Canvas: chain/chord/group |
-| Python ML pipeline | `python-ml-pipeline.js` | Scikit-learn Pipeline, pandas DataFrame internals, numpy array memory layout (C vs Fortran order) |
+| SQLAlchemy ORM     | `python-sqlalchemy.js`  | Session, Unit of Work, lazy loading, N+1, `relationship()`, Core vs ORM query style                                        |
+| Celery task queue  | `python-celery.js`      | Task → broker (Redis/RMQ) → worker → result backend. Beat scheduler. Retry with backoff. Canvas: chain/chord/group         |
+| Python ML pipeline | `python-ml-pipeline.js` | Scikit-learn Pipeline, pandas DataFrame internals, numpy array memory layout (C vs Fortran order)                          |
 
 ### LOW PRIORITY
 
-| Topic | Suggested File | Key Concepts |
-|-------|---------------|--------------|
-| Python security | `python-security.js` | pickle deserialization attacks, SSRF, template injection (Jinja2), secrets module, `hashlib` proper usage |
-| Python CLI tools | `python-cli.js` | `argparse` vs `click` vs `typer`. `rich` for output. `pathlib`. `subprocess`. `shutil` |
+| Topic            | Suggested File       | Key Concepts                                                                                              |
+| ---------------- | -------------------- | --------------------------------------------------------------------------------------------------------- |
+| Python security  | `python-security.js` | pickle deserialization attacks, SSRF, template injection (Jinja2), secrets module, `hashlib` proper usage |
+| Python CLI tools | `python-cli.js`      | `argparse` vs `click` vs `typer`. `rich` for output. `pathlib`. `subprocess`. `shutil`                    |
 
 ---
 
@@ -245,32 +245,34 @@ FastAPI:
 
 ```js
 (function () {
-  'use strict';
+  "use strict";
 
-  window.PYTHON_TOPICS = (window.PYTHON_TOPICS || []).concat([{
-    id:    'python-<topic>',
-    area:  'python',
-    title: '<Title>',
-    tag:   '<Tag>',
-    tags:  ['python', '<keyword1>', '<keyword2>'],
+  window.PYTHON_TOPICS = (window.PYTHON_TOPICS || []).concat([
+    {
+      id: "python-<topic>",
+      area: "python",
+      title: "<Title>",
+      tag: "<Tag>",
+      tags: ["python", "<keyword1>", "<keyword2>"],
 
-    concept: `<explanation>`,
-    why:     `<production relevance>`,
+      concept: `<explanation>`,
+      why: `<production relevance>`,
 
-    example: {
-      language: 'python',
-      code: `# Python code`,
+      example: {
+        language: "python",
+        code: `# Python code`,
+      },
+
+      interview: ["Question 1?", "Question 2?"],
+      tradeoffs: { pros: ["..."], cons: ["..."] },
+      gotchas: ["Gotcha 1"],
+
+      visual: function (mount) {
+        // Swimlane (always-visible) for GIL/async/multiprocessing comparison
+        // ReactViz.panel FlowDiagram for single lifecycle (memory GC, FastAPI request)
+        // ComponentTree for data model / dunder hierarchy
+      },
     },
-
-    interview: ['Question 1?', 'Question 2?'],
-    tradeoffs: { pros: ['...'], cons: ['...'] },
-    gotchas: ['Gotcha 1'],
-
-    visual: function (mount) {
-      // Swimlane (always-visible) for GIL/async/multiprocessing comparison
-      // ReactViz.panel FlowDiagram for single lifecycle (memory GC, FastAPI request)
-      // ComponentTree for data model / dunder hierarchy
-    },
-  }]);
+  ]);
 })();
 ```

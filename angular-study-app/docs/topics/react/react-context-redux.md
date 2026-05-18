@@ -1,6 +1,7 @@
 # Context vs Redux
 
 ## Quick Facts
+
 - Area: React
 - Tag: State
 - Source: `src/modules/topics/react/react-context-redux.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Context API: built-in React. Provider -> Consumer. Any ancestor can pass data to any descendant.
 Problem: every consumer re-renders when ANY part of the context value changes. Not selective.
 Redux: external state container. Single store. State changed only via dispatched actions through a reducer.
@@ -16,11 +18,13 @@ Redux Toolkit (RTK) modernizes Redux: createSlice, createAsyncThunk, Immer for m
 Zustand: minimal store with hooks - simpler than Redux, more selective than Context.
 
 ## Why It Matters
+
 Context is best for: theme, locale, auth user - low-frequency, global-ish data.
 Redux/Zustand for: complex state with many actions, cross-feature data, optimistic updates, devtools.
 Choosing wrong: Context for high-frequency state = re-render cascade; Redux for simple state = overengineering.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["User event"]
@@ -35,6 +39,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as User event
@@ -53,6 +58,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -67,6 +73,7 @@ Flow steps:
 5. DOM/cache
 
 ## Example
+
 ```javascript
 // Context (simple, but all consumers re-render)
 const UserContext = createContext(null);
@@ -82,35 +89,43 @@ function App() {
 
 // Redux Toolkit (selective, scalable)
 const counterSlice = createSlice({
-  name: 'counter',
-  initialState: { value: 0, status: 'idle' },
+  name: "counter",
+  initialState: { value: 0, status: "idle" },
   reducers: {
-    increment: state => { state.value += 1; }, // Immer!
-    decrement: state => { state.value -= 1; },
-    reset:     state => { state.value = 0; },
+    increment: (state) => {
+      state.value += 1;
+    }, // Immer!
+    decrement: (state) => {
+      state.value -= 1;
+    },
+    reset: (state) => {
+      state.value = 0;
+    },
   },
 });
 
 export const { increment, decrement, reset } = counterSlice.actions;
 
 // Selector: only re-renders when value changes
-const count = useSelector(state => state.counter.value);
+const count = useSelector((state) => state.counter.value);
 const dispatch = useDispatch();
 
 // Zustand (simplest)
 const useStore = create((set) => ({
   count: 0,
-  inc: () => set(state => ({ count: state.count + 1 })),
-  dec: () => set(state => ({ count: state.count - 1 })),
+  inc: () => set((state) => ({ count: state.count + 1 })),
+  dec: () => set((state) => ({ count: state.count - 1 })),
 }));
-const { count, inc } = useStore(state => ({ count: state.count, inc: state.inc }));
+const { count, inc } = useStore((state) => ({ count: state.count, inc: state.inc }));
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Why does Context cause unnecessary re-renders?
 
 2. What problem does Redux solve that Context does not?
@@ -124,12 +139,13 @@ const { count, inc } = useStore(state => ({ count: state.count, inc: state.inc }
 6. How do you optimize Context to prevent re-renders?
 
 ## Trade-offs
+
 _No trade-offs configured._
 
 ## Gotchas
+
 - Context: passing object as value = new ref every render = all consumers re-render. Memoize value.
 - Redux: never mutate state directly - use RTK (Immer) or spread operator.
 - useSelector re-runs on every dispatch - selector must return same ref if nothing changed.
 - Redux middleware (thunk) runs between dispatch and reducer - async goes here.
 - Split contexts by update frequency: AuthContext changes rarely, CartContext changes often.
-

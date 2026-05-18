@@ -1,6 +1,7 @@
 # Course Schedule (Topo Sort)
 
 ## Quick Facts
+
 - Area: DSA
 - Tag: Graph
 - Source: `src/modules/topics/dsa/dsa-graph-topo-sort.js`
@@ -8,18 +9,21 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Given n courses and prerequisite pairs, can you finish all courses? Return a valid order.
 
- **Kid explanation:** Some courses need you to take other courses first. Math before Calculus, Reading before Literature. Imagine each course as a person at a door - they'll only enter once ALL their prerequisites have gone first. Count how many people are blocking each door (in-degree). Start with doors that have zero blockers. As people enter, they unblock more doors!
+**Kid explanation:** Some courses need you to take other courses first. Math before Calculus, Reading before Literature. Imagine each course as a person at a door - they'll only enter once ALL their prerequisites have gone first. Count how many people are blocking each door (in-degree). Start with doors that have zero blockers. As people enter, they unblock more doors!
 
 **Pattern:** Kahn's BFS topological sort - O(V + E)
 **Key insight:** in-degree = number of prerequisites. Process nodes with in-degree 0 first. Each time you process a node, reduce in-degree of its dependents. If any node never reaches 0, there's a cycle.
 **Scenario:** Build system - compile dependencies before the module that needs them. Package manager dependency resolution.
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Problem input"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Problem input
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,17 +72,21 @@ Flow steps:
 5. Answer
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - O(V + E)
 
 ## Interview Drills
+
 _No interview drills configured._
 
 ## Trade-offs
+
 _No trade-offs configured._
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

@@ -1,6 +1,7 @@
 # Minimum Window Substring
 
 ## Quick Facts
+
 - Area: DSA
 - Tag: Sliding Window II
 - Source: `src/modules/topics/dsa/dsa-sw2-min-window.js`
@@ -8,18 +9,21 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Find the smallest substring of s that contains ALL characters of t.
 
- **Kid explanation:** Imagine you're reading a book and you need to find all letters of the word "ABC". Slide a magnifying glass across - expand it right until you see all the letters, then shrink it from the left to get the shortest possible view. That shortest view is your answer!
+**Kid explanation:** Imagine you're reading a book and you need to find all letters of the word "ABC". Slide a magnifying glass across - expand it right until you see all the letters, then shrink it from the left to get the shortest possible view. That shortest view is your answer!
 
 **Pattern:** Variable sliding window + two frequency maps - O(n+m)
 **Hint:** Expand right until all chars covered, shrink left to minimize, track global minimum.
 **Scenario:** Log search - find the shortest log excerpt that contains all required keywords.
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Problem input"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Problem input
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,17 +72,21 @@ Flow steps:
 5. Answer
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - O(n+m)
 
 ## Interview Drills
+
 _No interview drills configured._
 
 ## Trade-offs
+
 _No trade-offs configured._
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

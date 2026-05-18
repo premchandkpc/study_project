@@ -1,6 +1,7 @@
 # Go Memory Model, sync & atomic
 
 ## Quick Facts
+
 - Area: Go
 - Tag: Sync
 - Source: `src/modules/topics/golang/go-memory-model-sync.js`
@@ -8,9 +9,11 @@
 - Visual coverage: generated diagrams only
 
 ## Concept
+
 The **Go Memory Model** defines happens-before: a send on a channel happens-before the corresponding receive; `sync.Mutex` unlock happens-before a subsequent lock. Without synchronisation, the compiler and CPU can reorder reads/writes.
 
 Key primitives:
+
 - **`sync.Mutex` / `sync.RWMutex`** - exclusive / reader-writer lock.
 - **`sync.WaitGroup`** - count-down latch.
 - **`sync.Once`** - exactly-once initialization.
@@ -18,9 +21,11 @@ Key primitives:
 - **`sync/atomic`** - lock-free load/store/CAS on int32/64, pointers, `atomic.Value`.
 
 ## Why It Matters
+
 Go does **not** prevent data races by language design (unlike Rust). The race detector (`-race`) catches them at runtime but incurs 5-10x overhead. Production incidents commonly trace back to maps accessed concurrently without locks. `sync.Once` is the idiomatic singleton pattern; double-checked locking with `atomic` is fragile without it.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Request"]
@@ -35,6 +40,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Request
@@ -53,6 +59,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,6 +73,7 @@ Flow steps:
 5. Response/error
 
 ## Example
+
 ```go
 package main
 
@@ -124,10 +132,12 @@ Notes:
 Never copy a `sync.Mutex` after first use (vet catches this). Prefer `defer mu.Unlock()` immediately after `Lock()` to avoid forgetting under panics/returns.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. When would you use sync.Map over a mutex-protected map?
    Answer: `sync.Map` is optimised for two patterns: (1) many goroutines reading the same keys (read-mostly), or (2) disjoint keys written by different goroutines. It uses an internal read-only shard for reads (lock-free) and a dirty map for writes. For high-write or iteration-heavy workloads, a `RWMutex` map is faster and easier to reason about.
    Follow-ups: How does sync.Map avoid starvation on promotion?; What is the cost of sync.Map.Range?
@@ -137,12 +147,15 @@ Never copy a `sync.Mutex` after first use (vet catches this). Prefer `defer mu.U
    Follow-ups: Can -race miss races?; What is the cost of -race in production?
 
 ## Trade-offs
+
 Pros:
+
 - atomic ops are lock-free and composable for simple counters/flags.
 - sync.Once elegantly solves lazy init without error-prone double-checked locking.
 - Race detector is off-by-default - production binaries pay no overhead.
 
 Cons:
+
 - sync.Mutex is not reentrant (unlike Java's synchronized) - deadlock on self-lock.
 - sync.Map has no typed API, returns interface{}.
 - Atomics alone cannot express multi-field transactions - still need locks.
@@ -151,5 +164,5 @@ When to use:
 **Mutex** for general shared state. **RWMutex** when reads dominate. **atomic** for single-value counters/flags. **sync.Once** for singletons. **channels** when you're transferring ownership, not sharing state.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

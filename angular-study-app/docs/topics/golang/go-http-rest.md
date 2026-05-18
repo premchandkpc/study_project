@@ -1,6 +1,7 @@
 # HTTP Servers, Middleware & net/http
 
 ## Quick Facts
+
 - Area: Go
 - Tag: HTTP
 - Source: `src/modules/topics/golang/go-http-rest.js`
@@ -8,17 +9,21 @@
 - Visual coverage: generated diagrams only
 
 ## Concept
+
 Go's `net/http` is production-grade and used directly without a framework for many services. Key types:
+
 - **`http.Handler`** - interface: `ServeHTTP(ResponseWriter, *Request)`.
 - **`http.ServeMux`** - built-in path router (Go 1.22+ supports method+wildcard patterns).
 - **Middleware** - a function that wraps a `Handler` returning another `Handler`.
 - **`http.Client`** - default client has no timeout - always configure one.
-Third-party: **Chi** (composable middleware, stdlib-compatible), **Gin** (performance, familiar API).
+  Third-party: **Chi** (composable middleware, stdlib-compatible), **Gin** (performance, familiar API).
 
 ## Why It Matters
+
 Go's HTTP server is one of the fastest in any GC language. Understanding `net/http` internals - connection lifecycle, `http.Transport` keep-alives, body draining - is essential for high-throughput services. Incorrectly not reading a response body causes connection pool exhaustion.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Request"]
@@ -33,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Request
@@ -51,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -64,6 +71,7 @@ Flow steps:
 5. Response/error
 
 ## Example
+
 ```go
 package main
 
@@ -136,10 +144,12 @@ Notes:
 Always set `ReadTimeout`, `WriteTimeout`, and `IdleTimeout` on `http.Server`. Always `io.Copy(io.Discard, resp.Body); resp.Body.Close()` on client responses to enable connection reuse.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Why should you never use the default http.Client in production?
    Answer: The default `http.Client` has **no timeout** - a slow server holds the goroutine (and potentially a connection) forever. Also, the default `Transport` has a limited idle connection pool. Always configure `Timeout`, `MaxIdleConns`, and `IdleConnTimeout` for production clients.
    Follow-ups: What is connection draining?; How does http.Transport handle keep-alive?
@@ -149,12 +159,15 @@ Always set `ReadTimeout`, `WriteTimeout`, and `IdleTimeout` on `http.Server`. Al
    Follow-ups: What is the difference between Shutdown and Close?; How do you drain Kafka consumers before shutdown?
 
 ## Trade-offs
+
 Pros:
+
 - net/http is production-grade with zero dependencies.
 - Go 1.22 mux handles method+wildcard - frameworks less necessary.
 - http.Server is trivially embeddable in tests via httptest.
 
 Cons:
+
 - Built-in mux lacks middleware chaining - use Chi/Gin for large apps.
 - No built-in request validation, rate limiting, or auth - compose manually.
 - HTTP/2 push and HTTP/3 require extra setup.
@@ -163,5 +176,5 @@ When to use:
 **net/http** for small services and CLIs. **Chi** when middleware composition is needed. **Gin** for maximum ecosystem and familiar API. Avoid frameworks with invasive code generation.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

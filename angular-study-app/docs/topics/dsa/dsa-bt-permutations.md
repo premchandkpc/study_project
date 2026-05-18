@@ -1,6 +1,7 @@
 # Permutations
 
 ## Quick Facts
+
 - Area: DSA
 - Tag: Backtracking
 - Source: `src/modules/topics/dsa/dsa-bt-permutations.js`
@@ -8,18 +9,21 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Return all possible orderings (permutations) of a list of distinct integers.
 
- **Kid explanation:** You have 3 friends sitting in a row: 1, 2, 3. How many ways can they sit? 3x2x1 = 6 ways! For the first seat, any of the 3 can sit. For the second, any of the remaining 2. And so on. We do this with a "swap and recurse" trick - swap each friend into the first seat, solve the rest, then swap back.
+**Kid explanation:** You have 3 friends sitting in a row: 1, 2, 3. How many ways can they sit? 3x2x1 = 6 ways! For the first seat, any of the 3 can sit. For the second, any of the remaining 2. And so on. We do this with a "swap and recurse" trick - swap each friend into the first seat, solve the rest, then swap back.
 
 **Pattern:** Swap-based backtracking - O(n! x n)
 **Key insight:** Fix position by position. For position i, try swapping each element from [i..n-1] into position i. Recurse on i+1. Undo the swap (backtrack).
 **Scenario:** Password cracker - generate all orderings of a character set.
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Problem input"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Problem input
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,17 +72,21 @@ Flow steps:
 5. Answer
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - O(n! x n)
 
 ## Interview Drills
+
 _No interview drills configured._
 
 ## Trade-offs
+
 _No trade-offs configured._
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

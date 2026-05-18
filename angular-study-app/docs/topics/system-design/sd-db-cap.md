@@ -1,6 +1,7 @@
 # CAP Theorem, Consistency Models & PACELC
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Database
 - Source: `src/modules/topics/sysdesign/sd-db-cap.js`
@@ -8,16 +9,20 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **CAP Theorem** (Brewer 2000): A distributed system can guarantee at most **2 of 3**:
+
 - **C**onsistency - every read returns the most recent write (linearisability)
 - **A**vailability - every request receives a response (not necessarily latest data)
 - **P**artition tolerance - system continues despite network partitions
 
 **In practice:** Partitions happen (network failures are real). So you choose **CP or AP**:
+
 - **CP** (Zookeeper, HBase, etcd, RDBMS with sync replication): sacrifice availability during partition - refuse requests rather than return stale data
 - **AP** (Cassandra, CouchDB, DynamoDB default): sacrifice consistency - return potentially stale data, reconcile later
 
 **Consistency spectrum (weakest -> strongest):**
+
 1. **Eventual** - given no new updates, all replicas converge eventually (DNS, shopping cart)
 2. **Monotonic read** - once you read value X, you'll never read an older value
 3. **Read-your-writes** - after you write, you always see your own write
@@ -28,9 +33,11 @@
 **PACELC extension:** Even without partition, there's a trade-off between **Latency** and **Consistency**. A quorum write to 3 replicas is consistent but slower than writing to 1.
 
 ## Why It Matters
+
 CAP and consistency models appear in nearly every system design interview. Choosing wrong consistency model costs money (over-engineered) or correctness (data loss/anomalies).
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Client"]
@@ -56,6 +63,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as App
@@ -73,6 +81,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -87,6 +96,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```java
 // Cassandra - tunable consistency per operation
 @Repository
@@ -125,35 +135,40 @@ Notes:
 Rule of thumb: W + R > N guarantees strong consistency. With N=3, W=2, R=2: 2+2=4 > 3 -> every read sees the latest write.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Explain the CAP theorem with a real-world example.
    Answer: During a network partition in a multi-datacenter setup (east <-> west data centers lose connectivity):
-   
+
    **CP choice (e.g., Zookeeper):** The isolated DC refuses writes/reads until the partition heals. Users see errors but data stays consistent. Safe for distributed locks, configuration, leader election.
-   
+
    **AP choice (e.g., Cassandra):** Both DCs accept writes independently. A user writes an order in east; another reads in west - they might see stale data. After partition heals, conflict resolution runs (last-write-wins or CRDTs). Acceptable for shopping carts, user preferences.
    Follow-ups: What are CRDTs and when do you use them?; How does DynamoDB handle conflicts in global tables?
 
 2. What is linearisability and why is it expensive?
    Answer: Linearisability means every operation appears to take effect instantaneously at a single point in time between its invocation and response. All observers see the same order of operations.
-   
+
    It's expensive because:
    1. Every read must contact a quorum of replicas to ensure it sees the latest write
    2. Adds cross-node network round trips
    3. During partition, must sacrifice availability
-   
+
    Alternatives with weaker but often sufficient guarantees: sequential consistency, causal consistency, session consistency - each allows more concurrency with some trade-offs.
    Follow-ups: How does Google Spanner achieve external consistency (linearisability) globally?
 
 ## Trade-offs
+
 Pros:
+
 - Framework clarifies trade-offs before choosing a DB
 - Consistency levels let you tune per-operation
 
 Cons:
+
 - CAP oversimplifies - network partitions are not binary
 - PACELC is more practical for latency-conscious systems
 
@@ -161,5 +176,5 @@ When to use:
 Choose CP for: financial transactions, distributed locks, config management. Choose AP for: social feeds, shopping carts, notifications, analytics.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

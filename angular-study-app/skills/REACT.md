@@ -9,70 +9,70 @@
 
 ## Topics Built
 
-| File | Title | Tag | Animation Used |
-|------|-------|-----|----------------|
-| `react-hooks-state-effect.js` | useState & useEffect | Hooks | ComponentTree + HookTimeline |
-| `react-hooks-memo-callback.js` | useMemo & useCallback | Performance | ComponentTree (re-render cascade) |
-| `react-hooks-ref-context.js` | useRef & useContext | Hooks | FlowDiagram (ref/context flow) |
-| `react-fiber-reconciler.js` | Fiber & Reconciler | Internals | FiberTree (work loop traversal) |
-| `react-concurrent.js` | Concurrent Mode | Advanced | FlowDiagram (scheduler/time-slicing) |
-| `react-server-components.js` | Server Components (RSC) | Architecture | FlowDiagram (server→stream→hydrate) |
-| `react-custom-hooks.js` | Custom Hooks | Patterns | ComponentTree (hook extraction) |
-| `react-context-redux.js` | Context vs Redux | State | FlowDiagram (Redux data flow) |
-| `react-performance.js` | React Performance | Performance | ComponentTree (memo/key optimization) |
-| `react-forms.js` | React Forms | Patterns | FlowDiagram (controlled vs uncontrolled) |
-| `react-testing.js` | React Testing (RTL) | Testing | FlowDiagram (query → render → assert) |
-| `react-router-v6.js` | React Router v6 | Routing | FlowDiagram (URL → match → Outlet → loader) |
-| `react-error-boundaries.js` | Error Boundaries | Reliability | ComponentTree (error propagation, fallback) |
-| `react-lazy-suspense.js` | React.lazy + Suspense | Performance | FlowDiagram (code split → lazy load → render) |
-| `react-zustand.js` | Zustand Deep Dive | State | FlowDiagram (store → subscribe → selector) |
-| `react-query.js` | React Query (TanStack) | Data Fetching | FlowDiagram (cache → stale → refetch) |
+| File                           | Title                   | Tag           | Animation Used                                |
+| ------------------------------ | ----------------------- | ------------- | --------------------------------------------- |
+| `react-hooks-state-effect.js`  | useState & useEffect    | Hooks         | ComponentTree + HookTimeline                  |
+| `react-hooks-memo-callback.js` | useMemo & useCallback   | Performance   | ComponentTree (re-render cascade)             |
+| `react-hooks-ref-context.js`   | useRef & useContext     | Hooks         | FlowDiagram (ref/context flow)                |
+| `react-fiber-reconciler.js`    | Fiber & Reconciler      | Internals     | FiberTree (work loop traversal)               |
+| `react-concurrent.js`          | Concurrent Mode         | Advanced      | FlowDiagram (scheduler/time-slicing)          |
+| `react-server-components.js`   | Server Components (RSC) | Architecture  | FlowDiagram (server→stream→hydrate)           |
+| `react-custom-hooks.js`        | Custom Hooks            | Patterns      | ComponentTree (hook extraction)               |
+| `react-context-redux.js`       | Context vs Redux        | State         | FlowDiagram (Redux data flow)                 |
+| `react-performance.js`         | React Performance       | Performance   | ComponentTree (memo/key optimization)         |
+| `react-forms.js`               | React Forms             | Patterns      | FlowDiagram (controlled vs uncontrolled)      |
+| `react-testing.js`             | React Testing (RTL)     | Testing       | FlowDiagram (query → render → assert)         |
+| `react-router-v6.js`           | React Router v6         | Routing       | FlowDiagram (URL → match → Outlet → loader)   |
+| `react-error-boundaries.js`    | Error Boundaries        | Reliability   | ComponentTree (error propagation, fallback)   |
+| `react-lazy-suspense.js`       | React.lazy + Suspense   | Performance   | FlowDiagram (code split → lazy load → render) |
+| `react-zustand.js`             | Zustand Deep Dive       | State         | FlowDiagram (store → subscribe → selector)    |
+| `react-query.js`               | React Query (TanStack)  | Data Fetching | FlowDiagram (cache → stale → refetch)         |
 
 ---
 
 ## Step Count per Topic
 
-| Topic | Steps | Key Learning per Step |
-|-------|-------|-----------------------|
-| useState & useEffect | 6 | render → commit → effect → update → cleanup → effect |
-| useMemo & useCallback | 5 | unoptimized → memo → still broken → useCallback → fixed |
-| useRef & useContext | 5 | ref create → DOM access → mutable storage → context tree → re-render problem |
-| Fiber & Reconciler | 5 | JSX → fiber tree → beginWork → completeWork → commit |
-| Concurrent Mode | 5 | blocking → startTransition → time slicing → Suspense → useDeferredValue |
-| Server Components | 4 | CSR waterfall → RSC flow → streaming → selective hydration |
-| Custom Hooks | 4 | duplicated logic → extracted → composed → tested |
-| Context vs Redux | 4 | prop drilling → Context → re-render problem → Redux flow |
-| React Performance | 5 | unoptimized → React.memo → useCallback → virtualization → keys |
-| React Forms | 4 | controlled → uncontrolled → RHF → render comparison |
-| React Testing (RTL) | 5 | render → queries → userEvent → async → msw |
-| React Router v6 | 5 | URL enter → route match → loader → Outlet chain → navigate |
-| Error Boundaries | 5 | normal render → throw → boundary catches → fallback → retry |
-| React.lazy + Suspense | 5 | initial load → suspend+throw Promise → chunk download → resolve → nested Suspense |
-| Zustand Deep Dive | 5 | store create → subscribe with selector → action dispatch → pub-sub notify → async+middleware |
-| React Query (TanStack) | 5 | cache miss+fetch → cache store → stale+background refetch → mutation+invalidate → gcTime |
+| Topic                  | Steps | Key Learning per Step                                                                        |
+| ---------------------- | ----- | -------------------------------------------------------------------------------------------- |
+| useState & useEffect   | 6     | render → commit → effect → update → cleanup → effect                                         |
+| useMemo & useCallback  | 5     | unoptimized → memo → still broken → useCallback → fixed                                      |
+| useRef & useContext    | 5     | ref create → DOM access → mutable storage → context tree → re-render problem                 |
+| Fiber & Reconciler     | 5     | JSX → fiber tree → beginWork → completeWork → commit                                         |
+| Concurrent Mode        | 5     | blocking → startTransition → time slicing → Suspense → useDeferredValue                      |
+| Server Components      | 4     | CSR waterfall → RSC flow → streaming → selective hydration                                   |
+| Custom Hooks           | 4     | duplicated logic → extracted → composed → tested                                             |
+| Context vs Redux       | 4     | prop drilling → Context → re-render problem → Redux flow                                     |
+| React Performance      | 5     | unoptimized → React.memo → useCallback → virtualization → keys                               |
+| React Forms            | 4     | controlled → uncontrolled → RHF → render comparison                                          |
+| React Testing (RTL)    | 5     | render → queries → userEvent → async → msw                                                   |
+| React Router v6        | 5     | URL enter → route match → loader → Outlet chain → navigate                                   |
+| Error Boundaries       | 5     | normal render → throw → boundary catches → fallback → retry                                  |
+| React.lazy + Suspense  | 5     | initial load → suspend+throw Promise → chunk download → resolve → nested Suspense            |
+| Zustand Deep Dive      | 5     | store create → subscribe with selector → action dispatch → pub-sub notify → async+middleware |
+| React Query (TanStack) | 5     | cache miss+fetch → cache store → stale+background refetch → mutation+invalidate → gcTime     |
 
 ---
 
 ## React Topics Still to Add
 
-| Topic | Priority | Suggested Animation |
-|-------|----------|-------------------|
-| Portals | MEDIUM | ComponentTree: out-of-tree rendering |
-| StrictMode internals | MEDIUM | ComponentTree: double-invoke render |
-| React DevTools Profiler | LOW | HookTimeline: commit timing |
-| Vite vs Webpack (build) | MEDIUM | FlowDiagram: bundle pipeline |
-| React Native bridge | LOW | FlowDiagram: JS thread → bridge → native |
+| Topic                   | Priority | Suggested Animation                      |
+| ----------------------- | -------- | ---------------------------------------- |
+| Portals                 | MEDIUM   | ComponentTree: out-of-tree rendering     |
+| StrictMode internals    | MEDIUM   | ComponentTree: double-invoke render      |
+| React DevTools Profiler | LOW      | HookTimeline: commit timing              |
+| Vite vs Webpack (build) | MEDIUM   | FlowDiagram: bundle pipeline             |
+| React Native bridge     | LOW      | FlowDiagram: JS thread → bridge → native |
 
 ---
 
 ## Visual Style References (inputs/)
 
-| Image | What it shows | Apply to React topics |
-|---|---|---|
-| `inputs/image copy 9.png` | YouTube numbered circular flow (ByteByteGo) — numbered arrows following loop path, color-coded node types | React lifecycle circular flow: trigger→render→reconcile→commit→effect. Use for `react-fiber-reconciler.js` |
-| `inputs/image copy 3.png` | Architecture Styles Wheel — center hub + radial branches | React mental model: center = "State" hub, branches = hooks/fiber/scheduler/reconciler. Use for overview topic |
-| `inputs/image copy 7.png` | System Design Blueprint — colored section boxes, numbered callouts, icon+bullet style | React rendering pipeline sections: Trigger/Render/Commit/Effect as colored bands with bullet points |
-| `inputs/image copy 12.png` | SQL mind map — dark bg, radial branches, color per category | React hooks mind map: center = "React Hooks", branches = State/Effect/Context/Performance/Ref |
+| Image                      | What it shows                                                                                             | Apply to React topics                                                                                         |
+| -------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `inputs/image copy 9.png`  | YouTube numbered circular flow (ByteByteGo) — numbered arrows following loop path, color-coded node types | React lifecycle circular flow: trigger→render→reconcile→commit→effect. Use for `react-fiber-reconciler.js`    |
+| `inputs/image copy 3.png`  | Architecture Styles Wheel — center hub + radial branches                                                  | React mental model: center = "State" hub, branches = hooks/fiber/scheduler/reconciler. Use for overview topic |
+| `inputs/image copy 7.png`  | System Design Blueprint — colored section boxes, numbered callouts, icon+bullet style                     | React rendering pipeline sections: Trigger/Render/Commit/Effect as colored bands with bullet points           |
+| `inputs/image copy 12.png` | SQL mind map — dark bg, radial branches, color per category                                               | React hooks mind map: center = "React Hooks", branches = State/Effect/Context/Performance/Ref                 |
 
 ## Always-Visible Swimlane Pattern (ByteByteGo Style)
 
@@ -100,6 +100,7 @@ visual: function(mount) {
 ```
 
 When to use always-visible vs step-by-step:
+
 - **Swimlane (always-visible):** Multiple parallel concepts (Kafka use cases, hook types, CD modes)
 - **Step-by-step (ReactViz.panel):** Single concept lifecycle that must be followed sequentially
 
@@ -161,59 +162,67 @@ Each step can have any custom fields. Recommended shape:
 
 ```js
 (function () {
-  'use strict';
+  "use strict";
 
-  window.REACT_TOPICS = (window.REACT_TOPICS || []).concat([{
-    id:    'react-<topic>',
-    area:  'react',
-    title: '<Title>',
-    tag:   '<Tag>',
-    tags:  ['react', '<keyword1>', '<keyword2>'],
+  window.REACT_TOPICS = (window.REACT_TOPICS || []).concat([
+    {
+      id: "react-<topic>",
+      area: "react",
+      title: "<Title>",
+      tag: "<Tag>",
+      tags: ["react", "<keyword1>", "<keyword2>"],
 
-    concept: `<multiline concept>`,
-    why:     `<production relevance>`,
+      concept: `<multiline concept>`,
+      why: `<production relevance>`,
 
-    example: {
-      language: 'javascript',
-      code: `// React code`,
+      example: {
+        language: "javascript",
+        code: `// React code`,
+      },
+
+      interview: ["Question 1?", "Question 2?"],
+      tradeoffs: { pros: ["..."], cons: ["..."] },
+      gotchas: ["Gotcha 1"],
+
+      visual: function (mount) {
+        var steps = [
+          {
+            phase: "render",
+            narration: "Step 1 — ...",
+            // tree | hooks | fiberTree | nodes+edges
+            code: "// code",
+          },
+        ];
+
+        window.ReactViz.panel(mount, {
+          title: "<title>",
+          time: "O(1)",
+          space: "O(n)",
+          steps: steps,
+          renderStep: function (vizEl, codeEl, step) {
+            // vizEl = right column
+            // codeEl = left column
+            if (step.tree) {
+              window.ReactViz.ComponentTree.render(vizEl, step.tree);
+            } else if (step.nodes) {
+              window.ReactViz.FlowDiagram.render(vizEl, step.nodes, step.edges, {
+                layout: "vertical",
+              });
+            } else if (step.fiberTree) {
+              window.ReactViz.FiberTree.render(
+                vizEl,
+                step.fiberTree,
+                step.phase,
+                step.currentFiber
+              );
+            }
+            codeEl.innerHTML =
+              window.ReactViz.label("CODE") + window.ReactViz.codeBlock(step.code, "js");
+          },
+        });
+      },
     },
-
-    interview: ['Question 1?', 'Question 2?'],
-    tradeoffs: { pros: ['...'], cons: ['...'] },
-    gotchas: ['Gotcha 1'],
-
-    visual: function (mount) {
-      var steps = [
-        {
-          phase: 'render',
-          narration: 'Step 1 — ...',
-          // tree | hooks | fiberTree | nodes+edges
-          code: '// code',
-        },
-      ];
-
-      window.ReactViz.panel(mount, {
-        title: '<title>',
-        time:  'O(1)',
-        space: 'O(n)',
-        steps: steps,
-        renderStep: function (vizEl, codeEl, step) {
-          // vizEl = right column
-          // codeEl = left column
-          if (step.tree) {
-            window.ReactViz.ComponentTree.render(vizEl, step.tree);
-          } else if (step.nodes) {
-            window.ReactViz.FlowDiagram.render(vizEl, step.nodes, step.edges, { layout: 'vertical' });
-          } else if (step.fiberTree) {
-            window.ReactViz.FiberTree.render(vizEl, step.fiberTree, step.phase, step.currentFiber);
-          }
-          codeEl.innerHTML =
-            window.ReactViz.label('CODE') +
-            window.ReactViz.codeBlock(step.code, 'js');
-        },
-      });
-    },
-  }]);
+  ]);
 })();
 ```
 
@@ -226,7 +235,6 @@ Each step can have any custom fields. Recommended shape:
 3. **Steps are hand-crafted** — no tracer, no code execution — define state manually per step
 4. **renderStep gets `vizEl` (right) and `codeEl` (left)** — not reversed
 5. **`window.ReactViz.panel` returns `{ goTo, destroy }`** — call `destroy()` on navigate-away if storing reference
-
 
 ---
 
@@ -254,30 +262,30 @@ BROWSER PAINTS
 
 # React Rendering Pipeline
 
-| Phase | What Happens | Browser Impact |
-|---|---|---|
-| Trigger | state/props/context change | none |
-| Render Phase | React builds new virtual tree | JS CPU |
-| Reconciliation | compares old vs new tree | JS CPU |
-| Commit Phase | real DOM updated | layout/repaint |
-| Browser Paint | pixels rendered | GPU/CPU |
+| Phase          | What Happens                  | Browser Impact |
+| -------------- | ----------------------------- | -------------- |
+| Trigger        | state/props/context change    | none           |
+| Render Phase   | React builds new virtual tree | JS CPU         |
+| Reconciliation | compares old vs new tree      | JS CPU         |
+| Commit Phase   | real DOM updated              | layout/repaint |
+| Browser Paint  | pixels rendered               | GPU/CPU        |
 
 ---
 
 # Add These Advanced React Topics
 
-| Topic | Why Important | Suggested Visualization |
-|---|---|---|
-| React Rendering Internals | MOST asked interview topic | Fiber traversal animation |
-| Hydration | SSR understanding | Server → HTML → hydrate flow |
-| React Scheduler | Concurrent rendering | Priority queue animation |
-| Batching Updates | render optimization | Multiple updates merge |
-| Stale Closures | common bug | Hook timeline |
-| useLayoutEffect | DOM sync timing | render vs paint timeline |
-| Key Prop Internals | reconciliation behavior | list diff animation |
-| Controlled Rendering | performance scaling | tree render glow |
-| Suspense Internals | async UI orchestration | fallback switching |
-| React Compiler future | upcoming ecosystem | compile optimization flow |
+| Topic                     | Why Important              | Suggested Visualization      |
+| ------------------------- | -------------------------- | ---------------------------- |
+| React Rendering Internals | MOST asked interview topic | Fiber traversal animation    |
+| Hydration                 | SSR understanding          | Server → HTML → hydrate flow |
+| React Scheduler           | Concurrent rendering       | Priority queue animation     |
+| Batching Updates          | render optimization        | Multiple updates merge       |
+| Stale Closures            | common bug                 | Hook timeline                |
+| useLayoutEffect           | DOM sync timing            | render vs paint timeline     |
+| Key Prop Internals        | reconciliation behavior    | list diff animation          |
+| Controlled Rendering      | performance scaling        | tree render glow             |
+| Suspense Internals        | async UI orchestration     | fallback switching           |
+| React Compiler future     | upcoming ecosystem         | compile optimization flow    |
 
 ---
 
@@ -361,14 +369,14 @@ Like cooperative multitasking.
 
 # Fiber Concepts
 
-| Fiber Concept | Meaning |
-|---|---|
-| Fiber Node | unit of work |
-| Alternate | previous version |
-| Effect Tag | what changed |
-| Lane | priority bucket |
-| Scheduler | controls execution |
-| Work Loop | traversal engine |
+| Fiber Concept | Meaning            |
+| ------------- | ------------------ |
+| Fiber Node    | unit of work       |
+| Alternate     | previous version   |
+| Effect Tag    | what changed       |
+| Lane          | priority bucket    |
+| Scheduler     | controls execution |
+| Work Loop     | traversal engine   |
 
 ---
 
@@ -428,9 +436,7 @@ Update props only.
 ## Rule 3 — Keys Matter
 
 ```jsx
-items.map(item => (
-  <Item key={item.id} />
-))
+items.map((item) => <Item key={item.id} />);
 ```
 
 Keys help React identify stable elements.
@@ -440,7 +446,7 @@ Keys help React identify stable elements.
 # Bad Key Example
 
 ```jsx
-key={index}
+key = { index };
 ```
 
 Causes:
@@ -524,13 +530,13 @@ Used for:
 
 # React Scheduler Priorities
 
-| Priority | Example |
-|---|---|
-| Immediate | typing |
+| Priority      | Example      |
+| ------------- | ------------ |
+| Immediate     | typing       |
 | User Blocking | button click |
-| Normal | API data |
-| Low | analytics |
-| Idle | prefetch |
+| Normal        | API data     |
+| Low           | analytics    |
+| Idle          | prefetch     |
 
 ---
 
@@ -566,8 +572,8 @@ Smooth UX ⚡
 
 ```jsx
 startTransition(() => {
-  setBigList(data)
-})
+  setBigList(data);
+});
 ```
 
 Marks update as low priority.
@@ -632,11 +638,11 @@ Interactive app
 
 # SSR vs CSR vs RSC
 
-| Type | Rendering Place |
-|---|---|
-| CSR | Browser |
-| SSR | Server |
-| RSC | Split server/client |
+| Type | Rendering Place     |
+| ---- | ------------------- |
+| CSR  | Browser             |
+| SSR  | Server              |
+| RSC  | Split server/client |
 
 ---
 
@@ -659,25 +665,25 @@ Benefits:
 
 ## Expensive Things
 
-| Expensive Operation | Why |
-|---|---|
-| DOM updates | layout/repaint |
-| huge renders | CPU |
-| unnecessary rerenders | wasted work |
-| large lists | memory/render cost |
+| Expensive Operation   | Why                |
+| --------------------- | ------------------ |
+| DOM updates           | layout/repaint     |
+| huge renders          | CPU                |
+| unnecessary rerenders | wasted work        |
+| large lists           | memory/render cost |
 
 ---
 
 # Optimization Toolkit
 
-| Tool | Use |
-|---|---|
-| React.memo | skip rerenders |
-| useMemo | cache values |
-| useCallback | stable functions |
-| virtualization | huge lists |
-| lazy loading | smaller bundles |
-| Suspense | async UI |
+| Tool           | Use              |
+| -------------- | ---------------- |
+| React.memo     | skip rerenders   |
+| useMemo        | cache values     |
+| useCallback    | stable functions |
+| virtualization | huge lists       |
+| lazy loading   | smaller bundles  |
+| Suspense       | async UI         |
 
 ---
 
@@ -704,7 +710,7 @@ Parent rerenders
 Expensive calculation:
 
 ```jsx
-const value = expensiveFunction()
+const value = expensiveFunction();
 ```
 
 Runs every render ❌
@@ -714,7 +720,7 @@ Runs every render ❌
 # With useMemo
 
 ```jsx
-const value = useMemo(() => expensiveFunction(), [data])
+const value = useMemo(() => expensiveFunction(), [data]);
 ```
 
 Cached.
@@ -732,7 +738,7 @@ Bad for memoized children.
 # Solution
 
 ```jsx
-const onClick = useCallback(() => {}, [])
+const onClick = useCallback(() => {}, []);
 ```
 
 Stable reference.
@@ -741,14 +747,14 @@ Stable reference.
 
 # Common React Bugs
 
-| Bug | Cause |
-|---|---|
+| Bug                | Cause                      |
+| ------------------ | -------------------------- |
 | Infinite re-render | state update during render |
-| Stale closure | old state captured |
-| Missing dependency | incorrect effect deps |
-| Memory leak | cleanup missing |
-| Unstable keys | wrong reconciliation |
-| Over-rendering | bad state placement |
+| Stale closure      | old state captured         |
+| Missing dependency | incorrect effect deps      |
+| Memory leak        | cleanup missing            |
+| Unstable keys      | wrong reconciliation       |
+| Over-rendering     | bad state placement        |
 
 ---
 
@@ -757,9 +763,9 @@ Stable reference.
 ```jsx
 useEffect(() => {
   setInterval(() => {
-    console.log(count)
-  }, 1000)
-}, [])
+    console.log(count);
+  }, 1000);
+}, []);
 ```
 
 Always prints old count.
@@ -769,8 +775,7 @@ Always prints old count.
 # Fix
 
 ```jsx
-useEffect(() => {
-}, [count])
+useEffect(() => {}, [count]);
 ```
 
 or refs.
@@ -779,15 +784,15 @@ or refs.
 
 # React Architecture Best Practices
 
-| Best Practice | Reason |
-|---|---|
-| Keep state local | avoid rerenders |
-| Split large components | maintainability |
-| Memoize carefully | avoid wasted CPU |
-| Use stable keys | correct reconciliation |
-| Avoid prop drilling | scalability |
-| Prefer composition | flexibility |
-| Co-locate logic | readability |
+| Best Practice          | Reason                 |
+| ---------------------- | ---------------------- |
+| Keep state local       | avoid rerenders        |
+| Split large components | maintainability        |
+| Memoize carefully      | avoid wasted CPU       |
+| Use stable keys        | correct reconciliation |
+| Avoid prop drilling    | scalability            |
+| Prefer composition     | flexibility            |
+| Co-locate logic        | readability            |
 
 ---
 
@@ -833,17 +838,17 @@ tests/
 
 # Production React Stack
 
-| Area | Common Tool |
-|---|---|
-| Build Tool | Vite |
-| Routing | React Router |
-| State | Redux/Zustand |
-| Async Cache | React Query |
-| Forms | React Hook Form |
-| Validation | Zod |
-| Styling | Tailwind |
-| Testing | RTL + Vitest |
-| SSR | Next.js |
+| Area        | Common Tool     |
+| ----------- | --------------- |
+| Build Tool  | Vite            |
+| Routing     | React Router    |
+| State       | Redux/Zustand   |
+| Async Cache | React Query     |
+| Forms       | React Hook Form |
+| Validation  | Zod             |
+| Styling     | Tailwind        |
+| Testing     | RTL + Vitest    |
+| SSR         | Next.js         |
 
 ---
 

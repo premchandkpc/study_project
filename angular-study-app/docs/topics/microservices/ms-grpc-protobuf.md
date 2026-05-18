@@ -1,6 +1,7 @@
 # gRPC, Protocol Buffers & Service Contracts
 
 ## Quick Facts
+
 - Area: Microservices
 - Tag: gRPC
 - Source: `src/modules/topics/microservices/ms-grpc-protobuf.js`
@@ -8,17 +9,21 @@
 - Visual coverage: generated diagrams only
 
 ## Concept
+
 **gRPC** is an RPC framework using HTTP/2 transport and **Protocol Buffers** (protobuf) for serialization. Types:
+
 - **Unary**: one request -> one response (traditional RPC).
 - **Server streaming**: one request -> stream of responses.
 - **Client streaming**: stream of requests -> one response.
 - **Bidirectional streaming**: both sides stream (real-time).
-Protobuf is binary, schema-versioned, 3-10x smaller than JSON, and generates typed client/server code for 12+ languages. **Reflection** and **gRPC-Gateway** expose JSON/REST.
+  Protobuf is binary, schema-versioned, 3-10x smaller than JSON, and generates typed client/server code for 12+ languages. **Reflection** and **gRPC-Gateway** expose JSON/REST.
 
 ## Why It Matters
+
 For service-to-service internal APIs, gRPC gives **typed contracts** (no guessing field names), **binary efficiency** (smaller payloads), **bidirectional streaming** (real-time use cases), and **built-in load balancing** with Envoy. Schema evolution is backward-compatible by design - adding optional fields doesn't break old clients.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Client"]
@@ -33,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Client
@@ -51,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -64,6 +71,7 @@ Flow steps:
 5. Observability
 
 ## Example
+
 ```go
 // proto definition -> generated Go code (shown as if hand-written for clarity)
 // proto file:
@@ -87,7 +95,7 @@ import (
     pb "example.com/orders/proto"
 )
 
-//  Server implementation 
+//  Server implementation
 type orderServer struct {
     pb.UnimplementedOrderServiceServer
 }
@@ -148,10 +156,12 @@ Notes:
 Always use `status.Errorf(codes.X, ...)` to return typed gRPC errors - clients can branch on status codes. Use **interceptors** (middleware) for auth, logging, and tracing - same concept as HTTP middleware.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How does protobuf handle schema evolution?
    Answer: Protobuf fields are identified by **field numbers**, not names. Rules: (1) Never reuse a field number - old clients will misinterpret new data. (2) New fields are optional by default - old clients ignore unknown fields, old servers return zero values for new fields. (3) Removing fields: mark as `reserved` to prevent reuse. (4) Never change a field's type. This gives backward and forward compatibility without versioning the entire API.
    Follow-ups: What is reserved in proto3?; How does proto3 differ from proto2?
@@ -161,12 +171,15 @@ Always use `status.Errorf(codes.X, ...)` to return typed gRPC errors - clients c
    Follow-ups: What is gRPC-Gateway?; How do you document gRPC APIs?
 
 ## Trade-offs
+
 Pros:
+
 - Binary protobuf: 3-10x smaller than JSON, schema-enforced.
 - HTTP/2 multiplexing: many calls over one connection.
 - Generated typed clients in 12+ languages from one .proto file.
 
 Cons:
+
 - Not human-readable - debugging requires grpcurl or Postman.
 - gRPC-Web requires a proxy for browser clients.
 - Proto toolchain adds build complexity.
@@ -175,5 +188,5 @@ When to use:
 **gRPC** for internal service-to-service APIs. **REST/JSON** for public APIs and browser clients. **GraphQL** for flexible client-driven queries with a single backend endpoint.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

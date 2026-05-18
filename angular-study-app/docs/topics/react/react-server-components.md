@@ -1,6 +1,7 @@
 # Server Components (RSC)
 
 ## Quick Facts
+
 - Area: React
 - Tag: Architecture
 - Source: `src/modules/topics/react/react-server-components.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 React Server Components (RSC) run on the server - never sent to the browser.
 They can: directly query databases, read files, use server-only secrets.
 They CANNOT: use hooks, handle events, use browser APIs.
@@ -16,11 +18,13 @@ Streaming: RSC can stream HTML chunks to the browser progressively - no waiting 
 Selective hydration: React only hydrates Client Components - server components are pure HTML, zero JS bundle.
 
 ## Why It Matters
+
 RSC eliminates the "waterfall" problem: browser fetches JS -> JS fetches data -> renders.
 With RSC: server fetches data -> streams HTML -> browser renders immediately, no round-trip.
 Bundle size: server-only code (DB clients, heavy libs) never ships to browser - smaller JS bundle.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["User event"]
@@ -35,6 +39,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as User event
@@ -53,6 +58,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -67,6 +73,7 @@ Flow steps:
 5. DOM/cache
 
 ## Example
+
 ```javascript
 // Server Component (default in Next.js 13+)
 // No 'use client' - runs on server only
@@ -85,30 +92,34 @@ async function BlogPost({ id }) {
 }
 
 // Client Component - has interactivity
-'use client';
+("use client");
 function LikeButton({ postId }) {
   const [liked, setLiked] = useState(false);
   return (
-    <button onClick={() => {
-      setLiked(true);
-      fetch(`/api/like/${postId}`, { method: 'POST' });
-    }}>
-      {liked ? '' : ''} Like
+    <button
+      onClick={() => {
+        setLiked(true);
+        fetch(`/api/like/${postId}`, { method: "POST" });
+      }}
+    >
+      {liked ? "" : ""} Like
     </button>
   );
 }
 
 // Streaming with Suspense:
 <Suspense fallback={<PostSkeleton />}>
-  <BlogPost id={params.id} />  {/* streams when ready */}
-</Suspense>
+  <BlogPost id={params.id} /> {/* streams when ready */}
+</Suspense>;
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What can a Server Component do that a Client Component cannot?
 
 2. How does RSC reduce bundle size?
@@ -122,22 +133,25 @@ function LikeButton({ postId }) {
 6. How does RSC differ from SSR (getServerSideProps)?
 
 ## Trade-offs
+
 Pros:
+
 - Zero JS shipped for server components
 - Direct DB access without API layer
 - Progressive streaming HTML
 - Smaller client bundle
 
 Cons:
+
 - No hooks or event handlers in server components
 - Mental model complexity (two environments)
 - Framework-specific (Next.js App Router)
 - Debugging harder across server/client boundary
 
 ## Gotchas
+
 - "use client" marks a component AND all its imports as client - be careful.
 - Server components cannot pass functions as props to client components (not serializable).
 - Data fetched in server component is not reactive - page must refresh to update.
 - Third-party libs without "use client" assume server by default in RSC - may break.
 - Context providers must be client components - wrap at boundaries carefully.
-

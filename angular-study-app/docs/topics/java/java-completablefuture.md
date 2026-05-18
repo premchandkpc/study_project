@@ -1,6 +1,7 @@
 # CompletableFuture Pipeline
 
 ## Quick Facts
+
 - Area: Java
 - Tag: Async
 - Source: `src/modules/topics/java/java-completablefuture.js`
@@ -8,12 +9,15 @@
 - Visual coverage: live visual
 
 ## Concept
+
 CompletableFuture<T> is Java's promise/future for async composition. Unlike Future.get() (blocking), CompletableFuture chains non-blocking callbacks: thenApply (transform), thenCompose (flatMap), thenCombine (merge two futures), thenAccept (consume), exceptionally (error recovery). Stages run on ForkJoinPool.commonPool() by default or a custom Executor. allOf() fans out; anyOf() races.
 
 ## Why It Matters
+
 Blocking threads on Future.get() wastes thread pool capacity under load. CompletableFuture enables async pipelines: HTTP call -> parse -> DB write - each stage hands off to ForkJoinPool without blocking. Essential for high-throughput services without reactive frameworks. Java 8+ standard library, no additional dependency.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Caller thread"]
@@ -28,6 +32,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Caller thread
@@ -46,6 +51,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -60,6 +66,7 @@ Flow steps:
 5. Result/metrics
 
 ## Example
+
 ```java
 // Sequential blocking (BAD for high throughput)
 User user = userService.getUser(id);          // blocks
@@ -85,10 +92,12 @@ CompletableFuture.supplyAsync(() -> httpClient.fetch(url))     // async fetch
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Difference between thenApply and thenCompose?
 
 2. What thread executes thenApply callbacks?
@@ -100,21 +109,24 @@ CompletableFuture.supplyAsync(() -> httpClient.fetch(url))     // async fetch
 5. Difference between exceptionally, handle, and whenComplete?
 
 ## Trade-offs
+
 Pros:
+
 - Non-blocking pipeline - thread freed while I/O waits
 - allOf/anyOf for fan-out parallelism
 - Built into Java 8+ stdlib - no extra dependency
 - Composable: chain arbitrary async operations
 
 Cons:
+
 - Error handling verbose - exceptionally/handle on every stage
 - Stack traces lose context across async boundaries
 - Debugging hard - async callbacks across threads
 - Replaced by virtual threads (Java 21) for simple I/O - only needed for fan-out
 
 ## Gotchas
+
 - thenApply runs on completing thread (ForkJoinPool or caller) - use thenApplyAsync to specify executor
 - thenCompose is flatMap - if fn returns CF<T>, thenApply wraps it: CF<CF<T>>
 - allOf returns CF<Void> - call .get() on each individual future to extract results
 - Unhandled exceptions silently complete exceptionally - always add exceptionally/handle
-

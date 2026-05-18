@@ -1,6 +1,7 @@
 # Streams API, Collectors & Lazy Evaluation
 
 ## Quick Facts
+
 - Area: Java
 - Tag: Streams
 - Source: `src/modules/topics/java/java-streams.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **L1 (30s ELI5):** Stream is an assembly line. Raw materials (list) -> filter belt -> transform belt -> collection box. Nothing moves until the collection box is attached.
 
 **L2 (2min core):** Lazy pull model: intermediate ops (filter, map, flatMap) store predicates/functions, return new Stream wrappers. Terminal op (collect, reduce, forEach) drives the loop - calls `spliterator.tryAdvance()` one element at a time through ALL stages. Stateless ops fuse in a single pass. Stateful ops (sorted, distinct) buffer ALL elements before outputting any.
@@ -17,9 +19,11 @@
 **L4 (30min deep):** Spliterator characteristics: SIZED, ORDERED, SORTED, DISTINCT, SUBSIZED - affect fusion and parallel splitting. Op fusion in ReferencePipeline: linked list of StatelessOp/StatefulOp wrappers; terminal creates sink chain, processes each element through all sinks in one loop. Parallel: ForkJoinPool splits via `trySplit()`; leaf tasks run sequential sub-pipelines; results merged via `Collector.combiner()`. `Collector.Characteristics.CONCURRENT`: skips combiner - single shared mutable container (e.g. ConcurrentHashMap).
 
 ## Why It Matters
+
 Declarative pipelines reduce bug surface vs hand-written loops, but **`parallelStream`** is a footgun on shared pools (one slow task blocks every consumer). In data pipelines, `Collectors.groupingBy` + `mapping` replaces 30 lines of imperative aggregation.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["1 Sources"]
@@ -57,6 +61,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant terminal as collect()
@@ -76,6 +81,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -91,6 +97,7 @@ Flow steps:
 6. Collector accumulates -> finisher() -> final result - For toList(): ArrayList grows element by element. For groupingBy(): Map populated. For teeing(): TWO collectors run simultaneously on same element - no double iteration! When source exhausted: collector.finisher() called, stream.close()...
 
 ## Example
+
 ```java
 import java.util.*;
 import java.util.stream.*;
@@ -131,10 +138,12 @@ Notes:
 Avoid `parallelStream` for short pipelines or when tasks share I/O. Use `Collectors.toUnmodifiableMap` for immutable results.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. When NOT to use parallel streams?
    Answer: Three red flags: (a) tasks share a downstream resource (DB, HTTP), causing pool starvation since the common FJP is global; (b) the pipeline is short (< 10k elements) - splitting overhead dominates; (c) ordering matters (`findFirst` semantics differ from `findAny`).
    Follow-ups: What is split-on-Spliterator cost?; Custom ForkJoinPool?
@@ -148,12 +157,15 @@ Avoid `parallelStream` for short pipelines or when tasks share I/O. Use `Collect
    Follow-ups: What is Collector.Characteristics.CONCURRENT?; Why use toConcurrentMap over toMap for parallel?
 
 ## Trade-offs
+
 Pros:
+
 - Declarative, composable.
 - Stream fusion avoids intermediate collections.
 - Collectors framework covers 90% of aggregation needs.
 
 Cons:
+
 - Debugging stack traces are opaque.
 - Parallel streams share the global FJP.
 - Stateful ops break lazy fusion.
@@ -162,10 +174,10 @@ When to use:
 Default to **sequential streams**. Drop to **for-loops** when you need early-exit complex state. Use **parallelStream** only for CPU-bound, large, side-effect-free pipelines on dedicated pools.
 
 ## Gotchas
+
 - Stream consumed after terminal op: reusing throws IllegalStateException. Streams are single-use - create fresh from source.
 - parallelStream() uses common ForkJoinPool shared JVM-wide: blocking tasks (DB, HTTP) starve ALL parallel streams in process.
 - sorted() + limit(n) is NOT short-circuit: sorted() buffers ALL elements first, then limit() drops the rest. O(n log n) always.
 - Collectors.toMap() throws IllegalStateException on duplicate key with no merge function. Always pass (a, b) -> b or similar.
 - Files.lines(path) must be closed: backed by NIO file channel. Wrap in try-with-resources or stream.close(). Leaks file descriptors.
 - flatMap breaks lazy fusion: each inner stream is eagerly computed before short-circuit ops (findFirst) can stop it.
-

@@ -1,4 +1,5 @@
 # 🚀 AI Runtime Simulation Engine
+
 ## Real-Time Code Execution + Visual Debugging + Cinematic Algorithm Visualization
 
 > Paste ANY coding problem → Automatically generate runtime simulation with variables, recursion, graphs, trees, stacks, queues, DP, memory, and execution flow.
@@ -123,6 +124,7 @@ Interactive Replay
 
 Goal:
 Understand:
+
 - variables
 - loops
 - conditions
@@ -199,6 +201,7 @@ ForStatement
 MOST IMPORTANT PART.
 
 Tracks:
+
 - line execution
 - variables
 - memory
@@ -274,6 +277,7 @@ list
 ```
 
 Render:
+
 - boxes
 - sliding windows
 - pointers
@@ -292,6 +296,7 @@ board
 ```
 
 Render:
+
 - heatmaps
 - BFS
 - DFS
@@ -309,6 +314,7 @@ Node.right
 ```
 
 Render:
+
 - node graphs
 - traversals
 - recursion
@@ -326,6 +332,7 @@ neighbors
 ```
 
 Render:
+
 - nodes
 - edges
 - Dijkstra
@@ -345,6 +352,7 @@ unordered_map
 ```
 
 Render:
+
 - buckets
 - collisions
 - inserts
@@ -361,6 +369,7 @@ stack
 ```
 
 Render:
+
 - vertical stack
 - frame push/pop
 - recursion stack
@@ -376,6 +385,7 @@ dequeue
 ```
 
 Render:
+
 - moving queue
 - producer consumer
 
@@ -392,6 +402,7 @@ cache
 ```
 
 Render:
+
 - DP table
 - recursion tree
 - memo hits
@@ -429,6 +440,7 @@ fib(5)
 ```
 
 Animations:
+
 - function calls
 - stack frames
 - returns
@@ -626,6 +638,7 @@ Pause execution here
 ```
 
 Supports:
+
 - line breakpoints
 - condition breakpoints
 - watch expressions
@@ -692,16 +705,16 @@ Animated.
 
 Automatically infer:
 
-| Pattern | Visualization |
-|---|---|
-| Binary Search | pointers |
-| Sliding Window | window |
-| DFS | recursion |
-| BFS | queue |
-| Dijkstra | graph distances |
-| DP | table |
-| Heap | binary tree |
-| Trie | prefix tree |
+| Pattern        | Visualization   |
+| -------------- | --------------- |
+| Binary Search  | pointers        |
+| Sliding Window | window          |
+| DFS            | recursion       |
+| BFS            | queue           |
+| Dijkstra       | graph distances |
+| DP             | table           |
+| Heap           | binary tree     |
+| Trie           | prefix tree     |
 
 ---
 
@@ -766,11 +779,13 @@ VM sandbox
 # 🔥 BEST APPROACH
 
 DO NOT:
+
 ```txt
 Just visualize manually
 ```
 
 DO:
+
 ```txt
 Generate visualization automatically from runtime state
 ```
@@ -878,18 +893,18 @@ src/app/pages/coder/
 
 # 📋 BUILT-IN PRESETS
 
-| Key | Algorithm | Complexity |
-|-----|-----------|------------|
-| `twoSum` | Two Sum — HashMap | O(n) / O(n) |
-| `binarySearch` | Binary Search | O(log n) / O(1) |
-| `slidingWindow` | Max Sum Subarray K | O(n) / O(1) |
-| `fibonacci` | Fibonacci DP | O(n) / O(n) |
-| `validParentheses` | Valid Parens — Stack | O(n) / O(n) |
-| `bubbleSort` | Bubble Sort | O(n²) / O(1) |
-| `mergeSort` | Merge Sort | O(n log n) / O(n) |
-| `bfs` | BFS — Level Order | O(V+E) / O(V) |
-| `dfs` | DFS — Recursion | O(V+E) / O(V) |
-| `lcs` | Longest Common Subsequence | O(mn) / O(mn) |
+| Key                | Algorithm                  | Complexity        |
+| ------------------ | -------------------------- | ----------------- |
+| `twoSum`           | Two Sum — HashMap          | O(n) / O(n)       |
+| `binarySearch`     | Binary Search              | O(log n) / O(1)   |
+| `slidingWindow`    | Max Sum Subarray K         | O(n) / O(1)       |
+| `fibonacci`        | Fibonacci DP               | O(n) / O(n)       |
+| `validParentheses` | Valid Parens — Stack       | O(n) / O(n)       |
+| `bubbleSort`       | Bubble Sort                | O(n²) / O(1)      |
+| `mergeSort`        | Merge Sort                 | O(n log n) / O(n) |
+| `bfs`              | BFS — Level Order          | O(V+E) / O(V)     |
+| `dfs`              | DFS — Recursion            | O(V+E) / O(V)     |
+| `lcs`              | Longest Common Subsequence | O(mn) / O(mn)     |
 
 ---
 

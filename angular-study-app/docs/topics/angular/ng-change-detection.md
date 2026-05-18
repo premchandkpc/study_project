@@ -1,6 +1,7 @@
 # Angular Change Detection
 
 ## Quick Facts
+
 - Area: Angular
 - Tag: Performance
 - Source: `src/modules/topics/angular/ng-change-detection.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Angular's **Change Detection (CD)** is the mechanism that synchronizes component state with the DOM.
 
 **Zone.js** monkey-patches all async APIs (setTimeout, Promises, XHR, Events). When any async task completes, Zone.js notifies Angular -> CD cycle runs.
@@ -17,27 +19,32 @@ Angular's **Change Detection (CD)** is the mechanism that synchronizes component
 **Default (CheckAlways):** Every CD cycle checks EVERY component top-down, regardless of whether their inputs changed. Safe but expensive with large trees.
 
 **OnPush:** Angular only checks a component when:
+
 1. An @Input() reference changes (not deep equality)
 2. An event originates inside the component
 3. An Observable via `async` pipe emits
 4. `ChangeDetectorRef.markForCheck()` called manually
 
 **CD Cycle steps:**
+
 1. Zone.js detects async event
 2. Angular enters CD from root
 3. Each component: check inputs -> run template expression -> update DOM
 4. Repeat down the tree (Default) OR skip unchanged OnPush subtrees
 
 **ChangeDetectorRef API:**
+
 - `markForCheck()` - marks OnPush component as dirty (check it this cycle)
 - `detectChanges()` - run CD for this component + children immediately
 - `detach()` - remove from CD tree entirely (manual control)
 - `reattach()` - add back to CD tree
 
 ## Why It Matters
+
 OnPush is the #1 Angular performance optimization. With Default CD, a 200-component tree gets fully checked on every click. OnPush reduces that to only changed subtrees. Combined with immutable data and async pipe, it eliminates most unnecessary DOM checks.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Template event"]
@@ -52,6 +59,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Template event
@@ -70,6 +78,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -84,16 +93,17 @@ Flow steps:
 5. DOM update
 
 ## Example
+
 ```typescript
 // Default CD - all components checked every cycle
-@Component({ selector: 'app-user-list', template: '...' })
+@Component({ selector: "app-user-list", template: "..." })
 export class UserListComponent {
-  @Input() users: User[];  // mutable array - CD checks every render
+  @Input() users: User[]; // mutable array - CD checks every render
 }
 
 // OnPush - only checked when input reference changes
 @Component({
-  selector: 'app-user-card',
+  selector: "app-user-card",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div>{{ user.name }}</div>
@@ -101,13 +111,13 @@ export class UserListComponent {
   `,
 })
 export class UserCardComponent {
-  @Input() user: User;  // only re-checks when new User object passed
+  @Input() user: User; // only re-checks when new User object passed
 
-  lastLogin$ = this.userSvc.getLastLogin(this.user.id);  // async pipe auto-marks
+  lastLogin$ = this.userSvc.getLastLogin(this.user.id); // async pipe auto-marks
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private userSvc: UserService,
+    private userSvc: UserService
   ) {}
 
   // Manual trigger when needed
@@ -117,17 +127,19 @@ export class UserCardComponent {
 }
 
 // WRONG - mutating existing object doesn't trigger OnPush
-this.user.name = 'New Name';  // same reference -> OnPush skips x
+this.user.name = "New Name"; // same reference -> OnPush skips x
 
 // CORRECT - new object reference triggers OnPush
-this.user = { ...this.user, name: 'New Name' };  // new ref -> OnPush checks check
+this.user = { ...this.user, name: "New Name" }; // new ref -> OnPush checks check
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What is the difference between Default and OnPush change detection?
 
 2. How does Zone.js trigger Angular change detection?
@@ -141,22 +153,25 @@ this.user = { ...this.user, name: 'New Name' };  // new ref -> OnPush checks che
 6. What is the CD cycle order in Angular - top-down or bottom-up?
 
 ## Trade-offs
+
 Pros:
+
 - OnPush massively reduces CD checks in large component trees
 - Predictable: OnPush components only update on explicit triggers
 - Works perfectly with immutable data patterns (NgRx, Immer)
 - async pipe auto-handles subscription + markForCheck + unsubscribe
 
 Cons:
+
 - OnPush requires immutable data - mutating objects breaks it silently
 - Zone.js adds ~50KB bundle and patches ALL async APIs globally
 - Requires discipline - easy to forget to emit new reference
 - Debugging CD issues is non-obvious without Angular DevTools
 
 ## Gotchas
+
 - Mutating input object (this.user.name = x) does NOT trigger OnPush - must create new reference
 - setTimeout inside an OnPush component still triggers CD via Zone.js
 - markForCheck() marks ancestors up to root - detectChanges() only goes down
 - detach() stops ALL CD including children - reattach() to resume
 - Angular 17+ signals bypass Zone.js entirely - no async task needed to trigger update
-

@@ -1,6 +1,7 @@
 # React Router v6
 
 ## Quick Facts
+
 - Area: React
 - Tag: Routing
 - Source: `src/modules/topics/react/react-router-v6.js`
@@ -8,12 +9,15 @@
 - Visual coverage: live visual
 
 ## Concept
+
 React Router v6 uses a declarative, nested route tree. The <Routes> component matches the current URL against route definitions and renders the deepest matching <Route>. Layouts wrap child routes via <Outlet>. Navigation happens with useNavigate() hook or <Link>. Loaders (React Router 6.4+) fetch data before a route renders.
 
 ## Why It Matters
+
 Every SPA needs client-side routing. Router v6 eliminates Switch, makes nested layouts trivial via Outlet, and the 6.4 data APIs (loader/action) co-locate fetching with route definitions - removing waterfall fetching.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["User event"]
@@ -28,6 +32,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as User event
@@ -46,6 +51,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -60,24 +66,25 @@ Flow steps:
 5. DOM/cache
 
 ## Example
+
 ```javascript
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <Layout />,   // renders <Outlet/>
+    path: "/",
+    element: <Layout />, // renders <Outlet/>
     children: [
       { index: true, element: <Home /> },
       {
-        path: 'users',
+        path: "users",
         element: <UsersLayout />,
-        loader: async () => fetch('/api/users'),
+        loader: async () => fetch("/api/users"),
         children: [
-          { path: ':id', element: <UserDetail />, loader: ({ params }) => fetchUser(params.id) },
+          { path: ":id", element: <UserDetail />, loader: ({ params }) => fetchUser(params.id) },
         ],
       },
-      { path: '*', element: <NotFound /> },
+      { path: "*", element: <NotFound /> },
     ],
   },
 ]);
@@ -88,10 +95,12 @@ function App() {
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How does React Router v6 differ from v5? (no Switch, nested routes, Outlet)
 
 2. What is the purpose of <Outlet>?
@@ -103,20 +112,23 @@ function App() {
 5. How do you protect a route with authentication in v6?
 
 ## Trade-offs
+
 Pros:
+
 - Nested routes + Outlet eliminate complex conditional rendering
 - Relative paths by default - cleaner child route definitions
 - loaders/actions (6.4+) co-locate data fetching with routes
 - useMatches for breadcrumb-style composition
 
 Cons:
+
 - Loaders (6.4+) couple data fetching to routing layer
 - Memory router needed for SSR/testing
 - Migration from v5 requires rewriting Switch -> Routes
 
 ## Gotchas
+
 - Outlet must be in the parent route element or children never render
 - index routes (index: true) match "/" exactly - no path property
 - useNavigate() only works inside RouterProvider tree
 - Loader errors need errorElement on route or they silently fail
-

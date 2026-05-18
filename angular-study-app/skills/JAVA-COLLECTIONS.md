@@ -3,6 +3,7 @@
 **Status:** ✅ Both files built — `java-collection-types.js` + `java-concurrent-collections.js`
 
 **Files created:**
+
 - `src/modules/topics/java/java-collection-types.js`
 - `src/modules/topics/java/java-concurrent-collections.js`
 
@@ -10,13 +11,13 @@
 
 ## Visual Style References (inputs/)
 
-| Image | Apply to Java Collections topics |
-|---|---|
-| `inputs/image copy 3.png` — Architecture Styles Wheel (center hub + radial branches) | **Collection hierarchy overview:** center = "Collection", radial branches = List/Set/Queue/Map/Deque. Each branch has implementations as leaf nodes. Use as always-visible intro panel |
-| `inputs/image copy 8.png` — DB Scaling wheel (7 pie segments, mini-diagrams) | **Collection comparison wheel:** center = "Choose Collection", 6 segments = ArrayList/LinkedList/HashMap/TreeMap/HashSet/PriorityQueue. Click segment → expands to show Big-O + when-to-use |
-| `inputs/image copy 11.png` — Kafka swimlane (5 colored rows, animated dots) | **Concurrent Collections:** already built as 4 swimlane rows. Pattern is correct — keep and enhance |
-| `inputs/image copy 12.png` — SQL mind map (dark bg, radial color branches) | **Collection types mind map:** add as overview panel before step-by-step — shows all types at once |
-| `inputs/image copy 7.png` — Blueprint numbered callouts, colored section boxes | **ArrayList resize:** numbered ① initial array ② add beyond capacity ③ grow 50% ④ System.arraycopy ⑤ new element inserted |
+| Image                                                                                | Apply to Java Collections topics                                                                                                                                                            |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inputs/image copy 3.png` — Architecture Styles Wheel (center hub + radial branches) | **Collection hierarchy overview:** center = "Collection", radial branches = List/Set/Queue/Map/Deque. Each branch has implementations as leaf nodes. Use as always-visible intro panel      |
+| `inputs/image copy 8.png` — DB Scaling wheel (7 pie segments, mini-diagrams)         | **Collection comparison wheel:** center = "Choose Collection", 6 segments = ArrayList/LinkedList/HashMap/TreeMap/HashSet/PriorityQueue. Click segment → expands to show Big-O + when-to-use |
+| `inputs/image copy 11.png` — Kafka swimlane (5 colored rows, animated dots)          | **Concurrent Collections:** already built as 4 swimlane rows. Pattern is correct — keep and enhance                                                                                         |
+| `inputs/image copy 12.png` — SQL mind map (dark bg, radial color branches)           | **Collection types mind map:** add as overview panel before step-by-step — shows all types at once                                                                                          |
+| `inputs/image copy 7.png` — Blueprint numbered callouts, colored section boxes       | **ArrayList resize:** numbered ① initial array ② add beyond capacity ③ grow 50% ④ System.arraycopy ⑤ new element inserted                                                                   |
 
 ## Enhancement Plan for Built Topics
 
@@ -25,6 +26,7 @@
 Current: 5-step ReactViz.panel (ComponentTree hierarchy + FlowDiagram internals)
 
 Add after current steps:
+
 - **Step 6 — Collection Selection Wheel** (ByteByteGo style from image copy 8): when to use which collection. SVG pie chart, 6 segments, click → mini Big-O table appears
 - **Always-visible summary bar** below steps: quick-reference table (Collection | Order | Duplicates | Null | Thread-safe | O(get) | O(add))
 
@@ -33,6 +35,7 @@ Add after current steps:
 Current: 4-step swimlane (ConcurrentHashMap / compute ops / CopyOnWrite / BlockingQueue + LongAdder)
 
 Add after current lanes:
+
 - **Step 5 — When to use which** (ByteByteGo comparison style): comparison table row per collection with use-case, throughput, trade-off
 
 ---
@@ -48,6 +51,7 @@ Add after current lanes:
 ### Topics covered per step (5 steps):
 
 #### Step 1 — Collection Hierarchy
+
 ```
 Iterable
   └─ Collection
@@ -67,9 +71,11 @@ Iterable
             ├─ TreeMap       (O(log n), sorted keys, NavigableMap)
             └─ EnumMap       (O(1), enum keys only, array-backed)
 ```
+
 Animation: ComponentTree showing full hierarchy with type badges
 
 #### Step 2 — ArrayList vs LinkedList internals
+
 ```
 ArrayList:
   [0][1][2][3][4][ ][ ][ ]  ← Object[] backing array
@@ -83,11 +89,13 @@ LinkedList:
   get(i): O(n) — must traverse from head
   implements Deque — use as stack/queue
 ```
+
 Animation: DSAViz.topic.render with array tracer showing ArrayList resize + pointer animation for LinkedList
 
 Actually for ReactViz: FlowDiagram showing both structures side-by-side with horizontal layout
 
 #### Step 3 — Set internals (HashSet/TreeSet)
+
 ```
 HashSet = HashMap<E, PRESENT>
   add("cat") → hash("cat") → bucket[hash % 16] → linked list / treeify
@@ -100,9 +108,11 @@ TreeSet = TreeMap<E, PRESENT>
   first(), last(), headSet(), tailSet(), subSet() — range queries
   floor(x), ceiling(x), lower(x), higher(x)
 ```
+
 Animation: FlowDiagram — HashSet bucket chain vs TreeSet BST structure
 
 #### Step 4 — Queue, Deque, PriorityQueue
+
 ```
 ArrayDeque (preferred over Stack/LinkedList for queue use):
   Ring buffer: [ ][A][B][C][ ][ ]
@@ -118,9 +128,11 @@ PriorityQueue (min-heap by default):
   peek(): O(1) — just root
   Use Comparator.reverseOrder() for max-heap
 ```
+
 Animation: FlowDiagram showing ArrayDeque ring buffer + PriorityQueue heap tree
 
 #### Step 5 — Map comparison + when to use what
+
 ```
 HashMap:        O(1) get/put, no order, null key, ~16 initial capacity
 LinkedHashMap:  O(1), access-order mode → LRU cache pattern
@@ -129,6 +141,7 @@ EnumMap:        O(1), dense array indexed by enum ordinal, fastest for enum keys
 WeakHashMap:    keys weakly referenced → entries auto-removed when key GC'd
 IdentityHashMap: == comparison for keys (not .equals())
 ```
+
 Animation: FlowDiagram — comparison table as nodes with use-case labels
 
 ---
@@ -142,6 +155,7 @@ Animation: FlowDiagram — comparison table as nodes with use-case labels
 ### Topics covered per step (5 steps):
 
 #### Step 1 — ConcurrentHashMap internals
+
 ```
 Java 8+: No global lock. Segment locking replaced by:
   - Node array (128 buckets default)
@@ -156,9 +170,11 @@ Java 8+: No global lock. Segment locking replaced by:
   - get(): NEVER locks — reads volatile Node.val
   - Null keys/values: FORBIDDEN (unlike HashMap)
 ```
+
 Animation: FlowDiagram showing multiple threads hitting different buckets — no contention. Single bucket = synchronized only that bucket.
 
 #### Step 2 — ConcurrentHashMap compute operations
+
 ```
 compute(key, fn):       atomic read-modify-write
 computeIfAbsent(key, fn): only if missing — good for cache loading
@@ -172,9 +188,11 @@ computeIfAbsent for cache:
 forEach(parallelism, transformer, action):
   bulk parallel operations with parallelism threshold
 ```
+
 Animation: FlowDiagram — two threads computing on different keys simultaneously
 
 #### Step 3 — CopyOnWriteArrayList
+
 ```
 Write: acquire lock → copy entire array → modify copy → swap reference
 Read: no lock, reads snapshot
@@ -196,9 +214,11 @@ Use when:
   ✗ Frequent writes → O(n) copy cost
   ✗ Large arrays → GC pressure from discarded snapshots
 ```
+
 Animation: FlowDiagram — reader thread reads old snapshot while writer copies
 
 #### Step 4 — BlockingQueue variants
+
 ```
 ArrayBlockingQueue:  fixed capacity, single ReentrantLock
 LinkedBlockingQueue: optionally bounded, TWO locks (putLock + takeLock)
@@ -214,9 +234,11 @@ poll(timeout):     returns null if empty after timeout
 
 Thread pool internals: LinkedBlockingQueue is ThreadPoolExecutor's default queue
 ```
+
 Animation: FlowDiagram — producer blocks on full queue, consumer unblocks it
 
 #### Step 5 — Other concurrent utilities: ConcurrentLinkedQueue, Exchanger, Phaser
+
 ```
 ConcurrentLinkedQueue:
   Lock-free FIFO using CAS on tail pointer
@@ -238,27 +260,29 @@ ConcurrentSkipList{Map,Set}:
   Lock-free reads + fine-grained locking for writes
   Alternative to synchronized TreeMap
 ```
+
 Animation: FlowDiagram — ConcurrentLinkedQueue CAS chain
 
 ---
 
 ## Animation Strategy — NEW animations not used in existing java topics
 
-| Topic | Animation Approach | Rationale |
-|-------|--------------------|-----------|
-| Collection hierarchy | ComponentTree (provider=abstract, component=impl) | Hierarchy fits tree shape |
-| ArrayList resize | FlowDiagram horizontal (array cells as nodes) | Show before/after capacity |
-| HashSet buckets | FlowDiagram grid layout | Bucket chains as node chains |
-| PriorityQueue heap | ComponentTree (heap tree shape) | Natural tree visualization |
-| ConcurrentHashMap | FlowDiagram + multiple active nodes | Show concurrent access |
-| CopyOnWrite | FlowDiagram with snapshot/copy nodes | Show two-array state |
-| BlockingQueue | FlowDiagram vertical + phase=suspend/resolve | Producer/consumer wait states |
+| Topic                | Animation Approach                                | Rationale                     |
+| -------------------- | ------------------------------------------------- | ----------------------------- |
+| Collection hierarchy | ComponentTree (provider=abstract, component=impl) | Hierarchy fits tree shape     |
+| ArrayList resize     | FlowDiagram horizontal (array cells as nodes)     | Show before/after capacity    |
+| HashSet buckets      | FlowDiagram grid layout                           | Bucket chains as node chains  |
+| PriorityQueue heap   | ComponentTree (heap tree shape)                   | Natural tree visualization    |
+| ConcurrentHashMap    | FlowDiagram + multiple active nodes               | Show concurrent access        |
+| CopyOnWrite          | FlowDiagram with snapshot/copy nodes              | Show two-array state          |
+| BlockingQueue        | FlowDiagram vertical + phase=suspend/resolve      | Producer/consumer wait states |
 
 ---
 
 ## Gotchas to encode in gotchas field
 
 ### Collections
+
 - LinkedList bad cache locality — ArrayList faster for most iteration even with O(n) insert
 - PriorityQueue is NOT sorted — only guarantees heap property (peek = min)
 - TreeSet/TreeMap keys must be Comparable or supply Comparator — else ClassCastException at runtime
@@ -266,6 +290,7 @@ Animation: FlowDiagram — ConcurrentLinkedQueue CAS chain
 - Arrays.asList() returns fixed-size list — add/remove throws UnsupportedOperationException
 
 ### Concurrent Collections
+
 - ConcurrentHashMap forbids null keys/values — putIfAbsent(key, null) throws NPE
 - size() on ConcurrentHashMap is approximate — not atomic across puts
 - CopyOnWriteArrayList iterator is snapshot — does NOT reflect concurrent adds

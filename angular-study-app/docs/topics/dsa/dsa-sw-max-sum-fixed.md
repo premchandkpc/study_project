@@ -1,6 +1,7 @@
 # Max Sum Subarray (fixed k)
 
 ## Quick Facts
+
 - Area: DSA
 - Tag: Sliding Window
 - Source: `src/modules/topics/dsa/dsa-sw-max-sum-fixed.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Given an integer array and k, find the maximum sum of any contiguous subarray of size k.
 
 **Pattern:** Fixed sliding window - O(n)
@@ -15,9 +17,11 @@ Given an integer array and k, find the maximum sum of any contiguous subarray of
 **Scenario:** Traffic dashboard - find busiest exact k-minute interval.
 
 ## Why It Matters
-Classic first sliding window problem. Instead of recomputing sum from scratch for each window O(n*k), maintain a running sum and update in O(1) per slide.
+
+Classic first sliding window problem. Instead of recomputing sum from scratch for each window O(n\*k), maintain a running sum and update in O(1) per slide.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Problem input"]
@@ -32,6 +36,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Problem input
@@ -50,6 +55,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -64,6 +70,7 @@ Flow steps:
 5. Answer
 
 ## Example
+
 ```javascript
 function maxSumSubarray(arr, k) {
   let windowSum = 0;
@@ -82,13 +89,15 @@ Notes:
 Add arr[i], subtract arr[i-k]. Window slides in O(1) per step.
 
 ## Complexity And Performance
+
 - O(n)
-- O(n*k)
+- O(n\*k)
 - O(1)
 
 ## Interview Drills
+
 1. Why is sliding window faster than brute force here?
-   Answer: Brute force recomputes each window sum from scratch -> O(n*k). Sliding window maintains running sum, updating in O(1) per step -> O(n) total.
+   Answer: Brute force recomputes each window sum from scratch -> O(n\*k). Sliding window maintains running sum, updating in O(1) per step -> O(n) total.
    Follow-ups: What if k > arr.length?; Handle negative numbers?
 
 2. What changes for a variable-size window?
@@ -96,12 +105,15 @@ Add arr[i], subtract arr[i-k]. Window slides in O(1) per step.
    Follow-ups: Give example of variable window problem
 
 ## Trade-offs
+
 Pros:
+
 - O(n) time - single pass
 - O(1) space
 - Easy to implement
 
 Cons:
+
 - Only works for fixed k
 - Does not handle all constraint types
 
@@ -109,6 +121,6 @@ When to use:
 Use when window size is fixed and you need aggregate (sum/max/avg) over it.
 
 ## Gotchas
+
 - k must be <= arr.length - check before running
 - Do not re-initialize windowSum inside the second loop
-

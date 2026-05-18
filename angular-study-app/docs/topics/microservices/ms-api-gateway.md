@@ -1,6 +1,7 @@
 # API Gateway: Routing, Auth & Rate Limiting
 
 ## Quick Facts
+
 - Area: Microservices
 - Tag: Gateway
 - Source: `src/modules/topics/microservices/ms-api-gateway.js`
@@ -8,18 +9,22 @@
 - Visual coverage: generated diagrams only
 
 ## Concept
+
 An **API Gateway** is the single entry point to a microservice mesh. Responsibilities:
+
 - **Routing**: path/host-based to upstream services.
 - **Authentication**: JWT validation, OAuth2 token introspection - offloaded from services.
 - **Rate limiting**: token bucket / sliding window per client or IP.
 - **TLS termination, request transformation, logging, tracing injection**.
-Popular implementations: **Kong** (nginx-based, plugin ecosystem), **AWS API Gateway**, **Envoy Proxy** (xDS config, used by Istio), **Traefik**.
-**Backend-for-Frontend (BFF)** is a gateway variant per client type (mobile, web).
+  Popular implementations: **Kong** (nginx-based, plugin ecosystem), **AWS API Gateway**, **Envoy Proxy** (xDS config, used by Istio), **Traefik**.
+  **Backend-for-Frontend (BFF)** is a gateway variant per client type (mobile, web).
 
 ## Why It Matters
+
 Without a gateway, every service reinvents auth and rate limiting - inconsistently. The gateway enables **cross-cutting concerns at the edge** without coupling services. Rate limiting at the gateway prevents cascading overload. TLS termination at the gateway removes per-service certificate management.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Client"]
@@ -34,6 +39,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Client
@@ -52,6 +58,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -65,6 +72,7 @@ Flow steps:
 5. Observability
 
 ## Example
+
 ```go
 // Simplified Gateway middleware in Go
 package gateway
@@ -145,10 +153,12 @@ Notes:
 In production, share rate limit state via **Redis** (sliding window with Lua scripts) for multi-instance gateways. Use a dedicated JWT library with signature verification and expiry checks.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What is the difference between a gateway and a service mesh?
    Answer: A **gateway** handles **north-south traffic** (client -> cluster). A **service mesh** (Istio, Linkerd) handles **east-west traffic** (service -> service) via sidecar proxies. The mesh gives you mTLS between services, circuit breaking, retries, and distributed tracing without changing application code. Gateways and meshes are complementary - deploy both in large orgs.
    Follow-ups: What is mTLS and why does it matter?; How does xDS configuration work in Envoy?
@@ -158,12 +168,15 @@ In production, share rate limit state via **Redis** (sliding window with Lua scr
    Follow-ups: What is the sliding window vs fixed window difference?; How does Cloudflare rate limit at edge?
 
 ## Trade-offs
+
 Pros:
+
 - Centralizes auth, rate limiting, TLS - services stay thin.
 - Single place to add observability headers (trace IDs) for all traffic.
 - Enables canary routing and A/B testing without deploying new services.
 
 Cons:
+
 - Single point of failure - must be HA with multiple replicas.
 - Gateway latency adds to every request.
 - Over-centralizing business logic in the gateway creates a bottleneck.
@@ -172,5 +185,5 @@ When to use:
 **Always** use a gateway for public APIs. Use a **service mesh** when east-west mTLS and observability are required. Avoid putting business logic in the gateway - keep it infrastructure only.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

@@ -1,6 +1,7 @@
 # Concurrent Collections
 
 ## Quick Facts
+
 - Area: Java
 - Tag: Concurrency
 - Source: `src/modules/topics/java/java-concurrent-collections.js`
@@ -8,12 +9,15 @@
 - Visual coverage: live visual
 
 ## Concept
+
 java.util.concurrent collections provide thread safety without global locking. ConcurrentHashMap (Java 8+): CAS on empty buckets + synchronized on bucket head - only same-bucket writes contend. CopyOnWriteArrayList: writes copy the entire array (snapshot semantics, no lock for readers). BlockingQueue: put/take block via Condition await - decouples producers from consumers. ConcurrentLinkedQueue: lock-free FIFO via CAS on tail pointer.
 
 ## Why It Matters
+
 Collections.synchronizedMap() wraps every operation in a single mutex - kills concurrency. ConcurrentHashMap gives ~16-128x better throughput under contention. CopyOnWriteArrayList eliminates reader locks for rarely-written lists (event listeners, plugin registries). BlockingQueue is the backbone of every thread pool (ThreadPoolExecutor uses LinkedBlockingQueue internally).
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Caller thread"]
@@ -28,6 +32,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Caller thread
@@ -46,6 +51,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -60,6 +66,7 @@ Flow steps:
 5. Result/metrics
 
 ## Example
+
 ```java
 import java.util.concurrent.*;
 
@@ -101,10 +108,12 @@ long total = counter.sum();
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How does ConcurrentHashMap avoid a global lock?
 
 2. Why does ConcurrentHashMap forbid null keys/values?
@@ -118,23 +127,26 @@ long total = counter.sum();
 6. What is weakly consistent iteration in concurrent collections?
 
 ## Trade-offs
+
 Pros:
+
 - ConcurrentHashMap: high throughput - only same-bucket ops contend
 - CopyOnWriteArrayList: zero-overhead reads, never throws ConcurrentModificationException
 - BlockingQueue: clean producer-consumer decoupling, backpressure via bounded capacity
 - LongAdder: stripe counters across cells - no CAS spinning under contention
 
 Cons:
+
 - ConcurrentHashMap: size() is approximate, compute() can block entire bucket
 - CopyOnWriteArrayList: O(n) write cost - unsuitable for frequent writes or large arrays
 - BlockingQueue: blocking threads on put/take - virtual threads reduce this cost
 - ConcurrentLinkedQueue: size() is O(n) - avoid calling it in a loop
 
 ## Gotchas
+
 - ConcurrentHashMap: null key/value throws NullPointerException - cannot distinguish "absent" from "null value"
 - CopyOnWriteArrayList iterator sees SNAPSHOT - concurrent adds NOT visible to ongoing iteration
 - BlockingQueue.offer() returns false silently on full - use put() when blocking guarantee needed
 - computeIfAbsent holds bucket lock during computation - never do I/O or slow ops inside
 - ConcurrentHashMap.size() is NOT atomic across put() calls - use mappingCount() for long precision
 - Iterating ConcurrentHashMap is weakly consistent - may or may not reflect concurrent puts
-

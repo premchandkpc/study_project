@@ -1,6 +1,7 @@
 # Jump Game
 
 ## Quick Facts
+
 - Area: DSA
 - Tag: DP Extended
 - Source: `src/modules/topics/dsa/dsa-dpx-jump-game.js`
@@ -8,18 +9,21 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Each element is the max jump from that position. Can you reach the last index?
 
- **Kid explanation:** You're on lily pads in a pond. Each pad shows how far you can jump from it. [2,3,1,1,4] means pad 0 can jump up to 2 pads ahead. Track the FARTHEST pad you can possibly reach. If you ever step on a pad that's BEYOND your farthest reach, you're stuck in the water!
+**Kid explanation:** You're on lily pads in a pond. Each pad shows how far you can jump from it. [2,3,1,1,4] means pad 0 can jump up to 2 pads ahead. Track the FARTHEST pad you can possibly reach. If you ever step on a pad that's BEYOND your farthest reach, you're stuck in the water!
 
 **Pattern:** Greedy max-reach tracking - O(n)
 **Key insight:** Maintain maxReach = farthest index reachable so far. At each index i, if i > maxReach, you're stranded. Otherwise extend maxReach = max(maxReach, i + nums[i]).
 **Scenario:** Level progression - can a player reach the final level given jump distances?
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Problem input"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Problem input
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,17 +72,21 @@ Flow steps:
 5. Answer
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - O(n)
 
 ## Interview Drills
+
 _No interview drills configured._
 
 ## Trade-offs
+
 _No trade-offs configured._
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

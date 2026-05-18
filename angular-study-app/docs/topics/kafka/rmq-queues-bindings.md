@@ -1,6 +1,7 @@
 # RabbitMQ Queues & Bindings
 
 ## Quick Facts
+
 - Area: Kafka and Messaging
 - Tag: rabbitmq
 - Source: `src/modules/topics/kafka/rmq-queues-bindings.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 **L1 (30s ELI5):** Queue = mailbox. Durable = survives restart. TTL = message auto-expires. Priority = high-priority delivered first. Quorum = replicated across multiple brokers for HA.
 
 **L2 (2min core):** Queue properties: durable (metadata persistence), exclusive (single-connection), auto-delete (delete when no consumers). Message persistence = delivery_mode=2. TTL: x-message-ttl (queue) or expiration (per-message). Priority: x-max-priority=N.
@@ -17,9 +19,11 @@
 **L4 (30min deep):** Quorum queues use Raft for leader election and log replication. Delivery-limit prevents poison messages. Stream queues (RMQ 3.9+): append-only log with consumer offsets - Kafka semantics in RabbitMQ. Messages not removed on consume. Per-consumer offset tracking.
 
 ## Why It Matters
+
 Right queue type = significant ops difference. Classic durable: simplest. Quorum: HA. Stream: replay/fan-out. Priority: QoS. Matching queue type to use case prevents data loss and performance degradation.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Producer"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Producer
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,6 +72,7 @@ Flow steps:
 5. Sink/DLQ
 
 ## Example
+
 ```java
 // Declare quorum queue (Spring AMQP)
 @Bean
@@ -102,10 +109,12 @@ rabbitTemplate.send("orders", "payment", msg);
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Question
 
 2. Question
@@ -115,9 +124,11 @@ rabbitTemplate.send("orders", "payment", msg);
 4. Question
 
 ## Trade-offs
+
 Durability costs disk I/O. Priority queues cost memory (N sub-queues). Quorum queues cost write latency (majority ack). Stream queues trade simplicity for replay capability. Choose based on: durability requirements, throughput needs, HA requirements.
 
 ## Gotchas
+
 - Durable queue + transient message (delivery_mode=1) = queue survives restart but messages lost
 - Per-message TTL (expiration property): checked at delivery time (head of queue), not when message arrives
 - x-expires deletes the ENTIRE QUEUE on inactivity - not individual messages (that's x-message-ttl)
@@ -125,4 +136,3 @@ Durability costs disk I/O. Priority queues cost memory (N sub-queues). Quorum qu
 - Quorum queues: no per-message TTL support. Use stream queues or classic with TTL instead
 - Lazy queues: lower RAM, higher latency (disk I/O). Default in RMQ 3.12+ for classic queues
 - Stream queue consumers must specify offset - they don't auto-start from last position
-

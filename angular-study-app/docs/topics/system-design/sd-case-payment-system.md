@@ -1,6 +1,7 @@
 # Case Study: Payment System (Stripe / PayPal)
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Case Study
 - Source: `src/modules/topics/sysdesign/sd-case-payment-system.js`
@@ -8,11 +9,13 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **Requirements:** Process payments reliably, prevent double charges, handle network timeouts, reconcile ledger, support refunds and partial failures.
 
 **The core problem:** Network is unreliable. A payment API call to Stripe can succeed but your response can get lost. If you retry naively, you charge the customer twice. Solution: idempotency.
 
 **Idempotency key pattern:**
+
 - Client generates a UUID (idempotency key) before the first request.
 - Sends it as a header: `Idempotency-Key: abc-123-xyz`.
 - Server stores the key + result in a Redis/DB cache for 24 hours.
@@ -36,17 +39,21 @@
 **Why outbox pattern?** Prevents "payment succeeded but event never published" - the DB write and event are atomic (same transaction). The relay handles publishing asynchronously.
 
 **Saga vs 2PC:**
+
 - 2-Phase Commit: locks DB across services -> huge latency, not suitable for external APIs.
 - **Saga (choreography):** each service does its step and emits an event. On failure -> compensating transactions (refund, release inventory). No distributed locks.
 
 **Reconciliation:**
+
 - Async batch job (runs every hour): fetch all transactions from Stripe API -> compare against internal ledger -> flag mismatches -> alert ops team.
 - Prevents silent data inconsistencies over time.
 
 ## Why It Matters
+
 Payment systems appear in FAANG interviews constantly. They force you to think about failure modes, idempotency (the most important concept in distributed payments), atomic writes + event publishing (outbox), and the limits of distributed transactions.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Users"]
@@ -72,6 +79,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Client
@@ -89,6 +97,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -103,6 +112,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```python
 # Payment service - FastAPI with idempotency + outbox pattern
 from fastapi import FastAPI, Header, HTTPException
@@ -196,10 +206,12 @@ async def call_stripe(amount, currency, customer_id, idempotency_key):
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How do you prevent double charging?
    Answer: Idempotency keys. The client generates a UUID before the first request and includes it in every retry. The server stores a mapping of idempotency_key -> result in Redis (or a DB table) with a 24-hour TTL. On any retry with the same key, the server returns the stored result without re-executing the payment logic. Crucially, we also pass the idempotency key to Stripe - so even if our server calls Stripe twice, Stripe deduplicates on their end too. This gives us double protection.
    Follow-ups: What if the Redis that stores idempotency keys goes down between the Stripe call and the key storage?; How do you handle idempotency for refunds?; What's the TTL for idempotency keys and why?
@@ -217,13 +229,16 @@ async def call_stripe(amount, currency, customer_id, idempotency_key):
    Follow-ups: How do you handle currency conversion in the ledger?; How do you make balance queries fast on a ledger with 10 years of data?; How do you handle regulatory requirements to keep data in specific regions?
 
 ## Trade-offs
+
 Pros:
+
 - Idempotency keys make retries safe - eliminates the double-charge problem completely
 - Outbox pattern ensures atomicity between DB write and event publish - no silent event loss
 - Saga avoids distributed locks - each service owns its own data and compensates on failure
 - Reconciliation provides a safety net for any edge cases that slip through
 
 Cons:
+
 - Idempotency key storage has a 24h TTL - after that, stale retries can re-execute (must detect via other means)
 - Outbox relay adds latency to event publishing (not synchronous) - downstream services see eventual consistency
 - Saga compensation is complex to implement correctly - compensating transactions must also be idempotent
@@ -233,10 +248,10 @@ When to use:
 Any financial transaction system. If you're moving money, idempotency + outbox pattern is non-negotiable. The only exception: internal account transfers within a single DB (use a DB transaction instead).
 
 ## Gotchas
+
 - NEVER call an external payment API inside a DB transaction - the transaction holds locks while waiting for a slow HTTP call (seconds). Write to DB first, then call API outside the transaction.
 - Idempotency key must be client-generated, not server-generated - the client needs the key before the first attempt to use it on retries
 - Stripe's idempotency keys are scoped to the endpoint - a key used for POST /charges cannot be reused for POST /refunds
 - The outbox relay must read committed data only - use READ COMMITTED isolation to avoid reading events for transactions that rolled back
 - Test your failure scenarios with chaos engineering: kill the network after Stripe responds but before your DB write - ensure reconciliation catches it
 - Currency is an integer (cents) not a float - floating point arithmetic loses money at scale (0.1 + 0.2 0.3 in IEEE 754)
-

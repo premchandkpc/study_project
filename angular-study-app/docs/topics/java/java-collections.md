@@ -1,6 +1,7 @@
 # Collections Framework: List, Map, Set, Queue
 
 ## Quick Facts
+
 - Area: Java
 - Tag: Collections
 - Source: `src/modules/topics/java/java-collections.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **L1 (30s ELI5):** Collections are containers: List (ordered shelf), Set (no-duplicates jar), Map (labeled drawers). Pick by what you need: order, fast lookup, or key-value pairs.
 
 **L2 (2min core):** ArrayList: dynamic array, O(1) random access, grows 1.5x on full. HashMap: array of buckets, `hash & (n-1)` index, linked-list per bucket, treeify >= 8 nodes. ConcurrentHashMap: per-bin CAS + synchronized, lock-free reads since Java 8. TreeMap/TreeSet: red-black tree, O(log n) all ops, sorted order. ArrayDeque: fastest queue/stack, never use Stack class.
@@ -17,9 +19,11 @@
 **L4 (30min deep):** HashMap internals: load factor 0.75 -> resize at 75% fill, rehash all entries to new 2x array. Bucket index: `hash & (n-1)` works because n is always power-of-2 (fast modulo). Hash spreading: `h ^ (h >>> 16)` mixes high bits into low - reduces collision in small tables. Treeification: 8 nodes per bucket AND table capacity >= 64. ConcurrentHashMap: CAS on empty buckets, synchronized on first node for collision chains. EnumMap: array-backed with `enum.ordinal()` as index - fastest possible Map.
 
 ## Why It Matters
+
 Choosing the wrong collection is a classic senior interview trap. `LinkedList` for a list (terrible cache locality), `HashMap` with wrong equals/hashCode (all O(n)), `ArrayList` without pre-sizing (repeated resizes), `HashMap` in concurrent code (data corruption). Know the internals.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["List - ordered, indexed, duplicates OK"]
@@ -55,6 +59,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant caller as Caller
@@ -73,6 +78,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -90,6 +96,7 @@ Flow steps:
 8. YES -> Queue / Deque - ArrayDeque: fastest Deque/Stack, no null. PriorityQueue: min-heap, O(log n) poll. LinkedBlockingQueue: bounded producer-consumer. ArrayBlockingQueue: fixed capacity, blocks producer when full. DelayQueue: scheduled tasks.
 
 ## Example
+
 ```java
 import java.util.*;
 import java.util.concurrent.*;
@@ -133,11 +140,13 @@ Notes:
 Always override `hashCode()` AND `equals()` together for custom Map keys. Use `Objects.hash()` and `Objects.equals()` for multi-field implementations.
 
 ## Complexity And Performance
+
 - O(1)
 - O(log n)
 - O(n)
 
 ## Interview Drills
+
 1. HashMap vs ConcurrentHashMap - what breaks without CHM?
    Answer: In concurrent puts, HashMap can: (1) lose entries when two threads resize simultaneously, (2) create infinite linked-list loops (Java 6 bug - fixed in Java 8 but race still corrupts data), (3) return inconsistent results on reads. CHM uses per-bin CAS + synchronized - reads are fully lock-free since Java 8.
    Follow-ups: What is the difference between Hashtable and CHM?; When would you use Collections.synchronizedMap()?
@@ -151,12 +160,15 @@ Always override `hashCode()` AND `equals()` together for custom Map keys. Use `O
    Follow-ups: What is cache line size?; How does sequential memory access beat linked structures?
 
 ## Trade-offs
+
 Pros:
+
 - Generic, type-safe collections with consistent interfaces.
 - Java 8+ factory methods: List.of(), Map.of() for immutable collections.
 - Collectors API creates complex nested collections in one pipeline.
 
 Cons:
+
 - Boxing overhead: HashMap<Integer,Integer> vs int[]. Use primitive maps (Eclipse Collections, Trove) for hot paths.
 - CopyOnWriteArrayList write cost is O(n) - don't use for write-heavy lists.
 - PriorityQueue does NOT support O(1) decrease-key - use TreeMap for that.
@@ -165,10 +177,10 @@ When to use:
 Default: **ArrayList + HashMap**. Thread-safe: **ConcurrentHashMap**. Sorted: **TreeMap/TreeSet**. Queue: **ArrayDeque**. LRU: **LinkedHashMap (accessOrder=true)**. Enum: **EnumMap/EnumSet**.
 
 ## Gotchas
+
 - HashMap null key -> bucket[0] (allowed). TreeMap null key -> NullPointerException. Hashtable null key -> NPE. Know the difference.
 - Override BOTH hashCode() AND equals() for Map keys. Missing either: entries lost or duplicated. Use Objects.hash() + Objects.equals().
 - LinkedList as List is almost always wrong: terrible cache locality (each node separate heap object), O(n) random access. Use ArrayList.
 - ConcurrentModificationException: modifying collection while iterating. Fix: use iterator.remove(), removeIf(), or collect-then-modify.
 - CopyOnWriteArrayList iterator is a snapshot: sees data at time of iterator creation, not current state. Stale reads during concurrent writes.
-- HashMap pre-size: new HashMap<>(expectedSize * 4/3 + 1) avoids resize. Forgetting causes O(n) rehash when load factor exceeded.
-
+- HashMap pre-size: new HashMap<>(expectedSize \* 4/3 + 1) avoids resize. Forgetting causes O(n) rehash when load factor exceeded.

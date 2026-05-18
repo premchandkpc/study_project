@@ -1,6 +1,7 @@
 # Kafka Consumer Groups
 
 ## Quick Facts
+
 - Area: Kafka and Messaging
 - Tag: consumer
 - Source: `src/modules/topics/kafka/kafka-consumer-groups.js`
@@ -8,18 +9,21 @@
 - Visual coverage: live visual
 
 ## Concept
+
 **L1 (30s ELI5):** Consumer group = team sharing a partition queue. Each partition -> exactly one consumer. Add consumers -> Kafka redistributes work (rebalance).
 
-**L2 (2min core):** Group coordinator (broker) manages membership via JoinGroup/SyncGroup protocol. One consumer elected leader, runs assignment algo, sends plan to coordinator. Coordinator distributes to all members. Offsets committed to __consumer_offsets (50 partitions, compacted).
+**L2 (2min core):** Group coordinator (broker) manages membership via JoinGroup/SyncGroup protocol. One consumer elected leader, runs assignment algo, sends plan to coordinator. Coordinator distributes to all members. Offsets committed to \_\_consumer_offsets (50 partitions, compacted).
 
 **L3 (10min edge cases):** Three timeouts: session.timeout.ms (heartbeat deadline), heartbeat.interval.ms (send freq, must be < session/3), max.poll.interval.ms (time between poll() calls - catches processing hangs, not heartbeat hangs). Rebalance strategies: Range (per-topic consecutive, hotspots), RoundRobin (even across all partitions), Sticky (preserves prev assignment). Eager vs Cooperative: eager revokes ALL partitions, cooperative only revokes moving partitions.
 
-**L4 (30min deep):** __consumer_offsets has 50 partitions. Coordinator = broker leading hash(group.id)%50 partition. SyncGroup: leader sends full assignment, followers send empty. Protocol negotiation: all members must agree - one eager member forces group to eager. Static membership (group.instance.id) skips rebalance on restart within session.timeout. Incremental cooperative uses 2 rounds: round 1 find movers, round 2 assign.
+**L4 (30min deep):** \_\_consumer_offsets has 50 partitions. Coordinator = broker leading hash(group.id)%50 partition. SyncGroup: leader sends full assignment, followers send empty. Protocol negotiation: all members must agree - one eager member forces group to eager. Static membership (group.instance.id) skips rebalance on restart within session.timeout. Incremental cooperative uses 2 rounds: round 1 find movers, round 2 assign.
 
 ## Why It Matters
+
 Horizontal scale: add consumers = linear throughput up to partition count. Fault tolerance: consumer dies -> auto-reassign. Exactly-once = consumer groups + transactional offset commits.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Producer"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Producer
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,6 +72,7 @@ Flow steps:
 5. Sink/DLQ
 
 ## Example
+
 ```java
 Properties props = new Properties();
 props.put(ConsumerConfig.GROUP_ID_CONFIG, "my-group");
@@ -104,10 +111,12 @@ while (true) {
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Question
 
 2. Question
@@ -117,14 +126,15 @@ while (true) {
 4. Question
 
 ## Trade-offs
+
 More consumers = more rebalances. Cooperative: faster rebalances, requires all members to opt in. Sticky: min moves, slightly more complex assignment. Large groups: increase group.initial.rebalance.delay.ms to let all members join before first assignment.
 
 ## Gotchas
+
 - max.poll.interval.ms exceeded kicks consumer even if heartbeats healthy - heartbeat thread poll thread
 - heartbeat.interval.ms must be < session.timeout.ms / 3 or broker won't wait 3 missed beats
 - Eager rebalance: ALL partitions revoked first -> all consumers pause. 50ms becomes 2s in large clusters
 - Range assignor: consumer-0 gets P0 from every subscribed topic -> hotspot if P0 is high-traffic
 - Mixed assignor strategies in a group -> entire group falls back to eager
 - Static membership (group.instance.id): consumer can restart without triggering rebalance if back within session.timeout.ms
-- __consumer_offsets coordinator = broker for hash(group.id) % 50 - that broker is your performance bottleneck
-
+- \_\_consumer_offsets coordinator = broker for hash(group.id) % 50 - that broker is your performance bottleneck

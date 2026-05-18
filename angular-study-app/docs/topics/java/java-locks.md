@@ -1,6 +1,7 @@
 # synchronized vs ReentrantLock
 
 ## Quick Facts
+
 - Area: Java
 - Tag: Concurrency
 - Source: `src/modules/topics/java/java-locks.js`
@@ -8,12 +9,15 @@
 - Visual coverage: live visual
 
 ## Concept
+
 synchronized is a JVM-level intrinsic lock on any object's monitor. Simple and automatic - acquired on block entry, released on exit (even on exception). ReentrantLock (java.util.concurrent.locks) is explicit: lock()/unlock() in try/finally. ReentrantLock adds tryLock(), lockInterruptibly(), timed lock, multiple Condition objects, and fairness mode. Both are reentrant - same thread can re-acquire without deadlock.
 
 ## Why It Matters
+
 synchronized works for simple mutual exclusion. ReentrantLock is needed when you require: timeout on lock attempt, interruptible waiting, multiple condition queues (producer-consumer), fair scheduling, or when synchronized would pin a virtual thread (Loom). Understanding monitor internals explains spurious wakeups and wait/notify semantics.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Caller thread"]
@@ -28,6 +32,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Caller thread
@@ -46,6 +51,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -60,6 +66,7 @@ Flow steps:
 5. Result/metrics
 
 ## Example
+
 ```java
 // synchronized - simple
 class Counter {
@@ -110,10 +117,12 @@ if (lock.tryLock(100, TimeUnit.MILLISECONDS)) {
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What is the difference between synchronized and ReentrantLock?
 
 2. What is a monitor and how does wait/notify work?
@@ -125,22 +134,25 @@ if (lock.tryLock(100, TimeUnit.MILLISECONDS)) {
 5. How does tryLock() help avoid deadlock?
 
 ## Trade-offs
+
 Pros:
+
 - synchronized: automatic release, no forget-unlock bug, simpler code
 - ReentrantLock: tryLock/timed/interruptible - prevents indefinite blocking
 - ReentrantLock: multiple Condition objects - finer-grained wait/notify
 - ReentrantLock(true): fair mode - FIFO thread ordering (avoids starvation)
 
 Cons:
+
 - synchronized: no timeout, no interruption, one condition queue (wait/notify)
 - synchronized: pins virtual threads in Loom scenarios
 - ReentrantLock: must call unlock() in finally - easy to forget -> deadlock
 - ReentrantLock: verbose code vs clean synchronized block syntax
 
 ## Gotchas
+
 - Always use while loop (not if) for condition check - spurious wakeups occur
 - ReentrantLock.unlock() in finally is mandatory - exception without unlock = permanent deadlock
 - notifyAll() vs notify(): notify() wakes one random thread - use notifyAll() for safety with multiple conditions
 - synchronized on different objects = no mutual exclusion - must lock SAME object
 - Deadlock: T1 holds lockA wants lockB; T2 holds lockB wants lockA - detect with jstack
-

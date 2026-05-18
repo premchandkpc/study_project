@@ -1,6 +1,7 @@
 # RabbitMQ vs Kafka
 
 ## Quick Facts
+
 - Area: Kafka and Messaging
 - Tag: Comparison
 - Source: `src/modules/topics/kafka/rmq-vs-kafka.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 <div style="font-family:monospace;color:#cdd9e5;max-width:860px">
   <h2 style="color:#a371f7;margin-bottom:6px">RabbitMQ vs Apache Kafka</h2>
   <p style="color:#768390;margin-bottom:18px">Two radically different messaging philosophies. Wrong choice = years of pain. Right choice = superpowers.</p>
@@ -71,9 +73,11 @@
 </div>
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Producer"]
@@ -88,6 +92,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Producer
@@ -106,6 +111,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -120,13 +126,16 @@ Flow steps:
 5. Sink/DLQ
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Why Kafka for event sourcing but not RabbitMQ?
 
 2. How does RabbitMQ back-pressure work vs Kafka?
@@ -136,11 +145,12 @@ _No code example configured._
 4. Latency: which is faster and why?
 
 ## Trade-offs
+
 RabbitMQ: low latency, complex routing, task-oriented. Cons: no replay, memory pressure. Kafka: high throughput, replay, multi-consumer. Cons: higher ops, no routing, latency higher.
 
 ## Gotchas
+
 - RabbitMQ: message acked = gone forever. No replay.
 - Kafka: consumer lag is invisible to broker - monitor externally.
 - Kafka has no per-message TTL or priority.
 - RabbitMQ push-based: slow consumer backs up queue in broker memory.
-

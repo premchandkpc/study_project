@@ -1,6 +1,7 @@
 # Kafka Connect
 
 ## Quick Facts
+
 - Area: Kafka and Messaging
 - Tag: connect
 - Source: `src/modules/topics/kafka/kafka-connect.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 **L1 (30s ELI5):** Kafka Connect = plug-and-play data pipelines. Source connector pulls from DB/S3 into Kafka. Sink connector pushes from Kafka to DB/S3/ES. Zero custom code for common systems.
 
 **L2 (2min core):** Connectors spawn Tasks (parallelism units). Workers host tasks. Distributed mode: offset/config/status stored in Kafka internal topics. REST API to deploy/manage connectors. SMTs for lightweight transforms.
@@ -17,9 +19,11 @@
 **L4 (30min deep):** Distributed mode uses consumer group protocol for task assignment. connect-offsets (compacted): source offsets per partition. connect-configs (compacted): connector/task configs. connect-status (compacted): connector states. SMT chain: transforms applied in order, each sees result of previous. Custom SMTs: implement Transformation interface.
 
 ## Why It Matters
+
 Connect handles the operational burden of data pipelines: offset tracking, parallelism, failure recovery, schema evolution. 200+ open-source connectors (Confluent Hub). Alternative to custom Kafka consumers/producers for integration use cases.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Producer"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Producer
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,6 +72,7 @@ Flow steps:
 5. Sink/DLQ
 
 ## Example
+
 ```bash
 # Deploy Debezium PostgreSQL source connector via REST API
 curl -X POST http://connect:8083/connectors \
@@ -100,10 +107,12 @@ curl http://connect:8083/connectors/orders-cdc/status
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Question
 
 2. Question
@@ -113,9 +122,11 @@ curl http://connect:8083/connectors/orders-cdc/status
 4. Question
 
 ## Trade-offs
+
 Connect: zero-code for standard integrations, but limited transform logic. Custom consumer/producer: full control but you own offset management, parallelism, failure handling. Debezium: powerful CDC but operationally complex (replication slots, snapshot management).
 
 ## Gotchas
+
 - JDBC Source misses hard DELETEs - only detects rows with updated timestamp or new ID. Use Debezium for full CDC
 - Debezium requires DB replication slot (PostgreSQL) or binlog (MySQL) - coordinate with DBA
 - tasks.max is an upper bound - actual tasks = min(tasks.max, source parallelism e.g., table count)
@@ -123,4 +134,3 @@ Connect: zero-code for standard integrations, but limited transform logic. Custo
 - SMTs are not for heavy logic - for complex transforms use Kafka Streams downstream of the connector
 - Distributed mode stores state in Kafka topics - don't change connect-offsets topic config or you lose offset tracking
 - Schema changes: JDBC sink auto.evolve=true adds columns but can't remove them without manual intervention
-

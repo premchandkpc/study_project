@@ -1,6 +1,7 @@
 # Apache Kafka - Internals, Partitions & Consumer Groups
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Messaging
 - Source: `src/modules/topics/sysdesign/sd-kafka-arch.js`
@@ -8,9 +9,11 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **Kafka** is a distributed commit log optimised for high-throughput, durable, ordered event streaming.
 
 **Core concepts:**
+
 - **Topic** - logical stream name. Partitioned for parallelism.
 - **Partition** - ordered, immutable log. Each message gets an offset. Stored on disk (not memory).
 - **Broker** - Kafka server. A cluster has N brokers; each partition has one leader + (replication-factor - 1) followers.
@@ -21,6 +24,7 @@
 **ISR (In-Sync Replicas):** The set of replicas fully caught up with the leader. `acks=all` waits for all ISR before producer gets ACK - strongest guarantee.
 
 **Exactly-once semantics (EOS):**
+
 1. Producer idempotence (`enable.idempotence=true`) - deduplicates retries via sequence numbers
 2. Transactions - atomic write across multiple partitions + commit offset
 
@@ -29,9 +33,11 @@
 **Throughput numbers:** Single Kafka cluster handles 10M+ messages/second at LinkedIn, 7M at Twitter.
 
 ## Why It Matters
+
 Kafka is the backbone of event-driven architectures. Understanding partitioning and consumer groups is critical for designing scalable async systems.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Producers"]
@@ -56,6 +62,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Producer
@@ -73,6 +80,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -87,6 +95,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```java
 // Kafka producer with exactly-once semantics
 @Configuration
@@ -147,29 +156,34 @@ Notes:
 concurrency=3 means 3 consumer threads per instance. With 12 partitions and 4 instances: 12/4=3 threads each - saturates all partitions.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How do you ensure ordering of messages in Kafka?
    Answer: Kafka guarantees ordering **within a partition**. Cross-partition ordering is not guaranteed.
-   
+
    **To ensure ordered processing for a logical entity:**
    1. **Partition by entity key** - all events for orderId=42 go to the same partition (hash of key mod partitions). Same partition -> single consumer -> ordered.
    2. **Single partition** - extreme: 1 partition = total order, but 1 consumer max throughput.
    3. **Application-side ordering** - use sequence numbers in events; consumer buffers and reorders.
-   
+
    **Gotcha:** If a consumer fails and rebalance occurs, a new consumer picks up mid-stream. With at-least-once delivery, ensure idempotent processing.
    Follow-ups: What happens when a Kafka consumer is slow and lags behind?; Explain the differences between at-most-once, at-least-once, and exactly-once delivery.
 
 ## Trade-offs
+
 Pros:
+
 - 10M+ msg/s throughput
 - Durable - disk-backed, replicated
 - Replay - consumers can re-read old events
 - Fan-out - multiple consumer groups each see all messages
 
 Cons:
+
 - Operational complexity (ZooKeeper/KRaft, schema registry)
 - No built-in message filtering - consumers must filter
 - Rebalancing pauses all consumers in a group (improvement: static membership)
@@ -178,5 +192,5 @@ When to use:
 Use Kafka for: event sourcing, audit logs, cross-service async communication, stream processing (Kafka Streams / Flink). For simple task queues, consider RabbitMQ or SQS.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

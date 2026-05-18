@@ -1,6 +1,7 @@
 # HTTP 1.1 / 2 / 3, WebSocket & SSE
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Protocols
 - Source: `src/modules/topics/sysdesign/sd-protocols-http.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **HTTP/1.1** (1997): text protocol, one request per connection (keep-alive allows reuse but still serial). Head-of-line (HOL) blocking at application layer.
 
 **HTTP/2** (2015): binary framing, **multiplexing** (multiple streams on one TCP connection), header compression (HPACK), server push. Eliminates app-layer HOL but TCP-layer HOL remains.
@@ -25,15 +27,18 @@
 | 0-RTT resumption | No | No | Yes |
 
 **Real-time communication options:**
+
 - **Short polling**: client polls every N seconds - simple, wastes bandwidth
 - **Long polling**: client holds connection open until server has data - better but complex
 - **SSE** (Server-Sent Events): unidirectional server->client stream over HTTP, built-in reconnect, text only
 - **WebSocket**: full-duplex binary/text, single TCP upgrade, low overhead per message
 
 ## Why It Matters
+
 Protocol choice affects throughput, latency, and infrastructure cost at scale. HTTP/2 multiplexing removes the need for domain sharding. WebSocket vs SSE is a common interview design question.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Client"]
@@ -60,6 +65,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Caller
@@ -77,6 +83,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -91,6 +98,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```go
 // SSE server in Go - push live updates to browser
 package main
@@ -137,31 +145,36 @@ Notes:
 SSE auto-reconnects on disconnect; browser EventSource API handles this natively. Use WebSocket only when you need client->server messages.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. When would you choose WebSocket over SSE?
    Answer: **Use SSE when:** data flows only server -> client (live dashboards, notifications, feeds). Simpler, works over HTTP/2, proxy-friendly, built-in reconnect.
-   
+
    **Use WebSocket when:** you need bidirectional communication (chat, multiplayer games, collaborative editing, trading terminals). WebSocket is a TCP upgrade so it escapes HTTP semantics but also loses HTTP/2 multiplexing benefits.
-   
+
    **At scale:** SSE is easier to load-balance (stateless HTTP); WebSocket requires sticky sessions or a pub-sub backplane (Redis pub-sub, Kafka) so any server can push to any client.
    Follow-ups: How do you scale WebSocket servers?; What is the WebSocket ping/pong mechanism?
 
 2. What is HOL blocking and how does HTTP/3 solve it?
    Answer: Head-of-line blocking: if packet N is lost on a TCP connection, all subsequent packets wait for retransmission even if they belong to independent streams. HTTP/2 multiplexes on one TCP connection - a single packet loss stalls all streams.
-   
+
    HTTP/3 uses QUIC (UDP) which implements streams at the transport layer. A lost packet only blocks the single stream that owns it; other streams continue unaffected. Additionally QUIC has built-in TLS 1.3 and supports connection migration (changing IP mid-connection).
    Follow-ups: Why is HTTP/3 especially beneficial on mobile networks?
 
 ## Trade-offs
+
 Pros:
+
 - HTTP/2 multiplexing eliminates connection-count limits
 - HTTP/3 QUIC reduces latency on lossy networks
 - SSE is simplest for server-push use cases
 
 Cons:
+
 - HTTP/3 not supported by all infrastructure/proxies yet
 - WebSocket breaks some CDN/proxy setups
 - SSE is text-only and unidirectional
@@ -170,5 +183,5 @@ When to use:
 Default to HTTP/2 for REST APIs. HTTP/3 for user-facing products. SSE for live feeds. WebSocket for true bidirectional needs.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

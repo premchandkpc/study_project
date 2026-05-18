@@ -1,6 +1,7 @@
 # Generics (Go 1.18+): Type Parameters & Constraints
 
 ## Quick Facts
+
 - Area: Go
 - Tag: Generics
 - Source: `src/modules/topics/golang/go-generics.js`
@@ -8,16 +9,20 @@
 - Visual coverage: generated diagrams only
 
 ## Concept
+
 Go 1.18 introduced **type parameters**. Syntax: `func Map[T, R any](s []T, fn func(T) R) []R`.
+
 - **Constraints** restrict what types a type param can be. `any` = `interface{}`, `comparable` = types that support `==`.
 - **Union constraints**: `type Number interface { int | int64 | float64 }`.
 - **Type inference**: compiler infers type args at call sites in most cases.
 - Generic functions can be used with concrete types at compile time - no runtime reflection.
 
 ## Why It Matters
+
 Before generics, Go developers used `interface{}` with runtime type assertions (losing type safety) or code generation (`go generate`) for typed collections. Generics eliminate both: `slices.Sort`, `maps.Keys`, and custom data structures are now type-safe without codegen.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Request"]
@@ -32,6 +37,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Request
@@ -50,6 +56,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -63,6 +70,7 @@ Flow steps:
 5. Response/error
 
 ## Example
+
 ```go
 package main
 
@@ -129,10 +137,12 @@ Notes:
 Prefer standard library `slices` and `maps` packages (Go 1.21) over reimplementing generic utilities. Generic code compiles to dictionaries/GC shapes - not C++ templates; one instantiation per GC shape, not per type.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. When would you NOT use generics?
    Answer: Three cases: (1) **Simple functions** where `interface{}` and a type switch is clearer. (2) **Runtime polymorphism** where you need dynamic dispatch - interfaces are the right tool. (3) **Readability cost** exceeds benefit - complex constraint expressions hurt newcomers. Generics shine for **collections, algorithms, and container types** where you lose type safety otherwise.
    Follow-ups: What is a GC shape?; What are the performance implications of generics vs interfaces?
@@ -142,12 +152,15 @@ Prefer standard library `slices` and `maps` packages (Go 1.21) over reimplementi
    Follow-ups: What is monomorphisation?; Can you use generics with methods?
 
 ## Trade-offs
+
 Pros:
+
 - Type-safe generic collections without codegen or interface{}.
 - Single implementation, multiple types - DRY without losing safety.
 - Integrates with stdlib: slices.SortFunc, maps.Keys, etc.
 
 Cons:
+
 - Complex constraints hurt readability.
 - Cannot parameterize methods (only functions and types).
 - Compile times increase with many instantiations.
@@ -156,5 +169,5 @@ When to use:
 Use generics for **data structures, algorithms, and utility functions** where type matters but logic is identical. Keep business logic in concrete types - generics for infrastructure code.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

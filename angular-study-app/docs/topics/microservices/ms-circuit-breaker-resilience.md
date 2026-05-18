@@ -1,6 +1,7 @@
 # Circuit Breaker, Retry & Bulkhead Patterns
 
 ## Quick Facts
+
 - Area: Microservices
 - Tag: Resilience
 - Source: `src/modules/topics/microservices/ms-circuit-breaker-resilience.js`
@@ -8,18 +9,22 @@
 - Visual coverage: generated diagrams only
 
 ## Concept
+
 Resilience patterns prevent a failing dependency from cascading into a total outage:
+
 - **Timeout**: never wait forever. Fail fast.
 - **Retry with exponential backoff + jitter**: recover from transient failures without thundering herd.
 - **Circuit Breaker**: half-open -> open (stop calls) -> closed (calls allowed). States tracked by failure rate / count. Prevents hammering a sick service.
 - **Bulkhead**: isolate thread pools or semaphores per dependency - one slow service can't exhaust all connections.
 - **Fallback**: cached result, degraded response, or queue for later.
-Libraries: **Resilience4j** (Java), **Polly** (.NET), **go-circuit** (Go).
+  Libraries: **Resilience4j** (Java), **Polly** (.NET), **go-circuit** (Go).
 
 ## Why It Matters
+
 In a 10-service call chain, if each service has 99.9% uptime, the composite uptime is 99% - a 10x amplification. Without circuit breakers, a slow database causes request threads to pile up behind the slow DB call, exhausting the thread pool and making the entire service unresponsive. The circuit breaker is the first line of defense.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Client"]
@@ -34,6 +39,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Client
@@ -52,6 +58,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -65,6 +72,7 @@ Flow steps:
 5. Observability
 
 ## Example
+
 ```java
 // Resilience4j: circuit breaker + retry + bulkhead + timeout
 import io.github.resilience4j.circuitbreaker.*;
@@ -143,10 +151,12 @@ Notes:
 Apply resilience decorators in the right order (outer to inner): TimeLimiter -> CircuitBreaker -> Retry -> Bulkhead. Retry inside CircuitBreaker would reset the timeout. Add jitter to retry delays to prevent thundering herd: `Duration.ofMillis(200 + random.nextInt(100))`.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What is the difference between a circuit breaker and a retry?
    Answer: **Retry** recovers from transient failures (brief network glitch) by re-attempting. **Circuit breaker** detects sustained failure and stops calling the service entirely, giving it time to recover. Retry without a circuit breaker can overwhelm a failing service with retried requests. Together: retry handles transient errors; circuit breaker handles sustained outages. The circuit breaker also gives callers fast failures instead of timeouts.
    Follow-ups: What is the half-open state for?; How do you tune circuit breaker thresholds?
@@ -156,12 +166,15 @@ Apply resilience decorators in the right order (outer to inner): TimeLimiter -> 
    Follow-ups: Semaphore bulkhead vs thread pool bulkhead?; How does Hystrix implement bulkheads?
 
 ## Trade-offs
+
 Pros:
+
 - Circuit breaker gives fast failure instead of connection timeout pile-up.
 - Bulkheads limit blast radius - one bad service can't kill all traffic.
 - Fallback enables graceful degradation - partial service beats total outage.
 
 Cons:
+
 - Misconfigured thresholds cause false positives (circuit opens on healthy service).
 - Retry amplifies load under real failure - must limit retries and add backoff.
 - Distributed circuit breaker state (Envoy, Redis) adds complexity.
@@ -170,5 +183,5 @@ When to use:
 Apply **timeout** everywhere. Apply **retry** for idempotent calls with transient errors. Apply **circuit breaker** for any synchronous call to external services. Apply **bulkhead** for shared thread pools serving multiple dependencies.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

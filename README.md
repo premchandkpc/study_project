@@ -77,6 +77,7 @@ npm start
 ```
 
 Expected output:
+
 ```
 🤖 Study Agent server running at http://localhost:3001
    GET  /api/agent?msg=java
@@ -216,8 +217,9 @@ curl http://localhost:3001/health
 ```
 
 **Response:**
+
 ```json
-{"status":"ok"}
+{ "status": "ok" }
 ```
 
 #### GET /api/agent?msg=<query>
@@ -229,6 +231,7 @@ curl "http://localhost:3001/api/agent?msg=microservices"
 ```
 
 **Response:**
+
 ```json
 {
   "reply": "🔧 **Microservices**: Decompose by bounded context...",
@@ -247,6 +250,7 @@ curl -X POST http://localhost:3001/api/agent \
 ```
 
 **Response:**
+
 ```json
 {
   "reply": "🌱 **Spring Boot**: Auto-configuration + dependency injection...",
@@ -359,18 +363,19 @@ This project is for educational purposes. See CLAUDE.md for project scope.
 
 ## Quick Reference
 
-| Command | Description |
-|---------|-------------|
-| `cd angular-study-app/agents && npm start` | Start backend server (port 3001) |
-| `python3 -m http.server 8000` | Start frontend server (port 8000) |
-| `curl http://localhost:3001/health` | Test backend health |
-| `curl "http://localhost:3001/api/agent?msg=java"` | Test agent endpoint |
-| `npm install` | Install backend dependencies |
-| `rm -rf node_modules && npm install` | Clean install dependencies |
+| Command                                           | Description                       |
+| ------------------------------------------------- | --------------------------------- |
+| `cd angular-study-app/agents && npm start`        | Start backend server (port 3001)  |
+| `python3 -m http.server 8000`                     | Start frontend server (port 8000) |
+| `curl http://localhost:3001/health`               | Test backend health               |
+| `curl "http://localhost:3001/api/agent?msg=java"` | Test agent endpoint               |
+| `npm install`                                     | Install backend dependencies      |
+| `rm -rf node_modules && npm install`              | Clean install dependencies        |
 
 ## Support
 
 For issues or questions:
+
 - Check the Troubleshooting section above
 - Review console errors in browser DevTools (F12)
 - Check git history: `git log --oneline`

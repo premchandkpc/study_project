@@ -1,6 +1,7 @@
 # Kubernetes in Production - Pods, HPA & Rolling Deploys
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Compute
 - Source: `src/modules/topics/sysdesign/sd-kubernetes-prod.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **Core Kubernetes objects:**
 
 **Pod** - smallest deployable unit. One or more containers sharing network namespace and volumes. Ephemeral - never SSH into a pod.
@@ -23,21 +25,26 @@
 **HPA (Horizontal Pod Autoscaler)** - scales Deployment replica count based on CPU/memory/custom metrics (via KEDA for queue depth).
 
 **Rolling deploy strategy:**
+
 ```
 maxSurge: 1      # Allow 1 extra pod during update
 maxUnavailable: 0 # Keep all pods available (zero downtime)
 ```
+
 New pods start -> pass readiness probe -> added to service endpoints -> old pods terminated.
 
 **Probes:**
+
 - **Liveness** - is pod alive? Failure -> container restart.
 - **Readiness** - is pod ready to receive traffic? Failure -> removed from service endpoints (but not restarted).
 - **Startup** - for slow-starting apps. Disables liveness until started.
 
 ## Why It Matters
+
 K8s is the industry standard for container orchestration. Interview questions cover deployments, scaling, networking, and troubleshooting. Understanding probes alone can save hours of incident debugging.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Users"]
@@ -63,6 +70,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Client
@@ -80,6 +88,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -94,6 +103,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```yaml
 # Production-grade Deployment
 apiVersion: apps/v1
@@ -107,7 +117,7 @@ spec:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 0        # zero-downtime deploy
+      maxUnavailable: 0 # zero-downtime deploy
   selector:
     matchLabels:
       app: order-service
@@ -120,10 +130,10 @@ spec:
       containers:
         - name: order-service
           image: myregistry/order-service:v2.1.0
-          ports: [{containerPort: 8080}]
+          ports: [{ containerPort: 8080 }]
           resources:
-            requests: {cpu: "100m", memory: "256Mi"}
-            limits:   {cpu: "500m", memory: "512Mi"}
+            requests: { cpu: "100m", memory: "256Mi" }
+            limits: { cpu: "500m", memory: "512Mi" }
           env:
             - name: DB_PASSWORD
               valueFrom:
@@ -131,12 +141,12 @@ spec:
                   name: db-secret
                   key: password
           readinessProbe:
-            httpGet: {path: /actuator/health/readiness, port: 8080}
+            httpGet: { path: /actuator/health/readiness, port: 8080 }
             initialDelaySeconds: 10
             periodSeconds: 5
             failureThreshold: 3
           livenessProbe:
-            httpGet: {path: /actuator/health/liveness, port: 8080}
+            httpGet: { path: /actuator/health/liveness, port: 8080 }
             initialDelaySeconds: 30
             periodSeconds: 10
 ---
@@ -159,7 +169,7 @@ spec:
         target:
           type: Utilization
           averageUtilization: 70
-    - type: External             # KEDA custom metric
+    - type: External # KEDA custom metric
       external:
         metric:
           name: sqs_messages_visible
@@ -168,32 +178,37 @@ spec:
               queue: order-queue
         target:
           type: AverageValue
-          averageValue: "30"     # Scale up if >30 msgs/pod
+          averageValue: "30" # Scale up if >30 msgs/pod
 ```
 
 Notes:
 Always set resource requests+limits. Without them, pods can starve other pods (requests) or be OOMKilled (limits). requests=what scheduler uses; limits=hard cap.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What happens when a pod fails its liveness probe?
    Answer: The kubelet on the node restarts the container (not the pod). The pod itself stays - it retains its IP, volumes, and resource reservation. The container's process is killed and restarted according to the pod's `restartPolicy` (default: Always).
-   
+
    **Key distinction from readiness:** A failed readiness probe removes the pod from Service endpoints (no traffic) but doesn't restart it. A failed liveness probe restarts the container.
-   
+
    **Common pitfall:** Setting liveness probe path same as a heavyweight health endpoint. If liveness probe itself causes load -> cascade. Use a simple fast endpoint for liveness (`/live`) separate from deep health check.
    Follow-ups: What is pod disruption budget and why is it important?; How does K8s handle node failure?
 
 ## Trade-offs
+
 Pros:
+
 - Self-healing (pod restart, node replacement)
 - Declarative - desired state reconciled automatically
 - Rich ecosystem: Helm, Kustomize, ArgoCD, KEDA
 
 Cons:
+
 - Steep learning curve
 - etcd is a critical single point - must be HA
 - Networking complexity (CNI, service mesh)
@@ -202,5 +217,5 @@ When to use:
 K8s for anything running more than a handful of microservices in production. Use managed K8s (EKS, GKE, AKS) - running your own control plane is expensive.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

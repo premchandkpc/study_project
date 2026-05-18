@@ -1,6 +1,7 @@
 # React Performance
 
 ## Quick Facts
+
 - Area: React
 - Tag: Performance
 - Source: `src/modules/topics/react/react-performance.js`
@@ -8,20 +9,24 @@
 - Visual coverage: live visual
 
 ## Concept
+
 React re-renders a component when: its state changes, its parent re-renders, or context changes.
 Re-renders are cheap IF the component is simple. They become expensive when:
-  - Many child components re-render unnecessarily
-  - Expensive computations run every render
-  - Large lists re-render all items
-Tools: React.memo (skip re-render), useMemo (cache computation), React Profiler (measure), virtualization (windowing).
-Key: helps React identify list items - wrong key = unmount/remount instead of update.
+
+- Many child components re-render unnecessarily
+- Expensive computations run every render
+- Large lists re-render all items
+  Tools: React.memo (skip re-render), useMemo (cache computation), React Profiler (measure), virtualization (windowing).
+  Key: helps React identify list items - wrong key = unmount/remount instead of update.
 
 ## Why It Matters
+
 Most React apps don't need optimization until they don't.
 Profile first - identify the actual bottleneck. 80% of performance issues come from 20% of components.
 Common culprits: Context with high-frequency updates, large unvirtualized lists, inline object/function props.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["User event"]
@@ -36,6 +41,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as User event
@@ -54,6 +60,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -68,6 +75,7 @@ Flow steps:
 5. DOM/cache
 
 ## Example
+
 ```javascript
 // 1. Profile first - identify real bottleneck
 import { Profiler } from 'react';
@@ -109,10 +117,12 @@ const chartOpts = useMemo(() => ({ color: 'blue' }), []);
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. When does React re-render a component?
 
 2. What does React.memo do, and when does it fail?
@@ -126,20 +136,23 @@ const chartOpts = useMemo(() => ({ color: 'blue' }), []);
 6. How do you prevent Context from causing re-renders?
 
 ## Trade-offs
+
 Pros:
+
 - React.memo prevents unnecessary renders
 - Virtualization enables 100k-item lists
 - Profiler identifies exact bottlenecks
 
 Cons:
+
 - memo + useCallback adds complexity
 - Premature optimization is harmful
 - Profiler has overhead in production
 
 ## Gotchas
+
 - React.memo: if parent re-renders and passes new function ref -> child re-renders anyway. Need useCallback.
 - key={index}: inserting item at position 0 -> ALL subsequent items remount (wrong keys).
 - Profiler measures commit time, not render time - check both.
 - Context with split: too many small contexts = hard to maintain.
 - react-window requires fixed item sizes - for variable sizes use react-virtual.
-

@@ -1,6 +1,7 @@
 # WarpStream vs Kafka
 
 ## Quick Facts
+
 - Area: Kafka and Messaging
 - Tag: Comparison
 - Source: `src/modules/topics/kafka/warpstream-vs-kafka.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 <div style="font-family:monospace;color:#cdd9e5;max-width:860px">
   <h2 style="color:#38bdf8;margin-bottom:6px">WarpStream vs Apache Kafka</h2>
   <p style="color:#768390;margin-bottom:18px">Same protocol, radically different architecture. Kafka = stateful brokers + local disk. WarpStream = stateless agents + S3. Choose based on latency, cost, and ops maturity.</p>
@@ -67,9 +69,11 @@
 </div>
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Producer"]
@@ -84,6 +88,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Producer
@@ -102,6 +107,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -116,13 +122,16 @@ Flow steps:
 5. Sink/DLQ
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Is WarpStream truly Kafka-compatible?
 
 2. What's the durability risk and how to mitigate?
@@ -132,11 +141,12 @@ _No code example configured._
 4. How does BYOC model work for compliance?
 
 ## Trade-offs
+
 WarpStream wins: cost, ops simplicity, BYOC compliance, instant scaling. Kafka wins: latency (<10ms), Streams ecosystem, mature OSS tooling. Both: event replay, consumer groups, Schema Registry.
 
 ## Gotchas
+
 - WarpStream != Kafka ecosystem. Streams/ksqlDB not compatible.
 - Agent crash before S3 flush = buffer loss. Use producer retries.
 - S3 egress costs at cross-region scale can negate savings.
 - Not open-source. Evaluate vendor lock-in risk.
-

@@ -323,9 +323,7 @@ const Injector = (() => {
 
     inject(name) {
       if (!services.has(name)) {
-        throw new Error(
-          `Service ${name} not found`
-        );
+        throw new Error(`Service ${name} not found`);
       }
 
       return services.get(name);
@@ -389,9 +387,7 @@ class SimulationService {
   notify() {
     const state = this.steps[this.current];
 
-    this.subscribers.forEach((fn) =>
-      fn(state)
-    );
+    this.subscribers.forEach((fn) => fn(state));
   }
 }
 ```
@@ -427,24 +423,11 @@ Orchestrator
 
 ```javascript
 const skillsRegistry = {
-  java: [
-    "jvm",
-    "gc",
-    "multithreading",
-    "spring",
-  ],
+  java: ["jvm", "gc", "multithreading", "spring"],
 
-  golang: [
-    "goroutines",
-    "channels",
-    "grpc",
-  ],
+  golang: ["goroutines", "channels", "grpc"],
 
-  kubernetes: [
-    "pods",
-    "scheduler",
-    "ingress",
-  ],
+  kubernetes: ["pods", "scheduler", "ingress"],
 };
 ```
 
@@ -492,18 +475,18 @@ HashMap Topic
 
 Every topic MUST support:
 
-| Feature | Required |
-|---|---|
-| Visual Simulation | ✅ |
-| Step Controls | ✅ |
-| Play/Pause | ✅ |
-| Reset | ✅ |
-| Failure Scenario | ✅ |
-| Comparison Mode | ✅ |
-| Interview Questions | ✅ |
-| Runnable Code | ✅ |
-| Complexity Analysis | ✅ |
-| Production Story | ✅ |
+| Feature             | Required |
+| ------------------- | -------- |
+| Visual Simulation   | ✅       |
+| Step Controls       | ✅       |
+| Play/Pause          | ✅       |
+| Reset               | ✅       |
+| Failure Scenario    | ✅       |
+| Comparison Mode     | ✅       |
+| Interview Questions | ✅       |
+| Runnable Code       | ✅       |
+| Complexity Analysis | ✅       |
+| Production Story    | ✅       |
 
 ---
 
@@ -528,16 +511,16 @@ Always explain using toy analogies FIRST.
 
 Examples:
 
-| Concept | Analogy |
-|---|---|
-| Thread | McDonald's worker |
+| Concept      | Analogy                |
+| ------------ | ---------------------- |
+| Thread       | McDonald's worker      |
 | synchronized | One register at a time |
-| HashMap | Dictionary tabs |
-| GC | Janitor cleaning toys |
-| Stack | Plate pile |
-| Queue | Movie ticket line |
-| Interface | Job description |
-| Class | Actual worker |
+| HashMap      | Dictionary tabs        |
+| GC           | Janitor cleaning toys  |
+| Stack        | Plate pile             |
+| Queue        | Movie ticket line      |
+| Interface    | Job description        |
+| Class        | Actual worker          |
 
 ---
 

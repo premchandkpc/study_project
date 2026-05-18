@@ -1,6 +1,7 @@
 # Sliding Window Maximum
 
 ## Quick Facts
+
 - Area: DSA
 - Tag: Sliding Window
 - Source: `src/modules/topics/dsa/dsa-sw-window-max.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 For every contiguous window of size k, output the maximum value in that window.
 
 **Pattern:** Monotonic deque - O(n)
@@ -15,9 +17,11 @@ For every contiguous window of size k, output the maximum value in that window.
 **Scenario:** Rolling leaderboard - each window needs the current peak without rescanning all k values.
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Problem input"]
@@ -32,6 +36,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Problem input
@@ -50,6 +55,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -64,17 +70,21 @@ Flow steps:
 5. Answer
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - O(n)
 
 ## Interview Drills
+
 _No interview drills configured._
 
 ## Trade-offs
+
 _No trade-offs configured._
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

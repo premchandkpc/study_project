@@ -1,6 +1,7 @@
 # Case Study: Ticket Booking System (BookMyShow / Ticketmaster)
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Case Study
 - Source: `src/modules/topics/sysdesign/sd-case-ticket-booking.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **Requirements:** 100K concurrent users for a Taylor Swift concert release. 50,000 seats. Prevent double booking. Handle traffic spike. Show seat availability in real-time.
 
 **The core problem:** Two users view the same seat as AVAILABLE simultaneously. Both click "Book". Without protection, both succeed -> same seat double-booked. This is a classic race condition.
@@ -15,6 +17,7 @@
 **Solutions:**
 
 **1. Optimistic Locking (Compare-And-Swap)**
+
 - SELECT seat WHERE status='AVAILABLE' AND version=N.
 - Process booking logic (price calculation, etc.).
 - UPDATE seat SET status='BOOKED', version=N+1 WHERE id=? AND version=N AND status='AVAILABLE'.
@@ -23,12 +26,14 @@
 - Con: Under high contention, many retries needed - degraded UX.
 
 **2. Pessimistic Locking (SELECT FOR UPDATE)**
-- BEGIN TRANSACTION; SELECT * FROM seats WHERE id=? FOR UPDATE (acquires row lock).
+
+- BEGIN TRANSACTION; SELECT \* FROM seats WHERE id=? FOR UPDATE (acquires row lock).
 - Nobody else can touch that row until this transaction completes.
 - UPDATE seat SET status='BOOKED'; COMMIT.
 - Pro: Guaranteed consistency. Con: Locks held during HTTP call - deadlocks, slow throughput.
 
 **3. Redis Distributed Lock (best for seat hold)**
+
 - SETNX seat:hold:{seat_id} {user_id} EX 300 (5-minute hold, atomic).
 - Returns 1 (success) or 0 (another user holds it).
 - User completes payment -> final DB write.
@@ -36,11 +41,13 @@
 - Pro: Sub-millisecond. No DB row locking. Con: Redis failure = hold data lost (use Redis Sentinel/Cluster).
 
 **4. Atomic inventory counter**
+
 - Redis: DECR available_seats:{event_id}. If result < 0 -> INCR back -> no seats available.
 - Fast check before expensive DB write.
 - Prevents overbooking at the Redis level.
 
 **5. Virtual waiting room (for traffic spike)**
+
 - All 100K users who hit "Buy" at 10:00 AM are placed in a Redis queue (ZADD with join_timestamp as score).
 - Throttle: every second, dequeue 100 users (configurable) -> redirect to booking page.
 - Show user their position in queue + estimated wait time.
@@ -50,9 +57,11 @@
 Browser -> Load Balancer -> Wait Room Service -> (if admitted) Seat Selection -> Redis hold (SETNX) -> Payment -> DB write (CAS) -> Kafka event -> Ticket generation service
 
 ## Why It Matters
+
 High-contention resource booking (concert tickets, flight seats, hotel rooms) is one of the richest system design problems. It forces you to choose between optimistic vs pessimistic locking, use Redis for distributed locks, design virtual queues, and handle the thundering herd - all in one problem.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Users"]
@@ -78,6 +87,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Client
@@ -95,6 +105,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -109,6 +120,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```python
 # Seat booking service - Redis hold + CAS DB write
 from fastapi import FastAPI, HTTPException
@@ -197,10 +209,12 @@ async def confirm_booking(event_id: str, seat_id: str, user_id: str):
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How do you prevent 2 users from booking the same seat?
    Answer: Three-layer defense: (1) Redis SETNX for seat hold - atomic set-if-not-exists. First user to call SETNX gets the hold. Second user gets 0 (failure). Sub-millisecond, no DB load. (2) DB optimistic locking - even if Redis fails, the UPDATE WHERE status='AVAILABLE' CAS (compare-and-swap) ensures only one DB write succeeds. If 0 rows updated, the booking fails safely. (3) Database UNIQUE constraint on (event_id, seat_id, status='BOOKED') as a last line of defense. All three layers together make double-booking virtually impossible.
    Follow-ups: What happens if Redis goes down between the hold and the DB write?; How do you handle the seat hold expiring while payment is in progress?; Why not use SELECT FOR UPDATE (pessimistic locking) instead?
@@ -218,13 +232,16 @@ async def confirm_booking(event_id: str, seat_id: str, user_id: str):
    Follow-ups: When would you prefer pessimistic locking over optimistic locking?; How do you implement optimistic locking in JPA/Hibernate?; What's the cost of a retry storm in optimistic locking under high contention?
 
 ## Trade-offs
+
 Pros:
+
 - Redis SETNX for seat hold: sub-millisecond, no DB load, auto-expiry on TTL
 - Virtual waiting room converts thundering herd into smooth throughput - protects backend completely
 - Optimistic CAS on DB is a safe backstop without holding locks during payment
 - Atomic Redis DECR for inventory prevents overbooking before touching DB
 
 Cons:
+
 - Redis failure during hold phase = hold data lost -> users may lose their held seat (mitigate with Redis Sentinel/Cluster)
 - Virtual queue adds latency for users - requires investment in queue UX to avoid frustration
 - Optimistic locking under extreme contention (100 users for 1 seat) = many retries = wasted DB writes
@@ -234,10 +251,10 @@ When to use:
 Any high-contention resource reservation: concert tickets, airline seats, hotel rooms, restaurant tables, flash sale inventory. The virtual waiting room is specifically for known traffic spikes (on-sale events).
 
 ## Gotchas
+
 - Never show 'AVAILABLE' seats in real-time to all 100K waiting users - they'll all try to book the same popular seat simultaneously. Reveal seat map only after user is admitted from the queue.
 - Seat hold TTL must be strictly enforced - a user who abandons payment must not block that seat forever. Run a background job every 30s to scan for expired holds and update DB status back to AVAILABLE.
 - Redis DECR can go negative if Redis and DB get out of sync - always check DECR result immediately and INCR back if negative before issuing hold.
 - Ticket scalpers use bots to hold seats without completing payment - implement CAPTCHA + rate limiting at the queue join step, and monitor for users who join queue multiple times.
 - The virtual queue drainer is a SPOF - run multiple instances with leader election (Redis Redlock) to ensure only one drainer runs at a time.
 - Payment timeout during seat hold: if payment gateway takes >5 min (your hold TTL), the seat is released while payment is in-flight. Set hold TTL > max expected payment time, or implement hold extension API.
-

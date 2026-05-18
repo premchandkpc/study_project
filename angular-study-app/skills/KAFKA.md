@@ -8,24 +8,24 @@
 
 ## Topics Built
 
-| File | Title | Tag | Visual Status |
-|------|-------|-----|---------------|
-| `kafka-producer-consumer.js` | Kafka Producer & Consumer | Core | ✅ Built |
-| `kafka-topics-partitions.js` | Topics, Partitions & Offsets | Architecture | ✅ Built |
-| `kafka-replication-isr.js` | Replication & ISR | Durability | ✅ Built |
-| `kafka-consumer-groups.js` | Consumer Groups & Rebalancing | Scaling | ✅ Built |
-| `kafka-offsets-commits.js` | Offset Management & Commits | Delivery | ✅ Built |
-| `kafka-compaction.js` | Log Compaction | Retention | ✅ Built |
-| `kafka-streams.js` | Kafka Streams | Processing | ✅ Built |
-| `kafka-connect.js` | Kafka Connect | Integration | ✅ Built |
-| `kafka-schema-registry.js` | Schema Registry & Avro | Schema | ✅ Built |
-| `rmq-exchanges.js` | RabbitMQ Exchanges | Routing | ✅ Built |
-| `rmq-queues-bindings.js` | Queues & Bindings | Core | ✅ Built |
-| `rmq-acks-delivery.js` | Acknowledgements & Delivery | Reliability | ✅ Built |
-| `rmq-dlq.js` | Dead Letter Queues | Error Handling | ✅ Built |
-| `rmq-vs-kafka.js` | RabbitMQ vs Kafka | Comparison | ✅ Built |
-| `warpstream-arch.js` | WarpStream Architecture | Cloud | ✅ Built |
-| `warpstream-vs-kafka.js` | WarpStream vs Kafka | Comparison | ✅ Built |
+| File                         | Title                         | Tag            | Visual Status |
+| ---------------------------- | ----------------------------- | -------------- | ------------- |
+| `kafka-producer-consumer.js` | Kafka Producer & Consumer     | Core           | ✅ Built      |
+| `kafka-topics-partitions.js` | Topics, Partitions & Offsets  | Architecture   | ✅ Built      |
+| `kafka-replication-isr.js`   | Replication & ISR             | Durability     | ✅ Built      |
+| `kafka-consumer-groups.js`   | Consumer Groups & Rebalancing | Scaling        | ✅ Built      |
+| `kafka-offsets-commits.js`   | Offset Management & Commits   | Delivery       | ✅ Built      |
+| `kafka-compaction.js`        | Log Compaction                | Retention      | ✅ Built      |
+| `kafka-streams.js`           | Kafka Streams                 | Processing     | ✅ Built      |
+| `kafka-connect.js`           | Kafka Connect                 | Integration    | ✅ Built      |
+| `kafka-schema-registry.js`   | Schema Registry & Avro        | Schema         | ✅ Built      |
+| `rmq-exchanges.js`           | RabbitMQ Exchanges            | Routing        | ✅ Built      |
+| `rmq-queues-bindings.js`     | Queues & Bindings             | Core           | ✅ Built      |
+| `rmq-acks-delivery.js`       | Acknowledgements & Delivery   | Reliability    | ✅ Built      |
+| `rmq-dlq.js`                 | Dead Letter Queues            | Error Handling | ✅ Built      |
+| `rmq-vs-kafka.js`            | RabbitMQ vs Kafka             | Comparison     | ✅ Built      |
+| `warpstream-arch.js`         | WarpStream Architecture       | Cloud          | ✅ Built      |
+| `warpstream-vs-kafka.js`     | WarpStream vs Kafka           | Comparison     | ✅ Built      |
 
 > All 16 Kafka/RMQ/WarpStream topics have full content. Visuals need audit — some may be placeholders.
 
@@ -33,12 +33,12 @@
 
 ## Visual Style References (inputs/)
 
-| Image | Apply to Kafka topics |
-|---|---|
-| `inputs/image copy 11.png` — 5-row swimlane (Top 5 Kafka Use Cases) | **`kafka-producer-consumer.js`**: Producer row → Broker row → Consumer Group row. Animated dots = message packets. **`warpstream-arch.js`**: 3 rows — Producer / WarpStream (S3 backend) / Consumer |
-| `inputs/image copy 7.png` — Blueprint numbered callouts, colored sections | **`kafka-topics-partitions.js`**: broker boxes with partitions colored per topic. Leader partition highlighted. ISR replicas below |
-| `inputs/image copy 9.png` — YouTube numbered circular loop | **`kafka-consumer-groups.js`**: circular rebalance flow ①group.coordinator→②JoinGroup→③SyncGroup→④assignments→⑤heartbeat→⑥rebalance |
-| `inputs/image copy 10.png` — Microservice domain boxes | **`kafka-streams.js`**: topology boxes — Source→Processor(filter/map/join)→Sink. State stores as side panels |
+| Image                                                                     | Apply to Kafka topics                                                                                                                                                                               |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inputs/image copy 11.png` — 5-row swimlane (Top 5 Kafka Use Cases)       | **`kafka-producer-consumer.js`**: Producer row → Broker row → Consumer Group row. Animated dots = message packets. **`warpstream-arch.js`**: 3 rows — Producer / WarpStream (S3 backend) / Consumer |
+| `inputs/image copy 7.png` — Blueprint numbered callouts, colored sections | **`kafka-topics-partitions.js`**: broker boxes with partitions colored per topic. Leader partition highlighted. ISR replicas below                                                                  |
+| `inputs/image copy 9.png` — YouTube numbered circular loop                | **`kafka-consumer-groups.js`**: circular rebalance flow ①group.coordinator→②JoinGroup→③SyncGroup→④assignments→⑤heartbeat→⑥rebalance                                                                 |
+| `inputs/image copy 10.png` — Microservice domain boxes                    | **`kafka-streams.js`**: topology boxes — Source→Processor(filter/map/join)→Sink. State stores as side panels                                                                                        |
 
 ---
 
@@ -46,31 +46,31 @@
 
 ### PRIORITY 1 — Core Kafka flow (highest interview value)
 
-| Topic | Visual Type | Style Ref | Key Animation |
-|---|---|---|---|
-| `kafka-producer-consumer.js` | Swimlane (3 rows) | image copy 11 | Row1: Producer batch → linger.ms → send. Row2: Broker partition write → leader+ISR. Row3: Consumer poll() → process → commit offset |
-| `kafka-topics-partitions.js` | FlowDiagram | image copy 7 | Topic→N partitions. Each partition = ordered log. Message key→hash→partition assignment. Offset advances on write |
-| `kafka-replication-isr.js` | FlowDiagram | image copy 7 | Leader partition → sync to ISR followers. ISR vs OSR. acks=all: leader waits for ISR ack. Leader failure → controller elects new leader from ISR |
-| `kafka-consumer-groups.js` | FlowDiagram | image copy 9 (circular) | Rebalance cycle: JoinGroup→SyncGroup→assignments. partition-per-consumer ceiling (max consumers = num partitions) |
+| Topic                        | Visual Type       | Style Ref               | Key Animation                                                                                                                                    |
+| ---------------------------- | ----------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `kafka-producer-consumer.js` | Swimlane (3 rows) | image copy 11           | Row1: Producer batch → linger.ms → send. Row2: Broker partition write → leader+ISR. Row3: Consumer poll() → process → commit offset              |
+| `kafka-topics-partitions.js` | FlowDiagram       | image copy 7            | Topic→N partitions. Each partition = ordered log. Message key→hash→partition assignment. Offset advances on write                                |
+| `kafka-replication-isr.js`   | FlowDiagram       | image copy 7            | Leader partition → sync to ISR followers. ISR vs OSR. acks=all: leader waits for ISR ack. Leader failure → controller elects new leader from ISR |
+| `kafka-consumer-groups.js`   | FlowDiagram       | image copy 9 (circular) | Rebalance cycle: JoinGroup→SyncGroup→assignments. partition-per-consumer ceiling (max consumers = num partitions)                                |
 
 ### PRIORITY 2
 
-| Topic | Visual Type | Key Animation |
-|---|---|---|
+| Topic                      | Visual Type | Key Animation                                                                                                 |
+| -------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------- |
 | `kafka-offsets-commits.js` | FlowDiagram | at-most-once vs at-least-once vs exactly-once. Auto-commit risk: process fails after commit before processing |
-| `kafka-compaction.js` | FlowDiagram | Log before compaction: all versions of key. After: only latest value per key. Tombstone (null value) = delete |
-| `kafka-streams.js` | FlowDiagram | KStream(stateless) vs KTable(stateful). Topology: Source→Filter→GroupBy→Aggregate→Sink. RocksDB state store |
-| `rmq-exchanges.js` | FlowDiagram | 4 exchange types: direct(routing key exact)→fanout(all queues)→topic(wildcard)→headers(attribute match) |
+| `kafka-compaction.js`      | FlowDiagram | Log before compaction: all versions of key. After: only latest value per key. Tombstone (null value) = delete |
+| `kafka-streams.js`         | FlowDiagram | KStream(stateless) vs KTable(stateful). Topology: Source→Filter→GroupBy→Aggregate→Sink. RocksDB state store   |
+| `rmq-exchanges.js`         | FlowDiagram | 4 exchange types: direct(routing key exact)→fanout(all queues)→topic(wildcard)→headers(attribute match)       |
 
 ### PRIORITY 3
 
-| Topic | Visual Type | Key Animation |
-|---|---|---|
-| `kafka-connect.js` | FlowDiagram | Source connector→Kafka. Sink connector←Kafka. Workers + tasks. Offset tracking in __consumer_offsets topic |
-| `kafka-schema-registry.js` | FlowDiagram | Producer serializes → POST schema → registry returns ID → embed ID in message header. Consumer deserializes → fetch schema by ID |
-| `rmq-acks-delivery.js` | FlowDiagram | Publisher confirms: channel.waitForConfirms(). Consumer ack: basic.ack / basic.nack / basic.reject |
-| `rmq-dlq.js` | FlowDiagram | Message rejected/TTL expired/queue overflow → x-dead-letter-exchange → DLQ → monitoring/retry |
-| `warpstream-arch.js` | Swimlane | Row1: Producer→WarpStream agent. Row2: WarpStream→S3 (object store, no local disk). Row3: Consumer←WarpStream agent. Cost comparison panel |
+| Topic                      | Visual Type | Key Animation                                                                                                                              |
+| -------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `kafka-connect.js`         | FlowDiagram | Source connector→Kafka. Sink connector←Kafka. Workers + tasks. Offset tracking in \_\_consumer_offsets topic                               |
+| `kafka-schema-registry.js` | FlowDiagram | Producer serializes → POST schema → registry returns ID → embed ID in message header. Consumer deserializes → fetch schema by ID           |
+| `rmq-acks-delivery.js`     | FlowDiagram | Publisher confirms: channel.waitForConfirms(). Consumer ack: basic.ack / basic.nack / basic.reject                                         |
+| `rmq-dlq.js`               | FlowDiagram | Message rejected/TTL expired/queue overflow → x-dead-letter-exchange → DLQ → monitoring/retry                                              |
+| `warpstream-arch.js`       | Swimlane    | Row1: Producer→WarpStream agent. Row2: WarpStream→S3 (object store, no local disk). Row3: Consumer←WarpStream agent. Cost comparison panel |
 
 ---
 
@@ -142,20 +142,20 @@ Use case summary per type (always-visible caption below each diagram):
 
 ### HIGH PRIORITY
 
-| Topic | Suggested File | Visual Type | Key Concepts |
-|-------|---------------|-------------|--------------|
-| Kafka exactly-once semantics | `kafka-eos.js` | FlowDiagram | idempotent producer (enable.idempotence=true). Transactional API: beginTransaction/commitTransaction. Read-process-write atomic. EOS = idempotent + transactions |
-| Kafka lag monitoring | `kafka-lag.js` | FlowDiagram | consumer group lag = latest offset − committed offset. kafka-consumer-groups.sh --describe. Burrow / Confluent metrics. Lag → alert → scale consumers |
-| KRaft (Zookeeper removal) | `kafka-kraft.js` | FlowDiagram | Kafka 3.3+: KRaft replaces Zookeeper. Raft consensus within Kafka. Controller quorum. Faster startup, simpler ops |
-| Kafka MirrorMaker 2 | `kafka-mirrormaker.js` | FlowDiagram | Cross-cluster replication. Active-active vs active-passive. Topic renaming convention. Offset sync |
+| Topic                        | Suggested File         | Visual Type | Key Concepts                                                                                                                                                     |
+| ---------------------------- | ---------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Kafka exactly-once semantics | `kafka-eos.js`         | FlowDiagram | idempotent producer (enable.idempotence=true). Transactional API: beginTransaction/commitTransaction. Read-process-write atomic. EOS = idempotent + transactions |
+| Kafka lag monitoring         | `kafka-lag.js`         | FlowDiagram | consumer group lag = latest offset − committed offset. kafka-consumer-groups.sh --describe. Burrow / Confluent metrics. Lag → alert → scale consumers            |
+| KRaft (Zookeeper removal)    | `kafka-kraft.js`       | FlowDiagram | Kafka 3.3+: KRaft replaces Zookeeper. Raft consensus within Kafka. Controller quorum. Faster startup, simpler ops                                                |
+| Kafka MirrorMaker 2          | `kafka-mirrormaker.js` | FlowDiagram | Cross-cluster replication. Active-active vs active-passive. Topic renaming convention. Offset sync                                                               |
 
 ### MEDIUM PRIORITY
 
-| Topic | Suggested File | Key Concepts |
-|-------|---------------|--------------|
-| RabbitMQ streams | `rmq-streams.js` | Like Kafka log — append-only, consumer offset tracking. Persistent, replayable. Use when RMQ needs Kafka-like replay |
-| Kafka security | `kafka-security.js` | SSL/TLS transport, SASL authentication (PLAIN/SCRAM/Kerberos), ACLs, mTLS |
-| Kafka performance tuning | `kafka-perf.js` | Producer: batch.size/linger.ms/compression. Consumer: fetch.min.bytes/max.poll.records. Broker: num.io.threads/log.flush |
+| Topic                    | Suggested File      | Key Concepts                                                                                                             |
+| ------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| RabbitMQ streams         | `rmq-streams.js`    | Like Kafka log — append-only, consumer offset tracking. Persistent, replayable. Use when RMQ needs Kafka-like replay     |
+| Kafka security           | `kafka-security.js` | SSL/TLS transport, SASL authentication (PLAIN/SCRAM/Kerberos), ACLs, mTLS                                                |
+| Kafka performance tuning | `kafka-perf.js`     | Producer: batch.size/linger.ms/compression. Consumer: fetch.min.bytes/max.poll.records. Broker: num.io.threads/log.flush |
 
 ---
 
@@ -163,32 +163,34 @@ Use case summary per type (always-visible caption below each diagram):
 
 ```js
 (function () {
-  'use strict';
+  "use strict";
 
-  window.KAFKA_TOPICS = (window.KAFKA_TOPICS || []).concat([{
-    id:    'kafka-<topic>',
-    area:  'kafka',
-    title: '<Title>',
-    tag:   '<Tag>',
-    tags:  ['kafka', '<keyword1>', '<keyword2>'],
+  window.KAFKA_TOPICS = (window.KAFKA_TOPICS || []).concat([
+    {
+      id: "kafka-<topic>",
+      area: "kafka",
+      title: "<Title>",
+      tag: "<Tag>",
+      tags: ["kafka", "<keyword1>", "<keyword2>"],
 
-    concept: `<explanation>`,
-    why:     `<production relevance>`,
+      concept: `<explanation>`,
+      why: `<production relevance>`,
 
-    example: {
-      language: 'java',  // or 'yaml' or 'bash'
-      code: `// Kafka code`,
+      example: {
+        language: "java", // or 'yaml' or 'bash'
+        code: `// Kafka code`,
+      },
+
+      interview: ["Question 1?", "Question 2?"],
+      tradeoffs: { pros: ["..."], cons: ["..."] },
+      gotchas: ["Gotcha 1"],
+
+      visual: function (mount) {
+        // Use swimlane (always-visible) for multi-variant comparisons
+        // Use ReactViz.panel for sequential lifecycle flows
+      },
     },
-
-    interview: ['Question 1?', 'Question 2?'],
-    tradeoffs: { pros: ['...'], cons: ['...'] },
-    gotchas: ['Gotcha 1'],
-
-    visual: function (mount) {
-      // Use swimlane (always-visible) for multi-variant comparisons
-      // Use ReactViz.panel for sequential lifecycle flows
-    },
-  }]);
+  ]);
 })();
 ```
 
@@ -219,7 +221,6 @@ Kafka vs RabbitMQ:
   - Choose Kafka: event streaming, audit log, replay, >100k msg/s
   - Choose RMQ: complex routing, task queues, per-message TTL/DLQ
 ```
-
 
 # Kafka / RabbitMQ / WarpStream — Missing Production Topics Extension
 

@@ -1,6 +1,7 @@
 # useState & useEffect
 
 ## Quick Facts
+
 - Area: React
 - Tag: Hooks
 - Source: `src/modules/topics/react/react-hooks-state-effect.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 useState stores reactive state inside a function component.
 React re-renders the component every time setState is called with a new value.
 useEffect runs after paint - not during render. It replaces componentDidMount/DidUpdate/WillUnmount.
@@ -16,11 +18,13 @@ Cleanup function (returned from useEffect) runs before the next effect and on un
 Stale closure: effect captures variables at the time it was created - if deps are missing, you read stale values.
 
 ## Why It Matters
+
 useState + useEffect are the backbone of React function components.
 95% of production React code uses them. Understanding their execution order prevents the most common React bugs:
 missing deps -> stale data, no cleanup -> memory leaks, wrong deps -> infinite loops.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["User event"]
@@ -35,6 +39,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as User event
@@ -53,6 +58,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -67,10 +73,11 @@ Flow steps:
 5. DOM/cache
 
 ## Example
+
 ```javascript
 // useState: local reactive state
 const [count, setCount] = useState(0);
-const [data, setData]   = useState(null);
+const [data, setData] = useState(null);
 
 // useEffect: side effects after render
 useEffect(() => {
@@ -78,16 +85,22 @@ useEffect(() => {
   document.title = `Count: ${count}`;
 
   // cleanup runs before next effect / unmount
-  return () => { document.title = 'App'; };
+  return () => {
+    document.title = "App";
+  };
 }, [count]); // dependency array
 
 // Fetch on mount ([] = run once)
 useEffect(() => {
   let cancelled = false;
-  fetch('/api/data')
-    .then(r => r.json())
-    .then(d => { if (!cancelled) setData(d); });
-  return () => { cancelled = true; }; // cleanup = cancel
+  fetch("/api/data")
+    .then((r) => r.json())
+    .then((d) => {
+      if (!cancelled) setData(d);
+    });
+  return () => {
+    cancelled = true;
+  }; // cleanup = cancel
 }, []);
 
 // STALE CLOSURE BUG:
@@ -99,14 +112,16 @@ useEffect(() => {
 }, []); // missing [count]
 
 // FIX: use functional update
-setCount(prev => prev + 1); // always fresh
+setCount((prev) => prev + 1); // always fresh
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What is the order of execution: render -> paint -> effect?
 
 2. When does useEffect cleanup run?
@@ -120,20 +135,23 @@ setCount(prev => prev + 1); // always fresh
 6. Can you call hooks conditionally? Why not?
 
 ## Trade-offs
+
 Pros:
+
 - Simple state model
 - Declarative side effects
 - Automatic cleanup
 
 Cons:
+
 - Stale closures hard to debug
 - Dependency array must be complete
 - Effects run async (not sync)
 
 ## Gotchas
+
 - Object/array in deps - new ref every render -> infinite loop. Use useMemo.
 - setState in useEffect without deps -> infinite loop.
 - Missing cleanup -> memory leak in subscriptions/timers.
 - useEffect runs AFTER paint - not during render.
 - React batches setState calls in event handlers (React 18: batches everywhere).
-

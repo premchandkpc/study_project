@@ -1,6 +1,7 @@
 # Security - OAuth2, JWT, mTLS & RBAC
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Security
 - Source: `src/modules/topics/sysdesign/sd-security-auth.js`
@@ -8,16 +9,19 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **Authentication (AuthN):** Who are you? (identity)
 **Authorization (AuthZ):** What can you do? (permissions)
 
 **OAuth2 flows:**
+
 - **Authorization Code + PKCE** - web/mobile apps. Client redirects user to IdP, gets code, exchanges for tokens. PKCE prevents code interception.
 - **Client Credentials** - machine-to-machine. Service presents client_id + client_secret -> gets access_token.
 - **Device Flow** - smart TVs, CLIs. User enters code on separate device.
 
 **JWT (JSON Web Token):**
 `header.payload.signature` - base64url encoded. Stateless - no DB lookup needed.
+
 - **Access token** - short-lived (15 min). Verified locally by services.
 - **Refresh token** - long-lived (7-30 days). Stored in HttpOnly cookie. Used to get new access token.
 - **Signature** - RS256 (asymmetric): IdP signs with private key; services verify with public key (fetched from JWKS endpoint).
@@ -27,17 +31,21 @@ Roles assigned to users. Permissions assigned to roles. Services check: `user.ro
 
 **mTLS (Mutual TLS):**
 Both client and server present certificates. Used for service-to-service in zero-trust networks.
+
 - Istio / service mesh automates certificate issuance (SPIFFE/SPIRE).
 - No password - proof of identity via certificate.
 
 **Zero Trust:** Never trust, always verify. Even internal traffic is authenticated.
+
 - Traditional: trust everything inside the firewall.
 - Zero Trust: every request authenticated + authorised regardless of network location.
 
 ## Why It Matters
+
 Auth is asked in every security-related design question. JWT revocation and token refresh patterns are common deep-dive topics.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Subject"]
@@ -63,6 +71,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as User
@@ -80,6 +89,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -96,6 +106,7 @@ Flow steps:
 7. Silent refresh via refresh token - Before access token expires, browser sends refresh token to get new access token without re-login.
 
 ## Example
+
 ```java
 // Spring Security 6 - JWT validation + RBAC
 @Configuration
@@ -179,27 +190,31 @@ Notes:
 Never store refresh tokens in localStorage - XSS can steal them. HttpOnly cookie prevents JS access. Refresh token rotation detects theft: if old token used after rotation, revoke all sessions.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How do you revoke a JWT before it expires?
    Answer: JWTs are stateless - the server doesn't track them. To revoke:
-   
    1. **Short expiry** - 15-minute access token. Only 15 minutes of exposure. Mitigates most cases without revocation.
    2. **Token blocklist** - store revoked JTI (JWT ID) in Redis with TTL = remaining token lifetime. Check blocklist on every request. Fast (Redis ~1ms) but adds state.
    3. **Refresh token revocation** - the access token is short-lived; revoke the refresh token in DB. User is logged out at next refresh.
    4. **Version number in token** - store `tokenVersion` per user in DB. JWT includes version. On logout, increment version. Any token with old version rejected.
    5. **Opaque tokens** - use reference tokens (random string), validate by calling IdP introspection endpoint. Fully revocable but adds network hop per request.
-   Follow-ups: What is the difference between OAuth2 and OpenID Connect?; Explain PKCE and why it's needed for SPAs.
+      Follow-ups: What is the difference between OAuth2 and OpenID Connect?; Explain PKCE and why it's needed for SPAs.
 
 ## Trade-offs
+
 Pros:
+
 - JWT: stateless - no DB lookup per request
 - OAuth2: standardised delegation - users don't share passwords with third-party apps
 - RBAC: simple to reason about and audit
 
 Cons:
+
 - JWT: revocation complexity
 - OAuth2: complex flow - many tokens, scopes, endpoints
 - mTLS: certificate rotation operational overhead
@@ -208,5 +223,5 @@ When to use:
 JWT access token + refresh token rotation for APIs. OAuth2 Authorization Code + PKCE for user-facing apps. Client credentials for M2M. mTLS for internal service auth in zero-trust environments.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

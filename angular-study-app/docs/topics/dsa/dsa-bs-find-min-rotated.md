@@ -1,6 +1,7 @@
 # Find Min in Rotated Array
 
 ## Quick Facts
+
 - Area: DSA
 - Tag: Binary Search
 - Source: `src/modules/topics/dsa/dsa-bs-find-min-rotated.js`
@@ -8,18 +9,21 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Find the minimum element in a rotated sorted array in O(log n).
 
- **Kid explanation:** A sorted array was spun like a clock. The smallest number is at the "seam" where it wrapped. Each step of binary search: if the middle value is bigger than the rightmost value, the seam (and minimum) is in the RIGHT half. Otherwise it's in the LEFT half (including middle). Zoom in until you find it!
+**Kid explanation:** A sorted array was spun like a clock. The smallest number is at the "seam" where it wrapped. Each step of binary search: if the middle value is bigger than the rightmost value, the seam (and minimum) is in the RIGHT half. Otherwise it's in the LEFT half (including middle). Zoom in until you find it!
 
 **Pattern:** Binary search on rotation pivot - O(log n)
 **Key insight:** Compare mid to the rightmost element. If mid > right, minimum is right of mid. Else minimum is left of or at mid.
 **Scenario:** Find the rotation point in a circular log ring buffer.
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Problem input"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Problem input
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,17 +72,21 @@ Flow steps:
 5. Answer
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - O(log n)
 
 ## Interview Drills
+
 _No interview drills configured._
 
 ## Trade-offs
+
 _No trade-offs configured._
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

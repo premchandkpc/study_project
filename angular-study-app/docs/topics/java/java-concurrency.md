@@ -1,6 +1,7 @@
 # Concurrency: Threads, Executors, Locks & Synchronizers
 
 ## Quick Facts
+
 - Area: Java
 - Tag: Concurrency
 - Source: `src/modules/topics/java/java-concurrency.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **L1 (30s ELI5):** Threads are mini-programs running simultaneously. Like workers sharing a factory - need locks so they don't break things. Java 21 virtual threads: 10 million lightweight threads instead of 10,000 real ones.
 
 **L2 (2min core):** Platform threads = 1:1 OS threads (~1MB stack). Virtual threads (Java 21): heap-stack, mounts on carrier OS thread. Blocking I/O parks vthread -> unmounts from carrier -> carrier FREE for others. Lock ladder: `synchronized` -> `ReentrantLock` -> `ReadWriteLock` -> `StampedLock` (optimistic reads). Synchronizers: Semaphore (permits), CountDownLatch (one-shot gate), CyclicBarrier (reusable rendezvous).
@@ -17,9 +19,11 @@
 **L4 (30min deep):** JMM happens-before: lock release -> lock acquire, volatile write -> volatile read, Thread.start() -> first action in started thread. Without happens-before: stale cached values, reordered writes visible. VarHandle: acquire/release/opaque memory order semantics for lock-free structures. ForkJoinPool work-stealing: each worker has a deque; idle workers steal from tail of others. Virtual thread continuation: stack stored as heap object, mounted/unmounted via JVM internal `Continuation.yield()/run()`.
 
 ## Why It Matters
+
 Virtual threads collapse the **thread-per-request vs reactive** debate. You write straight-line blocking code; the JVM gives you reactive-grade scalability. Lock choice determines virtual thread friendliness and contention patterns.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["1 Executor Framework"]
@@ -55,6 +59,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant client as Client
@@ -74,6 +79,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -89,6 +95,7 @@ Flow steps:
 6. run() returns -> TERMINATED - Task complete. ExecutorService wraps result in Future/CompletableFuture. Platform thread destroyed or returned to pool. Virtual thread: JVM object collected. Cost: near zero.
 
 ## Example
+
 ```java
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
@@ -139,10 +146,12 @@ Notes:
 Never call `lock()` without a matching `unlock()` in `finally`. `synchronized` blocks pin virtual threads during I/O - prefer `ReentrantLock` in virtual-thread-heavy code.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Difference between virtual threads and reactive (WebFlux)?
    Answer: Both achieve high concurrency with few OS threads. **Virtual threads** keep the **imperative blocking** programming model - easier debugging, linear stack traces, `ThreadLocal` works. **Reactive** uses async non-blocking APIs; backpressure is first-class but cognitive load is high. For most apps in 2025, **virtual threads** are the better default.
    Follow-ups: What is thread pinning?; Can I use ThreadLocal with virtual threads?
@@ -156,12 +165,15 @@ Never call `lock()` without a matching `unlock()` in `finally`. `synchronized` b
    Follow-ups: Can CountDownLatch deadlock?; Phaser vs CyclicBarrier?
 
 ## Trade-offs
+
 Pros:
+
 - Virtual threads remove the need for reactive complexity.
 - StampedLock gives near-zero overhead optimistic reads.
 - Structured concurrency (Java 21) prevents thread leaks in fork-join patterns.
 
 Cons:
+
 - synchronized blocks pin virtual threads - subtle performance cliff.
 - StampedLock is NOT reentrant - easy to deadlock.
 - CyclicBarrier deadlocks if any thread dies before arriving.
@@ -170,10 +182,10 @@ When to use:
 **I/O-bound**: virtual threads + ReentrantLock. **CPU-bound parallel**: ForkJoinPool. **Shared cache**: StampedLock. **Connection pool**: Semaphore. **Phase sync**: CyclicBarrier.
 
 ## Gotchas
+
 - synchronized pins virtual threads: carrier OS thread blocks during I/O - same as platform thread. Use ReentrantLock for virtual-thread code.
 - StampedLock is NOT reentrant: calling lock() inside the same thread that holds a stamp = deadlock (no exception, just hangs).
 - CyclicBarrier: if one thread throws exception before barrier.await(), all other waiters get BrokenBarrierException. Must handle.
 - volatile gives VISIBILITY not ATOMICITY: volatile int x; x++ is still a race (read-increment-write = 3 ops). Use AtomicInteger.
 - ReentrantLock: forgetting unlock() in finally = permanent deadlock for all threads waiting on that lock.
 - ThreadLocal leak in virtual threads: child virtual threads inherit parent's ThreadLocal values - surprising shared state.
-

@@ -1,6 +1,7 @@
 # Caching Layers - Browser to DB, Eviction & Strategies
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Caching
 - Source: `src/modules/topics/sysdesign/sd-caching-layers.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **Caching hierarchy (closest to user -> furthest):**
 
 1. **Browser cache** - Cache-Control, ETag. Free; respects max-age/must-revalidate.
@@ -19,15 +21,16 @@
 
 **Cache strategies:**
 
-| Strategy | Write | Read | Consistency | Use Case |
-|---|---|---|---|---|
-| Cache-aside (lazy) | App writes DB only | App checks cache, miss -> DB + populate | Eventual | General read-heavy |
-| Read-through | App writes DB | Cache fetches from DB on miss | Eventual | Library-managed (Spring Cache) |
-| Write-through | App writes cache + DB | Cache always hit | Strong | Config, critical reads |
-| Write-back (write-behind) | App writes cache; async flush to DB | Cache always hit | Eventual (risk of loss) | Write-heavy, tolerate small loss |
-| Refresh-ahead | Pre-warm before expiry | Cache always hit | Strong | Predictable access patterns |
+| Strategy                  | Write                               | Read                                    | Consistency             | Use Case                         |
+| ------------------------- | ----------------------------------- | --------------------------------------- | ----------------------- | -------------------------------- |
+| Cache-aside (lazy)        | App writes DB only                  | App checks cache, miss -> DB + populate | Eventual                | General read-heavy               |
+| Read-through              | App writes DB                       | Cache fetches from DB on miss           | Eventual                | Library-managed (Spring Cache)   |
+| Write-through             | App writes cache + DB               | Cache always hit                        | Strong                  | Config, critical reads           |
+| Write-back (write-behind) | App writes cache; async flush to DB | Cache always hit                        | Eventual (risk of loss) | Write-heavy, tolerate small loss |
+| Refresh-ahead             | Pre-warm before expiry              | Cache always hit                        | Strong                  | Predictable access patterns      |
 
 **Eviction policies:**
+
 - **LRU** (Least Recently Used) - evict oldest accessed. Best general-purpose.
 - **LFU** (Least Frequently Used) - evict least accessed. Better for scan-resistant hot items.
 - **TTL** - time-based expiry regardless of access. Simple, prevents stale data.
@@ -35,9 +38,11 @@
 - **Random** - fast but arbitrary.
 
 ## Why It Matters
+
 A well-designed cache can reduce DB load by 90% and response latency from 50ms to <1ms. Cache design is asked in virtually every system design interview.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Client Side"]
@@ -64,6 +69,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as App
@@ -81,6 +87,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -95,6 +102,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```java
 // Spring Boot - multi-level caching with Caffeine (L1) + Redis (L2)
 @Configuration
@@ -147,40 +155,45 @@ Notes:
 CompositeCacheManager checks L1 first (Caffeine); on miss, checks L2 (Redis); on miss, calls the actual method and populates both caches.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What is cache stampede and how do you prevent it?
    Answer: Cache stampede (thundering herd): when a popular key expires, hundreds of concurrent requests all miss simultaneously, flood the DB, possibly causing cascade failure.
-   
+
    **Prevention:**
    1. **Mutex/distributed lock** - first miss takes a Redis lock, fetches from DB, populates cache, releases lock. Others wait (risk: lock becomes bottleneck).
    2. **Probabilistic early expiration (XFetch)** - each request has a small random chance of refreshing the cache before it expires. No thundering herd.
    3. **Stale-while-revalidate** - serve stale data immediately; refresh in background.
    4. **Background refresh** - scheduled job refreshes popular keys before TTL, never letting them expire under load.
-   Follow-ups: Implement a thread-safe LRU cache in Java.; What is the XFetch algorithm?
+      Follow-ups: Implement a thread-safe LRU cache in Java.; What is the XFetch algorithm?
 
 2. When would you use write-back caching and what are the risks?
    Answer: Write-back (write-behind): writes go to cache first; DB is updated asynchronously in batches.
-   
+
    **When to use:** write-heavy workloads where DB can't keep up (IoT telemetry, counters, leaderboards). Dramatically reduces DB write pressure.
-   
+
    **Risks:**
    - **Data loss** - if cache node crashes before flush, unflushed writes are lost. Mitigate with Redis AOF persistence + replicas.
    - **Stale DB reads** - direct DB queries bypass cache and see old data.
    - **Complex failure recovery** - need to track which writes are pending.
-   
+
    Acceptable for: view counts, like counts, analytics. NOT acceptable for: financial transactions, inventory.
    Follow-ups: How does Redis AOF persistence work?
 
 ## Trade-offs
+
 Pros:
+
 - 10-100x latency reduction
 - Dramatic DB load reduction
 - Horizontal read scale via shared distributed cache
 
 Cons:
+
 - Cache invalidation is hard
 - Memory cost
 - Cache-aside introduces inconsistency window
@@ -189,5 +202,5 @@ When to use:
 Cache-aside for most applications. Write-through for config/reference data. Write-back for high-volume counters. Always set TTL - never cache indefinitely without expiry.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

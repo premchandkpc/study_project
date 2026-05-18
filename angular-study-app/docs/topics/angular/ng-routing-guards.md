@@ -1,6 +1,7 @@
 # Angular Routing & Guards
 
 ## Quick Facts
+
 - Area: Angular
 - Tag: Navigation
 - Source: `src/modules/topics/angular/ng-routing-guards.js`
@@ -8,9 +9,11 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Angular **Router** maps URL paths to components. **Guards** intercept navigation to control access.
 
 **Guard types:**
+
 - `canActivate` - can user enter this route?
 - `canActivateChild` - can user enter child routes?
 - `canDeactivate` - can user leave? (unsaved changes warning)
@@ -27,9 +30,11 @@ Angular **Router** maps URL paths to components. **Guards** intercept navigation
 **Route data:** `route.data`, `route.params`, `route.queryParams`, `route.snapshot` vs `paramMap` observable.
 
 ## Why It Matters
+
 Guards are the security layer of Angular SPA navigation. Without them, users can navigate to /admin by typing the URL. Resolvers prevent loading spinners by fetching data before the component renders. Lazy loading is critical for large apps - split bundle by feature route.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Template event"]
@@ -44,6 +49,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Template event
@@ -62,6 +68,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -76,6 +83,7 @@ Flow steps:
 5. DOM update
 
 ## Example
+
 ```typescript
 // Angular 14+ functional guard (preferred)
 export const authGuard = () => {
@@ -122,10 +130,12 @@ ngOnInit() {
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What is the difference between canActivate and canActivateChild?
 
 2. How does canDeactivate work for unsaved-changes warning?
@@ -139,23 +149,26 @@ ngOnInit() {
 6. When use resolve vs loading data inside ngOnInit?
 
 ## Trade-offs
+
 Pros:
+
 - Guards prevent unauthorized access at the navigation layer
 - Resolvers eliminate loading spinners - component mounts with data ready
 - Lazy loading reduces initial bundle - features loaded on demand
 - Functional guards (Angular 14+) are simpler - no class, no boilerplate
 
 Cons:
+
 - Guards returning false with no redirect leaves user stuck - always redirect
 - Resolvers block navigation until data loads - use skeleton screens for slow APIs
 - canDeactivate is client-side only - refreshing browser bypasses it
 - Deep route nesting can make guard debugging complex
 
 ## Gotchas
+
 - Guard returning false without router.navigate() leaves user at blank/old URL
 - resolve pre-fetches before component loads - if resolve errors, route activation fails
 - route.snapshot.params is static - use route.paramMap observable for same-route navigation
 - canMatch (Angular 14+) prevents route from being matched - different from canActivate which blocks activation
 - Lazy loaded routes have their own injector - services provided there are not root-level singletons
 - Guards run in ORDER: canMatch -> canActivate -> canActivateChild -> resolve
-

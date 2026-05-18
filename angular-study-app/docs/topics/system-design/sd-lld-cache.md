@@ -1,6 +1,7 @@
 # LLD: LRU & LFU Cache - O(1) Get and Put
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: LLD
 - Source: `src/modules/topics/sysdesign/sd-lld-cache.js`
@@ -8,9 +9,11 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **LRU (Least Recently Used):** Evict the item that was accessed longest ago.
 
 **O(1) LRU implementation:** HashMap + Doubly Linked List.
+
 - HashMap: key -> node (O(1) lookup)
 - DLL: nodes in access-time order (head = most recent, tail = least recent)
 - Get: O(1) - lookup in map, move node to head
@@ -21,20 +24,24 @@
 **LFU (Least Frequently Used):** Evict the item accessed fewest times. On tie, evict LRU among those.
 
 **O(1) LFU implementation:** Three maps:
+
 1. `keyToVal` - key -> value
 2. `keyToFreq` - key -> frequency count
 3. `freqToKeys` - frequency -> LinkedHashSet of keys (LRU order within same freq)
-Track `minFreq`. On evict: remove oldest key from `freqToKeys[minFreq]`.
+   Track `minFreq`. On evict: remove oldest key from `freqToKeys[minFreq]`.
 
 **When to use LRU vs LFU:**
+
 - LRU: general web cache. Recent access = likely to be accessed again.
 - LFU: media libraries, CDN content. Popular items (high freq) should stay regardless of recent access.
 - LRU simpler to implement; LFU resists scan pollution better.
 
 ## Why It Matters
+
 LRU cache implementation is one of the most common coding interview questions. Every caching layer internally uses one of these algorithms.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Caller"]
@@ -60,6 +67,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Client
@@ -77,6 +85,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -91,6 +100,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```java
 // LRU Cache - O(1) get and put
 public class LRUCache<K, V> {
@@ -215,25 +225,30 @@ Notes:
 LinkedHashSet preserves insertion order - so iteration gives LRU order among keys with the same frequency. This makes LFU O(1) for all operations.
 
 ## Complexity And Performance
+
 - O(1)
 
 ## Interview Drills
+
 1. Implement a thread-safe LRU cache in Java.
    Answer: Wrap LinkedHashMap with synchronized methods (as shown above) for simplicity. For production:
    - Use `Collections.synchronizedMap` around LinkedHashMap - coarse-grained lock
    - For better concurrency: use ConcurrentHashMap + ConcurrentLinkedDeque (approximate LRU with lower contention)
    - For high-performance: Caffeine library uses a window TinyLFU algorithm - lock-free, SLRU, ~10x faster than synchronizedLinkedHashMap
-   
+
    Caffeine is what Spring Boot uses internally when you add `@Cacheable` with Caffeine configuration.
    Follow-ups: What is the Window TinyLFU algorithm used by Caffeine?; When is LFU strictly better than LRU?
 
 ## Trade-offs
+
 Pros:
+
 - LRU: simple, O(1), handles temporal locality
 - LFU: resists cache pollution from one-time scans
 - Both: bounded memory, automatic eviction
 
 Cons:
+
 - LRU: scan can evict popular items
 - LFU: frequency counts inflate for old items (frequency aging needed)
 - Both: no awareness of item size - small and large items treated equally
@@ -242,5 +257,5 @@ When to use:
 LRU for general application caches (HTTP responses, DB query results). LFU for content libraries (videos, images) where popularity matters more than recency.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

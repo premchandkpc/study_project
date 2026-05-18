@@ -1,6 +1,7 @@
 # Messaging Patterns - Queue, Pub/Sub, Outbox & Dead Letter
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Messaging
 - Source: `src/modules/topics/sysdesign/sd-messaging-patterns.js`
@@ -8,15 +9,18 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **Point-to-point queue:** Message goes to exactly one consumer. Work queue pattern. RabbitMQ/SQS.
 **Pub/sub:** Publisher sends to topic; all subscribers receive a copy. SNS, Kafka consumer groups, Redis pub/sub.
 
 **Delivery guarantees:**
+
 - **At-most-once** - fire and forget. No ack, no retry. May lose messages. Best throughput.
 - **At-least-once** - ack required; on failure retry. May duplicate. Consumer must be idempotent.
 - **Exactly-once** - idempotent producer + transactional consumer. Kafka EOS, SQS FIFO + deduplication ID.
 
 **Outbox pattern** - solve dual-write problem (DB + message broker in one atomic operation):
+
 1. Write event to `outbox` table in same DB transaction as business data
 2. Background process (Debezium CDC or polling) reads outbox table and publishes to broker
 3. On success, mark outbox row as processed
@@ -30,9 +34,11 @@ SNS topic -> multiple SQS queues. Each queue serves a different downstream servi
 **Competing consumers:** Multiple workers read from one queue. Throughput scales horizontally. Auto-scaling based on queue depth (SQS + Lambda / ECS).
 
 ## Why It Matters
+
 Messaging is the glue of distributed systems. Understanding delivery guarantees and the outbox pattern is critical for building correct async services.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Sources"]
@@ -58,6 +64,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Producer
@@ -75,6 +82,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -89,6 +97,7 @@ Flow steps:
 5. On failure -> DLQ - If consumer fails after 3 retries, message moved to DLQ for inspection and manual replay.
 
 ## Example
+
 ```java
 // Outbox pattern with Spring + Debezium CDC
 // Step 1: Write order + outbox entry in one transaction
@@ -145,28 +154,28 @@ Notes:
 Debezium uses PostgreSQL logical replication to capture outbox table changes - no polling overhead, sub-second latency.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How would you design a notification system for 100M users?
-   Answer: 1. **Event bus:** User actions publish events to Kafka topic `user.events`
-   2. **Notification service:** Kafka consumer group reads events, applies notification rules (preferences, quiet hours, dedup)
-   3. **Fan-out to channels:** SNS topic per channel type -> SQS queues for push (FCM/APNs), email (SES), SMS (Twilio)
-   4. **Workers per channel:** ECS/Lambda workers drain queues, call third-party APIs with retry + DLQ
-   5. **Rate limiting:** Per-user rate limits to avoid notification spam (Redis sorted set sliding window)
-   6. **Deduplication:** Notification ID stored in Redis/DB; skip if already sent within dedup window
-   
+   Answer: 1. **Event bus:** User actions publish events to Kafka topic `user.events` 2. **Notification service:** Kafka consumer group reads events, applies notification rules (preferences, quiet hours, dedup) 3. **Fan-out to channels:** SNS topic per channel type -> SQS queues for push (FCM/APNs), email (SES), SMS (Twilio) 4. **Workers per channel:** ECS/Lambda workers drain queues, call third-party APIs with retry + DLQ 5. **Rate limiting:** Per-user rate limits to avoid notification spam (Redis sorted set sliding window) 6. **Deduplication:** Notification ID stored in Redis/DB; skip if already sent within dedup window
+
    **Scale:** Kafka can handle 10M events/s. Each SQS queue auto-scales workers. At 100M users, push notifications batch via FCM's batch API (1000/request).
    Follow-ups: How do you handle FCM/APNs delivery failures?; How would you implement quiet hours per timezone?
 
 ## Trade-offs
+
 Pros:
+
 - Decouples services - producer and consumer evolve independently
 - Async processing improves throughput
 - DLQ prevents poisoned messages from blocking processing
 
 Cons:
+
 - Eventual consistency - consumer may lag
 - At-least-once requires idempotent consumers
 - Debugging async flows is harder than synchronous
@@ -175,5 +184,5 @@ When to use:
 Use async messaging for: notifications, email, audit logs, inter-service events, workflow orchestration. Keep synchronous for: payment confirmation, inventory reservation (need immediate response).
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

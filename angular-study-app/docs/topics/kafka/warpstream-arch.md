@@ -1,6 +1,7 @@
 # WarpStream Architecture
 
 ## Quick Facts
+
 - Area: Kafka and Messaging
 - Tag: Cloud-Native
 - Source: `src/modules/topics/kafka/warpstream-arch.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 <div style="font-family:monospace;color:#cdd9e5;max-width:860px">
   <h2 style="color:#38bdf8;margin-bottom:6px">WarpStream Architecture</h2>
   <p style="color:#768390;margin-bottom:18px">Kafka-compatible streaming built on <b style="color:#38bdf8">object storage (S3)</b>. No local disks, no ZooKeeper, no replication overhead. Stateless agents + S3 = infinite scale, zero ops.</p>
@@ -46,19 +48,22 @@
     <div style="color:#38bdf8;font-size:13px;font-weight:bold;margin-bottom:10px">Architecture at a glance</div>
     <pre style="color:#cdd9e5;font-size:12px;margin:0">
 
-                    Your Cloud (BYOC)                         
-                                                              
-  Producers ->  WarpStream Agent (stateless, K8s pod)       
-                                                             
-                  buffer ~250ms                              
-                                                             
-              S3 / GCS / ABS  <- Source of Truth          
-                                                             
-                  read (fetch)                               
-  Consumers <- WarpStream Agent (any agent, stateless)      
-                                                              
-  Metadata coordination -> WarpStream Control Plane (SaaS) 
-  (partition assignments, offsets, schema)                    
+                    Your Cloud (BYOC)
+
+
+Producers -> WarpStream Agent (stateless, K8s pod)
+
+                  buffer ~250ms
+
+              S3 / GCS / ABS  <- Source of Truth
+
+                  read (fetch)
+
+Consumers <- WarpStream Agent (any agent, stateless)
+
+Metadata coordination -> WarpStream Control Plane (SaaS)
+(partition assignments, offsets, schema)
+
 </pre>
   </div>
 
@@ -74,13 +79,16 @@ props.put("bootstrap.servers", "serverless.warpstream.com:9092");
 // Existing Kafka Connect connectors work unchanged
 // Schema Registry API compatible
 // Consumer group protocol identical</pre>
+
   </div>
 </div>
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Producer"]
@@ -95,6 +103,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Producer
@@ -113,6 +122,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -127,13 +137,16 @@ Flow steps:
 5. Sink/DLQ
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How does WarpStream achieve Kafka wire compatibility?
 
 2. What's the latency trade-off vs Kafka?
@@ -143,11 +156,12 @@ _No code example configured._
 4. Why is scaling cheaper/faster than Kafka?
 
 ## Trade-offs
+
 WarpStream pros: infinite scale, zero ops, 80% cheaper (claimed), BYOC compliance. Cons: higher latency (~250ms+), agent buffer risk, not OSS, Kafka Streams incompatible.
 
 ## Gotchas
+
 - ~250ms latency (S3 flush interval). Not for sub-100ms requirements.
 - Agent crash before flush = buffer lost. Design for producer retries.
 - Not open-source. Kafka Streams not compatible.
 - S3 egress costs can surprise at scale.
-

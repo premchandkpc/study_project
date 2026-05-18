@@ -1,6 +1,7 @@
 # Records, Sealed Classes & Pattern Matching
 
 ## Quick Facts
+
 - Area: Java
 - Tag: Modern Java
 - Source: `src/modules/topics/java/java-records-sealed-patterns.js`
@@ -8,15 +9,18 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **L1 (30s):** Records = immutable data. Sealed = closed type hierarchy. Pattern matching = smart instanceof. Together = algebraic data types in Java.
 **L2 (2min):** Records auto-generate constructor, equals, hashCode, toString, accessors. Sealed classes declare permitted subtypes - compiler enforces exhaustive switch. Pattern matching: `if (obj instanceof Point(int x, int y))` deconstructs in one step.
 **L3 (10min):** Records can't extend classes (only interfaces). Compact constructors for validation. Sealed + switch = compile-time exhaustiveness - add a new subtype, every switch breaks. Guard patterns: `case Failed f when f.retryCount() >= 3`. Works with generics.
 **L4 (30min):** Records compile to final classes with private fields + public accessors. JIT scalar-replaces short-lived records (escape analysis). Pattern matching switch desugars to tableswitch/lookupswitch with type checks. JEP 445 (unnamed patterns) and JEP 456 (unnamed variables) continue evolving the feature.
 
 ## Why It Matters
+
 **Production case:** Payment processing event store. 12 event types, each handled differently. Before: big `if/else instanceof` ladder, easy to miss a case silently. After: sealed PaymentEvent + exhaustive switch - compiler enforces every new event type is handled. Zero runtime ClassCastExceptions.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Records"]
@@ -41,6 +45,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant kafka as Kafka Consumer
@@ -56,6 +61,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -70,6 +76,7 @@ Flow steps:
 5. Execute correct branch - No ClassCastException possible - type proven at compile time
 
 ## Example
+
 ```java
 sealed interface PaymentEvent permits Initiated, Authorized, Captured, Failed {}
 
@@ -91,10 +98,12 @@ State apply(State s, PaymentEvent event) {
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Why are records better than Lombok @Data?
    Answer: Records are a language feature - no annotation processor, IDE plugin, or @Builder collisions. Immutable by default, work with pattern matching, JIT-optimised via scalar replacement. Lombok remains useful for mutable JPA entities.
    Follow-ups: Can a record extend a class?; Compact constructor for validation?; Records and serialization?
@@ -108,13 +117,16 @@ State apply(State s, PaymentEvent event) {
    Follow-ups: What is the dominance rule?; Can two cases match the same value?
 
 ## Trade-offs
+
 Pros:
+
 - Compile-time exhaustiveness for sealed types
 - Immutability by default for records
 - Cleaner DSLs and event sourcing code
 - No annotation processors
 
 Cons:
+
 - Records can't extend classes
 - Pattern switch preview until Java 21
 - JPA entities incompatible with records
@@ -124,10 +136,10 @@ When to use:
 **Domain events, value objects, state machines, DTOs.** Use classes when you need inheritance or mutable state.
 
 ## Gotchas
+
 - Records CANNOT extend classes (final + extends Record). Only implement interfaces.
 - JPA entities cannot be records - JPA needs no-arg constructor + mutable fields + proxy subclass
 - Exhaustive switch only enforces at compile time for sealed types - not for open hierarchies
 - Compact constructor runs before field assignment - you can validate but not rebind the same names
 - Non-sealed reopens the hierarchy - switch on it is no longer exhaustive without default
 - Pattern matching switch is null-hostile - null hits NullPointerException unless you add `case null` arm
-

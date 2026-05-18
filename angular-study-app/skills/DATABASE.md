@@ -8,23 +8,23 @@
 
 ## Topics Built
 
-| File | Title | Tag | Visual Status |
-|------|-------|-----|---------------|
-| `db-transactions-acid.js` | Transactions & ACID | Transactions | ✅ Built |
-| `db-isolation-levels.js` | Isolation Levels | Concurrency | ✅ Built |
-| `db-mvcc.js` | MVCC (Multi-Version Concurrency Control) | Concurrency | ✅ Built |
-| `db-indexes.js` | Indexes & Index Types | Performance | ✅ Built |
-| `db-btree-lsm.js` | B-Tree vs LSM-Tree Storage | Storage | ✅ Built |
-| `db-wal.js` | Write-Ahead Log (WAL) | Durability | ✅ Built |
-| `db-buffer-pool.js` | Buffer Pool & Page Cache | Memory | ✅ Built |
-| `db-query-execution.js` | Query Execution & Planning | Query | ✅ Built |
-| `db-replication.js` | Replication: Leader/Follower | Scaling | ✅ Built |
-| `db-sharding.js` | Sharding Strategies | Scaling | ✅ Built |
-| `db-connection-pooling.js` | Connection Pooling | Performance | ✅ Built |
-| `db-postgres-internals.js` | PostgreSQL Internals | Internals | ✅ Built |
-| `db-mongodb-internals.js` | MongoDB Internals | NoSQL | ✅ Built |
-| `db-redis-internals.js` | Redis Internals | In-Memory | ✅ Built |
-| `db-nosql-comparison.js` | NoSQL DB Comparison | NoSQL | ✅ Built |
+| File                       | Title                                    | Tag          | Visual Status |
+| -------------------------- | ---------------------------------------- | ------------ | ------------- |
+| `db-transactions-acid.js`  | Transactions & ACID                      | Transactions | ✅ Built      |
+| `db-isolation-levels.js`   | Isolation Levels                         | Concurrency  | ✅ Built      |
+| `db-mvcc.js`               | MVCC (Multi-Version Concurrency Control) | Concurrency  | ✅ Built      |
+| `db-indexes.js`            | Indexes & Index Types                    | Performance  | ✅ Built      |
+| `db-btree-lsm.js`          | B-Tree vs LSM-Tree Storage               | Storage      | ✅ Built      |
+| `db-wal.js`                | Write-Ahead Log (WAL)                    | Durability   | ✅ Built      |
+| `db-buffer-pool.js`        | Buffer Pool & Page Cache                 | Memory       | ✅ Built      |
+| `db-query-execution.js`    | Query Execution & Planning               | Query        | ✅ Built      |
+| `db-replication.js`        | Replication: Leader/Follower             | Scaling      | ✅ Built      |
+| `db-sharding.js`           | Sharding Strategies                      | Scaling      | ✅ Built      |
+| `db-connection-pooling.js` | Connection Pooling                       | Performance  | ✅ Built      |
+| `db-postgres-internals.js` | PostgreSQL Internals                     | Internals    | ✅ Built      |
+| `db-mongodb-internals.js`  | MongoDB Internals                        | NoSQL        | ✅ Built      |
+| `db-redis-internals.js`    | Redis Internals                          | In-Memory    | ✅ Built      |
+| `db-nosql-comparison.js`   | NoSQL DB Comparison                      | NoSQL        | ✅ Built      |
 
 > All 15 DB topics have full content. Visuals need audit — some may be placeholders.
 
@@ -32,13 +32,13 @@
 
 ## Visual Style References (inputs/)
 
-| Image | Apply to DB topics |
-|---|---|
-| `inputs/image copy 8.png` — DB Scaling Wheel (7 strategies pie) | **`db-sharding.js`**: wheel center = "Scale DB", segments = Sharding/Replication/Caching/Connection Pool/Read Replica/Partitioning/CDN. **`db-indexes.js`**: wheel of index types |
-| `inputs/image copy 11.png` — 5-row swimlane | **`db-isolation-levels.js`**: each row = isolation level (READ UNCOMMITTED→READ COMMITTED→REPEATABLE READ→SERIALIZABLE). Animated dots show dirty/phantom read scenarios per level |
-| `inputs/image copy 7.png` — Blueprint numbered callouts | **`db-wal.js`**: numbered steps ①client write→②WAL append→③buffer pool dirty→④checkpoint→⑤sync to disk. **`db-query-execution.js`**: numbered pipeline stages |
-| `inputs/image copy 12.png` — SQL mind map (dark bg, radial) | **`db-transactions-acid.js`**: center = "ACID", radial branches = Atomicity/Consistency/Isolation/Durability. Each branch → example scenario |
-| `inputs/image copy 9.png` — Numbered circular loop | **`db-replication.js`**: circular flow ①client write→②leader WAL→③follower sync→④ack→⑤client read replica |
+| Image                                                           | Apply to DB topics                                                                                                                                                                 |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inputs/image copy 8.png` — DB Scaling Wheel (7 strategies pie) | **`db-sharding.js`**: wheel center = "Scale DB", segments = Sharding/Replication/Caching/Connection Pool/Read Replica/Partitioning/CDN. **`db-indexes.js`**: wheel of index types  |
+| `inputs/image copy 11.png` — 5-row swimlane                     | **`db-isolation-levels.js`**: each row = isolation level (READ UNCOMMITTED→READ COMMITTED→REPEATABLE READ→SERIALIZABLE). Animated dots show dirty/phantom read scenarios per level |
+| `inputs/image copy 7.png` — Blueprint numbered callouts         | **`db-wal.js`**: numbered steps ①client write→②WAL append→③buffer pool dirty→④checkpoint→⑤sync to disk. **`db-query-execution.js`**: numbered pipeline stages                      |
+| `inputs/image copy 12.png` — SQL mind map (dark bg, radial)     | **`db-transactions-acid.js`**: center = "ACID", radial branches = Atomicity/Consistency/Isolation/Durability. Each branch → example scenario                                       |
+| `inputs/image copy 9.png` — Numbered circular loop              | **`db-replication.js`**: circular flow ①client write→②leader WAL→③follower sync→④ack→⑤client read replica                                                                          |
 
 ---
 
@@ -46,30 +46,30 @@
 
 ### PRIORITY 1 — Core interview concepts
 
-| Topic | Visual Type | Style Ref | Key Animation |
-|---|---|---|---|
-| `db-isolation-levels.js` | Swimlane (4 rows) | image copy 11 | Each row = isolation level. Concurrent Tx A and Tx B shown. Dirty read (red X) / Phantom read (orange X) / Non-repeatable read per level |
-| `db-mvcc.js` | FlowDiagram | image copy 7 numbered | Tx starts → snapshot (xmin/xmax). Writer creates new version. Reader sees old version. GC vacuums dead tuples |
-| `db-transactions-acid.js` | FlowDiagram | image copy 12 (radial) | ACID mind map: Atomicity→all-or-nothing. Consistency→constraints. Isolation→levels. Durability→WAL+fsync |
-| `db-indexes.js` | FlowDiagram | image copy 8 (wheel) | B-tree (range/equality), Hash (equality only), GIN (full-text, arrays), BRIN (time-series). Sequential scan vs index scan cost |
+| Topic                     | Visual Type       | Style Ref              | Key Animation                                                                                                                            |
+| ------------------------- | ----------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `db-isolation-levels.js`  | Swimlane (4 rows) | image copy 11          | Each row = isolation level. Concurrent Tx A and Tx B shown. Dirty read (red X) / Phantom read (orange X) / Non-repeatable read per level |
+| `db-mvcc.js`              | FlowDiagram       | image copy 7 numbered  | Tx starts → snapshot (xmin/xmax). Writer creates new version. Reader sees old version. GC vacuums dead tuples                            |
+| `db-transactions-acid.js` | FlowDiagram       | image copy 12 (radial) | ACID mind map: Atomicity→all-or-nothing. Consistency→constraints. Isolation→levels. Durability→WAL+fsync                                 |
+| `db-indexes.js`           | FlowDiagram       | image copy 8 (wheel)   | B-tree (range/equality), Hash (equality only), GIN (full-text, arrays), BRIN (time-series). Sequential scan vs index scan cost           |
 
 ### PRIORITY 2
 
-| Topic | Visual Type | Key Animation |
-|---|---|---|
-| `db-btree-lsm.js` | Swimlane (2 rows) | Row1 B-Tree: in-place update, read O(logN), write amplification. Row2 LSM: MemTable→SSTable→compaction, write-optimized, read amplification |
-| `db-wal.js` | FlowDiagram | WAL append → buffer dirty page → checkpoint timer → fsync pages. Crash recovery: replay WAL from last checkpoint |
-| `db-replication.js` | FlowDiagram | Leader receives write → WAL stream to follower → follower applies → ack. Sync (durability) vs async (performance) tradeoff. Failover: promote follower |
-| `db-sharding.js` | FlowDiagram | Range sharding (hotspot risk) vs Hash sharding (even dist) vs Directory (lookup table). Resharding problem: consistent hashing |
+| Topic               | Visual Type       | Key Animation                                                                                                                                          |
+| ------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `db-btree-lsm.js`   | Swimlane (2 rows) | Row1 B-Tree: in-place update, read O(logN), write amplification. Row2 LSM: MemTable→SSTable→compaction, write-optimized, read amplification            |
+| `db-wal.js`         | FlowDiagram       | WAL append → buffer dirty page → checkpoint timer → fsync pages. Crash recovery: replay WAL from last checkpoint                                       |
+| `db-replication.js` | FlowDiagram       | Leader receives write → WAL stream to follower → follower applies → ack. Sync (durability) vs async (performance) tradeoff. Failover: promote follower |
+| `db-sharding.js`    | FlowDiagram       | Range sharding (hotspot risk) vs Hash sharding (even dist) vs Directory (lookup table). Resharding problem: consistent hashing                         |
 
 ### PRIORITY 3
 
-| Topic | Visual Type | Key Animation |
-|---|---|---|
-| `db-query-execution.js` | FlowDiagram | SQL→Parser→Planner(cost model)→Optimizer→Executor. EXPLAIN ANALYZE output. Seq Scan vs Index Scan vs Bitmap scan cost |
-| `db-buffer-pool.js` | FlowDiagram | LRU page eviction. Dirty page tracking. Write-back vs write-through. Clock sweep (Postgres). InnoDB adaptive hash index |
+| Topic                      | Visual Type       | Key Animation                                                                                                                                                       |
+| -------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `db-query-execution.js`    | FlowDiagram       | SQL→Parser→Planner(cost model)→Optimizer→Executor. EXPLAIN ANALYZE output. Seq Scan vs Index Scan vs Bitmap scan cost                                               |
+| `db-buffer-pool.js`        | FlowDiagram       | LRU page eviction. Dirty page tracking. Write-back vs write-through. Clock sweep (Postgres). InnoDB adaptive hash index                                             |
 | `db-connection-pooling.js` | Swimlane (2 rows) | Row1 No pool: each request→new connection (3-way handshake+auth overhead). Row2 With pool (PgBouncer/HikariCP): pre-established connections, queue waiting requests |
-| `db-postgres-internals.js` | FlowDiagram | Heap file → page (8KB) → tuple (xmin/xmax). VACUUM removes dead tuples. TOAST for large values. Shared buffer hit vs disk read |
+| `db-postgres-internals.js` | FlowDiagram       | Heap file → page (8KB) → tuple (xmin/xmax). VACUUM removes dead tuples. TOAST for large values. Shared buffer hit vs disk read                                      |
 
 ---
 
@@ -176,31 +176,31 @@ Nodes: leader(store), follower1(cache), follower2(cache dim), client(component),
 
 ### HIGH PRIORITY (interview-critical, no JS file yet)
 
-| Topic | Suggested File | Visual Type | Key Concepts |
-|-------|---------------|-------------|--------------|
-| Distributed transactions (2PC, SAGA) | `db-distributed-tx.js` | FlowDiagram | 2PC: prepare phase + commit phase. Coordinator failure leaves participants blocked. SAGA: compensating transactions, choreography vs orchestration |
-| Database locking | `db-locking.js` | Swimlane | Row-level vs table-level vs page-level. Shared lock vs exclusive lock. Deadlock detection (wait-for graph). Deadlock vs livelock |
-| Query optimization | `db-query-optimizer.js` | FlowDiagram | Cost-based optimizer. Statistics (n_distinct, correlation). Join algorithms: nested loop / hash join / merge join. Index selectivity |
-| Full-text search | `db-fulltext-search.js` | FlowDiagram | Inverted index. Tokenization → stemming → stop words. tsvector + tsquery in Postgres. GIN index for full-text. vs Elasticsearch |
-| Time-series databases | `db-timeseries.js` | FlowDiagram | TimescaleDB (hypertables). InfluxDB. Chunk-based partitioning by time. Compression. Continuous aggregates. Retention policies |
-| Database connection patterns | `db-connection-patterns.js` | Swimlane | PgBouncer (session/transaction/statement mode). HikariCP config (maxPoolSize=10 rule: cores × 2 + disk spindles). Connection storm on restart |
+| Topic                                | Suggested File              | Visual Type | Key Concepts                                                                                                                                       |
+| ------------------------------------ | --------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Distributed transactions (2PC, SAGA) | `db-distributed-tx.js`      | FlowDiagram | 2PC: prepare phase + commit phase. Coordinator failure leaves participants blocked. SAGA: compensating transactions, choreography vs orchestration |
+| Database locking                     | `db-locking.js`             | Swimlane    | Row-level vs table-level vs page-level. Shared lock vs exclusive lock. Deadlock detection (wait-for graph). Deadlock vs livelock                   |
+| Query optimization                   | `db-query-optimizer.js`     | FlowDiagram | Cost-based optimizer. Statistics (n_distinct, correlation). Join algorithms: nested loop / hash join / merge join. Index selectivity               |
+| Full-text search                     | `db-fulltext-search.js`     | FlowDiagram | Inverted index. Tokenization → stemming → stop words. tsvector + tsquery in Postgres. GIN index for full-text. vs Elasticsearch                    |
+| Time-series databases                | `db-timeseries.js`          | FlowDiagram | TimescaleDB (hypertables). InfluxDB. Chunk-based partitioning by time. Compression. Continuous aggregates. Retention policies                      |
+| Database connection patterns         | `db-connection-patterns.js` | Swimlane    | PgBouncer (session/transaction/statement mode). HikariCP config (maxPoolSize=10 rule: cores × 2 + disk spindles). Connection storm on restart      |
 
 ### MEDIUM PRIORITY
 
-| Topic | Suggested File | Key Concepts |
-|-------|---------------|--------------|
-| Cassandra internals | `db-cassandra.js` | Consistent hashing ring, vnodes, replication factor, quorum reads/writes, compaction strategies, tombstones |
-| DynamoDB internals | `db-dynamodb.js` | Partition key → consistent hash. Sort key. WCU/RCU. GSI/LSI. DynamoDB streams. Single-table design |
-| ClickHouse / OLAP | `db-olap.js` | Column store vs row store. Vectorized execution. Materialized views. Compression ratio. OLTP vs OLAP workloads |
+| Topic               | Suggested File     | Key Concepts                                                                                                                          |
+| ------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Cassandra internals | `db-cassandra.js`  | Consistent hashing ring, vnodes, replication factor, quorum reads/writes, compaction strategies, tombstones                           |
+| DynamoDB internals  | `db-dynamodb.js`   | Partition key → consistent hash. Sort key. WCU/RCU. GSI/LSI. DynamoDB streams. Single-table design                                    |
+| ClickHouse / OLAP   | `db-olap.js`       | Column store vs row store. Vectorized execution. Materialized views. Compression ratio. OLTP vs OLAP workloads                        |
 | Database migrations | `db-migrations.js` | Schema migrations: expand-contract pattern. Non-blocking migrations (add nullable column, backfill, add constraint). Flyway/Liquibase |
 
 ### LOW PRIORITY
 
-| Topic | Suggested File | Key Concepts |
-|-------|---------------|--------------|
-| Graph databases | `db-graph.js` | Neo4j, property graph model, Cypher query language, vs relational for relationship-heavy queries |
-| Vector databases | `db-vector.js` | Embeddings, HNSW index, ANN search, pgvector, Pinecone, Weaviate — used for RAG/semantic search |
-| Object storage | `db-object-storage.js` | S3 consistency model, multipart upload, presigned URLs, lifecycle policies, S3 as data lake |
+| Topic            | Suggested File         | Key Concepts                                                                                     |
+| ---------------- | ---------------------- | ------------------------------------------------------------------------------------------------ |
+| Graph databases  | `db-graph.js`          | Neo4j, property graph model, Cypher query language, vs relational for relationship-heavy queries |
+| Vector databases | `db-vector.js`         | Embeddings, HNSW index, ANN search, pgvector, Pinecone, Weaviate — used for RAG/semantic search  |
+| Object storage   | `db-object-storage.js` | S3 consistency model, multipart upload, presigned URLs, lifecycle policies, S3 as data lake      |
 
 ---
 
@@ -244,31 +244,33 @@ PostgreSQL Specific:
 
 ```js
 (function () {
-  'use strict';
+  "use strict";
 
-  window.DB_TOPICS = (window.DB_TOPICS || []).concat([{
-    id:    'db-<topic>',
-    area:  'databases',
-    title: '<Title>',
-    tag:   '<Tag>',
-    tags:  ['database', '<keyword1>', '<keyword2>'],
+  window.DB_TOPICS = (window.DB_TOPICS || []).concat([
+    {
+      id: "db-<topic>",
+      area: "databases",
+      title: "<Title>",
+      tag: "<Tag>",
+      tags: ["database", "<keyword1>", "<keyword2>"],
 
-    concept: `<explanation>`,
-    why:     `<production relevance>`,
+      concept: `<explanation>`,
+      why: `<production relevance>`,
 
-    example: {
-      language: 'sql',  // or 'java' or 'bash'
-      code: `-- SQL example`,
+      example: {
+        language: "sql", // or 'java' or 'bash'
+        code: `-- SQL example`,
+      },
+
+      interview: ["Question 1?", "Question 2?"],
+      tradeoffs: { pros: ["..."], cons: ["..."] },
+      gotchas: ["Gotcha 1"],
+
+      visual: function (mount) {
+        // Swimlane for multi-variant comparisons (isolation levels, storage engines)
+        // ReactViz.panel FlowDiagram for single lifecycle (WAL, replication, MVCC)
+      },
     },
-
-    interview: ['Question 1?', 'Question 2?'],
-    tradeoffs: { pros: ['...'], cons: ['...'] },
-    gotchas: ['Gotcha 1'],
-
-    visual: function (mount) {
-      // Swimlane for multi-variant comparisons (isolation levels, storage engines)
-      // ReactViz.panel FlowDiagram for single lifecycle (WAL, replication, MVCC)
-    },
-  }]);
+  ]);
 })();
 ```

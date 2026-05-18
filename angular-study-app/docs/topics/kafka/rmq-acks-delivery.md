@@ -1,6 +1,7 @@
 # RabbitMQ Acks & Delivery
 
 ## Quick Facts
+
 - Area: Kafka and Messaging
 - Tag: rabbitmq
 - Source: `src/modules/topics/kafka/rmq-acks-delivery.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 **L1 (30s ELI5):** Ack = "got it, done". Nack = "failed, put it back (or discard)". Prefetch = "give me max N at a time". Publisher confirm = broker says "I saved your message".
 
 **L2 (2min core):** Consumer ack modes: auto (remove on deliver, at-most-once), manual (remove on basicAck, at-least-once). basicNack: requeue=true (retry) or false (DLQ). Prefetch (basicQos): limits unacked messages per consumer. Publisher confirms: broker acks when durably stored.
@@ -17,9 +19,11 @@
 **L4 (30min deep):** Unacked messages tracked in per-channel unacked set. On channel close: all unacked requeued. Memory: unacked messages held in memory (not written to disk until channel closed). Publisher confirms: broker writes to WAL, acks producer. With quorum queues: ack only after majority have written.
 
 ## Why It Matters
+
 Ack semantics define delivery guarantee. Manual ack = at-least-once. Publisher confirms = producer delivery guarantee. Prefetch = backpressure. Together they enable robust, reliable messaging without overwhelming consumers.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Producer"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Producer
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,6 +72,7 @@ Flow steps:
 5. Sink/DLQ
 
 ## Example
+
 ```java
 // Consumer: manual ack with prefetch
 channel.basicQos(10); // prefetch = 10 unacked max
@@ -104,10 +111,12 @@ channel.basicPublish("orders", "payment",
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Question
 
 2. Question
@@ -117,9 +126,11 @@ channel.basicPublish("orders", "payment",
 4. Question
 
 ## Trade-offs
+
 Manual ack: reliable but requires ack on every message. Auto ack: fast, risky. prefetch high: throughput, memory risk. prefetch low: safe, slow. Publisher confirms: guaranteed delivery at cost of round-trip per batch.
 
 ## Gotchas
+
 - autoAck=true = at-most-once. Message removed on delivery. Consumer crash = data lost
 - basicNack(requeue=true) can create infinite retry loops for poison messages. Use DLQ instead
 - Prefetch=0 (unlimited): all messages sent to consumer. Slow consumer -> memory bloat in consumer
@@ -127,4 +138,3 @@ Manual ack: reliable but requires ack on every message. Auto ack: fast, risky. p
 - Publisher confirms message delivered to consumer. Confirms only say broker durably stored
 - AMQP transactions: 200x slower than confirms. Use only for truly atomic multi-message operations
 - Connection close requeues ALL unacked messages - design for redelivery
-

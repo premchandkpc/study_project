@@ -1,6 +1,7 @@
 # Query Execution Pipeline
 
 ## Quick Facts
+
 - Area: Databases
 - Tag: Internals
 - Source: `src/modules/topics/databases/db-query-execution.js`
@@ -8,12 +9,15 @@
 - Visual coverage: live visual
 
 ## Concept
+
 // TODO - coming soon
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Client query"]
@@ -28,6 +32,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Client query
@@ -46,6 +51,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -60,18 +66,22 @@ Flow steps:
 5. Result/replica
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 _No interview drills configured._
 
 ## Trade-offs
+
 // TODO
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

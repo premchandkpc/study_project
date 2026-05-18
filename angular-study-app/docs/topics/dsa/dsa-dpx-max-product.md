@@ -1,6 +1,7 @@
 # Maximum Product Subarray
 
 ## Quick Facts
+
 - Area: DSA
 - Tag: DP Extended
 - Source: `src/modules/topics/dsa/dsa-dpx-max-product.js`
@@ -8,18 +9,21 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Find the contiguous subarray with the largest product.
 
- **Kid explanation:** Multiplying numbers sounds easy - but watch out for NEGATIVE numbers! Two negatives make a positive, so the minimum product can suddenly become the maximum when you multiply by another negative. Track BOTH the running maximum AND the running minimum at every step. When you see a new number, they might SWAP!
+**Kid explanation:** Multiplying numbers sounds easy - but watch out for NEGATIVE numbers! Two negatives make a positive, so the minimum product can suddenly become the maximum when you multiply by another negative. Track BOTH the running maximum AND the running minimum at every step. When you see a new number, they might SWAP!
 
 **Pattern:** DP tracking both max and min products - O(n)
 **Key insight:** curMax = max(num, curMax*num, curMin*num). curMin = min(same three). When num is negative, max and min flip roles.
 **Scenario:** Signal processing - find the stretch of multiplied sensor values that peaks highest.
 
 ## Why It Matters
+
 _No notes yet._
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Problem input"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Problem input
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,17 +72,21 @@ Flow steps:
 5. Answer
 
 ## Example
+
 _No code example configured._
 
 ## Complexity And Performance
+
 - O(n)
 
 ## Interview Drills
+
 _No interview drills configured._
 
 ## Trade-offs
+
 _No trade-offs configured._
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

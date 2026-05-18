@@ -1,6 +1,7 @@
 # Concurrent Mode
 
 ## Quick Facts
+
 - Area: React
 - Tag: Advanced
 - Source: `src/modules/topics/react/react-concurrent.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Concurrent Mode lets React pause, resume, and abandon renders to keep the UI responsive.
 Without Concurrent: renders block the main thread - long trees = janky scrolling, frozen inputs.
 Time slicing: React splits rendering into 5ms chunks, yielding to browser between chunks.
@@ -16,11 +18,13 @@ Suspense: let components "wait" for async data. Show fallback until data resolve
 useDeferredValue: delay updating a value until urgent work is done - like a debounce built into React.
 
 ## Why It Matters
+
 Without concurrent features, a 1000-item list re-render blocks input for 200ms.
 With startTransition, the user can keep typing while React renders the filtered list in the background.
 Suspense eliminates loading state management boilerplate - declare "what to show while loading" declaratively.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["User event"]
@@ -35,6 +39,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as User event
@@ -53,6 +58,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -67,6 +73,7 @@ Flow steps:
 5. DOM/cache
 
 ## Example
+
 ```javascript
 // Enable concurrent mode (React 18+)
 const root = createRoot(document.getElementById('root'));
@@ -106,10 +113,12 @@ const results = useMemo(() =>
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What is time slicing and how does React implement it?
 
 2. Difference between startTransition and debounce?
@@ -123,20 +132,23 @@ const results = useMemo(() =>
 6. Can Suspense be used for code-splitting? How?
 
 ## Trade-offs
+
 Pros:
+
 - Keeps UI responsive during heavy renders
 - Declarative loading states with Suspense
 - No manual debouncing needed
 
 Cons:
+
 - React 18+ only
 - startTransition cannot wrap async code
 - Suspense requires library support (React Query, Relay)
 
 ## Gotchas
+
 - startTransition cannot be used with async/await - the function must be synchronous.
 - Transitions do NOT delay urgent updates - only the marked update is deferred.
 - Suspense boundaries must be placed intentionally - too high = full page flash.
 - useDeferredValue shows STALE data while new data loads - indicate staleness to user.
 - createRoot() is required for concurrent features - legacy render() opts out.
-

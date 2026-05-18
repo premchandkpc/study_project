@@ -1,6 +1,7 @@
 # Saga Pattern & Distributed Transactions
 
 ## Quick Facts
+
 - Area: Microservices
 - Tag: Saga
 - Source: `src/modules/topics/microservices/ms-saga-distributed-tx.js`
@@ -8,16 +9,20 @@
 - Visual coverage: generated diagrams only
 
 ## Concept
+
 Distributed transactions across microservices cannot use ACID - services have separate DBs. The **Saga** pattern breaks a transaction into a sequence of local transactions, each publishing an event or command.
 Two flavors:
+
 - **Choreography**: services react to events. Decentralized, but hard to observe.
 - **Orchestration**: a saga orchestrator issues commands and handles outcomes. Centralized logic, easier to trace (e.g., Temporal, Netflix Conductor, Camunda).
-**Compensating transactions** undo completed steps on failure - they must be idempotent and retryable.
+  **Compensating transactions** undo completed steps on failure - they must be idempotent and retryable.
 
 ## Why It Matters
+
 2PC (two-phase commit) requires all participants to be available simultaneously - kills availability in distributed systems (CAP theorem). Sagas trade **isolation** (intermediate states are visible) for availability. This is the correct model for microservice workflows like order -> payment -> inventory -> shipping. Understanding the ACD properties (Atomic, Consistent, Durable; not Isolated) is essential for senior system design.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Client"]
@@ -32,6 +37,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Client
@@ -50,6 +56,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -63,6 +70,7 @@ Flow steps:
 5. Observability
 
 ## Example
+
 ```java
 // Orchestration Saga using Spring State Machine / Temporal (simplified)
 // Order saga: Reserve inventory -> Charge payment -> Confirm order
@@ -71,14 +79,14 @@ import io.temporal.workflow.*;
 import io.temporal.activity.*;
 import java.time.Duration;
 
-//  Workflow interface 
+//  Workflow interface
 @WorkflowInterface
 public interface OrderSaga {
     @WorkflowMethod
     OrderResult execute(CreateOrderCommand cmd);
 }
 
-//  Activities (each is a local transaction) 
+//  Activities (each is a local transaction)
 @ActivityInterface
 public interface InventoryActivity {
     String reserve(String productId, int qty);          // returns reservationId
@@ -91,7 +99,7 @@ public interface PaymentActivity {
     void refund(String chargeId);                       // compensating action
 }
 
-//  Saga implementation 
+//  Saga implementation
 public class OrderSagaImpl implements OrderSaga {
     private final InventoryActivity inventory = Workflow.newActivityStub(
         InventoryActivity.class,
@@ -130,10 +138,12 @@ Notes:
 Temporal persists workflow state in its DB - the workflow survives crashes and resumes mid-execution. Compensating transactions must be **idempotent**: calling `refund(chargeId)` twice should be safe. Use unique idempotency keys derived from the saga ID.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What problems does the Saga pattern NOT solve?
    Answer: Sagas don't provide **isolation** - other transactions can see intermediate states (e.g., inventory reserved but payment not yet charged). They also don't guarantee **atomicity in the traditional sense** - compensations are eventual. Solutions: (1) **Semantic lock**: mark order as PENDING until saga completes. (2) **Commutative updates**: design operations to be order-independent. (3) Pivot transaction pattern - make steps idempotent across ordering.
    Follow-ups: What is the ACD vs ACID distinction?; When would you use 2PC over Saga?
@@ -143,12 +153,15 @@ Temporal persists workflow state in its DB - the workflow survives crashes and r
    Follow-ups: What is a pivot transaction?; How do you test Saga rollback paths?
 
 ## Trade-offs
+
 Pros:
+
 - Availability: no cross-service lock required - each service commits locally.
 - Temporal / Conductor give durable, observable, retryable workflow state.
 - Choreography scales well - services are fully decoupled.
 
 Cons:
+
 - No isolation - dirty reads between saga steps are possible.
 - Compensating transactions add implementation complexity.
 - Debugging choreography sagas requires distributed tracing - event chain is implicit.
@@ -157,5 +170,5 @@ When to use:
 **Orchestration Saga** (Temporal) for complex multi-step workflows where observability matters. **Choreography** for simple 2-3 step flows with clear event contracts. **2PC** only within a single database that supports it.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

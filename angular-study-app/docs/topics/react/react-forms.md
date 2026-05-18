@@ -1,6 +1,7 @@
 # React Forms
 
 ## Quick Facts
+
 - Area: React
 - Tag: Patterns
 - Source: `src/modules/topics/react/react-forms.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 Controlled: React owns the form state. Every keystroke -> setState -> re-render -> input reflects state.
 Uncontrolled: DOM owns the state. Access value via ref.current.value on submit only.
 Controlled = single source of truth; validation on every keystroke; easy to derive UI from state.
@@ -15,11 +17,13 @@ Uncontrolled = less re-renders; simple forms; integrating with non-React libs.
 react-hook-form: uses uncontrolled inputs internally but gives controlled-like API. Minimal re-renders.
 
 ## Why It Matters
+
 Controlled forms re-render on every keystroke - for 20-field forms with validation this can be slow.
 react-hook-form re-renders only on submit/error - same API, 10x fewer renders.
 Understanding when to use each prevents both over-engineering and performance problems.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["User event"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as User event
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,32 +72,34 @@ Flow steps:
 5. DOM/cache
 
 ## Example
+
 ```javascript
 // CONTROLLED: React owns state
 function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   function validate(email, password) {
-    if (!email.includes('@')) return 'Invalid email';
-    if (password.length < 8) return 'Min 8 chars';
-    return '';
+    if (!email.includes("@")) return "Invalid email";
+    if (password.length < 8) return "Min 8 chars";
+    return "";
   }
 
   function handleSubmit(e) {
     e.preventDefault();
     const err = validate(email, password);
-    if (err) { setError(err); return; }
+    if (err) {
+      setError(err);
+      return;
+    }
     login(email, password);
   }
 
   return (
     <form onSubmit={handleSubmit}>
-      <input value={email}
-             onChange={e => setEmail(e.target.value)} />
-      <input value={password} type="password"
-             onChange={e => setPassword(e.target.value)} />
+      <input value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input value={password} type="password" onChange={(e) => setPassword(e.target.value)} />
       {error && <p>{error}</p>}
       <button type="submit">Login</button>
     </form>
@@ -105,20 +113,28 @@ function SimpleForm() {
     e.preventDefault();
     console.log(emailRef.current.value); // read on submit
   }
-  return <form onSubmit={handleSubmit}>
-    <input ref={emailRef} defaultValue="" />
-  </form>;
+  return (
+    <form onSubmit={handleSubmit}>
+      <input ref={emailRef} defaultValue="" />
+    </form>
+  );
 }
 
 // react-hook-form: minimal re-renders
 function RHFForm() {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
   return (
-    <form onSubmit={handleSubmit(data => login(data))}>
-      <input {...register('email', {
-        required: 'Email required',
-        pattern: { value: /S+@S+/, message: 'Invalid email' }
-      })} />
+    <form onSubmit={handleSubmit((data) => login(data))}>
+      <input
+        {...register("email", {
+          required: "Email required",
+          pattern: { value: /S+@S+/, message: "Invalid email" },
+        })}
+      />
       {errors.email && <p>{errors.email.message}</p>}
     </form>
   );
@@ -126,10 +142,12 @@ function RHFForm() {
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Controlled vs uncontrolled - when to use each?
 
 2. Why does every onChange cause a re-render in controlled forms?
@@ -143,12 +161,13 @@ function RHFForm() {
 6. What is defaultValue vs value in React inputs?
 
 ## Trade-offs
+
 _No trade-offs configured._
 
 ## Gotchas
+
 - Switching input from controlled to uncontrolled (undefined value -> string) throws React warning.
 - value without onChange = read-only input. Use defaultValue for uncontrolled.
 - react-hook-form register() must not be in conditional - hook rules apply.
 - Form reset: call reset() from useForm, not just clearing state.
 - File inputs are always uncontrolled - value cannot be set programmatically.
-

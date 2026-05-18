@@ -35,7 +35,7 @@ Users should:
 ✅ WATCH failure scenarios  
 ✅ UNDERSTAND production tradeoffs  
 ✅ LEARN visually + interactively  
-✅ EXPERIENCE runtime flows  
+✅ EXPERIENCE runtime flows
 
 ---
 
@@ -392,7 +392,7 @@ Problems:
 ❌ Tight coupling  
 ❌ Hard testing  
 ❌ Hard mocking  
-❌ Global dependencies  
+❌ Global dependencies
 
 ---
 
@@ -409,9 +409,7 @@ const Injector = (() => {
 
     inject(name) {
       if (!services.has(name)) {
-        throw new Error(
-          `Service ${name} not found`
-        );
+        throw new Error(`Service ${name} not found`);
       }
 
       return services.get(name);
@@ -453,7 +451,7 @@ Every topic MUST include:
 ✅ Hover tooltips  
 ✅ Narration bar  
 ✅ Code highlighting  
-✅ Complexity visualization  
+✅ Complexity visualization
 
 ---
 
@@ -536,30 +534,13 @@ Agent Orchestrator
 
 ```javascript
 const skillsRegistry = {
-  java: [
-    "jvm",
-    "gc",
-    "multithreading",
-    "spring",
-  ],
+  java: ["jvm", "gc", "multithreading", "spring"],
 
-  golang: [
-    "goroutines",
-    "channels",
-    "grpc",
-  ],
+  golang: ["goroutines", "channels", "grpc"],
 
-  kubernetes: [
-    "pods",
-    "scheduler",
-    "networking",
-  ],
+  kubernetes: ["pods", "scheduler", "networking"],
 
-  aws: [
-    "ec2",
-    "lambda",
-    "eks",
-  ],
+  aws: ["ec2", "lambda", "eks"],
 };
 ```
 
@@ -622,7 +603,7 @@ Every Java topic MUST animate:
 ✅ String pool  
 ✅ HashMap bucket treeification  
 ✅ Volatile memory sync  
-✅ Exception stack unwinding  
+✅ Exception stack unwinding
 
 ---
 
@@ -630,16 +611,16 @@ Every Java topic MUST animate:
 
 Always explain using toy analogies FIRST.
 
-| Concept | Analogy |
-|---|---|
-| Thread | McDonald's worker |
+| Concept      | Analogy                |
+| ------------ | ---------------------- |
+| Thread       | McDonald's worker      |
 | synchronized | One register at a time |
-| HashMap | Dictionary tabs |
-| Stack | Plate pile |
-| Queue | Movie ticket line |
-| GC | Janitor cleaning toys |
-| Interface | Job contract |
-| Class | Actual worker |
+| HashMap      | Dictionary tabs        |
+| Stack        | Plate pile             |
+| Queue        | Movie ticket line      |
+| GC           | Janitor cleaning toys  |
+| Interface    | Job contract           |
+| Class        | Actual worker          |
 
 ---
 
@@ -785,7 +766,7 @@ Alerts + Monitoring
 ✅ Vanilla JS  
 ✅ Web Components  
 ✅ Signals  
-✅ Multi-Agent Routing  
+✅ Multi-Agent Routing
 
 ---
 
@@ -794,7 +775,7 @@ Alerts + Monitoring
 ✅ TypeScript  
 ✅ Jest Testing  
 ✅ Better State Management  
-✅ API Integrations  
+✅ API Integrations
 
 ---
 
@@ -805,7 +786,7 @@ Alerts + Monitoring
 ✅ Redis  
 ✅ PostgreSQL  
 ✅ Authentication  
-✅ RBAC  
+✅ RBAC
 
 ---
 
@@ -816,7 +797,7 @@ Alerts + Monitoring
 ✅ AI Memory  
 ✅ Semantic Search  
 ✅ Autonomous Agents  
-✅ LLM Orchestration  
+✅ LLM Orchestration
 
 ---
 
@@ -857,7 +838,7 @@ built for:
 ✅ Interactive visual education  
 ✅ Runtime debugging understanding  
 ✅ Enterprise-scale concepts  
-✅ AI-assisted explanations  
+✅ AI-assisted explanations
 
 ---
 
@@ -868,7 +849,6 @@ IF USER CANNOT SEE THE SYSTEM WORKING,
 THEY WILL NEVER TRULY UNDERSTAND IT.
 ```
 
-
 angular-visualizer/
 │
 ├── angular.json
@@ -877,307 +857,307 @@ angular-visualizer/
 ├── README.md
 │
 ├── public/
-│   ├── favicon.ico
-│   ├── robots.txt
-│   └── assets/
-│       ├── icons/
-│       ├── fonts/
-│       ├── images/
-│       ├── animations/
-│       └── themes/
+│ ├── favicon.ico
+│ ├── robots.txt
+│ └── assets/
+│ ├── icons/
+│ ├── fonts/
+│ ├── images/
+│ ├── animations/
+│ └── themes/
 │
 ├── src/
-│   │
-│   ├── main.ts
-│   ├── index.html
-│   ├── styles.scss
-│   ├── polyfills.ts
-│   │
-│   ├── environments/
-│   │   ├── environment.ts
-│   │   └── environment.prod.ts
-│   │
-│   ├── app/
-│   │   │
-│   │   ├── app.component.ts
-│   │   ├── app.component.html
-│   │   ├── app.component.scss
-│   │   ├── app.routes.ts
-│   │   │
-│   │   ├── core/
-│   │   │   │
-│   │   │   ├── constants/
-│   │   │   │   ├── colors.constants.ts
-│   │   │   │   ├── animation.constants.ts
-│   │   │   │   ├── complexity.constants.ts
-│   │   │   │   └── theme.constants.ts
-│   │   │   │
-│   │   │   ├── models/
-│   │   │   │   ├── array.model.ts
-│   │   │   │   ├── hashmap.model.ts
-│   │   │   │   ├── graph.model.ts
-│   │   │   │   ├── tree.model.ts
-│   │   │   │   ├── animation.model.ts
-│   │   │   │   └── topic.model.ts
-│   │   │   │
-│   │   │   ├── enums/
-│   │   │   │   ├── algorithm.enum.ts
-│   │   │   │   ├── theme.enum.ts
-│   │   │   │   ├── animation.enum.ts
-│   │   │   │   └── complexity.enum.ts
-│   │   │   │
-│   │   │   ├── utils/
-│   │   │   │   ├── dom.util.ts
-│   │   │   │   ├── animation.util.ts
-│   │   │   │   ├── array.util.ts
-│   │   │   │   ├── graph.util.ts
-│   │   │   │   ├── math.util.ts
-│   │   │   │   └── color.util.ts
-│   │   │   │
-│   │   │   ├── services/
-│   │   │   │   ├── animation.service.ts
-│   │   │   │   ├── renderer.service.ts
-│   │   │   │   ├── theme.service.ts
-│   │   │   │   ├── state.service.ts
-│   │   │   │   ├── layout.service.ts
-│   │   │   │   ├── physics.service.ts
-│   │   │   │   ├── audio.service.ts
-│   │   │   │   └── websocket.service.ts
-│   │   │   │
-│   │   │   ├── guards/
-│   │   │   │   ├── auth.guard.ts
-│   │   │   │   └── topic.guard.ts
-│   │   │   │
-│   │   │   ├── interceptors/
-│   │   │   │   ├── auth.interceptor.ts
-│   │   │   │   ├── error.interceptor.ts
-│   │   │   │   └── logger.interceptor.ts
-│   │   │   │
-│   │   │   └── directives/
-│   │   │       ├── glow.directive.ts
-│   │   │       ├── animate.directive.ts
-│   │   │       ├── draggable.directive.ts
-│   │   │       └── tooltip.directive.ts
-│   │   │
-│   │   ├── shared/
-│   │   │   │
-│   │   │   ├── components/
-│   │   │   │   │
-│   │   │   │   ├── navbar/
-│   │   │   │   │   ├── navbar.component.ts
-│   │   │   │   │   ├── navbar.component.html
-│   │   │   │   │   └── navbar.component.scss
-│   │   │   │   │
-│   │   │   │   ├── sidebar/
-│   │   │   │   │   ├── sidebar.component.ts
-│   │   │   │   │   ├── sidebar.component.html
-│   │   │   │   │   └── sidebar.component.scss
-│   │   │   │   │
-│   │   │   │   ├── controls/
-│   │   │   │   │   ├── controls.component.ts
-│   │   │   │   │   ├── controls.component.html
-│   │   │   │   │   └── controls.component.scss
-│   │   │   │   │
-│   │   │   │   ├── timeline/
-│   │   │   │   │   ├── timeline.component.ts
-│   │   │   │   │   ├── timeline.component.html
-│   │   │   │   │   └── timeline.component.scss
-│   │   │   │   │
-│   │   │   │   ├── code-editor/
-│   │   │   │   │   ├── code-editor.component.ts
-│   │   │   │   │   ├── code-editor.component.html
-│   │   │   │   │   └── code-editor.component.scss
-│   │   │   │   │
-│   │   │   │   ├── complexity-panel/
-│   │   │   │   │   ├── complexity-panel.component.ts
-│   │   │   │   │   ├── complexity-panel.component.html
-│   │   │   │   │   └── complexity-panel.component.scss
-│   │   │   │   │
-│   │   │   │   ├── narration-panel/
-│   │   │   │   │   ├── narration-panel.component.ts
-│   │   │   │   │   ├── narration-panel.component.html
-│   │   │   │   │   └── narration-panel.component.scss
-│   │   │   │   │
-│   │   │   │   └── loading/
-│   │   │   │       ├── loading.component.ts
-│   │   │   │       ├── loading.component.html
-│   │   │   │       └── loading.component.scss
-│   │   │   │
-│   │   │   ├── pipes/
-│   │   │   │   ├── complexity.pipe.ts
-│   │   │   │   ├── truncate.pipe.ts
-│   │   │   │   └── highlight.pipe.ts
-│   │   │   │
-│   │   │   └── animations/
-│   │   │       ├── fade.animation.ts
-│   │   │       ├── slide.animation.ts
-│   │   │       ├── pulse.animation.ts
-│   │   │       ├── bounce.animation.ts
-│   │   │       └── flow.animation.ts
-│   │   │
-│   │   ├── visualizers/
-│   │   │   │
-│   │   │   ├── array-visualizer/
-│   │   │   │   ├── components/
-│   │   │   │   │   ├── array-cell/
-│   │   │   │   │   ├── pointer/
-│   │   │   │   │   ├── sliding-window/
-│   │   │   │   │   └── histogram/
-│   │   │   │   │
-│   │   │   │   ├── services/
-│   │   │   │   │   ├── array-render.service.ts
-│   │   │   │   │   └── array-animation.service.ts
-│   │   │   │   │
-│   │   │   │   ├── store/
-│   │   │   │   │   ├── array.actions.ts
-│   │   │   │   │   ├── array.reducer.ts
-│   │   │   │   │   ├── array.effects.ts
-│   │   │   │   │   └── array.selectors.ts
-│   │   │   │   │
-│   │   │   │   ├── array-visualizer.component.ts
-│   │   │   │   ├── array-visualizer.component.html
-│   │   │   │   └── array-visualizer.component.scss
-│   │   │   │
-│   │   │   ├── hashmap-visualizer/
-│   │   │   │   ├── bucket/
-│   │   │   │   ├── node/
-│   │   │   │   ├── collision-chain/
-│   │   │   │   ├── treeify/
-│   │   │   │   ├── hashmap-visualizer.component.ts
-│   │   │   │   ├── hashmap-visualizer.component.html
-│   │   │   │   └── hashmap-visualizer.component.scss
-│   │   │   │
-│   │   │   ├── graph-visualizer/
-│   │   │   │   ├── graph-node/
-│   │   │   │   ├── graph-edge/
-│   │   │   │   ├── bfs/
-│   │   │   │   ├── dfs/
-│   │   │   │   ├── dijkstra/
-│   │   │   │   ├── graph-visualizer.component.ts
-│   │   │   │   ├── graph-visualizer.component.html
-│   │   │   │   └── graph-visualizer.component.scss
-│   │   │   │
-│   │   │   ├── tree-visualizer/
-│   │   │   │   ├── bst/
-│   │   │   │   ├── avl/
-│   │   │   │   ├── heap/
-│   │   │   │   ├── trie/
-│   │   │   │   ├── red-black-tree/
-│   │   │   │   ├── tree-visualizer.component.ts
-│   │   │   │   ├── tree-visualizer.component.html
-│   │   │   │   └── tree-visualizer.component.scss
-│   │   │   │
-│   │   │   ├── dp-visualizer/
-│   │   │   │   ├── memoization/
-│   │   │   │   ├── tabulation/
-│   │   │   │   ├── recursion-tree/
-│   │   │   │   ├── state-transition/
-│   │   │   │   ├── dp-visualizer.component.ts
-│   │   │   │   ├── dp-visualizer.component.html
-│   │   │   │   └── dp-visualizer.component.scss
-│   │   │   │
-│   │   │   ├── system-design/
-│   │   │   │   ├── kafka/
-│   │   │   │   ├── kubernetes/
-│   │   │   │   ├── microservices/
-│   │   │   │   ├── load-balancer/
-│   │   │   │   ├── distributed-cache/
-│   │   │   │   ├── system-design.component.ts
-│   │   │   │   ├── system-design.component.html
-│   │   │   │   └── system-design.component.scss
-│   │   │
-│   │   ├── topics/
-│   │   │   ├── java/
-│   │   │   ├── go/
-│   │   │   ├── rust/
-│   │   │   ├── python/
-│   │   │   ├── kubernetes/
-│   │   │   ├── aws/
-│   │   │   └── system-design/
-│   │   │
-│   │   ├── store/
-│   │   │   ├── app.actions.ts
-│   │   │   ├── app.reducer.ts
-│   │   │   ├── app.effects.ts
-│   │   │   ├── app.state.ts
-│   │   │   └── app.selectors.ts
-│   │   │
-│   │   └── layouts/
-│   │       ├── main-layout/
-│   │       ├── dashboard-layout/
-│   │       └── fullscreen-layout/
-│   │
-│   └── styles/
-│       ├── _variables.scss
-│       ├── _mixins.scss
-│       ├── _animations.scss
-│       ├── _themes.scss
-│       ├── _glassmorphism.scss
-│       ├── _bytebytego.scss
-│       └── _utilities.scss
+│ │
+│ ├── main.ts
+│ ├── index.html
+│ ├── styles.scss
+│ ├── polyfills.ts
+│ │
+│ ├── environments/
+│ │ ├── environment.ts
+│ │ └── environment.prod.ts
+│ │
+│ ├── app/
+│ │ │
+│ │ ├── app.component.ts
+│ │ ├── app.component.html
+│ │ ├── app.component.scss
+│ │ ├── app.routes.ts
+│ │ │
+│ │ ├── core/
+│ │ │ │
+│ │ │ ├── constants/
+│ │ │ │ ├── colors.constants.ts
+│ │ │ │ ├── animation.constants.ts
+│ │ │ │ ├── complexity.constants.ts
+│ │ │ │ └── theme.constants.ts
+│ │ │ │
+│ │ │ ├── models/
+│ │ │ │ ├── array.model.ts
+│ │ │ │ ├── hashmap.model.ts
+│ │ │ │ ├── graph.model.ts
+│ │ │ │ ├── tree.model.ts
+│ │ │ │ ├── animation.model.ts
+│ │ │ │ └── topic.model.ts
+│ │ │ │
+│ │ │ ├── enums/
+│ │ │ │ ├── algorithm.enum.ts
+│ │ │ │ ├── theme.enum.ts
+│ │ │ │ ├── animation.enum.ts
+│ │ │ │ └── complexity.enum.ts
+│ │ │ │
+│ │ │ ├── utils/
+│ │ │ │ ├── dom.util.ts
+│ │ │ │ ├── animation.util.ts
+│ │ │ │ ├── array.util.ts
+│ │ │ │ ├── graph.util.ts
+│ │ │ │ ├── math.util.ts
+│ │ │ │ └── color.util.ts
+│ │ │ │
+│ │ │ ├── services/
+│ │ │ │ ├── animation.service.ts
+│ │ │ │ ├── renderer.service.ts
+│ │ │ │ ├── theme.service.ts
+│ │ │ │ ├── state.service.ts
+│ │ │ │ ├── layout.service.ts
+│ │ │ │ ├── physics.service.ts
+│ │ │ │ ├── audio.service.ts
+│ │ │ │ └── websocket.service.ts
+│ │ │ │
+│ │ │ ├── guards/
+│ │ │ │ ├── auth.guard.ts
+│ │ │ │ └── topic.guard.ts
+│ │ │ │
+│ │ │ ├── interceptors/
+│ │ │ │ ├── auth.interceptor.ts
+│ │ │ │ ├── error.interceptor.ts
+│ │ │ │ └── logger.interceptor.ts
+│ │ │ │
+│ │ │ └── directives/
+│ │ │ ├── glow.directive.ts
+│ │ │ ├── animate.directive.ts
+│ │ │ ├── draggable.directive.ts
+│ │ │ └── tooltip.directive.ts
+│ │ │
+│ │ ├── shared/
+│ │ │ │
+│ │ │ ├── components/
+│ │ │ │ │
+│ │ │ │ ├── navbar/
+│ │ │ │ │ ├── navbar.component.ts
+│ │ │ │ │ ├── navbar.component.html
+│ │ │ │ │ └── navbar.component.scss
+│ │ │ │ │
+│ │ │ │ ├── sidebar/
+│ │ │ │ │ ├── sidebar.component.ts
+│ │ │ │ │ ├── sidebar.component.html
+│ │ │ │ │ └── sidebar.component.scss
+│ │ │ │ │
+│ │ │ │ ├── controls/
+│ │ │ │ │ ├── controls.component.ts
+│ │ │ │ │ ├── controls.component.html
+│ │ │ │ │ └── controls.component.scss
+│ │ │ │ │
+│ │ │ │ ├── timeline/
+│ │ │ │ │ ├── timeline.component.ts
+│ │ │ │ │ ├── timeline.component.html
+│ │ │ │ │ └── timeline.component.scss
+│ │ │ │ │
+│ │ │ │ ├── code-editor/
+│ │ │ │ │ ├── code-editor.component.ts
+│ │ │ │ │ ├── code-editor.component.html
+│ │ │ │ │ └── code-editor.component.scss
+│ │ │ │ │
+│ │ │ │ ├── complexity-panel/
+│ │ │ │ │ ├── complexity-panel.component.ts
+│ │ │ │ │ ├── complexity-panel.component.html
+│ │ │ │ │ └── complexity-panel.component.scss
+│ │ │ │ │
+│ │ │ │ ├── narration-panel/
+│ │ │ │ │ ├── narration-panel.component.ts
+│ │ │ │ │ ├── narration-panel.component.html
+│ │ │ │ │ └── narration-panel.component.scss
+│ │ │ │ │
+│ │ │ │ └── loading/
+│ │ │ │ ├── loading.component.ts
+│ │ │ │ ├── loading.component.html
+│ │ │ │ └── loading.component.scss
+│ │ │ │
+│ │ │ ├── pipes/
+│ │ │ │ ├── complexity.pipe.ts
+│ │ │ │ ├── truncate.pipe.ts
+│ │ │ │ └── highlight.pipe.ts
+│ │ │ │
+│ │ │ └── animations/
+│ │ │ ├── fade.animation.ts
+│ │ │ ├── slide.animation.ts
+│ │ │ ├── pulse.animation.ts
+│ │ │ ├── bounce.animation.ts
+│ │ │ └── flow.animation.ts
+│ │ │
+│ │ ├── visualizers/
+│ │ │ │
+│ │ │ ├── array-visualizer/
+│ │ │ │ ├── components/
+│ │ │ │ │ ├── array-cell/
+│ │ │ │ │ ├── pointer/
+│ │ │ │ │ ├── sliding-window/
+│ │ │ │ │ └── histogram/
+│ │ │ │ │
+│ │ │ │ ├── services/
+│ │ │ │ │ ├── array-render.service.ts
+│ │ │ │ │ └── array-animation.service.ts
+│ │ │ │ │
+│ │ │ │ ├── store/
+│ │ │ │ │ ├── array.actions.ts
+│ │ │ │ │ ├── array.reducer.ts
+│ │ │ │ │ ├── array.effects.ts
+│ │ │ │ │ └── array.selectors.ts
+│ │ │ │ │
+│ │ │ │ ├── array-visualizer.component.ts
+│ │ │ │ ├── array-visualizer.component.html
+│ │ │ │ └── array-visualizer.component.scss
+│ │ │ │
+│ │ │ ├── hashmap-visualizer/
+│ │ │ │ ├── bucket/
+│ │ │ │ ├── node/
+│ │ │ │ ├── collision-chain/
+│ │ │ │ ├── treeify/
+│ │ │ │ ├── hashmap-visualizer.component.ts
+│ │ │ │ ├── hashmap-visualizer.component.html
+│ │ │ │ └── hashmap-visualizer.component.scss
+│ │ │ │
+│ │ │ ├── graph-visualizer/
+│ │ │ │ ├── graph-node/
+│ │ │ │ ├── graph-edge/
+│ │ │ │ ├── bfs/
+│ │ │ │ ├── dfs/
+│ │ │ │ ├── dijkstra/
+│ │ │ │ ├── graph-visualizer.component.ts
+│ │ │ │ ├── graph-visualizer.component.html
+│ │ │ │ └── graph-visualizer.component.scss
+│ │ │ │
+│ │ │ ├── tree-visualizer/
+│ │ │ │ ├── bst/
+│ │ │ │ ├── avl/
+│ │ │ │ ├── heap/
+│ │ │ │ ├── trie/
+│ │ │ │ ├── red-black-tree/
+│ │ │ │ ├── tree-visualizer.component.ts
+│ │ │ │ ├── tree-visualizer.component.html
+│ │ │ │ └── tree-visualizer.component.scss
+│ │ │ │
+│ │ │ ├── dp-visualizer/
+│ │ │ │ ├── memoization/
+│ │ │ │ ├── tabulation/
+│ │ │ │ ├── recursion-tree/
+│ │ │ │ ├── state-transition/
+│ │ │ │ ├── dp-visualizer.component.ts
+│ │ │ │ ├── dp-visualizer.component.html
+│ │ │ │ └── dp-visualizer.component.scss
+│ │ │ │
+│ │ │ ├── system-design/
+│ │ │ │ ├── kafka/
+│ │ │ │ ├── kubernetes/
+│ │ │ │ ├── microservices/
+│ │ │ │ ├── load-balancer/
+│ │ │ │ ├── distributed-cache/
+│ │ │ │ ├── system-design.component.ts
+│ │ │ │ ├── system-design.component.html
+│ │ │ │ └── system-design.component.scss
+│ │ │
+│ │ ├── topics/
+│ │ │ ├── java/
+│ │ │ ├── go/
+│ │ │ ├── rust/
+│ │ │ ├── python/
+│ │ │ ├── kubernetes/
+│ │ │ ├── aws/
+│ │ │ └── system-design/
+│ │ │
+│ │ ├── store/
+│ │ │ ├── app.actions.ts
+│ │ │ ├── app.reducer.ts
+│ │ │ ├── app.effects.ts
+│ │ │ ├── app.state.ts
+│ │ │ └── app.selectors.ts
+│ │ │
+│ │ └── layouts/
+│ │ ├── main-layout/
+│ │ ├── dashboard-layout/
+│ │ └── fullscreen-layout/
+│ │
+│ └── styles/
+│ ├── \_variables.scss
+│ ├── \_mixins.scss
+│ ├── \_animations.scss
+│ ├── \_themes.scss
+│ ├── \_glassmorphism.scss
+│ ├── \_bytebytego.scss
+│ └── \_utilities.scss
 │
 ├── server/
-│   ├── node-api/
-│   │   ├── src/
-│   │   ├── package.json
-│   │   └── Dockerfile
-│   │
-│   ├── go-engine/
-│   │   ├── cmd/
-│   │   ├── internal/
-│   │   ├── pkg/
-│   │   ├── go.mod
-│   │   └── Dockerfile
-│   │
-│   └── python-ai/
-│       ├── app/
-│       ├── requirements.txt
-│       └── Dockerfile
+│ ├── node-api/
+│ │ ├── src/
+│ │ ├── package.json
+│ │ └── Dockerfile
+│ │
+│ ├── go-engine/
+│ │ ├── cmd/
+│ │ ├── internal/
+│ │ ├── pkg/
+│ │ ├── go.mod
+│ │ └── Dockerfile
+│ │
+│ └── python-ai/
+│ ├── app/
+│ ├── requirements.txt
+│ └── Dockerfile
 │
 ├── infrastructure/
-│   ├── docker/
-│   │   ├── frontend.Dockerfile
-│   │   ├── nginx.conf
-│   │   └── docker-compose.yml
-│   │
-│   ├── kubernetes/
-│   │   ├── namespace.yaml
-│   │   ├── frontend-deployment.yaml
-│   │   ├── backend-deployment.yaml
-│   │   ├── ingress.yaml
-│   │   ├── configmap.yaml
-│   │   └── hpa.yaml
-│   │
-│   ├── terraform/
-│   │   ├── eks.tf
-│   │   ├── vpc.tf
-│   │   ├── alb.tf
-│   │   ├── rds.tf
-│   │   └── s3.tf
-│   │
-│   └── aws/
-│       ├── cloudfront/
-│       ├── lambda/
-│       ├── api-gateway/
-│       └── eventbridge/
+│ ├── docker/
+│ │ ├── frontend.Dockerfile
+│ │ ├── nginx.conf
+│ │ └── docker-compose.yml
+│ │
+│ ├── kubernetes/
+│ │ ├── namespace.yaml
+│ │ ├── frontend-deployment.yaml
+│ │ ├── backend-deployment.yaml
+│ │ ├── ingress.yaml
+│ │ ├── configmap.yaml
+│ │ └── hpa.yaml
+│ │
+│ ├── terraform/
+│ │ ├── eks.tf
+│ │ ├── vpc.tf
+│ │ ├── alb.tf
+│ │ ├── rds.tf
+│ │ └── s3.tf
+│ │
+│ └── aws/
+│ ├── cloudfront/
+│ ├── lambda/
+│ ├── api-gateway/
+│ └── eventbridge/
 │
 ├── docs/
-│   ├── architecture/
-│   ├── diagrams/
-│   ├── flows/
-│   ├── uml/
-│   ├── interviews/
-│   └── api/
+│ ├── architecture/
+│ ├── diagrams/
+│ ├── flows/
+│ ├── uml/
+│ ├── interviews/
+│ └── api/
 │
 ├── scripts/
-│   ├── generate-topic.js
-│   ├── build-topics.js
-│   ├── optimize-assets.js
-│   └── deploy.sh
+│ ├── generate-topic.js
+│ ├── build-topics.js
+│ ├── optimize-assets.js
+│ └── deploy.sh
 │
 └── tests/
-    ├── unit/
-    ├── integration/
-    ├── e2e/
-    ├── performance/
-    └── visual-regression/
+├── unit/
+├── integration/
+├── e2e/
+├── performance/
+└── visual-regression/

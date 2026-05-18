@@ -1,6 +1,7 @@
 # Kafka Streams
 
 ## Quick Facts
+
 - Area: Kafka and Messaging
 - Tag: streams
 - Source: `src/modules/topics/kafka/kafka-streams.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual
 
 ## Concept
+
 **L1 (30s ELI5):** Kafka Streams = Java library to process records one-by-one as they arrive. Filter, transform, join, aggregate - all inside your app. No separate cluster needed.
 
 **L2 (2min core):** Topology = DAG of source -> processor -> sink nodes. KStream = infinite event stream (all events). KTable = latest value per key (changelog). Stateful ops use RocksDB local store + compacted changelog topic backup.
@@ -17,9 +19,11 @@
 **L4 (30min deep):** StreamTask lifecycle: poll -> process -> punctuate -> commit. Standby replicas (num.standby.replicas) pre-warm state on other instances -> faster failover. Processing time vs event time: use timestamps from record metadata. Punctuators: scheduled callbacks for periodic actions (window close, flush). Interactive queries: serve state store contents via REST without separate DB.
 
 ## Why It Matters
+
 Zero-ops: no separate streaming cluster. Co-located with your app. Exactly-once out of the box. Deep Kafka integration: changelog topics, interactive queries. Better than Spark/Flink for Kafka-to-Kafka pipelines.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Producer"]
@@ -34,6 +38,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Producer
@@ -52,6 +57,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -66,6 +72,7 @@ Flow steps:
 5. Sink/DLQ
 
 ## Example
+
 ```java
 StreamsBuilder builder = new StreamsBuilder();
 
@@ -103,10 +110,12 @@ streams.start();
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Question
 
 2. Question
@@ -116,9 +125,11 @@ streams.start();
 4. Question
 
 ## Trade-offs
+
 Kafka Streams: simple ops, no cluster, great for Kafka->Kafka. Flink/Spark: more complex joins, batch+streaming, multi-source. KSQL/ksqlDB: SQL on streams but limited expressiveness. Choose Streams for pure Kafka pipelines in Java/Scala.
 
 ## Gotchas
+
 - State store rebuild on restart can be slow with large state - use num.standby.replicas for faster failover
 - exactly_once_v2 requires Kafka 2.5+. Has ~40% throughput overhead. Use at_least_once for non-critical pipelines
 - Repartition on groupBy/join creates internal topics - extra I/O. Ensure co-partitioning to avoid
@@ -126,4 +137,3 @@ Kafka Streams: simple ops, no cluster, great for Kafka->Kafka. Flink/Spark: more
 - Stream-stream join: both events must arrive within JoinWindows. Late events outside window = no join output
 - To reset application: kafka-streams-application-reset.sh - clears local state + resets offsets
 - Interactive queries: state only queryable on instance that owns that partition's task
-

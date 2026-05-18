@@ -1,6 +1,7 @@
 # NgRx State Management
 
 ## Quick Facts
+
 - Area: Angular
 - Tag: State
 - Source: `src/modules/topics/angular/ng-ngrx.js`
@@ -8,9 +9,11 @@
 - Visual coverage: live visual
 
 ## Concept
+
 **NgRx** is Angular's Redux implementation - unidirectional data flow for predictable state.
 
 **Core pieces:**
+
 - **Action** - plain object describing WHAT happened: `{ type: '[Cart] Add Item', item }`
 - **Reducer** - pure function: `(state, action) => newState`. Never mutates.
 - **Store** - single immutable state tree. Source of truth.
@@ -26,9 +29,11 @@
 **NgRx Signals Store** (NgRx 17+): lighter alternative using Angular signals instead of RxJS.
 
 ## Why It Matters
+
 NgRx shines in large apps with complex shared state, time-travel debugging (Redux DevTools), and teams that need predictability. Every state change is an action - full audit trail. Selectors prevent unnecessary re-renders by memoizing derived state.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Template event"]
@@ -43,6 +48,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Template event
@@ -61,6 +67,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -75,13 +82,15 @@ Flow steps:
 5. DOM update
 
 ## Example
+
 ```typescript
 // Actions
-export const addToCart = createAction('[Cart] Add Item',
-  props<{ item: CartItem }>());
-export const loadOrders = createAction('[Orders] Load');
-export const loadOrdersSuccess = createAction('[Orders] Load Success',
-  props<{ orders: Order[] }>());
+export const addToCart = createAction("[Cart] Add Item", props<{ item: CartItem }>());
+export const loadOrders = createAction("[Orders] Load");
+export const loadOrdersSuccess = createAction(
+  "[Orders] Load Success",
+  props<{ orders: Order[] }>()
+);
 
 // Reducer - pure, no side effects
 export const cartReducer = createReducer(
@@ -89,17 +98,16 @@ export const cartReducer = createReducer(
   on(addToCart, (state, { item }) => ({
     ...state,
     items: [...state.items, item],
-  })),
+  }))
 );
 
 // Selector - memoized, composes
 export const selectCartItems = createSelector(
-  selectCartState,           // input selector
-  (cart) => cart.items,      // projector - only re-runs when cart changes
+  selectCartState, // input selector
+  (cart) => cart.items // projector - only re-runs when cart changes
 );
-export const selectCartTotal = createSelector(
-  selectCartItems,
-  (items) => items.reduce((sum, i) => sum + i.price, 0),
+export const selectCartTotal = createSelector(selectCartItems, (items) =>
+  items.reduce((sum, i) => sum + i.price, 0)
 );
 
 // Effect - side effects via RxJS
@@ -108,21 +116,28 @@ export class OrderEffects {
   loadOrders$ = createEffect(() =>
     this.actions$.pipe(
       ofType(loadOrders),
-      switchMap(() => this.http.get<Order[]>('/api/orders').pipe(
-        map(orders => loadOrdersSuccess({ orders })),
-        catchError(err => of(loadOrdersFailed({ error: err.message }))),
-      )),
-    ),
+      switchMap(() =>
+        this.http.get<Order[]>("/api/orders").pipe(
+          map((orders) => loadOrdersSuccess({ orders })),
+          catchError((err) => of(loadOrdersFailed({ error: err.message })))
+        )
+      )
+    )
   );
-  constructor(private actions$: Actions, private http: HttpClient) {}
+  constructor(
+    private actions$: Actions,
+    private http: HttpClient
+  ) {}
 }
 ```
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. What is the NgRx data flow - Action to Store?
 
 2. Why must reducers be pure functions?
@@ -136,22 +151,25 @@ export class OrderEffects {
 6. What is the difference between ofType and filter in Effects?
 
 ## Trade-offs
+
 Pros:
+
 - Single source of truth - no conflicting service states
 - Time-travel debugging with Redux DevTools
 - Selectors memoize derived state - no unnecessary re-renders
 - Effects isolate side effects - reducers remain pure and testable
 
 Cons:
+
 - Massive boilerplate for small apps - actions/reducers/selectors/effects per feature
 - Learning curve: RxJS + Redux mental model together
 - Over-engineered for local component state - use component state or service BehaviorSubject instead
 - NgRx bundle ~50KB gzipped
 
 ## Gotchas
+
 - Reducers must return new state objects - mutating state breaks change detection and DevTools
 - Selectors memoize by reference equality - spreading creates new ref even if values same
 - Effects must always return an observable - missing catchError causes Effect to die silently
 - dispatch() is synchronous - the store updates synchronously but effects are async
 - Avoid subscribing to store inside effects - use withLatestFrom or concatLatestFrom instead
-

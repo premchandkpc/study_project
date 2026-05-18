@@ -1,6 +1,7 @@
 # Kafka: Event-Driven Architecture & Exactly-Once
 
 ## Quick Facts
+
 - Area: Microservices
 - Tag: Kafka
 - Source: `src/modules/topics/microservices/ms-kafka-event-driven.js`
@@ -8,7 +9,9 @@
 - Visual coverage: generated diagrams only
 
 ## Concept
+
 **Apache Kafka** is a distributed commit log. Key concepts:
+
 - **Topic -> Partitions**: ordered, immutable log per partition.
 - **Consumer Groups**: each partition consumed by exactly one consumer in a group - horizontal scale.
 - **Offsets**: consumer tracks position; Kafka doesn't push.
@@ -17,9 +20,11 @@
 - **Schema Registry**: Avro/Protobuf schemas with versioning and compatibility checks.
 
 ## Why It Matters
+
 Kafka decouples producers from consumers in time and space - no direct RPC. This enables **event sourcing**, **CQRS**, **audit logs**, and **async workflows**. Consumer groups allow independent replay at different rates. The durable log is the ground truth; services can replay from offset 0 to rebuild state after a bug. Exactly-once is the hardest part - understand the two-phase commit involved.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   n0["Client"]
@@ -34,6 +39,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Client
@@ -52,6 +58,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab can use generated mental model steps above.
 - UML sequence can use generated sequence diagram above.
 - Architecture map can use generated area mental model above.
@@ -65,6 +72,7 @@ Flow steps:
 5. Observability
 
 ## Example
+
 ```java
 // Kafka exactly-once producer + Spring Kafka consumer
 import org.apache.kafka.clients.producer.*;
@@ -72,7 +80,7 @@ import org.springframework.kafka.annotation.*;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.transaction.annotation.Transactional;
 
-//  Idempotent + transactional producer 
+//  Idempotent + transactional producer
 class OrderEventProducer {
     private final KafkaTemplate<String, OrderEvent> kafka;
     private final OrderRepository repo;
@@ -89,7 +97,7 @@ class OrderEventProducer {
     }
 }
 
-//  Consumer with manual ack (at-least-once) 
+//  Consumer with manual ack (at-least-once)
 @KafkaListener(
     topics = "orders.events",
     groupId = "inventory-service",
@@ -113,7 +121,7 @@ public void onOrderEvent(
     ack.acknowledge();  // commits offset after all records processed
 }
 
-//  Consumer group lag monitoring 
+//  Consumer group lag monitoring
 // kafka-consumer-groups.sh --bootstrap-server localhost:9092 \
 //   --describe --group inventory-service
 ```
@@ -122,10 +130,12 @@ Notes:
 The **outbox pattern** is the safe alternative to `@Transactional` across DB + Kafka: write the event to an `outbox` table in the same DB transaction, then a separate relay polls and publishes to Kafka. Eliminates dual-write failure modes.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. How does Kafka achieve exactly-once delivery?
    Answer: Three components: (1) **Idempotent producer** - each message gets a sequence number; the broker deduplicates retries per producer epoch. (2) **Transactional producer** - `beginTransaction`, `send`, `commitTransaction` atomically. (3) **Transactional consumer** - reads only committed messages (`isolation.level=read_committed`). Together, a consume-transform-produce pipeline is exactly-once. Note: exactly-once is producer-broker-consumer - your downstream DB still needs idempotency on the consumer side.
    Follow-ups: What is a producer epoch?; How does the outbox pattern compare?; What is a zombie producer?
@@ -135,12 +145,15 @@ The **outbox pattern** is the safe alternative to `@Transactional` across DB + K
    Follow-ups: What is consumer group rebalancing and how do you minimize it?; What are sticky partition assignments?
 
 ## Trade-offs
+
 Pros:
+
 - Durable log enables replay - rebuild consumers from zero offset after bugs.
 - Consumer groups scale consumption horizontally up to partition count.
 - Decouples producers and consumers in time - producers don't wait for consumers.
 
 Cons:
+
 - Ordering is per-partition only - cross-partition ordering requires application logic.
 - Exactly-once is complex and adds latency.
 - Small message overhead - better for batched events than RPC-style calls.
@@ -149,5 +162,5 @@ When to use:
 **Kafka** for async workflows, event sourcing, audit logs, and high-throughput pipelines. **RabbitMQ** for task queues with complex routing. **SQS/SNS** for AWS-native workloads. Avoid Kafka for synchronous request/response - use gRPC.
 
 ## Gotchas
-_No gotchas configured._
 
+_No gotchas configured._

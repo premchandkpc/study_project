@@ -1,4 +1,5 @@
 # 🚀 Ultimate Interactive Visual Learning System
+
 ## ByteByteGo + Miro + Excalidraw + Kubernetes + AWS + Kafka + JVM + AI Visualization Engine
 
 ---
@@ -84,17 +85,17 @@ using:
 
 ```js
 const VISUAL_MODES = {
-  BYTEBYTEGO: 'bytebytego',
-  MIRO: 'miro',
-  EXCALIDRAW: 'excalidraw',
-  TERMINAL: 'terminal',
-  CYBERPUNK: 'cyberpunk',
-  AWS: 'aws',
-  KUBERNETES: 'kubernetes',
-  GLASS: 'glassmorphism',
-  BRILLIANT: 'brilliant',
-  OBSERVABLE: 'observable',
-  NEURAL: 'neural-network'
+  BYTEBYTEGO: "bytebytego",
+  MIRO: "miro",
+  EXCALIDRAW: "excalidraw",
+  TERMINAL: "terminal",
+  CYBERPUNK: "cyberpunk",
+  AWS: "aws",
+  KUBERNETES: "kubernetes",
+  GLASS: "glassmorphism",
+  BRILLIANT: "brilliant",
+  OBSERVABLE: "observable",
+  NEURAL: "neural-network",
 };
 ```
 
@@ -103,16 +104,19 @@ const VISUAL_MODES = {
 # 🧠 TEACHING PRINCIPLE
 
 Traditional teaching:
+
 ```txt
 Static diagrams
 ```
 
 Target:
+
 ```txt
 Living systems simulations
 ```
 
 Examples:
+
 - packets move
 - retries happen
 - queues overflow
@@ -128,15 +132,16 @@ Examples:
 # 🎥 CAMERA ENGINE
 
 ```js
-camera.zoom(1.5)
-camera.pan(x, y)
-camera.focus(node)
-camera.follow(packet)
-camera.shake()
-camera.reset()
+camera.zoom(1.5);
+camera.pan(x, y);
+camera.focus(node);
+camera.follow(packet);
+camera.shake();
+camera.reset();
 ```
 
 Features:
+
 - cinematic movement
 - focus transitions
 - packet follow mode
@@ -168,6 +173,7 @@ Database
 ```
 
 Animations:
+
 - flowing packets
 - ACK responses
 - timeout flashes
@@ -215,6 +221,7 @@ Database
 ```
 
 Animations:
+
 - traffic packets
 - pod pulse scaling
 - pod restart flashing
@@ -266,6 +273,7 @@ Aurora
 ```
 
 Visuals:
+
 - autoscaling pulse
 - replication glow
 - health checks
@@ -304,6 +312,7 @@ Consumer Group
 ```
 
 Animations:
+
 - append logs
 - offset movement
 - lag bars
@@ -360,6 +369,7 @@ TERMINATED
 ```
 
 Animations:
+
 - lock contention
 - monitor ownership
 - waiting queue
@@ -373,6 +383,7 @@ Animations:
 ## PostgreSQL
 
 Visualize:
+
 - MVCC
 - WAL
 - indexes
@@ -385,6 +396,7 @@ Visualize:
 ## Redis
 
 Visualize:
+
 - event loop
 - memory usage
 - eviction
@@ -417,6 +429,7 @@ Output
 ```
 
 Animations:
+
 - attention lines
 - token relationships
 - vector flow
@@ -431,11 +444,12 @@ Animations:
 ## Arrays
 
 ```js
-DSAViz.array.render()
-DSAViz.array.animate()
+DSAViz.array.render();
+DSAViz.array.animate();
 ```
 
 Use for:
+
 - sliding window
 - sorting
 - binary search
@@ -448,11 +462,12 @@ Use for:
 ## Trees
 
 ```js
-DSAViz.tree.render()
-DSAViz.tree.animate()
+DSAViz.tree.render();
+DSAViz.tree.animate();
 ```
 
 Use for:
+
 - BST
 - heaps
 - recursion
@@ -465,11 +480,12 @@ Use for:
 ## Graphs
 
 ```js
-DSAViz.graph.render()
-DSAViz.graph.animate()
+DSAViz.graph.render();
+DSAViz.graph.animate();
 ```
 
 Use for:
+
 - BFS
 - DFS
 - Dijkstra
@@ -481,11 +497,12 @@ Use for:
 ## Matrix
 
 ```js
-DSAViz.matrix.render()
-DSAViz.matrix.animate()
+DSAViz.matrix.render();
+DSAViz.matrix.animate();
 ```
 
 Use for:
+
 - islands
 - flood fill
 - shortest path
@@ -497,12 +514,13 @@ Use for:
 ## DP
 
 ```js
-DSAViz.dp.table1D()
-DSAViz.dp.table2D()
-DSAViz.dp.memoTree()
+DSAViz.dp.table1D();
+DSAViz.dp.table2D();
+DSAViz.dp.memoTree();
 ```
 
 Use for:
+
 - knapsack
 - LCS
 - edit distance
@@ -513,11 +531,12 @@ Use for:
 ## String
 
 ```js
-DSAViz.string.render()
-DSAViz.string.compare()
+DSAViz.string.render();
+DSAViz.string.compare();
 ```
 
 Use for:
+
 - KMP
 - Rabin-Karp
 - sliding window
@@ -573,6 +592,7 @@ Use for:
 # 🧲 INTERACTION ENGINE
 
 Features:
+
 - drag nodes
 - zoom canvas
 - pan canvas
@@ -588,11 +608,13 @@ Features:
 # 📖 STORY MODE
 
 Instead of:
+
 ```txt
 Load balancer routes traffic
 ```
 
 Narrate:
+
 ```txt
 Traffic police notices congestion.
 Vehicles redirected to another road.
@@ -600,6 +622,7 @@ Service workers process requests.
 ```
 
 Goal:
+
 - memorable learning
 - intuitive understanding
 - mental model building
@@ -621,6 +644,7 @@ COMPLETED
 ```
 
 Transitions:
+
 - animated
 - event-driven
 - replayable
@@ -630,6 +654,7 @@ Transitions:
 # 🗺️ INFINITE CANVAS
 
 Features:
+
 - Miro-style board
 - draggable stickies
 - zoom into systems
@@ -642,11 +667,13 @@ Features:
 # ✏️ EXCALIDRAW MODE
 
 Use:
+
 ```html
 <script src="https://unpkg.com/roughjs/bundled/rough.js"></script>
 ```
 
 Features:
+
 - hand-drawn arrows
 - sketch boxes
 - imperfect borders
@@ -699,17 +726,20 @@ Features:
 
 Goal:
 Explain:
+
 - WHY
 - HOW
 - WHAT
 
 Example:
+
 ```txt
 Kafka uses append-only logs
 because sequential disk writes are faster.
 ```
 
 Animate:
+
 - disk writes
 - page cache
 - append offsets
@@ -794,6 +824,7 @@ Response sent
 ```
 
 Like:
+
 - Chrome DevTools
 - distributed tracing
 - Jaeger timeline
@@ -807,6 +838,7 @@ Like:
 ## Queue Simulation
 
 Visualize:
+
 - enqueue
 - dequeue
 - overflow
@@ -817,6 +849,7 @@ Visualize:
 ## Thread Pool
 
 Visualize:
+
 - worker pickup
 - queue buildup
 - rejection handling
@@ -826,6 +859,7 @@ Visualize:
 ## Memory Grid
 
 Visualize:
+
 - heap allocation
 - GC sweep
 - object aging
@@ -835,6 +869,7 @@ Visualize:
 ## Hash Table
 
 Visualize:
+
 - hashing
 - collisions
 - chaining
@@ -845,6 +880,7 @@ Visualize:
 # 🎮 INTERVIEW MODE
 
 Features:
+
 - reveal answers
 - runtime debugging
 - complexity counters
@@ -862,6 +898,7 @@ for _, n := range graph[node]
 ```
 
 Automatically:
+
 - node glows
 - edge animates
 - queue updates
@@ -872,6 +909,7 @@ Automatically:
 # 📈 LIVE METRICS
 
 Visualize:
+
 ```txt
 Latency: 120ms
 QPS: 18k
@@ -881,6 +919,7 @@ Kafka Lag: 2300
 ```
 
 Use:
+
 - gauges
 - charts
 - heatmaps
@@ -892,8 +931,8 @@ Use:
 
 ```css
 backdrop-filter: blur(16px);
-background: rgba(255,255,255,0.08);
-border: 1px solid rgba(255,255,255,0.15);
+background: rgba(255, 255, 255, 0.08);
+border: 1px solid rgba(255, 255, 255, 0.15);
 ```
 
 ---
@@ -901,6 +940,7 @@ border: 1px solid rgba(255,255,255,0.15);
 # 🌌 CYBERPUNK MODE
 
 Features:
+
 - neon glow
 - holographic UI
 - animated grids
@@ -911,6 +951,7 @@ Features:
 # 📡 OBSERVABILITY MODE
 
 Visualize:
+
 - traces
 - spans
 - logs
@@ -921,16 +962,16 @@ Visualize:
 
 # 🧭 PLATFORM REFERENCES
 
-| Platform | Learn |
-|---|---|
-| ByteByteGo | architecture flows |
-| Miro | infinite canvas |
-| Excalidraw | sketch UX |
-| Linear | smooth motion |
-| Vercel | transitions |
-| Figma | graph interactions |
-| Brilliant | educational flow |
-| ObservableHQ | reactive visuals |
+| Platform         | Learn              |
+| ---------------- | ------------------ |
+| ByteByteGo       | architecture flows |
+| Miro             | infinite canvas    |
+| Excalidraw       | sketch UX          |
+| Linear           | smooth motion      |
+| Vercel           | transitions        |
+| Figma            | graph interactions |
+| Brilliant        | educational flow   |
+| ObservableHQ     | reactive visuals   |
 | Netflix TechBlog | infra storytelling |
 
 ---
@@ -938,6 +979,7 @@ Visualize:
 # 🏆 FINAL GOAL
 
 Build:
+
 ```txt
 Not static diagrams
 
@@ -947,6 +989,7 @@ living distributed systems
 ```
 
 Where users can:
+
 - replay systems
 - inspect packets
 - watch failures
@@ -976,6 +1019,7 @@ Where users can:
 # 🌟 ULTIMATE OUTCOME
 
 A platform where:
+
 - Kubernetes feels alive
 - Kafka visibly streams
 - JVM memory breathes
@@ -1045,6 +1089,7 @@ release lock         │
 ```
 
 Animations:
+
 - lock ownership glow
 - blocked thread pulse red
 - deadlock cycle highlight
@@ -1088,6 +1133,7 @@ TERMINATED  READY (I/O done)
 ```
 
 Animations:
+
 - Gantt chart live-fill
 - context switch register dump
 - page fault TLB miss flash
@@ -1153,6 +1199,7 @@ FOLLOWER            majority votes
 ```
 
 Animations:
+
 - heartbeat pulse from leader
 - vote RPC arrows fly
 - log entry commit wave
@@ -1225,6 +1272,7 @@ cwnd
 ```
 
 Animations:
+
 - packet loss → cwnd halves
 - slow start exponential climb
 - congestion avoidance linear
@@ -1264,53 +1312,53 @@ IP address returned
 
 ```js
 // Arrays
-DSAViz.array.render(container, arr, opts)
-DSAViz.array.highlight(indices, color)
-DSAViz.array.swap(i, j)
-DSAViz.array.compare(i, j)
-DSAViz.array.window(left, right)
-DSAViz.array.pointer(index, label)
-DSAViz.array.mark(index, label)
-DSAViz.array.reset()
+DSAViz.array.render(container, arr, opts);
+DSAViz.array.highlight(indices, color);
+DSAViz.array.swap(i, j);
+DSAViz.array.compare(i, j);
+DSAViz.array.window(left, right);
+DSAViz.array.pointer(index, label);
+DSAViz.array.mark(index, label);
+DSAViz.array.reset();
 
 // Trees
-DSAViz.tree.render(container, root, opts)
-DSAViz.tree.highlightNode(val, color)
-DSAViz.tree.traverse(order)        // 'inorder'|'preorder'|'postorder'|'bfs'
-DSAViz.tree.insertNode(val)
-DSAViz.tree.deleteNode(val)
-DSAViz.tree.rotateLeft(val)
-DSAViz.tree.rotateRight(val)
+DSAViz.tree.render(container, root, opts);
+DSAViz.tree.highlightNode(val, color);
+DSAViz.tree.traverse(order); // 'inorder'|'preorder'|'postorder'|'bfs'
+DSAViz.tree.insertNode(val);
+DSAViz.tree.deleteNode(val);
+DSAViz.tree.rotateLeft(val);
+DSAViz.tree.rotateRight(val);
 
 // Graphs
-DSAViz.graph.render(container, nodes, edges, opts)
-DSAViz.graph.highlightNode(id, color)
-DSAViz.graph.highlightEdge(from, to, color)
-DSAViz.graph.bfs(startId, onVisit)
-DSAViz.graph.dfs(startId, onVisit)
-DSAViz.graph.dijkstra(startId, onRelax)
-DSAViz.graph.topoSort(onVisit)
+DSAViz.graph.render(container, nodes, edges, opts);
+DSAViz.graph.highlightNode(id, color);
+DSAViz.graph.highlightEdge(from, to, color);
+DSAViz.graph.bfs(startId, onVisit);
+DSAViz.graph.dfs(startId, onVisit);
+DSAViz.graph.dijkstra(startId, onRelax);
+DSAViz.graph.topoSort(onVisit);
 
 // Matrix
-DSAViz.matrix.render(container, grid, opts)
-DSAViz.matrix.highlightCell(r, c, color)
-DSAViz.matrix.floodFill(r, c, color)
-DSAViz.matrix.drawPath(cells, color)
-DSAViz.matrix.reset()
+DSAViz.matrix.render(container, grid, opts);
+DSAViz.matrix.highlightCell(r, c, color);
+DSAViz.matrix.floodFill(r, c, color);
+DSAViz.matrix.drawPath(cells, color);
+DSAViz.matrix.reset();
 
 // DP Tables
-DSAViz.dp.table1D(container, arr, opts)
-DSAViz.dp.table2D(container, grid, opts)
-DSAViz.dp.memoTree(container, root, opts)
-DSAViz.dp.highlightCell(r, c, color)
-DSAViz.dp.drawArrow(from, to)
+DSAViz.dp.table1D(container, arr, opts);
+DSAViz.dp.table2D(container, grid, opts);
+DSAViz.dp.memoTree(container, root, opts);
+DSAViz.dp.highlightCell(r, c, color);
+DSAViz.dp.drawArrow(from, to);
 
 // Strings
-DSAViz.string.render(container, str, opts)
-DSAViz.string.compare(str1, str2)
-DSAViz.string.highlight(start, end, color)
-DSAViz.string.slideWindow(left, right)
-DSAViz.string.kmpTable(pattern)
+DSAViz.string.render(container, str, opts);
+DSAViz.string.compare(str1, str2);
+DSAViz.string.highlight(start, end, color);
+DSAViz.string.slideWindow(left, right);
+DSAViz.string.kmpTable(pattern);
 ```
 
 ---
@@ -1319,22 +1367,22 @@ DSAViz.string.kmpTable(pattern)
 
 ```js
 // Step controls
-DSAViz.sim.step()
-DSAViz.sim.stepBack()
-DSAViz.sim.play(speedMs)
-DSAViz.sim.pause()
-DSAViz.sim.reset()
-DSAViz.sim.goto(stepIndex)
-DSAViz.sim.onStep(fn)          // fn(state, stepIndex)
+DSAViz.sim.step();
+DSAViz.sim.stepBack();
+DSAViz.sim.play(speedMs);
+DSAViz.sim.pause();
+DSAViz.sim.reset();
+DSAViz.sim.goto(stepIndex);
+DSAViz.sim.onStep(fn); // fn(state, stepIndex)
 
 // Narration
-DSAViz.narrate(text)
-DSAViz.narrateCode(lineNumber)
+DSAViz.narrate(text);
+DSAViz.narrateCode(lineNumber);
 
 // Complexity
-DSAViz.complexity.ops(count)
-DSAViz.complexity.setLabel('O(n log n)')
-DSAViz.complexity.space(bytes)
+DSAViz.complexity.ops(count);
+DSAViz.complexity.setLabel("O(n log n)");
+DSAViz.complexity.space(bytes);
 ```
 
 ---
@@ -1342,13 +1390,13 @@ DSAViz.complexity.space(bytes)
 ## Camera API
 
 ```js
-DSAViz.camera.zoom(factor)
-DSAViz.camera.pan(x, y)
-DSAViz.camera.focus(nodeId)
-DSAViz.camera.follow(packetId)
-DSAViz.camera.shake(intensity)
-DSAViz.camera.reset()
-DSAViz.camera.flyTo(x, y, zoom, durationMs)
+DSAViz.camera.zoom(factor);
+DSAViz.camera.pan(x, y);
+DSAViz.camera.focus(nodeId);
+DSAViz.camera.follow(packetId);
+DSAViz.camera.shake(intensity);
+DSAViz.camera.reset();
+DSAViz.camera.flyTo(x, y, zoom, durationMs);
 ```
 
 ---
@@ -1360,54 +1408,54 @@ DSAViz.camera.flyTo(x, y, zoom, durationMs)
 ```css
 :root {
   /* ByteByteGo dark */
-  --bg-primary:     #0d1117;
-  --bg-secondary:   #161b22;
-  --bg-card:        #1c2128;
-  --border:         rgba(255,255,255,0.08);
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card: #1c2128;
+  --border: rgba(255, 255, 255, 0.08);
 
   /* Node states */
-  --node-default:   #58a6ff;
-  --node-active:    #f78166;
-  --node-visited:   #3fb950;
+  --node-default: #58a6ff;
+  --node-active: #f78166;
+  --node-visited: #3fb950;
   --node-comparing: #e3b341;
-  --node-blocked:   #ff6e6e;
-  --node-done:      #7c4dff;
+  --node-blocked: #ff6e6e;
+  --node-done: #7c4dff;
 
   /* Edges */
-  --edge-default:   #30363d;
-  --edge-active:    #e3b341;
-  --edge-flow:      #58a6ff;
-  --edge-error:     #f85149;
+  --edge-default: #30363d;
+  --edge-active: #e3b341;
+  --edge-flow: #58a6ff;
+  --edge-error: #f85149;
 
   /* Text */
-  --text-primary:   #e6edf3;
-  --text-muted:     #8b949e;
-  --text-accent:    #58a6ff;
+  --text-primary: #e6edf3;
+  --text-muted: #8b949e;
+  --text-accent: #58a6ff;
 
   /* Complexity bands */
-  --complexity-good:    #3fb950;  /* O(1), O(log n) */
-  --complexity-ok:      #e3b341;  /* O(n), O(n log n) */
-  --complexity-bad:     #f78166;  /* O(n²) */
-  --complexity-worst:   #f85149;  /* O(2^n), O(n!) */
+  --complexity-good: #3fb950; /* O(1), O(log n) */
+  --complexity-ok: #e3b341; /* O(n), O(n log n) */
+  --complexity-bad: #f78166; /* O(n²) */
+  --complexity-worst: #f85149; /* O(2^n), O(n!) */
 
   /* Kafka */
-  --kafka-producer:  #58a6ff;
-  --kafka-broker:    #e3b341;
-  --kafka-consumer:  #3fb950;
-  --kafka-lag:       #f85149;
+  --kafka-producer: #58a6ff;
+  --kafka-broker: #e3b341;
+  --kafka-consumer: #3fb950;
+  --kafka-lag: #f85149;
 
   /* K8s */
-  --pod-running:    #3fb950;
-  --pod-pending:    #e3b341;
-  --pod-crash:      #f85149;
-  --pod-terminating:#8b949e;
+  --pod-running: #3fb950;
+  --pod-pending: #e3b341;
+  --pod-crash: #f85149;
+  --pod-terminating: #8b949e;
 
   /* JVM */
-  --heap-eden:      #58a6ff;
-  --heap-survivor:  #e3b341;
-  --heap-old:       #7c4dff;
-  --metaspace:      #3fb950;
-  --gc-sweep:       #f85149;
+  --heap-eden: #58a6ff;
+  --heap-survivor: #e3b341;
+  --heap-old: #7c4dff;
+  --metaspace: #3fb950;
+  --gc-sweep: #f85149;
 }
 ```
 
@@ -1476,19 +1524,19 @@ DSAViz.camera.flyTo(x, y, zoom, durationMs)
 
 ```js
 const NARRATION = {
-  compare:    (a, b)    => `Comparing ${a} and ${b}`,
-  swap:       (i, j)    => `Swapping positions ${i} and ${j}`,
-  found:      (val)     => `Found ${val}! Target located.`,
-  miss:       ()        => `Not found here. Move right.`,
-  enqueue:    (val)     => `${val} joins the queue.`,
-  dequeue:    (val)     => `${val} leaves the queue.`,
-  push:       (val)     => `Push ${val} onto stack.`,
-  pop:        (val)     => `Pop ${val} from stack.`,
-  visit:      (node)    => `Visit node ${node}.`,
-  relax:      (u, v, w) => `Relax edge ${u}→${v}, cost ${w}.`,
-  gcSweep:    ()        => `GC sweeps dead objects. World stops.`,
-  podScale:   (n)       => `HPA scales to ${n} pods.`,
-  leaderFail: (id)      => `Leader ${id} down. Election starts.`,
+  compare: (a, b) => `Comparing ${a} and ${b}`,
+  swap: (i, j) => `Swapping positions ${i} and ${j}`,
+  found: (val) => `Found ${val}! Target located.`,
+  miss: () => `Not found here. Move right.`,
+  enqueue: (val) => `${val} joins the queue.`,
+  dequeue: (val) => `${val} leaves the queue.`,
+  push: (val) => `Push ${val} onto stack.`,
+  pop: (val) => `Pop ${val} from stack.`,
+  visit: (node) => `Visit node ${node}.`,
+  relax: (u, v, w) => `Relax edge ${u}→${v}, cost ${w}.`,
+  gcSweep: () => `GC sweeps dead objects. World stops.`,
+  podScale: (n) => `HPA scales to ${n} pods.`,
+  leaderFail: (id) => `Leader ${id} down. Election starts.`,
 };
 ```
 
@@ -1512,15 +1560,15 @@ const NARRATION = {
 
 ## Controls Behavior
 
-| Button | Action |
-|--------|--------|
-| ⏮ | jump to step 0 |
-| ◀ | step back 1 |
-| ▶ | step forward 1 |
-| ⏭ | jump to last step |
-| ↺ | reset + clear highlights |
-| ▶▶ | auto-play at speed |
-| ⏸ | pause auto-play |
+| Button | Action                   |
+| ------ | ------------------------ |
+| ⏮     | jump to step 0           |
+| ◀      | step back 1              |
+| ▶      | step forward 1           |
+| ⏭     | jump to last step        |
+| ↺      | reset + clear highlights |
+| ▶▶     | auto-play at speed       |
+| ⏸      | pause auto-play          |
 
 Speed slider: 100ms → 2000ms per step.
 
@@ -1531,15 +1579,16 @@ Speed slider: 100ms → 2000ms per step.
 ## Sliding Window Problem
 
 ```js
-import { DSAViz } from '../shared/dsa-viz/dsa-viz-tracer.js';
+import { DSAViz } from "../shared/dsa-viz/dsa-viz-tracer.js";
 
 const arr = [2, 1, 5, 1, 3, 2];
 const k = 3;
-const viz = new DSAViz('#canvas');
+const viz = new DSAViz("#canvas");
 
 viz.array.render(arr);
 
-let maxSum = 0, windowSum = 0;
+let maxSum = 0,
+  windowSum = 0;
 
 // Build first window
 for (let i = 0; i < k; i++) {
@@ -1555,9 +1604,9 @@ maxSum = windowSum;
 for (let i = k; i < arr.length; i++) {
   windowSum += arr[i] - arr[i - k];
   viz.array.window(i - k + 1, i);
-  viz.array.highlight([i], 'var(--node-active)');
-  viz.array.highlight([i - k], 'var(--node-visited)');
-  viz.narrate(`Window [${i-k+1}..${i}] sum = ${windowSum}`);
+  viz.array.highlight([i], "var(--node-active)");
+  viz.array.highlight([i - k], "var(--node-visited)");
+  viz.narrate(`Window [${i - k + 1}..${i}] sum = ${windowSum}`);
   maxSum = Math.max(maxSum, windowSum);
   viz.sim.record({ state: { windowSum, maxSum }, codeLine: 10 });
 }
@@ -1568,9 +1617,14 @@ for (let i = k; i < arr.length; i++) {
 ## BFS Graph Traversal
 
 ```js
-const nodes = ['A','B','C','D','E'];
-const edges = [['A','B'],['A','C'],['B','D'],['C','E']];
-const viz = new DSAViz('#canvas');
+const nodes = ["A", "B", "C", "D", "E"];
+const edges = [
+  ["A", "B"],
+  ["A", "C"],
+  ["B", "D"],
+  ["C", "E"],
+];
+const viz = new DSAViz("#canvas");
 
 viz.graph.render(nodes, edges, { directed: false });
 
@@ -1580,7 +1634,7 @@ function bfs(start) {
 
   while (queue.length) {
     const node = queue.shift();
-    viz.graph.highlightNode(node, 'var(--node-active)');
+    viz.graph.highlightNode(node, "var(--node-active)");
     viz.narrate(`Visit node ${node}`);
     viz.sim.record({ state: { queue: [...queue], visited: [...visited] } });
 
@@ -1588,14 +1642,14 @@ function bfs(start) {
       if (!visited.has(neighbor)) {
         visited.add(neighbor);
         queue.push(neighbor);
-        viz.graph.highlightEdge(node, neighbor, 'var(--edge-active)');
+        viz.graph.highlightEdge(node, neighbor, "var(--edge-active)");
       }
     }
-    viz.graph.highlightNode(node, 'var(--node-visited)');
+    viz.graph.highlightNode(node, "var(--node-visited)");
   }
 }
 
-bfs('A');
+bfs("A");
 viz.sim.play(800);
 ```
 
@@ -1604,24 +1658,24 @@ viz.sim.play(800);
 ## JVM GC Simulation
 
 ```js
-const jvmViz = new DSAViz('#jvm-canvas');
-jvmViz.mode('jvm');
+const jvmViz = new DSAViz("#jvm-canvas");
+jvmViz.mode("jvm");
 
-jvmViz.jvm.allocate({ id: 'obj1', size: 24, gen: 'eden' });
-jvmViz.jvm.allocate({ id: 'obj2', size: 16, gen: 'eden' });
-jvmViz.narrate('Objects born in Eden space');
+jvmViz.jvm.allocate({ id: "obj1", size: 24, gen: "eden" });
+jvmViz.jvm.allocate({ id: "obj2", size: 16, gen: "eden" });
+jvmViz.narrate("Objects born in Eden space");
 
 jvmViz.jvm.minorGC();
-jvmViz.narrate('Minor GC. Short-lived objects die.');
+jvmViz.narrate("Minor GC. Short-lived objects die.");
 
-jvmViz.jvm.promote('obj1', 'survivor');
-jvmViz.narrate('obj1 survives — moves to Survivor.');
+jvmViz.jvm.promote("obj1", "survivor");
+jvmViz.narrate("obj1 survives — moves to Survivor.");
 
-jvmViz.jvm.promote('obj1', 'old');
-jvmViz.narrate('obj1 old enough — promoted to Old Gen.');
+jvmViz.jvm.promote("obj1", "old");
+jvmViz.narrate("obj1 old enough — promoted to Old Gen.");
 
 jvmViz.jvm.fullGC();
-jvmViz.narrate('Full GC. Stop-the-world pause begins.');
+jvmViz.narrate("Full GC. Stop-the-world pause begins.");
 ```
 
 ---
@@ -1630,18 +1684,18 @@ jvmViz.narrate('Full GC. Stop-the-world pause begins.');
 
 Every visualizer must include failure modes:
 
-| System | Failure | Animate |
-|--------|---------|---------|
-| Kafka | leader down | ISR promotes, election arrows |
-| K8s | pod OOMKill | pod turns red, restarts counter |
-| K8s | node drain | pods evict, reschedule elsewhere |
-| DB | deadlock | cycle arrows, wait-for graph |
-| Thread | starvation | low-priority thread dims, timer grows |
-| Network | packet drop | packet disappears, retransmit fires |
-| Cache | thundering herd | 1000 req hit DB simultaneously |
-| Circuit breaker | open | requests blocked, timer countdown |
-| Raft | split brain | partition wall, two leaders red |
-| JVM | OOM | heap bar fills red, crash icon |
+| System          | Failure         | Animate                               |
+| --------------- | --------------- | ------------------------------------- |
+| Kafka           | leader down     | ISR promotes, election arrows         |
+| K8s             | pod OOMKill     | pod turns red, restarts counter       |
+| K8s             | node drain      | pods evict, reschedule elsewhere      |
+| DB              | deadlock        | cycle arrows, wait-for graph          |
+| Thread          | starvation      | low-priority thread dims, timer grows |
+| Network         | packet drop     | packet disappears, retransmit fires   |
+| Cache           | thundering herd | 1000 req hit DB simultaneously        |
+| Circuit breaker | open            | requests blocked, timer countdown     |
+| Raft            | split brain     | partition wall, two leaders red       |
+| JVM             | OOM             | heap bar fills red, crash icon        |
 
 ---
 

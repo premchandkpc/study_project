@@ -1,6 +1,7 @@
 # Spring Boot: Startup, DI, Request Lifecycle & AOP
 
 ## Quick Facts
+
 - Area: Java
 - Tag: Spring
 - Source: `src/modules/topics/java/java-spring-boot.js`
@@ -8,6 +9,7 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **L1 (30s ELI5):** Spring Boot is a machine that builds your app automatically. You add JARs, it figures out what you need (database? auto-adds HikariCP). You write business code; Spring wires everything together.
 
 **L2 (2min core):** IoC container (ApplicationContext) manages bean lifecycle. Auto-config: reads `META-INF/spring/AutoConfiguration.imports` from every JAR, evaluates `@ConditionalOnClass`/`@ConditionalOnMissingBean`. DI: constructor injection (preferred, immutable, testable) > setter > field. AOP: CGLIB subclass proxy wraps `@Transactional`/`@Cacheable`/`@Async` beans - proxy intercepts external method calls.
@@ -17,9 +19,11 @@
 **L4 (30min deep):** Bean lifecycle: instantiate -> populateProperties -> Aware callbacks (BeanNameAware, ApplicationContextAware) -> `@PostConstruct` (InitializingBean.afterPropertiesSet) -> in-service -> `@PreDestroy` (DisposableBean.destroy). BeanPostProcessor intercepts all beans before/after init - AOP proxy creation happens here (AbstractAutoProxyCreator). BeanFactoryPostProcessor: modifies bean definitions before instantiation (PropertySourcesPlaceholderConfigurer resolves `${}`). DispatcherServlet strategy pattern: each of HandlerMapping, HandlerAdapter, ViewResolver, HandlerExceptionResolver is a Spring bean - fully replaceable.
 
 ## Why It Matters
+
 Auto-config is **decision compression** - sensible defaults that work in 80% of cases. But it hides what's running. In senior interviews, you must be able to trace a `/actuator/conditions` report, explain AOP proxy limitations (@Transactional on private methods), and describe the full HTTP request lifecycle through DispatcherServlet.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["1 Web Layer"]
@@ -60,6 +64,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant http as HTTP
@@ -87,6 +92,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -104,6 +110,7 @@ Flow steps:
 8. ApplicationReadyEvent - serving traffic - First HTTP request can now be handled. Actuator health shows UP. /actuator/beans shows all registered beans. /actuator/conditions shows auto-config decisions. Startup complete - may take 1-10s depending on classpath size.
 
 ## Example
+
 ```java
 // Constructor injection - preferred, immutable, testable
 @RestController
@@ -154,10 +161,12 @@ Notes:
 `@Transactional` only works on public methods via the AOP proxy. Private or package-private methods bypass the proxy - transaction never starts. Self-invocation (calling `this.method()`) also bypasses the proxy.
 
 ## Complexity And Performance
+
 - Time/space complexity depends on input size, data volume, and implementation choices.
 - Track latency, throughput, memory, saturation, error rate, and correctness invariants.
 
 ## Interview Drills
+
 1. Why doesn't @Transactional work on private methods?
    Answer: Spring wraps beans in a **CGLIB subclass proxy**. The proxy intercepts method calls from OUTSIDE the bean. When you call a private method (or call `this.someMethod()` from within the class), the call goes directly to the original bean - the proxy is bypassed. No proxy = no transaction. Fix: extract to a separate bean, or use `@Transactional` via AspectJ compile-time weaving.
    Follow-ups: What is self-invocation?; JDK proxy vs CGLIB proxy?; How does Spring detect circular @Transactional?
@@ -171,12 +180,15 @@ Notes:
    Follow-ups: What is a scoped proxy?; ObjectProvider vs ApplicationContext.getBean()?
 
 ## Trade-offs
+
 Pros:
+
 - Boilerplate gone - a working web app in 10 lines.
 - Strong ecosystem (Data, Security, Cloud, Actuator, Testcontainers).
 - Production-ready: metrics, health, tracing out of the box.
 
 Cons:
+
 - Magic by default - debugging hidden bean wiring is hard.
 - Startup time grows with classpath - investigate with --debug flag.
 - @Transactional proxy limitations cause subtle bugs in self-invocation.
@@ -185,10 +197,10 @@ When to use:
 **Default for enterprise Java services.** For startup-sensitive workloads (lambdas, edge), evaluate **Quarkus** or **Micronaut** with build-time DI + GraalVM native image.
 
 ## Gotchas
+
 - @Transactional on private method: CGLIB proxy can't override private -> no transaction started, no exception, silent failure.
 - Self-invocation this.method(): bypasses the AOP proxy entirely -> @Cacheable, @Async, @Transactional all silently ignored.
 - Prototype bean injected into singleton: injected once at singleton creation time. Same instance forever - prototype scope defeated.
 - @Async void method: exceptions are swallowed silently. Configure AsyncUncaughtExceptionHandler or return Future<T>.
 - @Transactional checked exceptions: only RuntimeException (unchecked) rolls back by default. SQLException won't roll back unless rollbackFor=Exception.class.
 - Lazy-loaded JPA entity outside @Transactional: LazyInitializationException. Session closed before collection accessed.
-

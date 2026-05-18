@@ -1,6 +1,7 @@
 # Case Study: Search Autocomplete (Google Typeahead)
 
 ## Quick Facts
+
 - Area: System Design
 - Tag: Case Study
 - Source: `src/modules/topics/sysdesign/sd-case-search-autocomplete.js`
@@ -8,9 +9,11 @@
 - Visual coverage: live visual, flow lab, UML lab, architecture map
 
 ## Concept
+
 **Requirements:** Sub-100ms suggestions for every keystroke, 100K QPS, top-10 globally trending completions, personalization, multilingual support.
 
 **Core challenges:**
+
 1. **Latency** - each keystroke triggers a query. Must return in <100ms including network.
 2. **Scale** - 100K QPS peak. A naive DB LIKE query cannot handle this.
 3. **Freshness** - trending searches ("breaking news") should appear quickly.
@@ -20,36 +23,43 @@
 **Architecture:**
 
 **Data collection pipeline:**
+
 - Every search query is logged -> Kafka topic `search-queries`.
 - Hadoop MapReduce/Spark batch job (runs hourly): aggregate query counts per prefix -> top-10 per prefix.
 - Results written to Redis: key = prefix (e.g. "app"), value = JSON array of top-10 suggestions with scores.
 - Real-time stream (Flink/Kafka Streams): updates scores for fast-trending queries within minutes.
 
 **Trie structure (offline):**
+
 - Build full Trie from top-N queries. Each node stores: char, children map, top-K list (precomputed by DFS).
 - Trie is serialized and distributed to serving nodes.
 - Trie serves as fallback; Redis serves hot prefixes from memory.
 
 **Serving layer:**
+
 - **CDN caching** - cache responses for common 1-3 char prefixes (high hit rate, low personalization needed).
 - **Redis** - stores top-10 per prefix. Key format: `autocomplete:{lang}:{prefix}`. O(1) lookup.
 - **Application tier** - on Redis miss: traverse in-memory Trie. Merge with user history from profile service.
 - **Personalization** - `score = 0.7 x global_score + 0.3 x user_history_score`.
 
 **Prefix size optimization:**
+
 - Only store prefixes from length 1 to 20 chars.
 - For length > 5: results barely change - extend last stored prefix's results.
-- Total keys in Redis: avg 200K unique prefixes x 10 results x 50 bytes  100MB (fits in RAM easily).
+- Total keys in Redis: avg 200K unique prefixes x 10 results x 50 bytes 100MB (fits in RAM easily).
 
 **Multilingual:**
+
 - Index queries by `{lang}:{prefix}` key. Tokenize CJK by character (not word boundary).
 - Use Unicode normalization (NFC) before indexing.
 - RTL (Arabic/Hebrew): reverse prefix direction for Trie traversal.
 
 ## Why It Matters
+
 Typeahead is asked in every FAANG interview. It cleanly demonstrates: Trie data structures, Redis for in-memory key-value, CDN caching strategy, batch vs stream processing pipelines, and personalization blending - all in one compact problem.
 
 ## Architecture / Mental Model
+
 ```mermaid
 flowchart LR
   subgraph lane_0["Users"]
@@ -75,6 +85,7 @@ flowchart LR
 ```
 
 ## Runtime / Sequence
+
 ```mermaid
 sequenceDiagram
   participant a0 as Client
@@ -92,6 +103,7 @@ sequenceDiagram
 ```
 
 ## Animation Plan
+
 - Flow lab available: step-by-step path highlighting.
 - UML sequence simulation available: actor messages animate in order.
 - Architecture map available: clickable nodes and sync/async links.
@@ -106,6 +118,7 @@ Flow steps:
 5. Return or recover - Response returns when sync work succeeds; failure path uses retry, fallback, or replay.
 
 ## Example
+
 ```python
 # Autocomplete service - FastAPI + Redis
 from fastapi import FastAPI
@@ -189,9 +202,11 @@ async def autocomplete(q: str, lang: str = "en", user_id: str = None):
 ```
 
 ## Complexity And Performance
+
 - O(1)
 
 ## Interview Drills
+
 1. How would you design autocomplete for Google Search?
    Answer: Two-layer architecture: (1) Offline pipeline - Spark job aggregates query logs hourly, computes top-10 per prefix, stores in Redis keyed by prefix. (2) Serving - on each keystroke, check CDN cache (for short common prefixes), then Redis O(1) lookup. On miss, traverse in-memory Trie. Personalization layer blends user history (Redis sorted set) with global results at 70/30 ratio. Cache-Control headers allow CDN to cache non-personalized responses for 1 char prefix like "a" = millions of QPS absorbed by CDN.
    Follow-ups: How would you handle real-time trending queries (Taylor Swift going viral)?; How does your design handle 50 different languages?; Should you index every prefix or just prefixes of top-N queries?
@@ -209,13 +224,16 @@ async def autocomplete(q: str, lang: str = "en", user_id: str = None):
    Follow-ups: How do you handle typos and fuzzy matching in autocomplete?; How would you support voice search (speech-to-text prefix)?; How do you filter offensive suggestions?
 
 ## Trade-offs
+
 Pros:
+
 - Redis O(1) prefix lookup - predictable sub-millisecond latency regardless of Trie depth
 - CDN absorbs massive traffic for short common prefixes (huge cost saving)
 - Precomputing top-K at index time shifts complexity to offline pipeline (Spark), not serving
 - Batch + stream dual pipeline balances freshness vs stability
 
 Cons:
+
 - Precomputed top-K means personalization requires a merge step at serve time
 - Redis memory grows with vocabulary - need prefix pruning for long-tail queries
 - Batch hourly updates mean truly real-time trending (within seconds) is harder
@@ -225,9 +243,9 @@ When to use:
 Any product with a search box and >10K QPS needs this pattern. For <1K QPS, a simple DB LIKE query with an index works fine.
 
 ## Gotchas
+
 - Don't store every prefix - limit to top-10M queries. Store prefixes only up to length 20. Beyond that, results are identical to the trimmed prefix.
 - CDN caching breaks personalization - serve non-personalized results from CDN, inject personalization client-side from a separate lightweight API call
 - Trie memory can be huge - 10M unique queries x avg 8 chars = 80M nodes. Use DAWG (Directed Acyclic Word Graph) to share suffixes and reduce memory 5-10x
 - Ranking matters more than completeness - a wrong top-3 frustrates users. Weight recency + click-through rate + query volume, not just raw count
 - Filter offensive/illegal suggestions via a blocklist applied at Redis write time (not serve time - don't waste latency on filtering)
-
