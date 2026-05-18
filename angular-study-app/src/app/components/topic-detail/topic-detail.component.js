@@ -162,12 +162,21 @@
     const U = window.CVU;
     if (!U) { mount.innerHTML = "<div style=\"color:#f85149;padding:16px\">canvas-utils.js not loaded</div>"; return null; }
 
-    mount.innerHTML = "<canvas class=\"sys-canvas\" aria-label=\"System design architecture canvas\"></canvas>" +
-      "<div class=\"sys-canvas-readout\"><strong></strong><span></span></div>";
+    mount.innerHTML =
+      "<canvas class=\"sys-canvas\" aria-label=\"System design architecture canvas\"></canvas>" +
+      "<div class=\"sys-hover-tip\" id=\"sysHoverTip\" style=\"display:none\"></div>" +
+      "<div class=\"sys-canvas-readout\">" +
+        "<div class=\"scr-header\"><strong class=\"scr-title\"></strong><span class=\"scr-badge\"></span></div>" +
+        "<div class=\"scr-body\"></div>" +
+        "<div class=\"scr-grid\"></div>" +
+      "</div>";
     const canvas = mount.querySelector("canvas");
-    const readout = mount.querySelector(".sys-canvas-readout");
-    const readoutTitle = readout.querySelector("strong");
-    const readoutBody  = readout.querySelector("span");
+    const hoverTip     = mount.querySelector(".sys-hover-tip");
+    const readout      = mount.querySelector(".sys-canvas-readout");
+    const readoutTitle = readout.querySelector(".scr-title");
+    const readoutBadge = readout.querySelector(".scr-badge");
+    const readoutBody  = readout.querySelector(".scr-body");
+    const readoutGrid  = readout.querySelector(".scr-grid");
     const ctx = canvas.getContext("2d");
 
     // — Customizable defaults —
@@ -200,10 +209,89 @@
     function fillRound(x, y, w, h, r, f, s, lw) { U.roundRect(ctx, x, y, w, h, r, f, s, lw); }
     function arrow(a, b, color, dashed)     { return U.arrowCurved(ctx, a, b, color, dashed); }
 
-    function setReadout(item) {
-      readoutTitle.textContent = item?.label || item?.title || arch.title || topic.title;
-      readoutBody.textContent  = item?.detail || item?.hint || arch.caption || "Hover or click architecture nodes and paths.";
+    // ── Rich field helpers ──────────────────────────────────────────────
+    function esc(s) { return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+    function richRow(icon, label, value) {
+      if (!value) return "";
+      return "<div class=\"scr-row\"><span class=\"scr-row-icon\">" + icon + "</span>" +
+             "<span class=\"scr-row-label\">" + esc(label) + "</span>" +
+             "<span class=\"scr-row-val\">" + esc(value) + "</span></div>";
     }
+
+    function richTag(text, color) {
+      return "<span class=\"scr-tag\" style=\"background:" + (color || "#1f2b45") + "22;border-color:" + (color || "#58a6ff") + "55;color:" + (color || "#58a6ff") + "\">" + esc(text) + "</span>";
+    }
+
+    function renderRichReadout(item, isNode) {
+      if (!item) {
+        readoutTitle.textContent = arch.title || topic.title;
+        readoutBadge.innerHTML   = "";
+        readoutBody.innerHTML    = "<span style=\"color:#64748b\">" + esc(arch.caption || "Hover or click nodes and paths to inspect.") + "</span>";
+        readoutGrid.innerHTML    = "";
+        return;
+      }
+      const n = item;
+      readoutTitle.textContent = n.label || n.title || "";
+      // badge
+      readoutBadge.innerHTML = n.badge ? richTag(n.badge, null) : "";
+      // main description
+      readoutBody.innerHTML = n.detail ? "<p style=\"margin:0 0 6px\">" + esc(n.detail) + "</p>" :
+                              n.hint   ? "<p style=\"margin:0 0 6px;color:#9aaabb\">" + esc(n.hint) + "</p>" : "";
+
+      if (!isNode) {
+        // link: just show from/to/detail
+        readoutGrid.innerHTML = richRow("↗","from", n.from) + richRow("↘","to", n.to) + richRow("📋","type", n.type || "sync") + richRow("📖","detail", n.detail);
+        return;
+      }
+
+      // Node — rich multi-field grid
+      var rows = "";
+      rows += richRow("🔍","what",        n.what       || n.detail || n.hint);
+      rows += richRow("⏱","when",         n.when);
+      rows += richRow("⚙️","how",          n.how);
+      rows += richRow("📐","patterns",    n.patterns);
+      rows += richRow("←","receives from",n.from);
+      rows += richRow("→","sends to",     n.to);
+      rows += richRow("👤","owner",        n.owner);
+      rows += richRow("💻","language",     n.language   || n.sublabel);
+      rows += richRow("🧵","concurrency",  n.concurrency);
+      rows += richRow("⚡","latency",      n.latency);
+      rows += richRow("💥","failure",      n.failure);
+      rows += richRow("🔁","retry",        n.retry);
+      rows += richRow("📝","notes",        n.notes);
+      readoutGrid.innerHTML = rows || "<span style=\"color:#64748b;font-size:12px\">No extra detail — add fields to node data.</span>";
+    }
+
+    // ── Hover tooltip (floating) ────────────────────────────────────────
+    function showHoverTip(item, canvasX, canvasY) {
+      if (!item || !item.label) { hoverTip.style.display = "none"; return; }
+      const lines = [];
+      if (item.what || item.detail || item.hint) lines.push("<div class=\"ht-main\">" + esc(item.what || item.detail || item.hint) + "</div>");
+      if (item.when)        lines.push("<div class=\"ht-row\"><b>when:</b> " + esc(item.when) + "</div>");
+      if (item.how)         lines.push("<div class=\"ht-row\"><b>how:</b> " + esc(item.how) + "</div>");
+      if (item.patterns)    lines.push("<div class=\"ht-row\"><b>patterns:</b> " + esc(item.patterns) + "</div>");
+      if (item.from)        lines.push("<div class=\"ht-row\"><b>from:</b> " + esc(item.from) + "</div>");
+      if (item.to)          lines.push("<div class=\"ht-row\"><b>to:</b> " + esc(item.to) + "</div>");
+      if (item.language || item.sublabel) lines.push("<div class=\"ht-row\"><b>stack:</b> " + esc(item.language || item.sublabel) + "</div>");
+      if (item.concurrency) lines.push("<div class=\"ht-row\"><b>concurrency:</b> " + esc(item.concurrency) + "</div>");
+      if (item.latency)     lines.push("<div class=\"ht-row\"><b>latency:</b> " + esc(item.latency) + "</div>");
+      if (item.owner)       lines.push("<div class=\"ht-row\"><b>owner:</b> " + esc(item.owner) + "</div>");
+      if (!lines.length)    { hoverTip.style.display = "none"; return; }
+      hoverTip.innerHTML = "<div class=\"ht-title\">" + esc(item.label) + (item.badge ? " <span class=\"ht-badge\">" + esc(item.badge) + "</span>" : "") + "</div>" + lines.join("");
+      hoverTip.style.display = "block";
+      // Position near cursor but keep within mount bounds
+      const mRect = mount.getBoundingClientRect();
+      const tipW = 260, tipH = hoverTip.scrollHeight || 160;
+      const rawLeft = canvasX + 18;
+      const rawTop  = canvasY - tipH / 2;
+      const maxLeft = mount.offsetWidth - tipW - 8;
+      const maxTop  = mount.offsetHeight - tipH - 8;
+      hoverTip.style.left = Math.max(8, Math.min(rawLeft, maxLeft)) + "px";
+      hoverTip.style.top  = Math.max(8, Math.min(rawTop,  maxTop))  + "px";
+    }
+
+    function setReadout(item) { renderRichReadout(item, item && item.id && !String(item.id).startsWith("link-")); }
 
     function resize() {
       const box      = mount.getBoundingClientRect();
@@ -317,9 +405,21 @@
     canvas.addEventListener("mousemove", e => {
       const h = pick(e); hoverId = h?.id || null;
       canvas.style.cursor = h ? "pointer" : "default";
-      if (h) setReadout(h.data);
+      const r = canvas.getBoundingClientRect();
+      const cx = e.clientX - r.left, cy = e.clientY - r.top;
+      if (h) {
+        showHoverTip(h.data, cx, cy);
+        setReadout(h.data);
+      } else {
+        hoverTip.style.display = "none";
+      }
     });
-    canvas.addEventListener("mouseleave", () => { hoverId = null; canvas.style.cursor = "default"; setReadout(null); });
+    canvas.addEventListener("mouseleave", () => {
+      hoverId = null;
+      canvas.style.cursor = "default";
+      hoverTip.style.display = "none";
+      setReadout(null);
+    });
     canvas.addEventListener("click", e => { const h = pick(e); activeId = h?.id || null; setReadout(h?.data || null); draw(); });
     window.addEventListener("resize", resize);
     setReadout(null);
