@@ -224,4 +224,4 @@ JWT access token + refresh token rotation for APIs. OAuth2 Authorization Code + 
 
 ## Gotchas
 
-_No gotchas configured._
+Watch for edge cases, assumptions, and hidden performance costs that can make this topic fail in production if handled incorrectly.

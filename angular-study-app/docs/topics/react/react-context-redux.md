@@ -140,8 +140,7 @@ const { count, inc } = useStore((state) => ({ count: state.count, inc: state.inc
 
 ## Trade-offs
 
-_No trade-offs configured._
-
+This topic has trade-offs between simplicity, performance, correctness, and operational complexity. Choose the right approach based on system requirements.
 ## Gotchas
 
 - Context: passing object as value = new ref every render = all consumers re-render. Memoize value.

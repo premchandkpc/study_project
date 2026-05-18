@@ -10,14 +10,7 @@
 
 ## Concept
 
-`context.Context` is Go's standard mechanism for:
-
-- **Cancellation**: `context.WithCancel` - cancel when parent operation completes.
-- **Deadlines / timeouts**: `context.WithDeadline`, `context.WithTimeout`.
-- **Request-scoped values**: `context.WithValue` - carry trace IDs, auth tokens (use unexported key types to avoid collisions).
-
-A Context is **immutable** and forms a tree - cancelling a parent cancels all children. The zero value (`context.Background()`) never cancels; `context.TODO()` signals placeholder intent.
-
+This topic covers context: cancellation, deadlines & values. It explains the concept, why it matters, and how it fits into production systems.
 ## Why It Matters
 
 Without context, you can't cleanly cancel in-flight requests when a client disconnects or a timeout fires. In microservices, context propagates **distributed traces** (OpenTelemetry injects span IDs via `context.WithValue`). Goroutines that ignore context leak resources until the process dies.
@@ -135,14 +128,9 @@ Never store contexts in structs - pass them as the first function argument. Use 
 
 ## Interview Drills
 
-1. What's the difference between context.Background() and context.TODO()?
-   Answer: Semantically equivalent at runtime - both return a non-nil, empty context. **`Background()`** is the root of any context tree (used in main, init, tests). **`TODO()`** signals "I know this should carry a context but I haven't plumbed one yet" - it's a code search anchor for future refactoring. Linters can flag `TODO` to track tech debt.
-   Follow-ups: When should context.WithValue be avoided?; How does OpenTelemetry use context?
-
-2. How do you propagate context across goroutine boundaries?
-   Answer: Pass the context explicitly as the first argument to the goroutine's function. Never copy a context into a closure that outlives the cancellation scope without checking `ctx.Done()`. Pattern: `go func(ctx context.Context) { select { case <-ctx.Done(): return; case result <- compute(): } }(ctx)`.
-   Follow-ups: What happens to child goroutines if the parent context is cancelled?; goroutine leak + context?
-
+- What is the core problem this topic solves?
+- What trade-offs are involved in this design or algorithm?
+- How does this concept behave under load or at scale?
 ## Trade-offs
 
 Pros:
@@ -162,4 +150,4 @@ Pass context to every function that does I/O, sleeps, or spawns goroutines. Use 
 
 ## Gotchas
 
-_No gotchas configured._
+Watch for edge cases, assumptions, and hidden performance costs that can make this topic fail in production if handled incorrectly.

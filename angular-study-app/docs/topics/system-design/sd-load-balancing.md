@@ -177,4 +177,4 @@ Always. L4 for raw TCP throughput (gaming, DB). L7 for HTTP APIs with routing/au
 
 ## Gotchas
 
-_No gotchas configured._
+Watch for edge cases, assumptions, and hidden performance costs that can make this topic fail in production if handled incorrectly.

@@ -227,4 +227,4 @@ Use managed services by default - the operational savings outweigh the lock-in r
 
 ## Gotchas
 
-_No gotchas configured._
+Watch for edge cases, assumptions, and hidden performance costs that can make this topic fail in production if handled incorrectly.

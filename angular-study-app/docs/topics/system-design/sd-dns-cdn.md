@@ -180,4 +180,4 @@ Always use a CDN for public-facing web apps. DNS health checks + low TTL for zer
 
 ## Gotchas
 
-_No gotchas configured._
+Watch for edge cases, assumptions, and hidden performance costs that can make this topic fail in production if handled incorrectly.

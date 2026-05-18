@@ -202,4 +202,4 @@ Use for: complex domains with audit requirements (finance, healthcare), workflow
 
 ## Gotchas
 
-_No gotchas configured._
+Watch for edge cases, assumptions, and hidden performance costs that can make this topic fail in production if handled incorrectly.

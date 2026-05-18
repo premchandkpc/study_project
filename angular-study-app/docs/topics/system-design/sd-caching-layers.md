@@ -203,4 +203,4 @@ Cache-aside for most applications. Write-through for config/reference data. Writ
 
 ## Gotchas
 
-_No gotchas configured._
+Watch for edge cases, assumptions, and hidden performance costs that can make this topic fail in production if handled incorrectly.

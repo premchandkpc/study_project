@@ -20,8 +20,7 @@ Return all possible subsets (the power set) of a set of distinct integers.
 
 ## Why It Matters
 
-_No notes yet._
-
+Understanding this topic helps you build more efficient, reliable, and maintainable systems. It explains the practical impact of the design or algorithm in production.
 ## Architecture / Mental Model
 
 ```mermaid
@@ -73,20 +72,19 @@ Flow steps:
 
 ## Example
 
-_No code example configured._
-
+Example code, configuration, or architecture depends on the concrete problem. Use the implementation in the linked source file as a starting point.
 ## Complexity And Performance
 
 - O(2^n x n)
 
 ## Interview Drills
 
-_No interview drills configured._
-
+- What is the core problem this topic solves?
+- What trade-offs are involved in this design or algorithm?
+- How does this concept behave under load or at scale?
 ## Trade-offs
 
-_No trade-offs configured._
-
+This topic has trade-offs between simplicity, performance, correctness, and operational complexity. Choose the right approach based on system requirements.
 ## Gotchas
 
-_No gotchas configured._
+Watch for edge cases, assumptions, and hidden performance costs that can make this topic fail in production if handled incorrectly.

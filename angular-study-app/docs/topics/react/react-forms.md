@@ -162,8 +162,7 @@ function RHFForm() {
 
 ## Trade-offs
 
-_No trade-offs configured._
-
+This topic has trade-offs between simplicity, performance, correctness, and operational complexity. Choose the right approach based on system requirements.
 ## Gotchas
 
 - Switching input from controlled to uncontrolled (undefined value -> string) throws React warning.

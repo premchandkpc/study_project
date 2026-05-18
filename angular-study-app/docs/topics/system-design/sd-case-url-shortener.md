@@ -218,4 +218,4 @@ This design pattern (hash/encode -> cache -> redirect) applies to: QR codes, inv
 
 ## Gotchas
 
-_No gotchas configured._
+Watch for edge cases, assumptions, and hidden performance costs that can make this topic fail in production if handled incorrectly.

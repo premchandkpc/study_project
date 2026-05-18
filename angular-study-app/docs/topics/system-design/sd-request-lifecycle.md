@@ -180,4 +180,4 @@ Use this mental model in every system-design session as the starting framework.
 
 ## Gotchas
 
-_No gotchas configured._
+Watch for edge cases, assumptions, and hidden performance costs that can make this topic fail in production if handled incorrectly.

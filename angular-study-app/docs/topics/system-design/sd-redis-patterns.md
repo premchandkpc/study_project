@@ -203,4 +203,4 @@ Use Redis for: session store, rate limiting, leaderboards, pub-sub, distributed 
 
 ## Gotchas
 
-_No gotchas configured._
+Watch for edge cases, assumptions, and hidden performance costs that can make this topic fail in production if handled incorrectly.

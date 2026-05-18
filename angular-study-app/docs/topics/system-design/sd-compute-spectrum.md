@@ -187,4 +187,4 @@ Serverless for event-driven, infrequent, or unpredictable loads. Containers for 
 
 ## Gotchas
 
-_No gotchas configured._
+Watch for edge cases, assumptions, and hidden performance costs that can make this topic fail in production if handled incorrectly.

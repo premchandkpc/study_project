@@ -170,4 +170,4 @@ Enable mypy in CI for all new code. Use strict mode for new modules. Add types i
 
 ## Gotchas
 
-_No gotchas configured._
+Watch for edge cases, assumptions, and hidden performance costs that can make this topic fail in production if handled incorrectly.

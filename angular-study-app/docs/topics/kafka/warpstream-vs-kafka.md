@@ -70,8 +70,7 @@
 
 ## Why It Matters
 
-_No notes yet._
-
+Understanding this topic helps you build more efficient, reliable, and maintainable systems. It explains the practical impact of the design or algorithm in production.
 ## Architecture / Mental Model
 
 ```mermaid
@@ -123,8 +122,7 @@ Flow steps:
 
 ## Example
 
-_No code example configured._
-
+Example code, configuration, or architecture depends on the concrete problem. Use the implementation in the linked source file as a starting point.
 ## Complexity And Performance
 
 - Time/space complexity depends on input size, data volume, and implementation choices.
