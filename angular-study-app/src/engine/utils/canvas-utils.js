@@ -155,5 +155,72 @@
       mount.appendChild(d);
       return d;
     },
+
+    // opts-object text — used by architecture canvas renderer
+    // opts: { color, size, weight, align, base }
+    textOpts: function (ctx, str, x, y, opts) {
+      opts = opts || {};
+      ctx.fillStyle    = opts.color  || '#e8eef5';
+      ctx.font         = (opts.weight || 600) + ' ' + (opts.size || 14) + 'px "Inter", system-ui, sans-serif';
+      ctx.textAlign    = opts.align  || 'center';
+      ctx.textBaseline = opts.base   || 'middle';
+      ctx.fillText(str || '', x, y);
+    },
+
+    // opts-object word-wrap — used by architecture canvas renderer
+    // opts: { color, size, weight, align, base, maxLines }
+    wrapOpts: function (ctx, str, x, y, maxW, lineH, opts) {
+      opts = opts || {};
+      var words = String(str || '').split(/\s+/);
+      var lines = [];
+      var line  = '';
+      ctx.font = (opts.weight || 500) + ' ' + (opts.size || 13) + 'px "Inter", system-ui, sans-serif';
+      var self = this;
+      words.forEach(function (word) {
+        var next = line ? line + ' ' + word : word;
+        if (ctx.measureText(next).width > maxW && line) { lines.push(line); line = word; }
+        else line = next;
+      });
+      if (line) lines.push(line);
+      var max     = opts.maxLines || 3;
+      var clipped = lines.slice(0, max);
+      if (lines.length > max) clipped[max - 1] = clipped[max - 1].replace(/\s+\S*$/, '') + '...';
+      var start = y - ((clipped.length - 1) * lineH) / 2;
+      clipped.forEach(function (l, i) { self.textOpts(ctx, l, x, start + i * lineH, opts); });
+      return clipped.length * lineH;
+    },
+
+    // Curved bezier arrow between two center-point objects {x, y}
+    // Returns { start, end, cx, cy } for animated dot calculation
+    arrowCurved: function (ctx, a, b, color, dashed) {
+      var dx  = b.x - a.x;
+      var dy  = b.y - a.y;
+      var ang = Math.atan2(dy, dx);
+      var start = { x: a.x + Math.cos(ang) * 62, y: a.y + Math.sin(ang) * 38 };
+      var end   = { x: b.x - Math.cos(ang) * 62, y: b.y - Math.sin(ang) * 38 };
+      ctx.save();
+      ctx.strokeStyle = color || '#8b949e';
+      ctx.lineWidth   = 2.5;
+      ctx.lineCap     = 'round';
+      if (dashed) ctx.setLineDash([8, 8]);
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      var cx = (start.x + end.x) / 2;
+      var cy = (start.y + end.y) / 2 - 22;
+      ctx.quadraticCurveTo(cx, cy, end.x, end.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.translate(end.x, end.y);
+      ctx.rotate(ang);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-11, -6);
+      ctx.lineTo(-11, 6);
+      ctx.closePath();
+      ctx.fillStyle = color || '#8b949e';
+      ctx.fill();
+      ctx.restore();
+      return { start: start, end: end, cx: cx, cy: cy };
+    },
   };
 })();
