@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-bs-koko-bananas",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Rate throttling — find the slowest acceptable processing rate to finish within a deadline.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'bsearch.kokoEating',
-        time:  'O(n log m)',
-        space: 'O(1)',
+        title: "bsearch.kokoEating",
+        time:  "O(n log m)",
+        space: "O(1)",
         code: `function minEatingSpeed(piles, h) {
   let left = 1;
   let right = Math.max(...piles);

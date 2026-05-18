@@ -12,7 +12,7 @@
 - **Type inference**: compiler infers type args at call sites in most cases.
 - Generic functions can be used with concrete types at compile time — no runtime reflection.`,
     why:
-`Before generics, Go developers used \`interface{}\` with runtime type assertions (losing type safety) or code generation (\`go generate\`) for typed collections. Generics eliminate both: \`slices.Sort\`, \`maps.Keys\`, and custom data structures are now type-safe without codegen.`,
+"Before generics, Go developers used `interface{}` with runtime type assertions (losing type safety) or code generation (`go generate`) for typed collections. Generics eliminate both: `slices.Sort`, `maps.Keys`, and custom data structures are now type-safe without codegen.",
     example: {
       language: "go",
       code:
@@ -75,19 +75,19 @@ func main() {
     v, _ := s.Pop()
     fmt.Println(v)                       // b
 }`,
-      notes: `Prefer standard library \`slices\` and \`maps\` packages (Go 1.21) over reimplementing generic utilities. Generic code compiles to dictionaries/GC shapes — not C++ templates; one instantiation per GC shape, not per type.`
+      notes: "Prefer standard library `slices` and `maps` packages (Go 1.21) over reimplementing generic utilities. Generic code compiles to dictionaries/GC shapes — not C++ templates; one instantiation per GC shape, not per type."
     },
     interview: [
       {
         question: "When would you NOT use generics?",
         answer:
-`Three cases: (1) **Simple functions** where \`interface{}\` and a type switch is clearer. (2) **Runtime polymorphism** where you need dynamic dispatch — interfaces are the right tool. (3) **Readability cost** exceeds benefit — complex constraint expressions hurt newcomers. Generics shine for **collections, algorithms, and container types** where you lose type safety otherwise.`,
+"Three cases: (1) **Simple functions** where `interface{}` and a type switch is clearer. (2) **Runtime polymorphism** where you need dynamic dispatch — interfaces are the right tool. (3) **Readability cost** exceeds benefit — complex constraint expressions hurt newcomers. Generics shine for **collections, algorithms, and container types** where you lose type safety otherwise.",
         followUps: ["What is a GC shape?", "What are the performance implications of generics vs interfaces?"]
       },
       {
         question: "How are Go generics different from Java generics?",
         answer:
-`Java uses **type erasure** — generic type info is lost at runtime, and \`List<int>\` is boxed to \`List<Integer>\`. Go uses **GC shapes** — one code path per memory layout, no boxing for value types. Go generics can constrain with union types (\`int | float64\`); Java uses bounded wildcards. Go has no raw types.`,
+"Java uses **type erasure** — generic type info is lost at runtime, and `List<int>` is boxed to `List<Integer>`. Go uses **GC shapes** — one code path per memory layout, no boxing for value types. Go generics can constrain with union types (`int | float64`); Java uses bounded wildcards. Go has no raw types.",
         followUps: ["What is monomorphisation?", "Can you use generics with methods?"]
       }
     ],
@@ -102,7 +102,7 @@ func main() {
         "Cannot parameterize methods (only functions and types).",
         "Compile times increase with many instantiations."
       ],
-      when: `Use generics for **data structures, algorithms, and utility functions** where type matters but logic is identical. Keep business logic in concrete types — generics for infrastructure code.`
+      when: "Use generics for **data structures, algorithms, and utility functions** where type matters but logic is identical. Keep business logic in concrete types — generics for infrastructure code."
     }
   };
   window.GO_TOPICS = (window.GO_TOPICS || []).concat([topic]);

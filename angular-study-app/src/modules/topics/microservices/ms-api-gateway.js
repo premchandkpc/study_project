@@ -14,7 +14,7 @@
 Popular implementations: **Kong** (nginx-based, plugin ecosystem), **AWS API Gateway**, **Envoy Proxy** (xDS config, used by Istio), **Traefik**.
 **Backend-for-Frontend (BFF)** is a gateway variant per client type (mobile, web).`,
     why:
-`Without a gateway, every service reinvents auth and rate limiting — inconsistently. The gateway enables **cross-cutting concerns at the edge** without coupling services. Rate limiting at the gateway prevents cascading overload. TLS termination at the gateway removes per-service certificate management.`,
+"Without a gateway, every service reinvents auth and rate limiting — inconsistently. The gateway enables **cross-cutting concerns at the edge** without coupling services. Rate limiting at the gateway prevents cascading overload. TLS termination at the gateway removes per-service certificate management.",
     example: {
       language: "go",
       code:
@@ -91,19 +91,19 @@ func parseClientID(tok string) string {
 }
 
 func min(a, b float64) float64 { if a < b { return a }; return b }`,
-      notes: `In production, share rate limit state via **Redis** (sliding window with Lua scripts) for multi-instance gateways. Use a dedicated JWT library with signature verification and expiry checks.`
+      notes: "In production, share rate limit state via **Redis** (sliding window with Lua scripts) for multi-instance gateways. Use a dedicated JWT library with signature verification and expiry checks."
     },
     interview: [
       {
         question: "What is the difference between a gateway and a service mesh?",
         answer:
-`A **gateway** handles **north-south traffic** (client → cluster). A **service mesh** (Istio, Linkerd) handles **east-west traffic** (service → service) via sidecar proxies. The mesh gives you mTLS between services, circuit breaking, retries, and distributed tracing without changing application code. Gateways and meshes are complementary — deploy both in large orgs.`,
+"A **gateway** handles **north-south traffic** (client → cluster). A **service mesh** (Istio, Linkerd) handles **east-west traffic** (service → service) via sidecar proxies. The mesh gives you mTLS between services, circuit breaking, retries, and distributed tracing without changing application code. Gateways and meshes are complementary — deploy both in large orgs.",
         followUps: ["What is mTLS and why does it matter?", "How does xDS configuration work in Envoy?"]
       },
       {
         question: "How do you implement rate limiting without Redis?",
         answer:
-`In-memory token bucket (per replica) for low-traffic services — simple, zero latency, but allows per-replica × N requests total. For distributed rate limiting: Redis INCR with TTL (imprecise), Redis + Lua sliding window, or a dedicated service (Envoy's external rate limit gRPC API). Accept the tradeoff: strict distributed rate limiting adds latency; approximate is often good enough.`,
+"In-memory token bucket (per replica) for low-traffic services — simple, zero latency, but allows per-replica × N requests total. For distributed rate limiting: Redis INCR with TTL (imprecise), Redis + Lua sliding window, or a dedicated service (Envoy's external rate limit gRPC API). Accept the tradeoff: strict distributed rate limiting adds latency; approximate is often good enough.",
         followUps: ["What is the sliding window vs fixed window difference?", "How does Cloudflare rate limit at edge?"]
       }
     ],
@@ -118,7 +118,7 @@ func min(a, b float64) float64 { if a < b { return a }; return b }`,
         "Gateway latency adds to every request.",
         "Over-centralizing business logic in the gateway creates a bottleneck."
       ],
-      when: `**Always** use a gateway for public APIs. Use a **service mesh** when east-west mTLS and observability are required. Avoid putting business logic in the gateway — keep it infrastructure only.`
+      when: "**Always** use a gateway for public APIs. Use a **service mesh** when east-west mTLS and observability are required. Avoid putting business logic in the gateway — keep it infrastructure only."
     }
   };
   window.MICRO_TOPICS = (window.MICRO_TOPICS || []).concat([topic]);

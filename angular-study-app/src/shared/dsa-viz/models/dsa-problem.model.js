@@ -11,7 +11,7 @@
  *   new DSA.SlidingWindowProblem(mount, { title, time, space, code }).render();
  */
 (function () {
-  'use strict';
+  "use strict";
   window.DSA = window.DSA || {};
 
   class DSAProblem {
@@ -26,13 +26,13 @@
      * @param {object}      [opts.tracer]  — override tracer options
      */
     constructor(mount, opts = {}) {
-      if (!mount) throw new Error('DSAProblem: mount element required');
-      if (!opts.code) throw new Error('DSAProblem: code required');
+      if (!mount) throw new Error("DSAProblem: mount element required");
+      if (!opts.code) throw new Error("DSAProblem: code required");
 
       this.mount   = mount;
-      this.title   = opts.title   || '';
-      this.time    = opts.time    || '';
-      this.space   = opts.space   || '';
+      this.title   = opts.title   || "";
+      this.time    = opts.time    || "";
+      this.space   = opts.space   || "";
       this.code    = opts.code;
       this.pattern = opts.pattern || this.getPatternLabel();
       this.tracer  = opts.tracer  || {};
@@ -42,7 +42,7 @@
     // ── Override in subclasses ──────────────────────────────────
 
     /** Returns default label for this problem type */
-    getPatternLabel() { return 'Algorithm'; }
+    getPatternLabel() { return "Algorithm"; }
 
     /**
      * Returns tracer options: which arrays/vars to watch.
@@ -85,7 +85,7 @@
         });
         this._runtime.animate(steps);
       } catch (e) {
-        console.error('[DSAProblem.render]', this.title, e);
+        console.error("[DSAProblem.render]", this.title, e);
         this.mount.innerHTML = `
           <div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace;background:#161b22;border-radius:8px;border:1px solid #30363d">
             <strong>${this.title}</strong><br/>${e.message}

@@ -121,15 +121,15 @@
 
     visual: function(mount) {
       const JV_TRICKS = [
-        { wrong: 'Set -Xms=512m -Xmx=4g in containers → JVM resizes heap under load → GC pause during resize + OS may not commit pages.', right: 'Always -Xms = -Xmx in containers. Eliminates resize overhead. JVM commits all memory upfront.' },
-        { wrong: 'new byte[50_000_000] expects Eden allocation → fast TLAB bump-pointer.', right: 'Large arrays (> ½ G1 region) skip Eden entirely → Old Gen directly. Many humongous allocs fragment Old → Full GC.' },
-        { wrong: 'synchronized(lock) { jdbcCall(); } in virtual thread → thought carrier is free during I/O wait.', right: 'synchronized PINS virtual thread to carrier. Carrier OS thread BLOCKS. Use ReentrantLock — vthread unmounts, carrier freed.' },
-        { wrong: 'ThreadLocal.set(user) in Tomcat thread. Request ends. Assume it is cleaned up.', right: 'Tomcat reuses threads. Next request inherits stale ThreadLocal value. Always ThreadLocal.remove() in finally block.' },
+        { wrong: "Set -Xms=512m -Xmx=4g in containers → JVM resizes heap under load → GC pause during resize + OS may not commit pages.", right: "Always -Xms = -Xmx in containers. Eliminates resize overhead. JVM commits all memory upfront." },
+        { wrong: "new byte[50_000_000] expects Eden allocation → fast TLAB bump-pointer.", right: "Large arrays (> ½ G1 region) skip Eden entirely → Old Gen directly. Many humongous allocs fragment Old → Full GC." },
+        { wrong: "synchronized(lock) { jdbcCall(); } in virtual thread → thought carrier is free during I/O wait.", right: "synchronized PINS virtual thread to carrier. Carrier OS thread BLOCKS. Use ReentrantLock — vthread unmounts, carrier freed." },
+        { wrong: "ThreadLocal.set(user) in Tomcat thread. Request ends. Assume it is cleaned up.", right: "Tomcat reuses threads. Next request inherits stale ThreadLocal value. Always ThreadLocal.remove() in finally block." },
       ];
       const JV_QS = [
-        { q: 'When would you pick ZGC over G1?', a: 'ZGC when p99 latency matters and heap > 16 GB. ZGC keeps pauses < 1ms regardless of heap size. G1 is the safer default for 4–32 GB where 100–200ms pauses are acceptable and throughput matters more.' },
-        { q: 'What is a humongous allocation and why is it dangerous?', a: 'Any object > ½ of a G1 region (1–32 MB). Skips Eden, allocated directly in Old Gen contiguous regions. Many humongous allocations fragment Old Gen → force Full GC. Fix: tune -XX:G1HeapRegionSize or avoid large array allocs in hot paths.' },
-        { q: 'Why does Metaspace leak on WAR redeploy?', a: 'Each WAR gets its own ClassLoader. The old ClassLoader is GC-eligible only when NO live reference points to it. If a static Map, thread, JDBC driver, or logging framework holds a Class or ClassLoader reference: old ClassLoader (and all its classes) stay in Metaspace forever.' },
+        { q: "When would you pick ZGC over G1?", a: "ZGC when p99 latency matters and heap > 16 GB. ZGC keeps pauses < 1ms regardless of heap size. G1 is the safer default for 4–32 GB where 100–200ms pauses are acceptable and throughput matters more." },
+        { q: "What is a humongous allocation and why is it dangerous?", a: "Any object > ½ of a G1 region (1–32 MB). Skips Eden, allocated directly in Old Gen contiguous regions. Many humongous allocations fragment Old Gen → force Full GC. Fix: tune -XX:G1HeapRegionSize or avoid large array allocs in hot paths." },
+        { q: "Why does Metaspace leak on WAR redeploy?", a: "Each WAR gets its own ClassLoader. The old ClassLoader is GC-eligible only when NO live reference points to it. If a static Map, thread, JDBC driver, or logging framework holds a Class or ClassLoader reference: old ClassLoader (and all its classes) stay in Metaspace forever." },
       ];
       mount.innerHTML = `
         <style>
@@ -265,29 +265,29 @@
             <div style="margin-bottom:10px">
               <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
                 ${[
-                  {tier:'T0 · Interpreter',calls:'0',speed:'1×',col:'#768390',detail:'First invocation. Bytecode executed instruction by instruction. Counting starts.'},
-                  {tier:'T1 · C1 simple',calls:'≥200',speed:'5×',col:'#6cb6ff',detail:'Simple C1 compile. No profiling instrumentation. Fast to compile.'},
-                  {tier:'T3 · C1 profiled',calls:'≥2000',speed:'10×',col:'#e3b341',detail:'C1 with profiling: branch frequencies, call targets, type profiles recorded for C2.'},
-                  {tier:'T4 · C2 full',calls:'≥15000',speed:'50×+',col:'#57ab5a',detail:'Full C2 optimize: inlining, loop unroll, escape analysis, lock elision, SIMD. Best performance.'},
-                ].map(t => `
+    {tier:"T0 · Interpreter",calls:"0",speed:"1×",col:"#768390",detail:"First invocation. Bytecode executed instruction by instruction. Counting starts."},
+    {tier:"T1 · C1 simple",calls:"≥200",speed:"5×",col:"#6cb6ff",detail:"Simple C1 compile. No profiling instrumentation. Fast to compile."},
+    {tier:"T3 · C1 profiled",calls:"≥2000",speed:"10×",col:"#e3b341",detail:"C1 with profiling: branch frequencies, call targets, type profiles recorded for C2."},
+    {tier:"T4 · C2 full",calls:"≥15000",speed:"50×+",col:"#57ab5a",detail:"Full C2 optimize: inlining, loop unroll, escape analysis, lock elision, SIMD. Best performance."},
+  ].map(t => `
                   <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px;cursor:pointer" onclick="this.closest('.jv-panel').querySelector('.jv-info').innerHTML='<strong>${t.tier}:</strong> ${t.detail} Invocation count: <span class=\\"kw\\">${t.calls}</span>. Speedup vs Tier0: <strong style=\\"color:#57ab5a\\">${t.speed}</strong>.'">
                     <div style="font-size:11px;font-weight:bold;color:${t.col};margin-bottom:4px">${t.tier}</div>
                     <div style="font-size:10px;color:#768390">Calls: ${t.calls}</div>
                     <div style="font-size:14px;font-weight:bold;color:${t.col};margin-top:4px">${t.speed}</div>
-                  </div>`).join('')}
+                  </div>`).join("")}
               </div>
             </div>
             <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px;margin-bottom:8px">
               <div style="font-size:10px;color:#768390;margin-bottom:6px">Key C2 Optimizations (click to learn)</div>
               <div style="display:flex;flex-wrap:wrap;gap:6px">
                 ${[
-                  {n:'Method Inlining',d:'#1 win. Replaces call site with callee body. Eliminates call overhead AND enables further opts (constant folding, dead code elim) inside inlined body. -XX:MaxInlineSize controls threshold.'},
-                  {n:'Escape Analysis',d:'If Obj never leaves the method, allocate on STACK — zero GC pressure. Common for small DTOs. Check with -XX:+PrintEscapeAnalysis.'},
-                  {n:'Lock Elision',d:'If lock object cannot escape (local synchronized block), JIT removes the lock entirely. No contention possible. Free synchronization.'},
-                  {n:'Loop Unrolling',d:'Replicate loop body N times to reduce branch overhead and enable SIMD. Common in array processing. Controlled by LoopUnrollLimit.'},
-                  {n:'Dead Code Elim',d:'Code proven unreachable (e.g. constant-folded if(false)) is removed entirely. Common after inlining.'},
-                  {n:'Intrinsics',d:'String.equals(), Arrays.sort(), Math.sqrt() replaced with hand-written assembly intrinsics. Huge speedup for common ops.'},
-                ].map(o => `<button style="background:#21262d;border:1px solid #30363d;color:#cdd9e5;padding:3px 8px;border-radius:4px;font-size:10px;font-family:monospace;cursor:pointer" onclick="this.closest('.jv-panel').querySelector('.jv-info').innerHTML='<strong>${o.n}:</strong> ${o.d}'">${o.n}</button>`).join('')}
+    {n:"Method Inlining",d:"#1 win. Replaces call site with callee body. Eliminates call overhead AND enables further opts (constant folding, dead code elim) inside inlined body. -XX:MaxInlineSize controls threshold."},
+    {n:"Escape Analysis",d:"If Obj never leaves the method, allocate on STACK — zero GC pressure. Common for small DTOs. Check with -XX:+PrintEscapeAnalysis."},
+    {n:"Lock Elision",d:"If lock object cannot escape (local synchronized block), JIT removes the lock entirely. No contention possible. Free synchronization."},
+    {n:"Loop Unrolling",d:"Replicate loop body N times to reduce branch overhead and enable SIMD. Common in array processing. Controlled by LoopUnrollLimit."},
+    {n:"Dead Code Elim",d:"Code proven unreachable (e.g. constant-folded if(false)) is removed entirely. Common after inlining."},
+    {n:"Intrinsics",d:"String.equals(), Arrays.sort(), Math.sqrt() replaced with hand-written assembly intrinsics. Huge speedup for common ops."},
+  ].map(o => `<button style="background:#21262d;border:1px solid #30363d;color:#cdd9e5;padding:3px 8px;border-radius:4px;font-size:10px;font-family:monospace;cursor:pointer" onclick="this.closest('.jv-panel').querySelector('.jv-info').innerHTML='<strong>${o.n}:</strong> ${o.d}'">${o.n}</button>`).join("")}
               </div>
             </div>
             <div class="jv-info" id="jv-jit-info">Click a JIT tier or optimization above to learn about it.</div>
@@ -304,66 +304,66 @@
                 <div style="background:#1f3d2d;border:1px solid #57ab5a;border-radius:6px;padding:8px;font-size:10px;color:#cdd9e5">
                   <div style="color:#57ab5a;font-weight:bold;margin-bottom:4px">✓ CORRECT</div>${t.right}
                 </div>
-              </div>`).join('')}
+              </div>`).join("")}
             <div style="font-size:10px;color:#768390;margin:10px 0 6px">💬 Interview Flash Cards — click to reveal answer</div>
             ${JV_QS.map(q => `
               <div style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:8px;margin-bottom:6px;cursor:pointer" onclick="const a=this.querySelector('.jv-qa');a.style.display=a.style.display==='none'?'block':'none'">
                 <div style="font-size:11px;color:#cdd9e5;font-weight:bold">Q: ${q.q}</div>
                 <div class="jv-qa" style="display:none;font-size:10px;color:#768390;margin-top:6px;border-top:1px solid #30363d;padding-top:6px">${q.a}</div>
-              </div>`).join('')}
+              </div>`).join("")}
           </div>
         </div>`;
 
       // Tab switching
-      mount.querySelectorAll('.jv-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          mount.querySelectorAll('.jv-tab').forEach(t => t.classList.remove('active'));
-          mount.querySelectorAll('.jv-panel').forEach(p => p.classList.remove('active'));
-          tab.classList.add('active');
-          mount.querySelector('#jv-panel-' + tab.dataset.tab).classList.add('active');
+      mount.querySelectorAll(".jv-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+          mount.querySelectorAll(".jv-tab").forEach(t => t.classList.remove("active"));
+          mount.querySelectorAll(".jv-panel").forEach(p => p.classList.remove("active"));
+          tab.classList.add("active");
+          mount.querySelector("#jv-panel-" + tab.dataset.tab).classList.add("active");
         });
       });
 
       // Heap simulation
       let heapState = { eden: [], s0: [], s1: [], old: [], age: new Map() };
       let objCount = 0;
-      const heapInfo = mount.querySelector('#jv-heap-info');
+      const heapInfo = mount.querySelector("#jv-heap-info");
 
       function renderHeap() {
-        ['eden','s0','s1','old'].forEach(region => {
-          const el = mount.querySelector('#jv-' + region);
-          el.innerHTML = '';
+        ["eden","s0","s1","old"].forEach(region => {
+          const el = mount.querySelector("#jv-" + region);
+          el.innerHTML = "";
           heapState[region].forEach(id => {
-            const d = document.createElement('div');
+            const d = document.createElement("div");
             const age = heapState.age.get(id) || 0;
-            d.className = 'jv-obj ' + (region === 'old' ? 'promoted' : region === 's0' || region === 's1' ? 'young' : 'live');
-            d.title = 'obj' + id + ' age=' + age;
+            d.className = "jv-obj " + (region === "old" ? "promoted" : region === "s0" || region === "s1" ? "young" : "live");
+            d.title = "obj" + id + " age=" + age;
             el.appendChild(d);
           });
-          mount.querySelector('#jv-' + region + '-stat').textContent = heapState[region].length + ' obj';
+          mount.querySelector("#jv-" + region + "-stat").textContent = heapState[region].length + " obj";
         });
         // Metaspace: fixed
-        const meta = mount.querySelector('#jv-meta');
+        const meta = mount.querySelector("#jv-meta");
         if (!meta.children.length) {
           for (let i = 0; i < 6; i++) {
-            const d = document.createElement('div');
-            d.className = 'jv-obj class';
-            d.title = 'Class metadata';
+            const d = document.createElement("div");
+            d.className = "jv-obj class";
+            d.title = "Class metadata";
             meta.appendChild(d);
           }
         }
       }
 
-      mount.querySelector('#jv-alloc').addEventListener('click', () => {
+      mount.querySelector("#jv-alloc").addEventListener("click", () => {
         const n = 8 + Math.floor(Math.random() * 6);
         for (let i = 0; i < n; i++) heapState.eden.push(++objCount);
         renderHeap();
-        heapInfo.innerHTML = '<strong>Allocated ' + n + ' objects in Eden via TLAB.</strong> Total Eden: ' + heapState.eden.length + '. When Eden fills → Minor GC fires automatically.';
+        heapInfo.innerHTML = "<strong>Allocated " + n + " objects in Eden via TLAB.</strong> Total Eden: " + heapState.eden.length + ". When Eden fills → Minor GC fires automatically.";
       });
 
-      mount.querySelector('#jv-minor').addEventListener('click', () => {
+      mount.querySelector("#jv-minor").addEventListener("click", () => {
         const edenCount = heapState.eden.length;
-        if (!edenCount) { heapInfo.innerHTML = 'Eden empty — nothing to collect.'; return; }
+        if (!edenCount) { heapInfo.innerHTML = "Eden empty — nothing to collect."; return; }
         // 70% die, 30% survive to current survivor
         const survivors = heapState.eden.filter(() => Math.random() > 0.7);
         const died = edenCount - survivors.length;
@@ -377,44 +377,44 @@
         heapState.eden = [];
         survivors.forEach(id => heapState.age.set(id, (heapState.age.get(id) || 0) + 1));
         renderHeap();
-        heapInfo.innerHTML = '<strong>Minor GC complete!</strong> Eden cleared. ' + died + ' objects died (freed in bulk). ' + survivors.length + ' survivors copied to S1. ' + oldS.length + ' objects promoted to Old Gen (age ≥ 2).';
+        heapInfo.innerHTML = "<strong>Minor GC complete!</strong> Eden cleared. " + died + " objects died (freed in bulk). " + survivors.length + " survivors copied to S1. " + oldS.length + " objects promoted to Old Gen (age ≥ 2).";
       });
 
-      mount.querySelector('#jv-major').addEventListener('click', () => {
+      mount.querySelector("#jv-major").addEventListener("click", () => {
         const before = heapState.old.length;
         heapState.old = heapState.old.filter(() => Math.random() > 0.5);
         const freed = before - heapState.old.length;
         renderHeap();
-        heapInfo.innerHTML = '<strong>Major GC (G1 mixed collection)!</strong> Old Gen scanned. ' + freed + ' long-lived objects freed. ' + heapState.old.length + ' objects remain. Concurrent marking identified high-garbage regions first.';
+        heapInfo.innerHTML = "<strong>Major GC (G1 mixed collection)!</strong> Old Gen scanned. " + freed + " long-lived objects freed. " + heapState.old.length + " objects remain. Concurrent marking identified high-garbage regions first.";
       });
 
-      mount.querySelector('#jv-reset-heap').addEventListener('click', () => {
+      mount.querySelector("#jv-reset-heap").addEventListener("click", () => {
         heapState = { eden: [], s0: [], s1: [], old: [], age: new Map() };
         objCount = 0;
         renderHeap();
-        heapInfo.innerHTML = 'Heap reset. Press "Allocate objects" to begin.';
-        mount.querySelector('#jv-meta').innerHTML = '';
+        heapInfo.innerHTML = "Heap reset. Press \"Allocate objects\" to begin.";
+        mount.querySelector("#jv-meta").innerHTML = "";
       });
 
       // GC timeline visualization
       function drawTimeline(id, segments) {
-        const el = mount.querySelector('#' + id);
-        el.innerHTML = '';
+        const el = mount.querySelector("#" + id);
+        el.innerHTML = "";
         let pos = 0;
         segments.forEach(seg => {
-          const div = document.createElement('div');
-          div.className = 'jv-pause ' + seg.type;
-          div.style.left = pos + '%';
-          div.style.width = seg.w + '%';
+          const div = document.createElement("div");
+          div.className = "jv-pause " + seg.type;
+          div.style.left = pos + "%";
+          div.style.width = seg.w + "%";
           div.title = seg.label;
           el.appendChild(div);
           pos += seg.w;
         });
       }
-      drawTimeline('jv-tl-serial',   [{type:'app',w:15,label:'App'},{type:'stw',w:30,label:'Full STW 300ms'},{type:'app',w:10,label:'App'},{type:'stw',w:25,label:'Full STW 250ms'},{type:'app',w:20,label:'App'}]);
-      drawTimeline('jv-tl-parallel', [{type:'app',w:30,label:'App'},{type:'stw',w:12,label:'STW 120ms'},{type:'app',w:35,label:'App'},{type:'stw',w:10,label:'STW 100ms'},{type:'app',w:13,label:'App'}]);
-      drawTimeline('jv-tl-g1',       [{type:'app',w:40,label:'App'},{type:'conc',w:15,label:'Concurrent mark'},{type:'app',w:10,label:'App'},{type:'stw',w:3,label:'STW 20ms'},{type:'app',w:15,label:'App'},{type:'conc',w:12,label:'Concurrent cleanup'},{type:'app',w:5,label:'App'}]);
-      drawTimeline('jv-tl-zgc',      [{type:'app',w:25,label:'App'},{type:'conc',w:20,label:'Concurrent mark'},{type:'app',w:5,label:'App'},{type:'stw',w:1,label:'STW <1ms'},{type:'conc',w:15,label:'Concurrent relocate'},{type:'app',w:34,label:'App'}]);
+      drawTimeline("jv-tl-serial",   [{type:"app",w:15,label:"App"},{type:"stw",w:30,label:"Full STW 300ms"},{type:"app",w:10,label:"App"},{type:"stw",w:25,label:"Full STW 250ms"},{type:"app",w:20,label:"App"}]);
+      drawTimeline("jv-tl-parallel", [{type:"app",w:30,label:"App"},{type:"stw",w:12,label:"STW 120ms"},{type:"app",w:35,label:"App"},{type:"stw",w:10,label:"STW 100ms"},{type:"app",w:13,label:"App"}]);
+      drawTimeline("jv-tl-g1",       [{type:"app",w:40,label:"App"},{type:"conc",w:15,label:"Concurrent mark"},{type:"app",w:10,label:"App"},{type:"stw",w:3,label:"STW 20ms"},{type:"app",w:15,label:"App"},{type:"conc",w:12,label:"Concurrent cleanup"},{type:"app",w:5,label:"App"}]);
+      drawTimeline("jv-tl-zgc",      [{type:"app",w:25,label:"App"},{type:"conc",w:20,label:"Concurrent mark"},{type:"app",w:5,label:"App"},{type:"stw",w:1,label:"STW <1ms"},{type:"conc",w:15,label:"Concurrent relocate"},{type:"app",w:34,label:"App"}]);
     },
 
     concept:
@@ -426,7 +426,7 @@
 
 **L4 (30min deep):** TLAB = per-thread bump-pointer in Eden; refilled via CAS on exhaustion. GC roots: thread stacks, static fields, JNI globals. G1 RSets: card table tracks cross-region dirty refs. ZGC colored pointers: 42-bit address + 4 metadata bits (marked0/1, remapped, finalizable); load barriers fix stale refs on access. Escape analysis at C2: stack-allocates non-escaping objects → zero GC pressure.`,
     why:
-`Heap layout and GC choice directly drive **p99 latency** and **throughput**. Misconfigured heaps cause stop-the-world pauses that break SLOs in trading, ads, and chat systems. At scale (\`> 32 GB heap\`), CompressedOops boundary and GC algorithm choice change throughput by 20–40%.`,
+"Heap layout and GC choice directly drive **p99 latency** and **throughput**. Misconfigured heaps cause stop-the-world pauses that break SLOs in trading, ads, and chat systems. At scale (`> 32 GB heap`), CompressedOops boundary and GC algorithm choice change throughput by 20–40%.",
     example: {
       language: "java",
       code:
@@ -453,25 +453,25 @@ public class HeapInspector {
     }
 }`,
       notes:
-`Edge cases: humongous allocations (> 50% of G1 region) skip Eden and go straight to Old; large arrays cause fragmentation. Always pin \`-Xms = -Xmx\` in containers to avoid resize stalls.`
+"Edge cases: humongous allocations (> 50% of G1 region) skip Eden and go straight to Old; large arrays cause fragmentation. Always pin `-Xms = -Xmx` in containers to avoid resize stalls."
     },
     interview: [
       {
         question: "When would you pick ZGC over G1?",
         answer:
-`Pick **ZGC** when p99/p999 latency matters more than peak throughput and the heap is large (> 16 GB). ZGC keeps pause times sub-ms even at 16 TB. **G1** is the safer default for typical 4–32 GB services where 100–200 ms pauses are acceptable and throughput matters.`,
+"Pick **ZGC** when p99/p999 latency matters more than peak throughput and the heap is large (> 16 GB). ZGC keeps pause times sub-ms even at 16 TB. **G1** is the safer default for typical 4–32 GB services where 100–200 ms pauses are acceptable and throughput matters.",
         followUps: ["What are colored pointers?", "Cost of ZGC's load barriers?", "Why is generational ZGC faster?"]
       },
       {
         question: "How do you debug a memory leak in production?",
         answer:
-`1. Capture a heap dump with \`jcmd <pid> GC.heap_dump\` or \`-XX:+HeapDumpOnOutOfMemoryError\`. 2. Open in **Eclipse MAT** or **VisualVM**; look at dominator tree. 3. Inspect retained-size sorted by class. 4. Common culprits: unbounded caches, \`ThreadLocal\` leaks in pooled threads, JDBC \`PreparedStatement\` not closed, listeners not unregistered.`,
+"1. Capture a heap dump with `jcmd <pid> GC.heap_dump` or `-XX:+HeapDumpOnOutOfMemoryError`. 2. Open in **Eclipse MAT** or **VisualVM**; look at dominator tree. 3. Inspect retained-size sorted by class. 4. Common culprits: unbounded caches, `ThreadLocal` leaks in pooled threads, JDBC `PreparedStatement` not closed, listeners not unregistered.",
         followUps: ["What is a leak suspect in MAT?", "Why do ThreadLocals leak in Tomcat?"]
       },
       {
         question: "What is a 'humongous' allocation?",
         answer:
-`In G1, any object larger than half of a region (regions are 1–32 MB) is allocated directly in contiguous old-gen regions. Many humongous allocations fragment the heap and force full GC. Detect with \`-Xlog:gc+heap=debug\`.`,
+"In G1, any object larger than half of a region (regions are 1–32 MB) is allocated directly in contiguous old-gen regions. Many humongous allocations fragment the heap and force full GC. Detect with `-Xlog:gc+heap=debug`.",
         followUps: ["How to tune region size?", "G1 vs Parallel for batch jobs?"]
       }
     ],
@@ -495,7 +495,7 @@ public class HeapInspector {
         "Tuning is heap-shape specific — copy-paste flags rarely transfer."
       ],
       when:
-`**G1** for general services. **ZGC** for low-latency, large-heap workloads. **Parallel GC** for short batch jobs where throughput trumps pause. **Serial GC** only for tiny CLI tools.`
+"**G1** for general services. **ZGC** for low-latency, large-heap workloads. **Parallel GC** for short batch jobs where throughput trumps pause. **Serial GC** only for tiny CLI tools."
     }
   };
   window.JAVA_TOPICS = (window.JAVA_TOPICS || []).concat([topic]);

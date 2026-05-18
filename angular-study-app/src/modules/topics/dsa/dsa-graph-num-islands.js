@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-graph-num-islands",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Map analysis — count distinct connected land regions. Used in: geography apps, game maps, image segmentation.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'graph.numIslands',
-        time:  'O(mn)',
-        space: 'O(mn)',
+        title: "graph.numIslands",
+        time:  "O(mn)",
+        space: "O(mn)",
         code: `function numIslands(grid) {
   let count = 0;
   function dfs(r, c) {

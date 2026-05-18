@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-sw2-perm-in-str",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Anagram detector — is any rearrangement of a keyword hiding in this text?`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'sliding2.permInStr',
-        time:  'O(n)',
-        space: 'O(1)',
+        title: "sliding2.permInStr",
+        time:  "O(n)",
+        space: "O(1)",
         code: `function checkInclusion(s1, s2) {
   if (s1.length > s2.length) return false;
   const count = new Array(26).fill(0);

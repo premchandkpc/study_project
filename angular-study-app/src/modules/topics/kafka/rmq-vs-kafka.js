@@ -299,60 +299,60 @@
   </div>
 </div>`;
 
-      var tip = document.getElementById('rv-tip');
+      var tip = document.getElementById("rv-tip");
       function showTip(el, html) {
         if (!el) return;
-        el.addEventListener('mouseenter', function () { tip.innerHTML = html; tip.style.display = 'block'; });
-        el.addEventListener('mousemove', function (e) { tip.style.left = (e.clientX + 14) + 'px'; tip.style.top = (e.clientY - 10) + 'px'; });
-        el.addEventListener('mouseleave', function () { tip.style.display = 'none'; });
+        el.addEventListener("mouseenter", function () { tip.innerHTML = html; tip.style.display = "block"; });
+        el.addEventListener("mousemove", function (e) { tip.style.left = (e.clientX + 14) + "px"; tip.style.top = (e.clientY - 10) + "px"; });
+        el.addEventListener("mouseleave", function () { tip.style.display = "none"; });
       }
 
       // Tab switch
-      document.querySelectorAll('#rv-root .rv-tab').forEach(function (t) {
-        t.addEventListener('click', function () {
-          document.querySelectorAll('#rv-root .rv-tab').forEach(function (x) { x.classList.remove('on'); });
-          document.querySelectorAll('#rv-root .rv-panel').forEach(function (x) { x.classList.remove('on'); });
-          t.classList.add('on');
-          document.getElementById(t.dataset.tab).classList.add('on');
+      document.querySelectorAll("#rv-root .rv-tab").forEach(function (t) {
+        t.addEventListener("click", function () {
+          document.querySelectorAll("#rv-root .rv-tab").forEach(function (x) { x.classList.remove("on"); });
+          document.querySelectorAll("#rv-root .rv-panel").forEach(function (x) { x.classList.remove("on"); });
+          t.classList.add("on");
+          document.getElementById(t.dataset.tab).classList.add("on");
         });
       });
 
       // --- TAB 1: Flow animation ---
       var flowSteps = [
-        { rmqA0: '#768390', rmqA1: '#768390', kA0: '#768390', kA1: '#768390', info: 'Both systems idle. No messages in flight.' },
-        { rmqA0: '#3fb950', rmqA1: '#768390', kA0: '#3fb950', kA1: '#768390', info: 'Producers publish: RabbitMQ sends to Exchange. Kafka appends to partition log.' },
-        { rmqA0: '#3fb950', rmqA1: '#f59134', kA0: '#3fb950', kA1: '#768390', info: 'RabbitMQ broker PUSHES to consumer. Kafka broker waits — consumer must poll.' },
-        { rmqA0: '#3fb950', rmqA1: '#f59134', kA0: '#3fb950', kA1: '#58a6ff', info: 'Kafka consumer POLLs at own pace. Can be slow — broker does not care. RMQ: prefetch controls back-pressure.' },
-        { rmqA0: '#3fb950', rmqA1: '#3fb950', kA0: '#3fb950', kA1: '#3fb950', info: 'Complete. RMQ: msg acked → deleted. Kafka: msg committed → still in log (retention policy applies).' }
+        { rmqA0: "#768390", rmqA1: "#768390", kA0: "#768390", kA1: "#768390", info: "Both systems idle. No messages in flight." },
+        { rmqA0: "#3fb950", rmqA1: "#768390", kA0: "#3fb950", kA1: "#768390", info: "Producers publish: RabbitMQ sends to Exchange. Kafka appends to partition log." },
+        { rmqA0: "#3fb950", rmqA1: "#f59134", kA0: "#3fb950", kA1: "#768390", info: "RabbitMQ broker PUSHES to consumer. Kafka broker waits — consumer must poll." },
+        { rmqA0: "#3fb950", rmqA1: "#f59134", kA0: "#3fb950", kA1: "#58a6ff", info: "Kafka consumer POLLs at own pace. Can be slow — broker does not care. RMQ: prefetch controls back-pressure." },
+        { rmqA0: "#3fb950", rmqA1: "#3fb950", kA0: "#3fb950", kA1: "#3fb950", info: "Complete. RMQ: msg acked → deleted. Kafka: msg committed → still in log (retention policy applies)." }
       ];
       var fStep = 0, fTimer = null, fPlaying = false;
 
       function renderFlow() {
         var s = flowSteps[fStep];
-        document.getElementById('rv-rmq-a0').style.color = s.rmqA0;
-        document.getElementById('rv-rmq-a1').style.color = s.rmqA1;
-        document.getElementById('rv-k-a0').style.color = s.kA0;
-        document.getElementById('rv-k-a1').style.color = s.kA1;
-        document.getElementById('rv-flow-info').textContent = s.info;
+        document.getElementById("rv-rmq-a0").style.color = s.rmqA0;
+        document.getElementById("rv-rmq-a1").style.color = s.rmqA1;
+        document.getElementById("rv-k-a0").style.color = s.kA0;
+        document.getElementById("rv-k-a1").style.color = s.kA1;
+        document.getElementById("rv-flow-info").textContent = s.info;
       }
 
-      document.getElementById('rv-f-play').addEventListener('click', function () {
+      document.getElementById("rv-f-play").addEventListener("click", function () {
         fPlaying = !fPlaying;
-        this.textContent = fPlaying ? '⏸ Pause' : '▶ Play';
+        this.textContent = fPlaying ? "⏸ Pause" : "▶ Play";
         if (fPlaying) { fTimer = setInterval(function () { fStep = (fStep + 1) % flowSteps.length; renderFlow(); }, 1500); }
         else clearInterval(fTimer);
       });
-      document.getElementById('rv-f-next').addEventListener('click', function () { fStep = Math.min(fStep + 1, flowSteps.length - 1); renderFlow(); });
-      document.getElementById('rv-f-prev').addEventListener('click', function () { fStep = Math.max(fStep - 1, 0); renderFlow(); });
-      document.getElementById('rv-f-reset').addEventListener('click', function () {
+      document.getElementById("rv-f-next").addEventListener("click", function () { fStep = Math.min(fStep + 1, flowSteps.length - 1); renderFlow(); });
+      document.getElementById("rv-f-prev").addEventListener("click", function () { fStep = Math.max(fStep - 1, 0); renderFlow(); });
+      document.getElementById("rv-f-reset").addEventListener("click", function () {
         clearInterval(fTimer); fPlaying = false;
-        document.getElementById('rv-f-play').textContent = '▶ Play';
+        document.getElementById("rv-f-play").textContent = "▶ Play";
         fStep = 0; renderFlow();
       });
 
       // Tooltips on flow nodes
-      showTip(document.getElementById('rv-rmq-broker'), '<b>RabbitMQ Broker</b><br>Exchange routes via bindings. Queue stores msgs. Broker pushes to consumer respecting prefetch limit.<br><br><b>x-max-length, TTL, DLX</b> all managed here.');
-      showTip(document.getElementById('rv-k-broker'), '<b>Kafka Broker</b><br>Append-only log. No routing logic. Consumer stores offset. Broker just serves fetch requests.<br><br><b>Retention:</b> log.retention.hours=168 (7 days default)');
+      showTip(document.getElementById("rv-rmq-broker"), "<b>RabbitMQ Broker</b><br>Exchange routes via bindings. Queue stores msgs. Broker pushes to consumer respecting prefetch limit.<br><br><b>x-max-length, TTL, DLX</b> all managed here.");
+      showTip(document.getElementById("rv-k-broker"), "<b>Kafka Broker</b><br>Append-only log. No routing logic. Consumer stores offset. Broker just serves fetch requests.<br><br><b>Retention:</b> log.retention.hours=168 (7 days default)");
       renderFlow();
 
       // --- TAB 2: Retention animation ---
@@ -361,7 +361,7 @@
 
       function renderRetention() {
         // Add message each step
-        var msgId = 'M' + retStep;
+        var msgId = "M" + retStep;
         rmqMsgs.push({ id: msgId, alive: true });
         kLog.push({ id: msgId });
         // Simulate RMQ consuming oldest
@@ -370,143 +370,143 @@
         if (retStep % 2 === 0 && kOffA < kLog.length) kOffA++;
         if (retStep % 3 === 0 && kOffB < kLog.length) kOffB++;
 
-        var rmqEl = document.getElementById('rv-rmq-msgs');
+        var rmqEl = document.getElementById("rv-rmq-msgs");
         rmqEl.innerHTML = rmqMsgs.map(function (m) {
-          return '<div style="background:#f59134;color:#0d1117;border-radius:10px;padding:3px 9px;font-size:10px;font-weight:bold">' + m.id + '</div>';
-        }).join('');
+          return "<div style=\"background:#f59134;color:#0d1117;border-radius:10px;padding:3px 9px;font-size:10px;font-weight:bold\">" + m.id + "</div>";
+        }).join("");
 
-        var kEl = document.getElementById('rv-k-log');
+        var kEl = document.getElementById("rv-k-log");
         kEl.innerHTML = kLog.map(function (m, i) {
-          var bgA = i < kOffA ? '#58a6ff33' : 'transparent';
-          var bgB = i < kOffB ? '#3fb95033' : 'transparent';
-          return '<div style="background:#e8741a;color:#0d1117;border-radius:10px;padding:3px 9px;font-size:10px;font-weight:bold;border:2px solid ' + (i < kOffA ? '#58a6ff' : i < kOffB ? '#3fb950' : '#e8741a') + '">' + i + ':' + m.id + '</div>';
-        }).join('');
+          var bgA = i < kOffA ? "#58a6ff33" : "transparent";
+          var bgB = i < kOffB ? "#3fb95033" : "transparent";
+          return "<div style=\"background:#e8741a;color:#0d1117;border-radius:10px;padding:3px 9px;font-size:10px;font-weight:bold;border:2px solid " + (i < kOffA ? "#58a6ff" : i < kOffB ? "#3fb950" : "#e8741a") + "\">" + i + ":" + m.id + "</div>";
+        }).join("");
 
-        document.getElementById('rv-rmq-depth').textContent = rmqMsgs.length;
-        document.getElementById('rv-rmq-proc').textContent = rmqProc;
-        document.getElementById('rv-k-size').textContent = kLog.length;
-        document.getElementById('rv-k-off-a').textContent = kOffA;
-        document.getElementById('rv-k-off-b').textContent = kOffB;
-        document.getElementById('rv-k-ptr-a').textContent = 'Consumer A offset=' + kOffA;
-        document.getElementById('rv-k-ptr-b').textContent = 'Consumer B offset=' + kOffB;
-        document.getElementById('rv-retention-info').textContent = 'Step ' + retStep + ': RMQ has ' + rmqMsgs.length + ' msgs (deleted after ack). Kafka log grows to ' + kLog.length + ' (retained). Consumer A at ' + kOffA + ', B at ' + kOffB + '.';
+        document.getElementById("rv-rmq-depth").textContent = rmqMsgs.length;
+        document.getElementById("rv-rmq-proc").textContent = rmqProc;
+        document.getElementById("rv-k-size").textContent = kLog.length;
+        document.getElementById("rv-k-off-a").textContent = kOffA;
+        document.getElementById("rv-k-off-b").textContent = kOffB;
+        document.getElementById("rv-k-ptr-a").textContent = "Consumer A offset=" + kOffA;
+        document.getElementById("rv-k-ptr-b").textContent = "Consumer B offset=" + kOffB;
+        document.getElementById("rv-retention-info").textContent = "Step " + retStep + ": RMQ has " + rmqMsgs.length + " msgs (deleted after ack). Kafka log grows to " + kLog.length + " (retained). Consumer A at " + kOffA + ", B at " + kOffB + ".";
         retStep++;
       }
 
-      document.getElementById('rv-ret-play').addEventListener('click', function () {
+      document.getElementById("rv-ret-play").addEventListener("click", function () {
         retPlaying = !retPlaying;
-        this.textContent = retPlaying ? '⏸ Pause' : '▶ Play';
+        this.textContent = retPlaying ? "⏸ Pause" : "▶ Play";
         if (retPlaying) { retTimer = setInterval(renderRetention, 1200); }
         else clearInterval(retTimer);
       });
-      document.getElementById('rv-ret-next').addEventListener('click', renderRetention);
-      document.getElementById('rv-ret-prev').addEventListener('click', function () {
+      document.getElementById("rv-ret-next").addEventListener("click", renderRetention);
+      document.getElementById("rv-ret-prev").addEventListener("click", function () {
         // retention model doesn't support going back; just show info
-        document.getElementById('rv-retention-info').textContent = 'Retention model is append-only — prev not applicable. Reset to restart.';
+        document.getElementById("rv-retention-info").textContent = "Retention model is append-only — prev not applicable. Reset to restart.";
       });
-      document.getElementById('rv-ret-reset').addEventListener('click', function () {
+      document.getElementById("rv-ret-reset").addEventListener("click", function () {
         clearInterval(retTimer); retPlaying = false; retStep = 0; rmqMsgs = []; kLog = []; kOffA = 0; kOffB = 0; rmqProc = 0;
-        document.getElementById('rv-ret-play').textContent = '▶ Play';
-        document.getElementById('rv-rmq-msgs').innerHTML = '';
-        document.getElementById('rv-k-log').innerHTML = '';
-        document.getElementById('rv-rmq-depth').textContent = '0';
-        document.getElementById('rv-rmq-proc').textContent = '0';
-        document.getElementById('rv-k-size').textContent = '0';
-        document.getElementById('rv-k-off-a').textContent = '0';
-        document.getElementById('rv-k-off-b').textContent = '0';
-        document.getElementById('rv-retention-info').textContent = 'Press Play to simulate message retention differences.';
+        document.getElementById("rv-ret-play").textContent = "▶ Play";
+        document.getElementById("rv-rmq-msgs").innerHTML = "";
+        document.getElementById("rv-k-log").innerHTML = "";
+        document.getElementById("rv-rmq-depth").textContent = "0";
+        document.getElementById("rv-rmq-proc").textContent = "0";
+        document.getElementById("rv-k-size").textContent = "0";
+        document.getElementById("rv-k-off-a").textContent = "0";
+        document.getElementById("rv-k-off-b").textContent = "0";
+        document.getElementById("rv-retention-info").textContent = "Press Play to simulate message retention differences.";
       });
 
       // --- TAB 4: Use Cases ---
       var rmqCases = [
-        { title: 'Email / notification worker', detail: 'Background job queue. Worker picks task, processes, acks. DLQ for failures.' },
-        { title: 'RPC request/reply', detail: 'reply-to queue + correlation-id. Synchronous-like over async. Low latency.' },
-        { title: 'Priority queue (e.g. SLA tiers)', detail: 'x-max-priority=10. VIP messages jump queue. Kafka has no priority.' },
-        { title: 'IoT command dispatch', detail: 'MQTT + RabbitMQ bridge. Per-device queue, TTL cleanup.' },
-        { title: 'Microservice task handoff', detail: 'Service A → queue → Service B. Decoupled, simple, proven.' }
+        { title: "Email / notification worker", detail: "Background job queue. Worker picks task, processes, acks. DLQ for failures." },
+        { title: "RPC request/reply", detail: "reply-to queue + correlation-id. Synchronous-like over async. Low latency." },
+        { title: "Priority queue (e.g. SLA tiers)", detail: "x-max-priority=10. VIP messages jump queue. Kafka has no priority." },
+        { title: "IoT command dispatch", detail: "MQTT + RabbitMQ bridge. Per-device queue, TTL cleanup." },
+        { title: "Microservice task handoff", detail: "Service A → queue → Service B. Decoupled, simple, proven." }
       ];
       var kCases = [
-        { title: 'CDC / audit log', detail: 'Debezium → Kafka. Every DB change captured. Replay history at will.' },
-        { title: 'Real-time analytics pipeline', detail: 'Kafka Streams or Flink. Aggregate events, join streams, window calculations.' },
-        { title: 'Event sourcing', detail: 'Order created → payment → shipped → delivered. Full replay for new services.' },
-        { title: 'Metrics ingestion (Prometheus/InfluxDB)', detail: '10M+ data points/s. Kafka handles spikes, downstream consumer can lag.' },
-        { title: 'ML feature pipeline', detail: 'Feature store ingestion. Multiple ML models consume same event stream.' }
+        { title: "CDC / audit log", detail: "Debezium → Kafka. Every DB change captured. Replay history at will." },
+        { title: "Real-time analytics pipeline", detail: "Kafka Streams or Flink. Aggregate events, join streams, window calculations." },
+        { title: "Event sourcing", detail: "Order created → payment → shipped → delivered. Full replay for new services." },
+        { title: "Metrics ingestion (Prometheus/InfluxDB)", detail: "10M+ data points/s. Kafka handles spikes, downstream consumer can lag." },
+        { title: "ML feature pipeline", detail: "Feature store ingestion. Multiple ML models consume same event stream." }
       ];
 
-      document.getElementById('rv-rmq-cases').innerHTML = rmqCases.map(function (c) {
-        return '<div style="background:#0d1117;border:1px solid #f59134;border-radius:6px;padding:10px;margin-bottom:8px;cursor:pointer" onclick="this.querySelector(\'.rv-det\').style.display=this.querySelector(\'.rv-det\').style.display===\'none\'?\'block\':\'none\'">' +
-          '<div style="color:#f59134;font-size:12px;font-weight:bold">→ ' + c.title + '</div>' +
-          '<div class="rv-det" style="display:none;color:#768390;font-size:11px;margin-top:6px">' + c.detail + '</div></div>';
-      }).join('');
+      document.getElementById("rv-rmq-cases").innerHTML = rmqCases.map(function (c) {
+        return "<div style=\"background:#0d1117;border:1px solid #f59134;border-radius:6px;padding:10px;margin-bottom:8px;cursor:pointer\" onclick=\"this.querySelector('.rv-det').style.display=this.querySelector('.rv-det').style.display==='none'?'block':'none'\">" +
+          "<div style=\"color:#f59134;font-size:12px;font-weight:bold\">→ " + c.title + "</div>" +
+          "<div class=\"rv-det\" style=\"display:none;color:#768390;font-size:11px;margin-top:6px\">" + c.detail + "</div></div>";
+      }).join("");
 
-      document.getElementById('rv-k-cases').innerHTML = kCases.map(function (c) {
-        return '<div style="background:#0d1117;border:1px solid #e8741a;border-radius:6px;padding:10px;margin-bottom:8px;cursor:pointer" onclick="this.querySelector(\'.rv-det\').style.display=this.querySelector(\'.rv-det\').style.display===\'none\'?\'block\':\'none\'">' +
-          '<div style="color:#e8741a;font-size:12px;font-weight:bold">→ ' + c.title + '</div>' +
-          '<div class="rv-det" style="display:none;color:#768390;font-size:11px;margin-top:6px">' + c.detail + '</div></div>';
-      }).join('');
+      document.getElementById("rv-k-cases").innerHTML = kCases.map(function (c) {
+        return "<div style=\"background:#0d1117;border:1px solid #e8741a;border-radius:6px;padding:10px;margin-bottom:8px;cursor:pointer\" onclick=\"this.querySelector('.rv-det').style.display=this.querySelector('.rv-det').style.display==='none'?'block':'none'\">" +
+          "<div style=\"color:#e8741a;font-size:12px;font-weight:bold\">→ " + c.title + "</div>" +
+          "<div class=\"rv-det\" style=\"display:none;color:#768390;font-size:11px;margin-top:6px\">" + c.detail + "</div></div>";
+      }).join("");
 
       var matrix = [
-        ['Throughput', '~200K/s', '1M+/s'],
-        ['Latency', '~1ms', '~5-10ms'],
-        ['Message replay', '✗ deleted on ack', '✓ retain & replay'],
-        ['Complex routing', '✓ exchanges/bindings', '✗ topics only'],
-        ['Per-message TTL', '✓ native', '✗ partition TTL only'],
-        ['Multiple consumers', '✗ competing', '✓ independent offsets'],
-        ['Stream processing', '✗', '✓ Kafka Streams / KSQL'],
-        ['Ordering', 'Per-queue', 'Per-partition'],
-        ['Ops complexity', 'Low', 'Higher (ZK/KRaft + disk)']
+        ["Throughput", "~200K/s", "1M+/s"],
+        ["Latency", "~1ms", "~5-10ms"],
+        ["Message replay", "✗ deleted on ack", "✓ retain & replay"],
+        ["Complex routing", "✓ exchanges/bindings", "✗ topics only"],
+        ["Per-message TTL", "✓ native", "✗ partition TTL only"],
+        ["Multiple consumers", "✗ competing", "✓ independent offsets"],
+        ["Stream processing", "✗", "✓ Kafka Streams / KSQL"],
+        ["Ordering", "Per-queue", "Per-partition"],
+        ["Ops complexity", "Low", "Higher (ZK/KRaft + disk)"]
       ];
-      document.getElementById('rv-matrix').innerHTML = matrix.map(function (r) {
-        var rmqWin = r[1].startsWith('✓') || r[0] === 'Latency' || r[0] === 'Ops complexity';
-        var kafkaWin = r[2].startsWith('✓') || r[0] === 'Throughput' || r[0] === 'Multiple consumers';
-        return '<tr><td style="padding:5px 6px;border-bottom:1px solid #30363d;color:#cdd9e5">' + r[0] + '</td>' +
-          '<td style="padding:5px 6px;border-bottom:1px solid #30363d;text-align:center;color:' + (rmqWin ? '#3fb950' : '#cdd9e5') + '">' + r[1] + '</td>' +
-          '<td style="padding:5px 6px;border-bottom:1px solid #30363d;text-align:center;color:' + (kafkaWin ? '#3fb950' : '#cdd9e5') + '">' + r[2] + '</td></tr>';
-      }).join('');
+      document.getElementById("rv-matrix").innerHTML = matrix.map(function (r) {
+        var rmqWin = r[1].startsWith("✓") || r[0] === "Latency" || r[0] === "Ops complexity";
+        var kafkaWin = r[2].startsWith("✓") || r[0] === "Throughput" || r[0] === "Multiple consumers";
+        return "<tr><td style=\"padding:5px 6px;border-bottom:1px solid #30363d;color:#cdd9e5\">" + r[0] + "</td>" +
+          "<td style=\"padding:5px 6px;border-bottom:1px solid #30363d;text-align:center;color:" + (rmqWin ? "#3fb950" : "#cdd9e5") + "\">" + r[1] + "</td>" +
+          "<td style=\"padding:5px 6px;border-bottom:1px solid #30363d;text-align:center;color:" + (kafkaWin ? "#3fb950" : "#cdd9e5") + "\">" + r[2] + "</td></tr>";
+      }).join("");
 
       // --- TAB 5: Interview ---
       var qas = [
-        { q: 'Can Kafka replace RabbitMQ for task queues?', a: 'Technically yes, but it\'s awkward. Kafka has no priority, TTL per message, or complex routing. Task queues need "one consumer handles one job" — Kafka consumer groups do this but with partition-level granularity. RabbitMQ is simpler and more natural for task queues.' },
-        { q: 'Why does Kafka outperform RabbitMQ in throughput?', a: 'Sequential disk I/O (append-only log), zero-copy sendfile to consumers, batching by default, no per-message routing logic. RabbitMQ must maintain queue state in memory + disk per message.' },
-        { q: 'When would you use both in the same system?', a: 'Use Kafka as event backbone (CDC, event log, analytics). Use RabbitMQ for service-to-service task dispatch, RPC, or where messages must expire. Example: Kafka captures events → triggers RabbitMQ task for email sending.' },
-        { q: 'How does RabbitMQ handle back-pressure vs Kafka?', a: 'RabbitMQ: prefetch count limits unacked msgs per consumer. Queue depth is visible. Publishers can use flow control (connection blocked). Kafka: consumer simply lags — broker does not care. Monitor consumer lag separately.' }
+        { q: "Can Kafka replace RabbitMQ for task queues?", a: "Technically yes, but it's awkward. Kafka has no priority, TTL per message, or complex routing. Task queues need \"one consumer handles one job\" — Kafka consumer groups do this but with partition-level granularity. RabbitMQ is simpler and more natural for task queues." },
+        { q: "Why does Kafka outperform RabbitMQ in throughput?", a: "Sequential disk I/O (append-only log), zero-copy sendfile to consumers, batching by default, no per-message routing logic. RabbitMQ must maintain queue state in memory + disk per message." },
+        { q: "When would you use both in the same system?", a: "Use Kafka as event backbone (CDC, event log, analytics). Use RabbitMQ for service-to-service task dispatch, RPC, or where messages must expire. Example: Kafka captures events → triggers RabbitMQ task for email sending." },
+        { q: "How does RabbitMQ handle back-pressure vs Kafka?", a: "RabbitMQ: prefetch count limits unacked msgs per consumer. Queue depth is visible. Publishers can use flow control (connection blocked). Kafka: consumer simply lags — broker does not care. Monitor consumer lag separately." }
       ];
-      document.getElementById('rv-qa-list').innerHTML = qas.map(function (qa, i) {
-        return '<div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;margin-bottom:8px;cursor:pointer" onclick="this.querySelector(\'.rv-ans\').style.display=this.querySelector(\'.rv-ans\').style.display===\'none\'?\'block\':\'none\'">' +
-          '<div style="color:#a371f7;font-size:12px;font-weight:bold">Q' + (i + 1) + ': ' + qa.q + '</div>' +
-          '<div class="rv-ans" style="display:none;color:#cdd9e5;font-size:12px;margin-top:8px;line-height:1.6">' + qa.a + '</div></div>';
-      }).join('');
+      document.getElementById("rv-qa-list").innerHTML = qas.map(function (qa, i) {
+        return "<div style=\"background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;margin-bottom:8px;cursor:pointer\" onclick=\"this.querySelector('.rv-ans').style.display=this.querySelector('.rv-ans').style.display==='none'?'block':'none'\">" +
+          "<div style=\"color:#a371f7;font-size:12px;font-weight:bold\">Q" + (i + 1) + ": " + qa.q + "</div>" +
+          "<div class=\"rv-ans\" style=\"display:none;color:#cdd9e5;font-size:12px;margin-top:8px;line-height:1.6\">" + qa.a + "</div></div>";
+      }).join("");
 
       // WRONG vs CORRECT visual side-by-side
       var wrongRight = [
         {
-          wrong: '// "Kafka for everything"\nproducer.send("email.task", payload);\n// Consumer must track if email sent\n// No TTL, no priority, no routing\n// Ops burden for simple use-case',
-          right: '// RabbitMQ for task queues\nchannel.sendToQueue("email.work",\n  payload, { persistent: true });\n// TTL, priority, DLQ built-in\n// Consumer acks = message gone',
-          label: 'Task queue: Kafka vs RabbitMQ'
+          wrong: "// \"Kafka for everything\"\nproducer.send(\"email.task\", payload);\n// Consumer must track if email sent\n// No TTL, no priority, no routing\n// Ops burden for simple use-case",
+          right: "// RabbitMQ for task queues\nchannel.sendToQueue(\"email.work\",\n  payload, { persistent: true });\n// TTL, priority, DLQ built-in\n// Consumer acks = message gone",
+          label: "Task queue: Kafka vs RabbitMQ"
         },
         {
-          wrong: '// "RabbitMQ can replay"\nchannel.ack(msg); // GONE\n// 2nd consumer joins next day\n// Cannot read old messages',
-          right: '// Kafka retains for replay\nconsumer.seek(partition, 0);\n// Rewind to offset 0, read all\n// 2nd consumer reads full history',
-          label: 'Message replay'
+          wrong: "// \"RabbitMQ can replay\"\nchannel.ack(msg); // GONE\n// 2nd consumer joins next day\n// Cannot read old messages",
+          right: "// Kafka retains for replay\nconsumer.seek(partition, 0);\n// Rewind to offset 0, read all\n// 2nd consumer reads full history",
+          label: "Message replay"
         }
       ];
 
-      var wcHtml = '<div style="color:#a371f7;font-size:12px;font-weight:bold;margin-bottom:10px">⚠️ WRONG vs ✓ CORRECT</div>';
+      var wcHtml = "<div style=\"color:#a371f7;font-size:12px;font-weight:bold;margin-bottom:10px\">⚠️ WRONG vs ✓ CORRECT</div>";
       wcHtml += wrongRight.map(function (item) {
-        return '<div style="margin-bottom:12px"><div style="color:#768390;font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">' + item.label + '</div>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
-          '<div style="background:#0d1117;border:2px solid #da3633;border-radius:6px;padding:10px"><div style="color:#da3633;font-size:10px;font-weight:bold;margin-bottom:6px">❌ WRONG</div><pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.wrong + '</pre></div>' +
-          '<div style="background:#0d1117;border:2px solid #3fb950;border-radius:6px;padding:10px"><div style="color:#3fb950;font-size:10px;font-weight:bold;margin-bottom:6px">✓ CORRECT</div><pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.right + '</pre></div>' +
-          '</div></div>';
-      }).join('');
-      document.getElementById('rv-wrong-list').innerHTML = wcHtml;
+        return "<div style=\"margin-bottom:12px\"><div style=\"color:#768390;font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px\">" + item.label + "</div>" +
+          "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:8px\">" +
+          "<div style=\"background:#0d1117;border:2px solid #da3633;border-radius:6px;padding:10px\"><div style=\"color:#da3633;font-size:10px;font-weight:bold;margin-bottom:6px\">❌ WRONG</div><pre style=\"color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap\">" + item.wrong + "</pre></div>" +
+          "<div style=\"background:#0d1117;border:2px solid #3fb950;border-radius:6px;padding:10px\"><div style=\"color:#3fb950;font-size:10px;font-weight:bold;margin-bottom:6px\">✓ CORRECT</div><pre style=\"color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap\">" + item.right + "</pre></div>" +
+          "</div></div>";
+      }).join("");
+      document.getElementById("rv-wrong-list").innerHTML = wcHtml;
 
       // Production story
-      var prodCard = document.createElement('div');
-      prodCard.style.cssText = 'background:#0d1117;border:1px solid #a371f7;border-radius:8px;padding:14px;margin-bottom:14px';
-      prodCard.innerHTML = '<div style="color:#a371f7;font-size:12px;font-weight:bold;margin-bottom:6px">🏭 Production Story: Choosing Wrong</div>' +
-        '<div style="color:#cdd9e5;font-size:12px;line-height:1.7">Fintech startup chose Kafka for background job processing (10K jobs/day). 6 months in: partition rebalance freezes consumers for 30s during deployments. Payment jobs timeout. Root cause: Kafka consumer group rebalance during rolling deploy. RabbitMQ would have handled this with zero config. Right tool matters.</div>';
-      document.getElementById('rv-qa-list').parentNode.insertBefore(prodCard, document.getElementById('rv-qa-list'));
+      var prodCard = document.createElement("div");
+      prodCard.style.cssText = "background:#0d1117;border:1px solid #a371f7;border-radius:8px;padding:14px;margin-bottom:14px";
+      prodCard.innerHTML = "<div style=\"color:#a371f7;font-size:12px;font-weight:bold;margin-bottom:6px\">🏭 Production Story: Choosing Wrong</div>" +
+        "<div style=\"color:#cdd9e5;font-size:12px;line-height:1.7\">Fintech startup chose Kafka for background job processing (10K jobs/day). 6 months in: partition rebalance freezes consumers for 30s during deployments. Payment jobs timeout. Root cause: Kafka consumer group rebalance during rolling deploy. RabbitMQ would have handled this with zero config. Right tool matters.</div>";
+      document.getElementById("rv-qa-list").parentNode.insertBefore(prodCard, document.getElementById("rv-qa-list"));
     },
 
     gotchas: [

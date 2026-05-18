@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-tp-trap-rain",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Civil engineering — calculate water retention in a terrain cross-section.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'twoptr.trapRain',
-        time:  'O(n)',
-        space: 'O(1)',
+        title: "twoptr.trapRain",
+        time:  "O(n)",
+        space: "O(1)",
         code: `function trap(height) {
   let left = 0;
   let right = height.length - 1;

@@ -39,7 +39,7 @@
 **Reconciliation:**
 - Async batch job (runs every hour): fetch all transactions from Stripe API → compare against internal ledger → flag mismatches → alert ops team.
 - Prevents silent data inconsistencies over time.`,
-    why: `Payment systems appear in FAANG interviews constantly. They force you to think about failure modes, idempotency (the most important concept in distributed payments), atomic writes + event publishing (outbox), and the limits of distributed transactions.`,
+    why: "Payment systems appear in FAANG interviews constantly. They force you to think about failure modes, idempotency (the most important concept in distributed payments), atomic writes + event publishing (outbox), and the limits of distributed transactions.",
     example: {
       language: "python",
       code: `# Payment service — FastAPI with idempotency + outbox pattern
@@ -135,7 +135,7 @@ async def call_stripe(amount, currency, customer_id, idempotency_key):
     interview: [
       {
         question: "How do you prevent double charging?",
-        answer: `Idempotency keys. The client generates a UUID before the first request and includes it in every retry. The server stores a mapping of idempotency_key → result in Redis (or a DB table) with a 24-hour TTL. On any retry with the same key, the server returns the stored result without re-executing the payment logic. Crucially, we also pass the idempotency key to Stripe — so even if our server calls Stripe twice, Stripe deduplicates on their end too. This gives us double protection.`,
+        answer: "Idempotency keys. The client generates a UUID before the first request and includes it in every retry. The server stores a mapping of idempotency_key → result in Redis (or a DB table) with a 24-hour TTL. On any retry with the same key, the server returns the stored result without re-executing the payment logic. Crucially, we also pass the idempotency key to Stripe — so even if our server calls Stripe twice, Stripe deduplicates on their end too. This gives us double protection.",
         followUps: [
           "What if the Redis that stores idempotency keys goes down between the Stripe call and the key storage?",
           "How do you handle idempotency for refunds?",
@@ -144,7 +144,7 @@ async def call_stripe(amount, currency, customer_id, idempotency_key):
       },
       {
         question: "What happens if the payment API call succeeds but your DB write fails?",
-        answer: `This is the split-brain problem. Stripe has the charge, your DB doesn't know about it. Solutions: (1) Write to DB FIRST with status=PENDING, then call Stripe. If Stripe succeeds, update to COMPLETED. If Stripe returns timeout, the retry with the same idempotency key is safe. (2) Reconciliation job: runs hourly, fetches all Stripe charges and compares against internal ledger. Any charge in Stripe without a matching COMPLETED record in DB → alert ops team for manual review. (3) Webhook from Stripe: Stripe sends charge.succeeded events → your service updates DB asynchronously.`,
+        answer: "This is the split-brain problem. Stripe has the charge, your DB doesn't know about it. Solutions: (1) Write to DB FIRST with status=PENDING, then call Stripe. If Stripe succeeds, update to COMPLETED. If Stripe returns timeout, the retry with the same idempotency key is safe. (2) Reconciliation job: runs hourly, fetches all Stripe charges and compares against internal ledger. Any charge in Stripe without a matching COMPLETED record in DB → alert ops team for manual review. (3) Webhook from Stripe: Stripe sends charge.succeeded events → your service updates DB asynchronously.",
         followUps: [
           "How do you handle the case where your webhook receiver is also down?",
           "How do you ensure the reconciliation job itself doesn't double-process records?",
@@ -153,7 +153,7 @@ async def call_stripe(amount, currency, customer_id, idempotency_key):
       },
       {
         question: "How do you handle partial failures in distributed payment flow?",
-        answer: `Use the Saga pattern (choreography style). Payment service charges card → emits payment.completed event. Order service listens → reserves inventory → emits inventory.reserved. If inventory reservation fails → emit inventory.failed → payment service listens → issues refund (compensating transaction). Each step is a local transaction. No distributed locks. The key is: every step must be idempotent (safe to retry) and every failure must have a defined compensating action. Use a saga log to track the current state of each saga instance for debugging.`,
+        answer: "Use the Saga pattern (choreography style). Payment service charges card → emits payment.completed event. Order service listens → reserves inventory → emits inventory.reserved. If inventory reservation fails → emit inventory.failed → payment service listens → issues refund (compensating transaction). Each step is a local transaction. No distributed locks. The key is: every step must be idempotent (safe to retry) and every failure must have a defined compensating action. Use a saga log to track the current state of each saga instance for debugging.",
         followUps: [
           "What's the difference between choreography and orchestration sagas?",
           "How do you handle a compensating transaction that also fails (refund fails)?",
@@ -162,7 +162,7 @@ async def call_stripe(amount, currency, customer_id, idempotency_key):
       },
       {
         question: "Design a ledger for Stripe.",
-        answer: `A ledger is an immutable, append-only log of financial transactions. Schema: ledger_entry(id, account_id, amount, currency, type[DEBIT/CREDIT], reference_id, description, created_at). Never UPDATE or DELETE entries. Corrections = new compensating entry. Balance = SUM(credits) - SUM(debits) for an account_id — computed on read or cached in a balance table (updated by triggers). Use event sourcing: the ledger IS the source of truth. Partition Cassandra table by account_id. For auditing: each entry has an immutable hash linking to previous entry (chain integrity). Reconciliation: daily balance snapshot + incremental from last snapshot.`,
+        answer: "A ledger is an immutable, append-only log of financial transactions. Schema: ledger_entry(id, account_id, amount, currency, type[DEBIT/CREDIT], reference_id, description, created_at). Never UPDATE or DELETE entries. Corrections = new compensating entry. Balance = SUM(credits) - SUM(debits) for an account_id — computed on read or cached in a balance table (updated by triggers). Use event sourcing: the ledger IS the source of truth. Partition Cassandra table by account_id. For auditing: each entry has an immutable hash linking to previous entry (chain integrity). Reconciliation: daily balance snapshot + incremental from last snapshot.",
         followUps: [
           "How do you handle currency conversion in the ledger?",
           "How do you make balance queries fast on a ledger with 10 years of data?",
@@ -194,51 +194,51 @@ async def call_stripe(amount, currency, customer_id, idempotency_key):
       "Currency is an integer (cents) not a float — floating point arithmetic loses money at scale (0.1 + 0.2 ≠ 0.3 in IEEE 754)"
     ],
     visual: {
-      type: 'flow',
-      title: '💳 Payment System Flow (Stripe / PayPal)',
-      direction: 'horizontal',
+      type: "flow",
+      title: "💳 Payment System Flow (Stripe / PayPal)",
+      direction: "horizontal",
       nodes: [
-        { id: 'client',   label: 'Client',        color: '#58a6ff', icon: '💳', sublabel: 'Web / Mobile' },
-        { id: 'gateway',  label: 'API Gateway',   color: '#ffa657', icon: '🔀', sublabel: 'Auth + Rate limit' },
-        { id: 'payserv',  label: 'Payment Svc',   color: '#bc8cff', icon: '⚙️', sublabel: 'Idempotency check' },
-        { id: 'outbox',   label: 'Outbox DB',     color: '#e3b341', icon: '📦', sublabel: 'Atomic write' },
-        { id: 'stripe',   label: 'Stripe / PSP',  color: '#ffa657', icon: '🏦', sublabel: 'Card network' },
-        { id: 'kafka',    label: 'Kafka',          color: '#3fb950', icon: '⚡', sublabel: 'Outbox relay' },
-        { id: 'merchant', label: 'Merchant Svc',  color: '#58a6ff', icon: '🏪', sublabel: 'Order + inventory' }
+        { id: "client",   label: "Client",        color: "#58a6ff", icon: "💳", sublabel: "Web / Mobile" },
+        { id: "gateway",  label: "API Gateway",   color: "#ffa657", icon: "🔀", sublabel: "Auth + Rate limit" },
+        { id: "payserv",  label: "Payment Svc",   color: "#bc8cff", icon: "⚙️", sublabel: "Idempotency check" },
+        { id: "outbox",   label: "Outbox DB",     color: "#e3b341", icon: "📦", sublabel: "Atomic write" },
+        { id: "stripe",   label: "Stripe / PSP",  color: "#ffa657", icon: "🏦", sublabel: "Card network" },
+        { id: "kafka",    label: "Kafka",          color: "#3fb950", icon: "⚡", sublabel: "Outbox relay" },
+        { id: "merchant", label: "Merchant Svc",  color: "#58a6ff", icon: "🏪", sublabel: "Order + inventory" }
       ],
       connections: [
-        { from: 'client',   to: 'gateway',  label: 'POST /payments',      protocol: 'HTTPS' },
-        { from: 'gateway',  to: 'payserv',  label: 'idempotency key',      protocol: 'REST' },
-        { from: 'payserv',  to: 'outbox',   label: 'atomic DB txn',        protocol: 'SQL' },
-        { from: 'payserv',  to: 'stripe',   label: 'charge request',       protocol: 'REST' },
-        { from: 'stripe',   to: 'payserv',  label: 'authorized / declined', protocol: 'REST' },
-        { from: 'outbox',   to: 'kafka',    label: 'outbox relay poll',    protocol: 'CDC' },
-        { from: 'kafka',    to: 'merchant', label: 'payment.completed',    protocol: 'Kafka' }
+        { from: "client",   to: "gateway",  label: "POST /payments",      protocol: "HTTPS" },
+        { from: "gateway",  to: "payserv",  label: "idempotency key",      protocol: "REST" },
+        { from: "payserv",  to: "outbox",   label: "atomic DB txn",        protocol: "SQL" },
+        { from: "payserv",  to: "stripe",   label: "charge request",       protocol: "REST" },
+        { from: "stripe",   to: "payserv",  label: "authorized / declined", protocol: "REST" },
+        { from: "outbox",   to: "kafka",    label: "outbox relay poll",    protocol: "CDC" },
+        { from: "kafka",    to: "merchant", label: "payment.completed",    protocol: "Kafka" }
       ],
       scenarios: [
         {
-          name: '✅ Card Success',
-          path: ['client', 'gateway', 'payserv', 'outbox', 'stripe', 'kafka', 'merchant'],
-          result: '✓ Payment captured — order confirmed',
-          resultColor: '#3fb950'
+          name: "✅ Card Success",
+          path: ["client", "gateway", "payserv", "outbox", "stripe", "kafka", "merchant"],
+          result: "✓ Payment captured — order confirmed",
+          resultColor: "#3fb950"
         },
         {
-          name: '🔐 3DS Challenge',
-          path: ['client', 'gateway', 'payserv', 'stripe'],
-          result: '⟳ 3DS redirect — awaiting customer auth',
-          resultColor: '#e3b341'
+          name: "🔐 3DS Challenge",
+          path: ["client", "gateway", "payserv", "stripe"],
+          result: "⟳ 3DS redirect — awaiting customer auth",
+          resultColor: "#e3b341"
         },
         {
-          name: '✗ Card Declined',
-          path: ['client', 'gateway', 'payserv', 'stripe'],
-          result: '✗ Declined — 402 Insufficient Funds',
-          resultColor: '#f85149'
+          name: "✗ Card Declined",
+          path: ["client", "gateway", "payserv", "stripe"],
+          result: "✗ Declined — 402 Insufficient Funds",
+          resultColor: "#f85149"
         },
         {
-          name: '🔁 Timeout Retry',
-          path: ['client', 'gateway', 'payserv', 'stripe'],
-          result: '⟳ Same idempotency key — Stripe deduplicates, no double charge',
-          resultColor: '#ffa657'
+          name: "🔁 Timeout Retry",
+          path: ["client", "gateway", "payserv", "stripe"],
+          result: "⟳ Same idempotency key — Stripe deduplicates, no double charge",
+          resultColor: "#ffa657"
         }
       ]
     }

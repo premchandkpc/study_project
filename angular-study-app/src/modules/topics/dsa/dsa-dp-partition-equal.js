@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dp-partition-equal",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** FAANG subset-sum transformation: equal partition means target = total / 2.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'dp.partitionEqual',
-        time:  'O(n·sum)',
-        space: 'O(sum)',
+        title: "dp.partitionEqual",
+        time:  "O(n·sum)",
+        space: "O(sum)",
         code: `function canPartition(nums) {
   const total = nums.reduce((a, b) => a + b, 0);
   if (total % 2 !== 0) return false;

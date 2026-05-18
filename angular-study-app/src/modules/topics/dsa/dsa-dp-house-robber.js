@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dp-house-robber",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** FAANG choose/skip question with adjacency constraint.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'dp.houseRobber',
-        time:  'O(n)',
-        space: 'O(1)',
+        title: "dp.houseRobber",
+        time:  "O(n)",
+        space: "O(1)",
         code: `function rob(nums) {
   let prev2 = 0;
   let prev1 = 0;

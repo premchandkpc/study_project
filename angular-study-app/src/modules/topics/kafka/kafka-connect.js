@@ -157,22 +157,22 @@
       var aStep=0,aTimer=null;
       function renderArch(){
         var s=ASTEPS[aStep];
-        mount.querySelector('#kn-arch-flow').innerHTML=AFLOW.map(function(n,i){
+        mount.querySelector("#kn-arch-flow").innerHTML=AFLOW.map(function(n,i){
           var active=s.active&&(s.active===n.id||(s.active==="connector"&&n.id==="connector")||(s.active==="sink"&&n.id==="connector2")||(s.active==="sink"&&n.id==="sink"));
-          return '<div class="kn-block '+n.type+(active?' active':'')+'">'+n.label+'<div style="font-size:10px;opacity:.7;font-weight:400">'+n.sub+'</div></div>'+(i<AFLOW.length-1?'<div class="kn-arrow">→</div>':'');
-        }).join('');
-        mount.querySelector('#kn-ainfo').innerHTML=s.info;
-        mount.querySelector('#kn-astep').textContent='Step '+(aStep+1)+'/'+ASTEPS.length;
+          return "<div class=\"kn-block "+n.type+(active?" active":"")+"\">"+n.label+"<div style=\"font-size:10px;opacity:.7;font-weight:400\">"+n.sub+"</div></div>"+(i<AFLOW.length-1?"<div class=\"kn-arrow\">→</div>":"");
+        }).join("");
+        mount.querySelector("#kn-ainfo").innerHTML=s.info;
+        mount.querySelector("#kn-astep").textContent="Step "+(aStep+1)+"/"+ASTEPS.length;
       }
-      function aStop(){clearInterval(aTimer);aTimer=null;mount.querySelector('#kn-aplay').textContent='▶ Play';}
-      mount.querySelector('#kn-aplay').addEventListener('click',function(){if(aTimer){aStop();}else{aTimer=setInterval(function(){aStep=Math.min(aStep+1,ASTEPS.length-1);renderArch();if(aStep===ASTEPS.length-1)aStop();},1700);mount.querySelector('#kn-aplay').textContent='⏸ Pause';}});
-      mount.querySelector('#kn-anext').addEventListener('click',function(){aStop();aStep=Math.min(aStep+1,ASTEPS.length-1);renderArch();});
-      mount.querySelector('#kn-aprev').addEventListener('click',function(){aStop();aStep=Math.max(aStep-1,0);renderArch();});
-      mount.querySelector('#kn-areset').addEventListener('click',function(){aStop();aStep=0;renderArch();});
+      function aStop(){clearInterval(aTimer);aTimer=null;mount.querySelector("#kn-aplay").textContent="▶ Play";}
+      mount.querySelector("#kn-aplay").addEventListener("click",function(){if(aTimer){aStop();}else{aTimer=setInterval(function(){aStep=Math.min(aStep+1,ASTEPS.length-1);renderArch();if(aStep===ASTEPS.length-1)aStop();},1700);mount.querySelector("#kn-aplay").textContent="⏸ Pause";}});
+      mount.querySelector("#kn-anext").addEventListener("click",function(){aStop();aStep=Math.min(aStep+1,ASTEPS.length-1);renderArch();});
+      mount.querySelector("#kn-aprev").addEventListener("click",function(){aStop();aStep=Math.max(aStep-1,0);renderArch();});
+      mount.querySelector("#kn-areset").addEventListener("click",function(){aStop();aStep=0;renderArch();});
       renderArch();
 
       // SOURCE CONNECTORS
-      var srcMode='jdbc';
+      var srcMode="jdbc";
       var SRC_DATA={
         jdbc:{name:"JDBC Source Connector",color:"#58a6ff",how:"Polls DB on interval. Uses incrementing column (ID) or timestamp column to find new rows. No real CDC — misses hard deletes.",
           pros:["Simple setup","Works with any SQL DB","No DB-side setup needed"],
@@ -189,72 +189,72 @@
       };
       function renderSrc(){
         var s=SRC_DATA[srcMode];
-        var el=mount.querySelector('#kn-src-content');
-        el.innerHTML='<div class="kn-box" style="border-color:'+s.color+'44">'+
-          '<div style="font-size:13px;font-weight:700;color:'+s.color+';margin-bottom:6px">'+s.name+'</div>'+
-          '<div style="font-size:12px;color:#8b949e;margin-bottom:10px">'+s.how+'</div>'+
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'+
-          '<div><div style="font-size:11px;color:#3dd68c;font-weight:600;margin-bottom:4px">Pros</div>'+s.pros.map(function(p){return '<div style="font-size:11px;color:#3dd68c;margin-bottom:2px">✓ '+p+'</div>';}).join('')+'</div>'+
-          '<div><div style="font-size:11px;color:#f47067;font-weight:600;margin-bottom:4px">Cons</div>'+s.cons.map(function(c){return '<div style="font-size:11px;color:#f47067;margin-bottom:2px">✗ '+c+'</div>';}).join('')+'</div></div>'+
-          '<details style="font-size:11px"><summary style="cursor:pointer;color:#8b949e">Config example</summary><pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:8px;margin-top:6px;overflow-x:auto;color:#cdd9e5;font-size:10px">'+JSON.stringify(s.config,null,2)+'</pre></details></div>';
+        var el=mount.querySelector("#kn-src-content");
+        el.innerHTML="<div class=\"kn-box\" style=\"border-color:"+s.color+"44\">"+
+          "<div style=\"font-size:13px;font-weight:700;color:"+s.color+";margin-bottom:6px\">"+s.name+"</div>"+
+          "<div style=\"font-size:12px;color:#8b949e;margin-bottom:10px\">"+s.how+"</div>"+
+          "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px\">"+
+          "<div><div style=\"font-size:11px;color:#3dd68c;font-weight:600;margin-bottom:4px\">Pros</div>"+s.pros.map(function(p){return "<div style=\"font-size:11px;color:#3dd68c;margin-bottom:2px\">✓ "+p+"</div>";}).join("")+"</div>"+
+          "<div><div style=\"font-size:11px;color:#f47067;font-weight:600;margin-bottom:4px\">Cons</div>"+s.cons.map(function(c){return "<div style=\"font-size:11px;color:#f47067;margin-bottom:2px\">✗ "+c+"</div>";}).join("")+"</div></div>"+
+          "<details style=\"font-size:11px\"><summary style=\"cursor:pointer;color:#8b949e\">Config example</summary><pre style=\"background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:8px;margin-top:6px;overflow-x:auto;color:#cdd9e5;font-size:10px\">"+JSON.stringify(s.config,null,2)+"</pre></details></div>";
       }
-      mount.querySelectorAll('.kn-stab[data-src]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.kn-stab[data-src]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');srcMode=b.dataset.src;renderSrc();});
+      mount.querySelectorAll(".kn-stab[data-src]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".kn-stab[data-src]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");srcMode=b.dataset.src;renderSrc();});
       });
       renderSrc();
 
       // SINK CONNECTORS
-      var snkMode='es';
+      var snkMode="es";
       var SNK_DATA={
         es:{name:"Elasticsearch Sink",color:"#58a6ff",how:"Reads from Kafka, indexes records into Elasticsearch. Key = document ID. Delivery: at-least-once (idempotent via ES document ID).",
           features:["Auto-creates index if not exists","Schema evolution via dynamic mapping","Bulk indexing for throughput","Supports SMTs for field mapping"]},
-        'jdbc-sink':{name:"JDBC Sink",color:"#3dd68c",how:"Writes records to relational DB tables. Supports INSERT, UPSERT, UPDATE modes. Use upsert for idempotency (PK-based).",
+        "jdbc-sink":{name:"JDBC Sink",color:"#3dd68c",how:"Writes records to relational DB tables. Supports INSERT, UPSERT, UPDATE modes. Use upsert for idempotency (PK-based).",
           features:["Auto-creates table from schema","Upsert mode for at-least-once safety","Configurable insert.mode","Handles schema changes with auto.evolve"]},
-        's3-sink':{name:"S3 Sink",color:"#f5b944",how:"Batches records from Kafka into S3 files. Partitioned by time or field. Formats: Avro, JSON, Parquet.",
+        "s3-sink":{name:"S3 Sink",color:"#f5b944",how:"Batches records from Kafka into S3 files. Partitioned by time or field. Formats: Avro, JSON, Parquet.",
           features:["Configurable file size/rotation","Time-based or field-based partitioning","Compresses files (gzip, lz4)","Ideal for data lake + Athena queries"]},
       };
       function renderSnk(){
         var s=SNK_DATA[snkMode];
-        var el=mount.querySelector('#kn-snk-content');
-        el.innerHTML='<div class="kn-box" style="border-color:'+s.color+'44">'+
-          '<div style="font-size:13px;font-weight:700;color:'+s.color+';margin-bottom:6px">'+s.name+'</div>'+
-          '<div style="font-size:12px;color:#8b949e;margin-bottom:10px">'+s.how+'</div>'+
-          s.features.map(function(f){return '<div style="display:flex;gap:8px;margin-bottom:5px;font-size:12px"><span style="color:'+s.color+'">✓</span><span>'+f+'</span></div>';}).join('')+'</div>';
+        var el=mount.querySelector("#kn-snk-content");
+        el.innerHTML="<div class=\"kn-box\" style=\"border-color:"+s.color+"44\">"+
+          "<div style=\"font-size:13px;font-weight:700;color:"+s.color+";margin-bottom:6px\">"+s.name+"</div>"+
+          "<div style=\"font-size:12px;color:#8b949e;margin-bottom:10px\">"+s.how+"</div>"+
+          s.features.map(function(f){return "<div style=\"display:flex;gap:8px;margin-bottom:5px;font-size:12px\"><span style=\"color:"+s.color+"\">✓</span><span>"+f+"</span></div>";}).join("")+"</div>";
       }
-      mount.querySelectorAll('.kn-stab[data-snk]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.kn-stab[data-snk]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');snkMode=b.dataset.snk;renderSnk();});
+      mount.querySelectorAll(".kn-stab[data-snk]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".kn-stab[data-snk]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");snkMode=b.dataset.snk;renderSnk();});
       });
       renderSnk();
 
       // SMT
       var SMTS=[
-        {name:"ReplaceField",color:"#58a6ff",desc:"Rename or remove fields. Use to mask PII or align field names.",example:'transforms.mask.type=ReplaceField\ntransforms.mask.blacklist=credit_card,ssn'},
-        {name:"ValueToKey",color:"#e8741a",desc:"Copy a field from value to record key. Essential for keyed topics.",example:'transforms.setKey.type=ValueToKey\ntransforms.setKey.fields=user_id'},
-        {name:"TimestampConverter",color:"#3dd68c",desc:"Convert timestamp format (unix ms ↔ ISO 8601 ↔ Date type).",example:'transforms.ts.type=TimestampConverter\ntransforms.ts.field=created_at\ntransforms.ts.target.type=string\ntransforms.ts.format=yyyy-MM-dd'},
-        {name:"HoistField",color:"#d2a8ff",desc:"Wrap the entire record value in a struct field. Good for nested JSON.",example:'transforms.hoist.type=HoistField$Value\ntransforms.hoist.field=payload'},
-        {name:"ExtractField",color:"#f5b944",desc:"Extract a single field from a struct/map. Opposite of HoistField.",example:'transforms.extract.type=ExtractField$Value\ntransforms.extract.field=after'},
-        {name:"RegexRouter",color:"#f47067",desc:"Route records to different topics based on regex on current topic name.",example:'transforms.route.type=RegexRouter\ntransforms.route.regex=orders-(.*)\ntransforms.route.replacement=processed-orders-$1'},
+        {name:"ReplaceField",color:"#58a6ff",desc:"Rename or remove fields. Use to mask PII or align field names.",example:"transforms.mask.type=ReplaceField\ntransforms.mask.blacklist=credit_card,ssn"},
+        {name:"ValueToKey",color:"#e8741a",desc:"Copy a field from value to record key. Essential for keyed topics.",example:"transforms.setKey.type=ValueToKey\ntransforms.setKey.fields=user_id"},
+        {name:"TimestampConverter",color:"#3dd68c",desc:"Convert timestamp format (unix ms ↔ ISO 8601 ↔ Date type).",example:"transforms.ts.type=TimestampConverter\ntransforms.ts.field=created_at\ntransforms.ts.target.type=string\ntransforms.ts.format=yyyy-MM-dd"},
+        {name:"HoistField",color:"#d2a8ff",desc:"Wrap the entire record value in a struct field. Good for nested JSON.",example:"transforms.hoist.type=HoistField$Value\ntransforms.hoist.field=payload"},
+        {name:"ExtractField",color:"#f5b944",desc:"Extract a single field from a struct/map. Opposite of HoistField.",example:"transforms.extract.type=ExtractField$Value\ntransforms.extract.field=after"},
+        {name:"RegexRouter",color:"#f47067",desc:"Route records to different topics based on regex on current topic name.",example:"transforms.route.type=RegexRouter\ntransforms.route.regex=orders-(.*)\ntransforms.route.replacement=processed-orders-$1"},
       ];
-      mount.querySelector('#kn-smt-list').innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
-        SMTS.map(function(s){return '<div style="background:#161b22;border:1px solid '+s.color+'44;border-radius:8px;padding:10px">'+
-          '<div style="font-size:12px;font-weight:700;color:'+s.color+';margin-bottom:4px">'+s.name+'</div>'+
-          '<div style="font-size:11px;color:#8b949e;margin-bottom:6px">'+s.desc+'</div>'+
-          '<pre style="font-size:9px;color:#cdd9e5;margin:0;overflow-x:auto">'+s.example+'</pre></div>';}).join('')+'</div>';
-      mount.querySelector('#kn-smt-flow').innerHTML='<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">'+
+      mount.querySelector("#kn-smt-list").innerHTML="<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:8px\">"+
+        SMTS.map(function(s){return "<div style=\"background:#161b22;border:1px solid "+s.color+"44;border-radius:8px;padding:10px\">"+
+          "<div style=\"font-size:12px;font-weight:700;color:"+s.color+";margin-bottom:4px\">"+s.name+"</div>"+
+          "<div style=\"font-size:11px;color:#8b949e;margin-bottom:6px\">"+s.desc+"</div>"+
+          "<pre style=\"font-size:9px;color:#cdd9e5;margin:0;overflow-x:auto\">"+s.example+"</pre></div>";}).join("")+"</div>";
+      mount.querySelector("#kn-smt-flow").innerHTML="<div style=\"display:flex;align-items:center;gap:4px;flex-wrap:wrap\">"+
         [{l:"Raw Record",c:"#30363d"},{l:"ReplaceField",c:"#58a6ff"},{l:"ValueToKey",c:"#e8741a"},{l:"TimestampConverter",c:"#3dd68c"},{l:"Output Record",c:"#d2a8ff"}].map(function(n,i,arr){
-          return '<div style="background:'+n.c+'22;border:1px solid '+n.c+';border-radius:6px;padding:6px 10px;font-size:11px;color:'+n.c+'">'+n.l+'</div>'+(i<arr.length-1?'<div style="color:#e8741a;font-size:16px">→</div>':'');
-        }).join('')+'</div>';
+          return "<div style=\"background:"+n.c+"22;border:1px solid "+n.c+";border-radius:6px;padding:6px 10px;font-size:11px;color:"+n.c+"\">"+n.l+"</div>"+(i<arr.length-1?"<div style=\"color:#e8741a;font-size:16px\">→</div>":"");
+        }).join("")+"</div>";
 
       // TABS
-      mount.querySelectorAll('.knbtn[data-tab]').forEach(function(btn){
-        btn.addEventListener('click',function(){
-          mount.querySelectorAll('.knbtn[data-tab]').forEach(function(b){b.classList.remove('on');});
-          mount.querySelectorAll('.knp').forEach(function(p){p.classList.remove('on');});
-          btn.classList.add('on');
-          mount.querySelector('#kn-'+btn.dataset.tab).classList.add('on');
+      mount.querySelectorAll(".knbtn[data-tab]").forEach(function(btn){
+        btn.addEventListener("click",function(){
+          mount.querySelectorAll(".knbtn[data-tab]").forEach(function(b){b.classList.remove("on");});
+          mount.querySelectorAll(".knp").forEach(function(p){p.classList.remove("on");});
+          btn.classList.add("on");
+          mount.querySelector("#kn-"+btn.dataset.tab).classList.add("on");
         });
       });
-      mount.querySelectorAll('.kn-q-card').forEach(function(c){c.addEventListener('click',function(){c.classList.toggle('open');});});
+      mount.querySelectorAll(".kn-q-card").forEach(function(c){c.addEventListener("click",function(){c.classList.toggle("open");});});
     },
     concept: `**L1 (30s ELI5):** Kafka Connect = plug-and-play data pipelines. Source connector pulls from DB/S3 into Kafka. Sink connector pushes from Kafka to DB/S3/ES. Zero custom code for common systems.
 

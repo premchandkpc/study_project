@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dp-unique-paths",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** FAANG grid DP — every cell aggregates from top and left.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'dp.uniquePaths',
-        time:  'O(mn)',
-        space: 'O(mn)',
+        title: "dp.uniquePaths",
+        time:  "O(mn)",
+        space: "O(mn)",
         code: `function uniquePaths(m, n) {
   const dp = Array.from({ length: m }, () => new Array(n).fill(1));
   for (let i = 1; i < m; i++) {

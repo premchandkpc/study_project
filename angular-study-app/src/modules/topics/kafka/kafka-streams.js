@@ -170,48 +170,48 @@
       var tStep=0,tTimer=null;
       function renderTopo(){
         var s=TSTEPS[tStep];
-        mount.querySelector('#ks-topo-nodes').innerHTML=TNODES.map(function(n,i){
-          return '<div class="ks-node"><div class="ks-node-box '+n.type+(s.active===n.id?' active':'')+'">'+n.label+'</div><div class="ks-node-label">'+n.sub+'</div></div>'+(i<TNODES.length-1?'<div class="ks-arrow">→</div>':'');
-        }).join('');
-        mount.querySelector('#ks-topo-records').innerHTML=s.records.map(function(r){return '<div class="ks-record-box '+r.t+'">'+r.v+'</div>';}).join('');
-        mount.querySelector('#ks-tinfo').innerHTML=s.info;
-        mount.querySelector('#ks-tstep').textContent='Step '+(tStep+1)+'/'+TSTEPS.length;
+        mount.querySelector("#ks-topo-nodes").innerHTML=TNODES.map(function(n,i){
+          return "<div class=\"ks-node\"><div class=\"ks-node-box "+n.type+(s.active===n.id?" active":"")+"\">"+n.label+"</div><div class=\"ks-node-label\">"+n.sub+"</div></div>"+(i<TNODES.length-1?"<div class=\"ks-arrow\">→</div>":"");
+        }).join("");
+        mount.querySelector("#ks-topo-records").innerHTML=s.records.map(function(r){return "<div class=\"ks-record-box "+r.t+"\">"+r.v+"</div>";}).join("");
+        mount.querySelector("#ks-tinfo").innerHTML=s.info;
+        mount.querySelector("#ks-tstep").textContent="Step "+(tStep+1)+"/"+TSTEPS.length;
       }
-      function tStop(){clearInterval(tTimer);tTimer=null;mount.querySelector('#ks-tplay').textContent='▶ Play';}
-      mount.querySelector('#ks-tplay').addEventListener('click',function(){if(tTimer){tStop();}else{tTimer=setInterval(function(){tStep=Math.min(tStep+1,TSTEPS.length-1);renderTopo();if(tStep===TSTEPS.length-1)tStop();},1700);mount.querySelector('#ks-tplay').textContent='⏸ Pause';}});
-      mount.querySelector('#ks-tnext').addEventListener('click',function(){tStop();tStep=Math.min(tStep+1,TSTEPS.length-1);renderTopo();});
-      mount.querySelector('#ks-tprev').addEventListener('click',function(){tStop();tStep=Math.max(tStep-1,0);renderTopo();});
-      mount.querySelector('#ks-treset').addEventListener('click',function(){tStop();tStep=0;renderTopo();});
+      function tStop(){clearInterval(tTimer);tTimer=null;mount.querySelector("#ks-tplay").textContent="▶ Play";}
+      mount.querySelector("#ks-tplay").addEventListener("click",function(){if(tTimer){tStop();}else{tTimer=setInterval(function(){tStep=Math.min(tStep+1,TSTEPS.length-1);renderTopo();if(tStep===TSTEPS.length-1)tStop();},1700);mount.querySelector("#ks-tplay").textContent="⏸ Pause";}});
+      mount.querySelector("#ks-tnext").addEventListener("click",function(){tStop();tStep=Math.min(tStep+1,TSTEPS.length-1);renderTopo();});
+      mount.querySelector("#ks-tprev").addEventListener("click",function(){tStop();tStep=Math.max(tStep-1,0);renderTopo();});
+      mount.querySelector("#ks-treset").addEventListener("click",function(){tStop();tStep=0;renderTopo();});
       renderTopo();
 
       // KSTREAM vs KTABLE
-      var ksViewMode='stream-view';
+      var ksViewMode="stream-view";
       var EVENTS=[
         {key:"user:1",val:"Alice",t:1},{key:"user:2",val:"Bob",t:2},
         {key:"user:1",val:"AliceNew",t:3},{key:"user:3",val:"Carol",t:4},
         {key:"user:2",val:"BobNew",t:5},
       ];
       function renderKsView(){
-        var el=mount.querySelector('#ks-ks-content');
-        if(ksViewMode==='stream-view'){
-          el.innerHTML='<div class="ks-box"><h4>KStream: ALL events kept</h4>'+
-            EVENTS.map(function(e){return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;font-size:12px"><div class="ks-record-box stream" style="min-width:60px">'+e.key+'</div><div style="color:#8b949e">→</div><div class="ks-record-box stream">'+e.val+'</div></div>';}).join('')+
-            '<div style="font-size:11px;color:#8b949e;margin-top:8px">5 records. Each event is an independent fact.</div></div>';
+        var el=mount.querySelector("#ks-ks-content");
+        if(ksViewMode==="stream-view"){
+          el.innerHTML="<div class=\"ks-box\"><h4>KStream: ALL events kept</h4>"+
+            EVENTS.map(function(e){return "<div style=\"display:flex;gap:8px;align-items:center;margin-bottom:5px;font-size:12px\"><div class=\"ks-record-box stream\" style=\"min-width:60px\">"+e.key+"</div><div style=\"color:#8b949e\">→</div><div class=\"ks-record-box stream\">"+e.val+"</div></div>";}).join("")+
+            "<div style=\"font-size:11px;color:#8b949e;margin-top:8px\">5 records. Each event is an independent fact.</div></div>";
         } else {
           var latest={};
           EVENTS.forEach(function(e){latest[e.key]=e.val;});
-          el.innerHTML='<div class="ks-box"><h4>KTable: latest value per key</h4>'+
-            Object.keys(latest).map(function(k){return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;font-size:12px"><div class="ks-record-box mapped" style="min-width:60px">'+k+'</div><div style="color:#8b949e">→</div><div class="ks-record-box mapped">'+latest[k]+'</div></div>';}).join('')+
-            '<div style="font-size:11px;color:#8b949e;margin-top:8px">3 unique keys. Old values overwritten. user:1=AliceNew, user:2=BobNew.</div></div>';
+          el.innerHTML="<div class=\"ks-box\"><h4>KTable: latest value per key</h4>"+
+            Object.keys(latest).map(function(k){return "<div style=\"display:flex;gap:8px;align-items:center;margin-bottom:5px;font-size:12px\"><div class=\"ks-record-box mapped\" style=\"min-width:60px\">"+k+"</div><div style=\"color:#8b949e\">→</div><div class=\"ks-record-box mapped\">"+latest[k]+"</div></div>";}).join("")+
+            "<div style=\"font-size:11px;color:#8b949e;margin-top:8px\">3 unique keys. Old values overwritten. user:1=AliceNew, user:2=BobNew.</div></div>";
         }
       }
-      mount.querySelectorAll('.ks-stab[data-ks]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.ks-stab[data-ks]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');ksViewMode=b.dataset.ks;renderKsView();});
+      mount.querySelectorAll(".ks-stab[data-ks]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".ks-stab[data-ks]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");ksViewMode=b.dataset.ks;renderKsView();});
       });
       renderKsView();
 
       // WINDOWING
-      var winMode='tumbling';
+      var winMode="tumbling";
       var WIN_DATA={
         tumbling:{desc:"Fixed size, non-overlapping. Each event in exactly ONE window. TimeWindows.ofSizeWithNoGrace(Duration.ofMinutes(5)).",color:"#58a6ff",
           windows:[{label:"10:00-10:05",events:["e1","e2","e3"],active:true},{label:"10:05-10:10",events:["e4","e5"],active:false},{label:"10:10-10:15",events:["e6"],active:false}]},
@@ -224,37 +224,37 @@
       };
       function renderWin(){
         var s=WIN_DATA[winMode];
-        var el=mount.querySelector('#ks-win-content');
-        el.innerHTML='<div class="ks-box"><div style="font-size:12px;color:#8b949e;margin-bottom:10px">'+s.desc+'</div>'+
-          '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+        var el=mount.querySelector("#ks-win-content");
+        el.innerHTML="<div class=\"ks-box\"><div style=\"font-size:12px;color:#8b949e;margin-bottom:10px\">"+s.desc+"</div>"+
+          "<div style=\"display:flex;gap:8px;flex-wrap:wrap\">"+
           s.windows.map(function(w,i){
-            return '<div class="ks-window-box '+(i===0?'active':'closed')+'" style="border-color:'+s.color+';min-width:120px;max-width:160px">'+
-              '<div style="font-size:10px;color:'+s.color+';font-weight:600;margin-bottom:4px">'+w.label+'</div>'+
-              w.events.map(function(e){return '<span style="background:'+s.color+'22;color:'+s.color+';border-radius:4px;padding:1px 5px;font-size:10px;margin:1px;display:inline-block">'+e+'</span>';}).join('')+
-              (w.note?'<div style="font-size:9px;color:#8b949e;margin-top:4px">'+w.note+'</div>':'')+'</div>';
-          }).join('')+'</div></div>';
+            return "<div class=\"ks-window-box "+(i===0?"active":"closed")+"\" style=\"border-color:"+s.color+";min-width:120px;max-width:160px\">"+
+              "<div style=\"font-size:10px;color:"+s.color+";font-weight:600;margin-bottom:4px\">"+w.label+"</div>"+
+              w.events.map(function(e){return "<span style=\"background:"+s.color+"22;color:"+s.color+";border-radius:4px;padding:1px 5px;font-size:10px;margin:1px;display:inline-block\">"+e+"</span>";}).join("")+
+              (w.note?"<div style=\"font-size:9px;color:#8b949e;margin-top:4px\">"+w.note+"</div>":"")+"</div>";
+          }).join("")+"</div></div>";
       }
-      mount.querySelectorAll('.ks-stab[data-win]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.ks-stab[data-win]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');winMode=b.dataset.win;renderWin();});
+      mount.querySelectorAll(".ks-stab[data-win]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".ks-stab[data-win]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");winMode=b.dataset.win;renderWin();});
       });
       renderWin();
 
       // JOINS
-      var joinMode='stream-table';
+      var joinMode="stream-table";
       var JOIN_DATA={
-        'stream-table':{
+        "stream-table":{
           title:"Stream-Table Join",color:"#58a6ff",
           desc:"KStream joins with KTable. For each stream record, look up latest matching KTable entry. No window needed — KTable is always current.",
           example:"orders.join(userProfiles, (order,profile) → enrich(order, profile.name))",
           notes:["Stream record arrives → lookup KTable by key","KTable must have same (or co-partitioned) partitions","If no KTable entry: result null (left join → keep, inner → drop)","KTable updates don't produce new joined output"]
         },
-        'stream-stream':{
+        "stream-stream":{
           title:"Stream-Stream Join",color:"#e8741a",
           desc:"Both sides are KStreams. Must define JoinWindows — events must arrive within window of each other.",
           example:"clicks.join(impressions, (click,imp)→merge, JoinWindows.of(Duration.ofSeconds(5)))",
           notes:["Both sides buffered in state store for window duration","Events matched by key within time window","Grace period for late arrivals","Produces output for every match within window"]
         },
-        'table-table':{
+        "table-table":{
           title:"Table-Table Join",color:"#3dd68c",
           desc:"Both sides are KTables. Re-computes join result when EITHER table updates. Result is also a KTable.",
           example:"userProfiles.join(userSettings, (profile,settings)→combine(profile,settings))",
@@ -263,28 +263,28 @@
       };
       function renderJoin(){
         var s=JOIN_DATA[joinMode];
-        var el=mount.querySelector('#ks-join-content');
-        el.innerHTML='<div class="ks-box" style="border-color:'+s.color+'44">'+
-          '<div style="font-size:13px;font-weight:700;color:'+s.color+';margin-bottom:8px">'+s.title+'</div>'+
-          '<div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.5">'+s.desc+'</div>'+
-          '<div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:8px;font-family:monospace;font-size:12px;color:#cdd9e5;margin-bottom:10px">'+s.example+'</div>'+
-          s.notes.map(function(n){return '<div style="display:flex;gap:8px;margin-bottom:4px;font-size:12px"><span style="color:'+s.color+'">•</span><span>'+n+'</span></div>';}).join('')+'</div>';
+        var el=mount.querySelector("#ks-join-content");
+        el.innerHTML="<div class=\"ks-box\" style=\"border-color:"+s.color+"44\">"+
+          "<div style=\"font-size:13px;font-weight:700;color:"+s.color+";margin-bottom:8px\">"+s.title+"</div>"+
+          "<div style=\"font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.5\">"+s.desc+"</div>"+
+          "<div style=\"background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:8px;font-family:monospace;font-size:12px;color:#cdd9e5;margin-bottom:10px\">"+s.example+"</div>"+
+          s.notes.map(function(n){return "<div style=\"display:flex;gap:8px;margin-bottom:4px;font-size:12px\"><span style=\"color:"+s.color+"\">•</span><span>"+n+"</span></div>";}).join("")+"</div>";
       }
-      mount.querySelectorAll('.ks-stab[data-join]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.ks-stab[data-join]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');joinMode=b.dataset.join;renderJoin();});
+      mount.querySelectorAll(".ks-stab[data-join]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".ks-stab[data-join]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");joinMode=b.dataset.join;renderJoin();});
       });
       renderJoin();
 
       // TABS
-      mount.querySelectorAll('.ksbtn[data-tab]').forEach(function(btn){
-        btn.addEventListener('click',function(){
-          mount.querySelectorAll('.ksbtn[data-tab]').forEach(function(b){b.classList.remove('on');});
-          mount.querySelectorAll('.ksp').forEach(function(p){p.classList.remove('on');});
-          btn.classList.add('on');
-          mount.querySelector('#ks-'+btn.dataset.tab).classList.add('on');
+      mount.querySelectorAll(".ksbtn[data-tab]").forEach(function(btn){
+        btn.addEventListener("click",function(){
+          mount.querySelectorAll(".ksbtn[data-tab]").forEach(function(b){b.classList.remove("on");});
+          mount.querySelectorAll(".ksp").forEach(function(p){p.classList.remove("on");});
+          btn.classList.add("on");
+          mount.querySelector("#ks-"+btn.dataset.tab).classList.add("on");
         });
       });
-      mount.querySelectorAll('.ks-q-card').forEach(function(c){c.addEventListener('click',function(){c.classList.toggle('open');});});
+      mount.querySelectorAll(".ks-q-card").forEach(function(c){c.addEventListener("click",function(){c.classList.toggle("open");});});
     },
     concept: `**L1 (30s ELI5):** Kafka Streams = Java library to process records one-by-one as they arrive. Filter, transform, join, aggregate — all inside your app. No separate cluster needed.
 

@@ -9,7 +9,7 @@
  *   @Input() notes?: string
  */
 (function () {
-  'use strict';
+  "use strict";
   window.App = window.App || {};
 
   const C = window.App.Constants.Complexity;
@@ -35,18 +35,18 @@
       </div>
     `;
 
-    const timeBadge  = host.querySelector('[data-cpx-time]');
-    const timeName   = host.querySelector('[data-cpx-time-name]');
-    const spaceBadge = host.querySelector('[data-cpx-space]');
-    const spaceName  = host.querySelector('[data-cpx-space-name]');
-    const notesEl    = host.querySelector('[data-cpx-notes]');
+    const timeBadge  = host.querySelector("[data-cpx-time]");
+    const timeName   = host.querySelector("[data-cpx-time-name]");
+    const spaceBadge = host.querySelector("[data-cpx-space]");
+    const spaceName  = host.querySelector("[data-cpx-space-name]");
+    const notesEl    = host.querySelector("[data-cpx-notes]");
 
     function renderBadge(badgeEl, nameEl, label) {
       const token = C.fromLabel ? C.fromLabel(label) : null;
-      badgeEl.textContent = label || '—';
-      badgeEl.style.color = token ? token.color : '#8b949e';
-      badgeEl.style.borderColor = token ? token.color + '44' : '#30363d';
-      nameEl.textContent  = token ? token.name : '';
+      badgeEl.textContent = label || "—";
+      badgeEl.style.color = token ? token.color : "#8b949e";
+      badgeEl.style.borderColor = token ? token.color + "44" : "#30363d";
+      nameEl.textContent  = token ? token.name : "";
     }
 
     // Mirrors Angular @Input() setter — updates DOM when data changes
@@ -55,9 +55,9 @@
       renderBadge(spaceBadge, spaceName, spaceLabel);
       if (notes) {
         notesEl.textContent    = notes;
-        notesEl.style.display  = '';
+        notesEl.style.display  = "";
       } else {
-        notesEl.style.display  = 'none';
+        notesEl.style.display  = "none";
       }
     }
 

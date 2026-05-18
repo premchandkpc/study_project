@@ -1,9 +1,9 @@
 (function() {
   var topic = {
-  id:"sd-lld-cache", area:"sysdesign",
-  title:"LLD: LRU & LFU Cache — O(1) Get and Put",
-  tag:"LLD", tags:["lru","lfu","cache","hashmap","doubly linked list","linked hashmap","o(1)"],
-  concept:`**LRU (Least Recently Used):** Evict the item that was accessed longest ago.
+    id:"sd-lld-cache", area:"sysdesign",
+    title:"LLD: LRU & LFU Cache — O(1) Get and Put",
+    tag:"LLD", tags:["lru","lfu","cache","hashmap","doubly linked list","linked hashmap","o(1)"],
+    concept:`**LRU (Least Recently Used):** Evict the item that was accessed longest ago.
 
 **O(1) LRU implementation:** HashMap + Doubly Linked List.
 - HashMap: key → node (O(1) lookup)
@@ -25,10 +25,10 @@ Track \`minFreq\`. On evict: remove oldest key from \`freqToKeys[minFreq]\`.
 - LRU: general web cache. Recent access = likely to be accessed again.
 - LFU: media libraries, CDN content. Popular items (high freq) should stay regardless of recent access.
 - LRU simpler to implement; LFU resists scan pollution better.`,
-  why:`LRU cache implementation is one of the most common coding interview questions. Every caching layer internally uses one of these algorithms.`,
-  example:{
-    language:"java",
-    code:`// LRU Cache — O(1) get and put
+    why:"LRU cache implementation is one of the most common coding interview questions. Every caching layer internally uses one of these algorithms.",
+    example:{
+      language:"java",
+      code:`// LRU Cache — O(1) get and put
 public class LRUCache<K, V> {
     private final int capacity;
     private final LinkedHashMap<K, V> cache;
@@ -145,66 +145,66 @@ public class LFUCache {
         keyToVal.remove(lfu); keyToFreq.remove(lfu);
     }
 }`,
-    notes:"LinkedHashSet preserves insertion order — so iteration gives LRU order among keys with the same frequency. This makes LFU O(1) for all operations."
-  },
-  interview:[
-    {question:"Implement a thread-safe LRU cache in Java.",
-     answer:`Wrap LinkedHashMap with synchronized methods (as shown above) for simplicity. For production:\n- Use \`Collections.synchronizedMap\` around LinkedHashMap — coarse-grained lock\n- For better concurrency: use ConcurrentHashMap + ConcurrentLinkedDeque (approximate LRU with lower contention)\n- For high-performance: Caffeine library uses a window TinyLFU algorithm — lock-free, SLRU, ~10× faster than synchronizedLinkedHashMap\n\nCaffeine is what Spring Boot uses internally when you add \`@Cacheable\` with Caffeine configuration.`,
-     followUps:["What is the Window TinyLFU algorithm used by Caffeine?","When is LFU strictly better than LRU?"]
-    }
-  ],
-  tradeoffs:{
-    pros:["LRU: simple, O(1), handles temporal locality","LFU: resists cache pollution from one-time scans","Both: bounded memory, automatic eviction"],
-    cons:["LRU: scan can evict popular items","LFU: frequency counts inflate for old items (frequency aging needed)","Both: no awareness of item size — small and large items treated equally"],
-    when:"LRU for general application caches (HTTP responses, DB query results). LFU for content libraries (videos, images) where popularity matters more than recency."
-  },
-  visual: {
-    type: 'flow',
-    title: '⚡ LRU Cache — Request Lifecycle',
-    direction: 'horizontal',
-    nodes: [
-      { id: 'client',       label: 'Client',          color: '#58a6ff', icon: '💻', sublabel: 'GET key' },
-      { id: 'cache',        label: 'Cache Lookup',    color: '#ffa657', icon: '🔍', sublabel: 'HashMap O(1)' },
-      { id: 'hit',          label: 'Cache Hit',       color: '#3fb950', icon: '✅', sublabel: 'Move to MRU head' },
-      { id: 'return_hit',   label: 'Return Value',    color: '#3fb950', icon: '↩️',  sublabel: '~1ms response' },
-      { id: 'miss',         label: 'Cache Miss',      color: '#f85149', icon: '❌', sublabel: 'Key not found' },
-      { id: 'db',           label: 'Database',        color: '#8b949e', icon: '🗄️', sublabel: 'SQL query ~50ms' },
-      { id: 'evict',        label: 'Evict LRU',       color: '#bc8cff', icon: '🗑️',  sublabel: 'Remove tail node' },
-      { id: 'update_cache', label: 'Update Cache',    color: '#ffa657', icon: '📝', sublabel: 'Add to MRU head' },
-      { id: 'return_miss',  label: 'Return Value',    color: '#3fb950', icon: '↩️',  sublabel: 'Cache now warm' }
-    ],
-    connections: [
-      { from: 'client',       to: 'cache',        label: 'get(key)',         protocol: 'call' },
-      { from: 'cache',        to: 'hit',          label: 'found in map',     protocol: 'hit' },
-      { from: 'hit',          to: 'return_hit',   label: 'move to MRU',      protocol: 'O(1)' },
-      { from: 'cache',        to: 'miss',         label: 'not in map',       protocol: 'miss' },
-      { from: 'miss',         to: 'db',           label: 'query DB',         protocol: 'SQL' },
-      { from: 'db',           to: 'evict',        label: 'capacity full?',   protocol: 'check' },
-      { from: 'evict',        to: 'update_cache', label: 'remove tail',      protocol: 'DLL' },
-      { from: 'db',           to: 'update_cache', label: 'capacity ok',      protocol: 'skip' },
-      { from: 'update_cache', to: 'return_miss',  label: 'set + move head',  protocol: 'O(1)' }
-    ],
-    scenarios: [
-      {
-        name: '✅ Cache Hit',
-        path: ['client', 'cache', 'hit', 'return_hit'],
-        result: '✅ Cache Hit — O(1) HashMap lookup, node moved to MRU head (~1ms)',
-        resultColor: '#3fb950'
-      },
-      {
-        name: '❌ Cache Miss',
-        path: ['client', 'cache', 'miss', 'db', 'update_cache', 'return_miss'],
-        result: '⚡ Cache Miss — DB queried, result stored at MRU head (~50ms)',
-        resultColor: '#ffa657'
-      },
-      {
-        name: '🗑️ Cache Eviction',
-        path: ['client', 'cache', 'miss', 'db', 'evict', 'update_cache', 'return_miss'],
-        result: '🗑️ Eviction — Capacity full, LRU tail node removed, new key added as MRU',
-        resultColor: '#bc8cff'
+      notes:"LinkedHashSet preserves insertion order — so iteration gives LRU order among keys with the same frequency. This makes LFU O(1) for all operations."
+    },
+    interview:[
+      {question:"Implement a thread-safe LRU cache in Java.",
+        answer:"Wrap LinkedHashMap with synchronized methods (as shown above) for simplicity. For production:\n- Use `Collections.synchronizedMap` around LinkedHashMap — coarse-grained lock\n- For better concurrency: use ConcurrentHashMap + ConcurrentLinkedDeque (approximate LRU with lower contention)\n- For high-performance: Caffeine library uses a window TinyLFU algorithm — lock-free, SLRU, ~10× faster than synchronizedLinkedHashMap\n\nCaffeine is what Spring Boot uses internally when you add `@Cacheable` with Caffeine configuration.",
+        followUps:["What is the Window TinyLFU algorithm used by Caffeine?","When is LFU strictly better than LRU?"]
       }
-    ]
-  }
-};
+    ],
+    tradeoffs:{
+      pros:["LRU: simple, O(1), handles temporal locality","LFU: resists cache pollution from one-time scans","Both: bounded memory, automatic eviction"],
+      cons:["LRU: scan can evict popular items","LFU: frequency counts inflate for old items (frequency aging needed)","Both: no awareness of item size — small and large items treated equally"],
+      when:"LRU for general application caches (HTTP responses, DB query results). LFU for content libraries (videos, images) where popularity matters more than recency."
+    },
+    visual: {
+      type: "flow",
+      title: "⚡ LRU Cache — Request Lifecycle",
+      direction: "horizontal",
+      nodes: [
+        { id: "client",       label: "Client",          color: "#58a6ff", icon: "💻", sublabel: "GET key" },
+        { id: "cache",        label: "Cache Lookup",    color: "#ffa657", icon: "🔍", sublabel: "HashMap O(1)" },
+        { id: "hit",          label: "Cache Hit",       color: "#3fb950", icon: "✅", sublabel: "Move to MRU head" },
+        { id: "return_hit",   label: "Return Value",    color: "#3fb950", icon: "↩️",  sublabel: "~1ms response" },
+        { id: "miss",         label: "Cache Miss",      color: "#f85149", icon: "❌", sublabel: "Key not found" },
+        { id: "db",           label: "Database",        color: "#8b949e", icon: "🗄️", sublabel: "SQL query ~50ms" },
+        { id: "evict",        label: "Evict LRU",       color: "#bc8cff", icon: "🗑️",  sublabel: "Remove tail node" },
+        { id: "update_cache", label: "Update Cache",    color: "#ffa657", icon: "📝", sublabel: "Add to MRU head" },
+        { id: "return_miss",  label: "Return Value",    color: "#3fb950", icon: "↩️",  sublabel: "Cache now warm" }
+      ],
+      connections: [
+        { from: "client",       to: "cache",        label: "get(key)",         protocol: "call" },
+        { from: "cache",        to: "hit",          label: "found in map",     protocol: "hit" },
+        { from: "hit",          to: "return_hit",   label: "move to MRU",      protocol: "O(1)" },
+        { from: "cache",        to: "miss",         label: "not in map",       protocol: "miss" },
+        { from: "miss",         to: "db",           label: "query DB",         protocol: "SQL" },
+        { from: "db",           to: "evict",        label: "capacity full?",   protocol: "check" },
+        { from: "evict",        to: "update_cache", label: "remove tail",      protocol: "DLL" },
+        { from: "db",           to: "update_cache", label: "capacity ok",      protocol: "skip" },
+        { from: "update_cache", to: "return_miss",  label: "set + move head",  protocol: "O(1)" }
+      ],
+      scenarios: [
+        {
+          name: "✅ Cache Hit",
+          path: ["client", "cache", "hit", "return_hit"],
+          result: "✅ Cache Hit — O(1) HashMap lookup, node moved to MRU head (~1ms)",
+          resultColor: "#3fb950"
+        },
+        {
+          name: "❌ Cache Miss",
+          path: ["client", "cache", "miss", "db", "update_cache", "return_miss"],
+          result: "⚡ Cache Miss — DB queried, result stored at MRU head (~50ms)",
+          resultColor: "#ffa657"
+        },
+        {
+          name: "🗑️ Cache Eviction",
+          path: ["client", "cache", "miss", "db", "evict", "update_cache", "return_miss"],
+          result: "🗑️ Eviction — Capacity full, LRU tail node removed, new key added as MRU",
+          resultColor: "#bc8cff"
+        }
+      ]
+    }
+  };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);
 })();

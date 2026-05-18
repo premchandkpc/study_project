@@ -6,11 +6,11 @@
  * Examples: Search Rotated Array, Find Min Rotated, Koko Bananas.
  */
 (function () {
-  'use strict';
+  "use strict";
   window.DSA = window.DSA || {};
 
   class BinarySearchProblem extends window.DSA.Problem {
-    getPatternLabel() { return 'Binary Search'; }
+    getPatternLabel() { return "Binary Search"; }
 
     getTracerOpts() {
       return {
@@ -20,11 +20,11 @@
           piles: false,
         },
         vars: [
-          'lo', 'hi', 'mid',
-          'left', 'right',
-          'low', 'high',
-          'target', 'result',
-          'ans', 'k', 'h',
+          "lo", "hi", "mid",
+          "left", "right",
+          "low", "high",
+          "target", "result",
+          "ans", "k", "h",
         ],
       };
     }
@@ -47,12 +47,12 @@
 
         // Phase detection
         if (!step.phase) {
-          const nar = (step.narration || step.codeLine || '').toLowerCase();
-          if (nar.includes('found') || nar.includes('return mid'))   step.phase = 'found';
-          else if (nar.includes('go left')  || nar.includes('hi =')) step.phase = 'go-left';
-          else if (nar.includes('go right') || nar.includes('lo =')) step.phase = 'go-right';
-          else if (nar.includes('mid'))                               step.phase = 'midpoint';
-          else                                                         step.phase = 'scan';
+          const nar = (step.narration || step.codeLine || "").toLowerCase();
+          if (nar.includes("found") || nar.includes("return mid"))   step.phase = "found";
+          else if (nar.includes("go left")  || nar.includes("hi =")) step.phase = "go-left";
+          else if (nar.includes("go right") || nar.includes("lo =")) step.phase = "go-right";
+          else if (nar.includes("mid"))                               step.phase = "midpoint";
+          else                                                         step.phase = "scan";
         }
 
         return step;

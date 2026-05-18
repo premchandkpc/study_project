@@ -13,7 +13,7 @@
 - **\`http.Client\`** — default client has no timeout — always configure one.
 Third-party: **Chi** (composable middleware, stdlib-compatible), **Gin** (performance, familiar API).`,
     why:
-`Go's HTTP server is one of the fastest in any GC language. Understanding \`net/http\` internals — connection lifecycle, \`http.Transport\` keep-alives, body draining — is essential for high-throughput services. Incorrectly not reading a response body causes connection pool exhaustion.`,
+"Go's HTTP server is one of the fastest in any GC language. Understanding `net/http` internals — connection lifecycle, `http.Transport` keep-alives, body draining — is essential for high-throughput services. Incorrectly not reading a response body causes connection pool exhaustion.",
     example: {
       language: "go",
       code:
@@ -82,19 +82,19 @@ func main() {
         slog.Error("server", "err", err)
     }
 }`,
-      notes: `Always set \`ReadTimeout\`, \`WriteTimeout\`, and \`IdleTimeout\` on \`http.Server\`. Always \`io.Copy(io.Discard, resp.Body); resp.Body.Close()\` on client responses to enable connection reuse.`
+      notes: "Always set `ReadTimeout`, `WriteTimeout`, and `IdleTimeout` on `http.Server`. Always `io.Copy(io.Discard, resp.Body); resp.Body.Close()` on client responses to enable connection reuse."
     },
     interview: [
       {
         question: "Why should you never use the default http.Client in production?",
         answer:
-`The default \`http.Client\` has **no timeout** — a slow server holds the goroutine (and potentially a connection) forever. Also, the default \`Transport\` has a limited idle connection pool. Always configure \`Timeout\`, \`MaxIdleConns\`, and \`IdleConnTimeout\` for production clients.`,
+"The default `http.Client` has **no timeout** — a slow server holds the goroutine (and potentially a connection) forever. Also, the default `Transport` has a limited idle connection pool. Always configure `Timeout`, `MaxIdleConns`, and `IdleConnTimeout` for production clients.",
         followUps: ["What is connection draining?", "How does http.Transport handle keep-alive?"]
       },
       {
         question: "How do you implement graceful shutdown?",
         answer:
-`Listen for \`SIGINT\`/\`SIGTERM\`, then call \`srv.Shutdown(ctx)\` with a deadline context. \`Shutdown\` stops accepting new connections, waits for in-flight requests to complete, then returns. Combine with a \`WaitGroup\` if you have background workers that also need draining.`,
+"Listen for `SIGINT`/`SIGTERM`, then call `srv.Shutdown(ctx)` with a deadline context. `Shutdown` stops accepting new connections, waits for in-flight requests to complete, then returns. Combine with a `WaitGroup` if you have background workers that also need draining.",
         followUps: ["What is the difference between Shutdown and Close?", "How do you drain Kafka consumers before shutdown?"]
       }
     ],
@@ -109,7 +109,7 @@ func main() {
         "No built-in request validation, rate limiting, or auth — compose manually.",
         "HTTP/2 push and HTTP/3 require extra setup."
       ],
-      when: `**net/http** for small services and CLIs. **Chi** when middleware composition is needed. **Gin** for maximum ecosystem and familiar API. Avoid frameworks with invasive code generation.`
+      when: "**net/http** for small services and CLIs. **Chi** when middleware composition is needed. **Gin** for maximum ecosystem and familiar API. Avoid frameworks with invasive code generation."
     }
   };
   window.GO_TOPICS = (window.GO_TOPICS || []).concat([topic]);

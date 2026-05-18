@@ -21,21 +21,21 @@
 
   /* color aliases from core palette */
   const STATE_STYLE = {
-    active:  { bg: '#1f3a5f', border: '#58a6ff', text: '#58a6ff' },
-    success: { bg: '#0d2818', border: '#56d364', text: '#56d364' },
-    error:   { bg: '#2d0f0f', border: '#f78166', text: '#f78166' },
-    warn:    { bg: '#272012', border: '#e3b341', text: '#e3b341' },
-    compare: { bg: '#2d1b0e', border: '#f78166', text: '#f78166' },
-    swap:    { bg: '#0d2818', border: '#56d364', text: '#56d364' },
-    window:  { bg: '#1a1040', border: '#8957e5', text: '#d2a8ff' },
-    default: { bg: '#21262d', border: '#30363d', text: '#cdd9e5' },
+    active:  { bg: "#1f3a5f", border: "#58a6ff", text: "#58a6ff" },
+    success: { bg: "#0d2818", border: "#56d364", text: "#56d364" },
+    error:   { bg: "#2d0f0f", border: "#f78166", text: "#f78166" },
+    warn:    { bg: "#272012", border: "#e3b341", text: "#e3b341" },
+    compare: { bg: "#2d1b0e", border: "#f78166", text: "#f78166" },
+    swap:    { bg: "#0d2818", border: "#56d364", text: "#56d364" },
+    window:  { bg: "#1a1040", border: "#8957e5", text: "#d2a8ff" },
+    default: { bg: "#21262d", border: "#30363d", text: "#cdd9e5" },
   };
 
   /* ── STYLE INJECTION ──────────────────────────────────────────── */
   function injectStyles() {
-    if (document.getElementById('dsa-array-styles')) return;
-    const s = document.createElement('style');
-    s.id = 'dsa-array-styles';
+    if (document.getElementById("dsa-array-styles")) return;
+    const s = document.createElement("style");
+    s.id = "dsa-array-styles";
     s.textContent = `
       .dsa-arr-root {
         background: #161b22;
@@ -163,20 +163,20 @@
     }
 
     _build() {
-      this.mount.innerHTML = '';
-      const root = document.createElement('div');
-      root.className = 'dsa-arr-root';
+      this.mount.innerHTML = "";
+      const root = document.createElement("div");
+      root.className = "dsa-arr-root";
 
       /* optional title */
       if (this.state.title) {
-        const t = document.createElement('div');
-        t.style.cssText = 'font-size:15px;font-weight:700;color:#58a6ff;margin-bottom:10px;font-family:"Inter",system-ui,sans-serif;';
+        const t = document.createElement("div");
+        t.style.cssText = "font-size:15px;font-weight:700;color:#58a6ff;margin-bottom:10px;font-family:\"Inter\",system-ui,sans-serif;";
         t.textContent = this.state.title;
         root.appendChild(t);
       }
 
-      this._row = document.createElement('div');
-      this._row.className = 'dsa-arr-row';
+      this._row = document.createElement("div");
+      this._row.className = "dsa-arr-row";
       root.appendChild(this._row);
       this.mount.appendChild(root);
       this._renderCells();
@@ -184,47 +184,47 @@
 
     _renderCells() {
       const { arr = [], highlights = {}, pointers = {}, window: win, showIndex = true } = this.state;
-      this._row.innerHTML = '';
+      this._row.innerHTML = "";
 
       const revPtrs = {};
       Object.entries(pointers).forEach(([label, pos]) => {
-        revPtrs[pos] = revPtrs[pos] ? revPtrs[pos] + ' ' + label : label;
+        revPtrs[pos] = revPtrs[pos] ? revPtrs[pos] + " " + label : label;
       });
 
       arr.forEach((val, idx) => {
-        const wrap = document.createElement('div');
-        wrap.className = 'dsa-arr-cell-wrap';
+        const wrap = document.createElement("div");
+        wrap.className = "dsa-arr-cell-wrap";
 
         /* pointer label above cell */
         const ptrLabel = revPtrs[idx];
         if (ptrLabel) {
-          const ptr = document.createElement('div');
-          ptr.className = 'dsa-arr-ptr';
+          const ptr = document.createElement("div");
+          ptr.className = "dsa-arr-ptr";
           ptr.textContent = ptrLabel;
           wrap.appendChild(ptr);
         } else {
           /* spacer so cells align when some have pointers */
-          const sp = document.createElement('div');
-          sp.style.height = '18px';
+          const sp = document.createElement("div");
+          sp.style.height = "18px";
           wrap.appendChild(sp);
         }
 
         /* cell */
-        const cell = document.createElement('div');
-        cell.className = 'dsa-arr-cell';
+        const cell = document.createElement("div");
+        cell.className = "dsa-arr-cell";
 
-        let stateKey = highlights[idx] || 'default';
+        let stateKey = highlights[idx] || "default";
         /* window range supersedes default */
-        if (!highlights[idx] && win && idx >= win[0] && idx <= win[1]) stateKey = 'window';
-        if (stateKey !== 'default') cell.classList.add(stateKey);
+        if (!highlights[idx] && win && idx >= win[0] && idx <= win[1]) stateKey = "window";
+        if (stateKey !== "default") cell.classList.add(stateKey);
 
-        cell.textContent = val ?? '·';
+        cell.textContent = val ?? "·";
 
         wrap.appendChild(cell);
 
         if (showIndex) {
-          const ix = document.createElement('div');
-          ix.className = 'dsa-arr-idx';
+          const ix = document.createElement("div");
+          ix.className = "dsa-arr-idx";
           ix.textContent = idx;
           wrap.appendChild(ix);
         }
@@ -247,31 +247,31 @@
 
     animate(mount, steps, opts = {}) {
       const { DSAViz } = window;
-      mount.innerHTML = '';
+      mount.innerHTML = "";
 
-      const nar = DSAViz.makeNarration('Press ▶▶ or Play to start');
+      const nar = DSAViz.makeNarration("Press ▶▶ or Play to start");
       mount.appendChild(nar);
 
       if (steps[0]?.title) {
-        const t = document.createElement('div');
-        t.style.cssText = 'font-size:16px;font-weight:700;color:#58a6ff;margin:8px 0 4px;font-family:"Inter",system-ui,sans-serif;letter-spacing:.01em;';
+        const t = document.createElement("div");
+        t.style.cssText = "font-size:16px;font-weight:700;color:#58a6ff;margin:8px 0 4px;font-family:\"Inter\",system-ui,sans-serif;letter-spacing:.01em;";
         t.textContent = steps[0].title;
         mount.insertBefore(t, nar);
       }
 
-      const vizDiv = document.createElement('div');
+      const vizDiv = document.createElement("div");
       mount.appendChild(vizDiv);
 
       if (opts.timeComplexity || opts.spaceComplexity) {
-        mount.appendChild(DSAViz.makeComplexityBadge(opts.timeComplexity || '—', opts.spaceComplexity || '—'));
+        mount.appendChild(DSAViz.makeComplexityBadge(opts.timeComplexity || "—", opts.spaceComplexity || "—"));
       }
 
       let viz = null;
       const ctrl = DSAViz.makeStepCtrl(steps, (step, idx) => {
         if (!step) {
-          vizDiv.innerHTML = '';
+          vizDiv.innerHTML = "";
           viz = null;
-          nar.update('Reset');
+          nar.update("Reset");
           return;
         }
         if (!viz) {
@@ -280,10 +280,10 @@
           viz.update(step);
         }
         const narColor = step.highlights
-          ? (Object.values(step.highlights).includes('error') ? '#f78166'
-            : Object.values(step.highlights).includes('success') ? '#56d364'
-            : '#1f6feb')
-          : '#1f6feb';
+          ? (Object.values(step.highlights).includes("error") ? "#f78166"
+            : Object.values(step.highlights).includes("success") ? "#56d364"
+              : "#1f6feb")
+          : "#1f6feb";
         nar.update(step.narration || `Step ${idx + 1}`, narColor);
         ctrl._updateCtr?.();
       });

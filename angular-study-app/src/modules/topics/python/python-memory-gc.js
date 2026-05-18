@@ -13,7 +13,7 @@ Key tools:
 - **\`tracemalloc\`**: snapshot heap allocations to find leaks.
 - **\`sys.getsizeof\`**: object size (shallow, not deep).`,
     why:
-`Memory leaks in Python are often caused by: (1) global caches growing unbounded; (2) closures holding references to large objects; (3) event listeners never removed; (4) reference cycles not collected by the minor GC generation. In long-running services (FastAPI, Celery), memory growth causes OOM kills. \`tracemalloc\` is the key diagnostic tool.`,
+"Memory leaks in Python are often caused by: (1) global caches growing unbounded; (2) closures holding references to large objects; (3) event listeners never removed; (4) reference cycles not collected by the minor GC generation. In long-running services (FastAPI, Celery), memory growth causes OOM kills. `tracemalloc` is the key diagnostic tool.",
     example: {
       language: "python",
       code:
@@ -74,19 +74,19 @@ a.ref = b; b.ref = a  # cycle
 del a, b              # refcount stays > 0 without gc
 gc.collect()          # GC finds and frees the cycle
 print("collected:", gc.collect())`,
-      notes: `Disable the cyclic GC (\`gc.disable()\`) only in CPU-critical tight loops where you've proven there are no cycles. Re-enable it for the rest of the code. Instagram disables GC for a 10% throughput win in their specific case.`
+      notes: "Disable the cyclic GC (`gc.disable()`) only in CPU-critical tight loops where you've proven there are no cycles. Re-enable it for the rest of the code. Instagram disables GC for a 10% throughput win in their specific case."
     },
     interview: [
       {
         question: "What is the difference between del and garbage collection in Python?",
         answer:
-`\`del\` removes a **name binding** — it decrements the refcount of the object. If refcount hits 0, the object is freed immediately. If a cycle exists, the refcount never reaches 0; the cyclic GC (run periodically) finds and frees unreachable cycle members. \`del\` does not directly call the GC.`,
+"`del` removes a **name binding** — it decrements the refcount of the object. If refcount hits 0, the object is freed immediately. If a cycle exists, the refcount never reaches 0; the cyclic GC (run periodically) finds and frees unreachable cycle members. `del` does not directly call the GC.",
         followUps: ["What is __del__ and why is it dangerous?", "How does generational GC work?"]
       },
       {
         question: "How do you find memory leaks in a long-running Python service?",
         answer:
-`Three approaches: (1) **tracemalloc** — snapshot before/after suspected leak window, compare top-N allocations by lineno. (2) **objgraph** — \`objgraph.show_most_common_types()\` to see what's growing. (3) **memory_profiler** — line-by-line memory for a function. Common culprits: global dicts growing, cached results never evicted, listeners registered on long-lived objects.`,
+"Three approaches: (1) **tracemalloc** — snapshot before/after suspected leak window, compare top-N allocations by lineno. (2) **objgraph** — `objgraph.show_most_common_types()` to see what's growing. (3) **memory_profiler** — line-by-line memory for a function. Common culprits: global dicts growing, cached results never evicted, listeners registered on long-lived objects.",
         followUps: ["What is a reference cycle involving __del__?", "How does weakref.WeakValueDictionary help caches?"]
       }
     ],
@@ -101,7 +101,7 @@ print("collected:", gc.collect())`,
         "Cyclic GC pauses (short, but non-deterministic) affect latency.",
         "No compaction — long-running processes accumulate fragmentation."
       ],
-      when: `Use **\`__slots__\`** for value-object classes created in large numbers. Use **weakref** for in-memory caches. Profile with **tracemalloc** before optimizing — Python memory issues are often caused by application-level design, not the runtime.`
+      when: "Use **`__slots__`** for value-object classes created in large numbers. Use **weakref** for in-memory caches. Profile with **tracemalloc** before optimizing — Python memory issues are often caused by application-level design, not the runtime."
     }
   };
   window.PYTHON_TOPICS = (window.PYTHON_TOPICS || []).concat([topic]);

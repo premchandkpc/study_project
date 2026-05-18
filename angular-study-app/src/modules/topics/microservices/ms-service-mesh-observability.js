@@ -15,7 +15,7 @@
 
 Modern meshes may use sidecars, node proxies, or ambient modes, but the conceptual goal is the same: make cross-service traffic visible, secure, and controllable.`,
     why:
-`When a system grows from 5 services to 50, every team reimplementing TLS, retries, tracing headers, authz, and traffic shifting becomes inconsistent. A mesh gives platform teams one control plane for shared policies. The danger is overusing mesh retries or hiding complexity: if every layer retries blindly, a partial outage becomes a retry storm. Mesh policy should complement application-level timeouts and idempotency, not replace them.`,
+"When a system grows from 5 services to 50, every team reimplementing TLS, retries, tracing headers, authz, and traffic shifting becomes inconsistent. A mesh gives platform teams one control plane for shared policies. The danger is overusing mesh retries or hiding complexity: if every layer retries blindly, a partial outage becomes a retry storm. Mesh policy should complement application-level timeouts and idempotency, not replace them.",
     example: {
       language: "yaml",
       code:
@@ -111,19 +111,19 @@ spec:
   accessLogging:
   - providers:
     - name: envoy`,
-      notes: `Keep total retry budget smaller than the caller's deadline. If the application timeout is 800 ms, a mesh policy with 3 attempts at 500 ms each is a bug. Use trace IDs to prove the retry behavior you configured is the behavior actually happening.`
+      notes: "Keep total retry budget smaller than the caller's deadline. If the application timeout is 800 ms, a mesh policy with 3 attempts at 500 ms each is a bug. Use trace IDs to prove the retry behavior you configured is the behavior actually happening."
     },
     interview: [
       {
         question: "What belongs in the mesh vs in application code?",
         answer:
-`Put transport concerns in the mesh: mTLS, L7 routing, traffic splitting, coarse retries, outlier detection, access logs, and baseline telemetry. Keep business authorization, idempotency, compensation, domain fallbacks, and user-facing error semantics in application code. The mesh can say "order-service may call payment-service"; the app must still decide whether this user may charge this card.`,
+"Put transport concerns in the mesh: mTLS, L7 routing, traffic splitting, coarse retries, outlier detection, access logs, and baseline telemetry. Keep business authorization, idempotency, compensation, domain fallbacks, and user-facing error semantics in application code. The mesh can say \"order-service may call payment-service\"; the app must still decide whether this user may charge this card.",
         followUps: ["How do mesh retries interact with idempotency?", "What is the sidecar resource overhead?"]
       },
       {
         question: "How do traces, metrics, and logs work together during an incident?",
         answer:
-`Metrics tell you that something is wrong, traces show where time or errors are happening across services, and logs explain local details at a specific span or request. A practical incident loop is: alert on RED/SLO metrics, open traces for slow/error exemplars, then jump to correlated logs using trace_id and span_id.`,
+"Metrics tell you that something is wrong, traces show where time or errors are happening across services, and logs explain local details at a specific span or request. A practical incident loop is: alert on RED/SLO metrics, open traces for slow/error exemplars, then jump to correlated logs using trace_id and span_id.",
         followUps: ["What is trace sampling?", "What are high-cardinality metric labels?"]
       }
     ],
@@ -138,7 +138,7 @@ spec:
         "Misconfigured retries or timeouts can amplify incidents.",
         "Debugging now includes app code, proxy config, and control-plane state."
       ],
-      when: `Use a mesh when you have many services, zero-trust requirements, cross-team platform standards, or complex rollout policies. For a tiny system, start with gateway + good app instrumentation before adding mesh complexity.`
+      when: "Use a mesh when you have many services, zero-trust requirements, cross-team platform standards, or complex rollout policies. For a tiny system, start with gateway + good app instrumentation before adding mesh complexity."
     }
   };
   window.MICRO_TOPICS = (window.MICRO_TOPICS || []).concat([topic]);

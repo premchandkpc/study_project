@@ -13,7 +13,7 @@
 - **Snapshot**: periodic state snapshot to avoid full replay on every load.
 - **Command handler**: validates command → produces events → appends to store.`,
     why:
-`Event sourcing gives a built-in **audit log** and **time travel** — replay events to any point in time. It enables debugging production issues by replaying events locally. Combined with CQRS, read models can be rebuilt (after bugs) or added (new features) without touching the event store. Used by trading platforms, banks, and event-heavy domains.`,
+"Event sourcing gives a built-in **audit log** and **time travel** — replay events to any point in time. It enables debugging production issues by replaying events locally. Combined with CQRS, read models can be rebuilt (after bugs) or added (new features) without touching the event store. Used by trading platforms, banks, and event-heavy domains.",
     example: {
       language: "java",
       code:
@@ -81,19 +81,19 @@ record OrderSummary(String id, String userId, String status, int itemCount) {
 }
 
 record ConfirmOrderCommand(String orderId) {}`,
-      notes: `The **apply** method must be a pure function — no side effects, no I/O. Side effects (emails, external calls) happen in event handlers *after* the events are persisted. This is critical for correct replay behaviour.`
+      notes: "The **apply** method must be a pure function — no side effects, no I/O. Side effects (emails, external calls) happen in event handlers *after* the events are persisted. This is critical for correct replay behaviour."
     },
     interview: [
       {
         question: "What are the downsides of event sourcing?",
         answer:
-`(1) **Query complexity**: you can't query "all orders over $100" directly — needs a read model. (2) **Schema evolution**: changing past event structures requires migration or versioning strategy (upcasters). (3) **Eventual consistency** between event store and read models. (4) **Learning curve**: most teams and frameworks are built around current-state CRUD. Use event sourcing only when the audit log, time travel, or event-driven integration benefits outweigh the complexity.`,
+"(1) **Query complexity**: you can't query \"all orders over $100\" directly — needs a read model. (2) **Schema evolution**: changing past event structures requires migration or versioning strategy (upcasters). (3) **Eventual consistency** between event store and read models. (4) **Learning curve**: most teams and frameworks are built around current-state CRUD. Use event sourcing only when the audit log, time travel, or event-driven integration benefits outweigh the complexity.",
         followUps: ["What is an upcaster in event sourcing?", "How do you handle event versioning?"]
       },
       {
         question: "How do you handle aggregate growth in event sourcing?",
         answer:
-`Long-lived aggregates accumulate thousands of events — replaying all is slow. Solution: **snapshots** — persist the aggregate state at event N, store the snapshot, then replay only events after N on next load. Snapshot frequency is a tunable (every 100 events, or daily). The snapshot is a cache — the event log remains authoritative.`,
+"Long-lived aggregates accumulate thousands of events — replaying all is slow. Solution: **snapshots** — persist the aggregate state at event N, store the snapshot, then replay only events after N on next load. Snapshot frequency is a tunable (every 100 events, or daily). The snapshot is a cache — the event log remains authoritative.",
         followUps: ["How do you invalidate a snapshot?", "Snapshot storage format?"]
       }
     ],
@@ -108,7 +108,7 @@ record ConfirmOrderCommand(String orderId) {}`,
         "Queries require read models — no ad-hoc SQL on entity state.",
         "Event schema evolution (upcasters) adds maintenance burden."
       ],
-      when: `**Event Sourcing** for audit-heavy domains (finance, healthcare, e-commerce order management). **CQRS** without event sourcing when read/write scalability differs but audit trail isn't needed. Traditional CRUD for most CRUD services.`
+      when: "**Event Sourcing** for audit-heavy domains (finance, healthcare, e-commerce order management). **CQRS** without event sourcing when read/write scalability differs but audit trail isn't needed. Traditional CRUD for most CRUD services."
     }
   };
   window.MICRO_TOPICS = (window.MICRO_TOPICS || []).concat([topic]);

@@ -8,21 +8,21 @@
  * Angular equiv: interface + class with factory method
  */
 (function () {
-  'use strict';
+  "use strict";
   window.DSA = window.DSA || {};
 
   class DSAStep {
     constructor(fields = {}) {
       this.line           = fields.line           ?? 0;
-      this.codeLine       = fields.codeLine       ?? '';
+      this.codeLine       = fields.codeLine       ?? "";
       this.variables      = fields.variables      ?? {};   // { name: primitiveValue }
       this.arrays         = fields.arrays         ?? {};   // { name: number[] }
       this.maps           = fields.maps           ?? {};   // { name: { key: val } }
       this.sets           = fields.sets           ?? {};   // { name: val[] }
       this.stack          = fields.stack          ?? [];   // call stack frames
       this.recursionDepth = fields.recursionDepth ?? 0;
-      this.narration      = fields.narration      ?? '';
-      this.timeLabel      = fields.timeLabel      ?? '';
+      this.narration      = fields.narration      ?? "";
+      this.timeLabel      = fields.timeLabel      ?? "";
       this.ops            = fields.ops            ?? 0;
       // Visual hints — used by animations layer
       this.highlight      = fields.highlight      ?? {};   // { arrayName: { indices: [], color } }

@@ -15,7 +15,7 @@
 - **\`Literal\`, \`Final\`, \`TypeGuard\`** — narrow types at specific values.
 Python 3.12: \`type\` keyword for type aliases. Python 3.10+: \`X | Y\` union syntax.`,
     why:
-`mypy + type hints catch an estimated 15% of production bugs at commit time with zero runtime cost. \`Protocol\` enables the same structural typing Go uses — depend on behavior, not class hierarchy. Type hints are also the foundation for FastAPI's automatic validation, Pydantic models, and IDE completion.`,
+"mypy + type hints catch an estimated 15% of production bugs at commit time with zero runtime cost. `Protocol` enables the same structural typing Go uses — depend on behavior, not class hierarchy. Type hints are also the foundation for FastAPI's automatic validation, Pydantic models, and IDE completion.",
     example: {
       language: "python",
       code:
@@ -75,19 +75,19 @@ def process(x: int) -> str: ...
 def process(x: str) -> int: ...
 def process(x):
     return str(x) if isinstance(x, int) else len(x)`,
-      notes: `Use \`from __future__ import annotations\` (deferred evaluation) to allow forward references without quotes. Run mypy in strict mode (\`--strict\`) in CI for new code; gradually tighten existing code.`
+      notes: "Use `from __future__ import annotations` (deferred evaluation) to allow forward references without quotes. Run mypy in strict mode (`--strict`) in CI for new code; gradually tighten existing code."
     },
     interview: [
       {
         question: "What is the difference between Protocol and ABC?",
         answer:
-`**ABC** (Abstract Base Class) uses nominal subtyping — a class must explicitly \`class Foo(ABC)\` or register with \`ABC.register()\`. **\`Protocol\`** uses structural subtyping — any class with the right methods satisfies the protocol, no inheritance needed. Protocol enables Go-style duck-typing with static type checking. Use Protocol when you don't control the implementing class.`,
+"**ABC** (Abstract Base Class) uses nominal subtyping — a class must explicitly `class Foo(ABC)` or register with `ABC.register()`. **`Protocol`** uses structural subtyping — any class with the right methods satisfies the protocol, no inheritance needed. Protocol enables Go-style duck-typing with static type checking. Use Protocol when you don't control the implementing class.",
         followUps: ["What is runtime_checkable?", "Can a Protocol extend another Protocol?"]
       },
       {
         question: "How do you type a decorator that preserves the wrapped function's signature?",
         answer:
-`Use \`ParamSpec\` and \`TypeVar\`: \`P = ParamSpec("P"); R = TypeVar("R")\`, then \`def decorator(fn: Callable[P, R]) -> Callable[P, R]\`. Without \`ParamSpec\`, mypy infers the wrapper as \`Callable[..., R]\` — losing parameter names and types for callers. \`functools.wraps\` handles runtime metadata; \`ParamSpec\` handles static types.`,
+"Use `ParamSpec` and `TypeVar`: `P = ParamSpec(\"P\"); R = TypeVar(\"R\")`, then `def decorator(fn: Callable[P, R]) -> Callable[P, R]`. Without `ParamSpec`, mypy infers the wrapper as `Callable[..., R]` — losing parameter names and types for callers. `functools.wraps` handles runtime metadata; `ParamSpec` handles static types.",
         followUps: ["What is Concatenate?", "How do you type a class decorator?"]
       }
     ],
@@ -102,7 +102,7 @@ def process(x):
         "Complex generics (recursive types, HKTs) hit mypy limitations.",
         "Type stubs (.pyi) must be maintained for C extensions."
       ],
-      when: `Enable mypy in CI for all new code. Use strict mode for new modules. Add types incrementally to legacy code — start with function signatures. Always type public APIs and library boundaries.`
+      when: "Enable mypy in CI for all new code. Use strict mode for new modules. Add types incrementally to legacy code — start with function signatures. Always type public APIs and library boundaries."
     }
   };
   window.PYTHON_TOPICS = (window.PYTHON_TOPICS || []).concat([topic]);

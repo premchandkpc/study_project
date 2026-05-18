@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dp-climb-stairs",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** FAANG recurrence: ways(n) = ways(n-1) + ways(n-2).`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'dp.climbStairs',
-        time:  'O(n)',
-        space: 'O(n)',
+        title: "dp.climbStairs",
+        time:  "O(n)",
+        space: "O(n)",
         code: `function climbStairs(n) {
   if (n <= 2) return n;
   const dp = [0, 1, 2];

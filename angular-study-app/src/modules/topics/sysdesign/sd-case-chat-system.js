@@ -47,7 +47,7 @@
 - Message stored in Cassandra regardless of recipient status.
 - When user reconnects → WebSocket server queries Cassandra for all messages after \`last_seen_message_id\`.
 - Push notifications (APNs/FCM) sent via async worker when recipient is offline.`,
-    why: `Chat systems appear in nearly every FAANG interview. They combine WebSockets, Kafka fan-out, write-heavy NoSQL, presence (Redis TTL), and offline delivery — covering distributed systems breadth in one problem.`,
+    why: "Chat systems appear in nearly every FAANG interview. They combine WebSockets, Kafka fan-out, write-heavy NoSQL, presence (Redis TTL), and offline delivery — covering distributed systems breadth in one problem.",
     example: {
       language: "python",
       code: `# WebSocket server — message send + Kafka publish
@@ -124,7 +124,7 @@ async def consume_messages():
     interview: [
       {
         question: "How do you route a message from User A (on Server 1) to User B (on Server 2)?",
-        answer: `Server 1 publishes the message to a Kafka topic partitioned by conversation_id. Every WebSocket server subscribes to Kafka with a unique consumer group ID. Each server receives every message and checks its local connection map — if the recipient is connected to that server, it delivers the message. This avoids direct server-to-server routing and decouples the servers completely.`,
+        answer: "Server 1 publishes the message to a Kafka topic partitioned by conversation_id. Every WebSocket server subscribes to Kafka with a unique consumer group ID. Each server receives every message and checks its local connection map — if the recipient is connected to that server, it delivers the message. This avoids direct server-to-server routing and decouples the servers completely.",
         followUps: [
           "Why not use a service registry to find which server holds the connection?",
           "What are the trade-offs between Kafka fan-out vs direct server-to-server RPC?",
@@ -133,7 +133,7 @@ async def consume_messages():
       },
       {
         question: "How do you store 100 billion messages per day?",
-        answer: `Cassandra is ideal: partition key = conversation_id (all messages for a chat collocated), clustering key = timestamp DESC (efficient pagination of history). Write consistency = ONE (fast, async replication). Replication factor = 3 for durability. 100B msgs × 200 bytes ≈ 20TB/day — use TTL (1 year) and tiered storage (hot data on SSDs, cold on S3 via DSE/Stargate). Avoid relational DB — joins and transactions don't scale to this write volume.`,
+        answer: "Cassandra is ideal: partition key = conversation_id (all messages for a chat collocated), clustering key = timestamp DESC (efficient pagination of history). Write consistency = ONE (fast, async replication). Replication factor = 3 for durability. 100B msgs × 200 bytes ≈ 20TB/day — use TTL (1 year) and tiered storage (hot data on SSDs, cold on S3 via DSE/Stargate). Avoid relational DB — joins and transactions don't scale to this write volume.",
         followUps: [
           "Why Cassandra over DynamoDB for chat?",
           "How do you handle message ordering guarantees in Cassandra?",
@@ -142,7 +142,7 @@ async def consume_messages():
       },
       {
         question: "How do you handle offline users?",
-        answer: `Messages are always written to Cassandra regardless of recipient's online status. Each user has a last_seen_message_id stored server-side. When user reconnects, the WebSocket server queries Cassandra: SELECT * FROM messages WHERE conversation_id = ? AND timestamp > last_seen_timestamp. For mobile, an async worker checks Redis presence and if offline, sends a push notification (APNs/FCM) with message preview.`,
+        answer: "Messages are always written to Cassandra regardless of recipient's online status. Each user has a last_seen_message_id stored server-side. When user reconnects, the WebSocket server queries Cassandra: SELECT * FROM messages WHERE conversation_id = ? AND timestamp > last_seen_timestamp. For mobile, an async worker checks Redis presence and if offline, sends a push notification (APNs/FCM) with message preview.",
         followUps: [
           "How do you avoid sending duplicate messages on reconnect?",
           "How do you handle push notification failures?",
@@ -151,7 +151,7 @@ async def consume_messages():
       },
       {
         question: "Design WhatsApp's end-to-end encryption at scale.",
-        answer: `Signal Protocol: each client generates a key bundle (identity key, signed prekey, one-time prekeys). Published to the server's key distribution server on registration. When A sends to B: A fetches B's key bundle, derives a shared secret using X3DH (Extended Triple Diffie-Hellman). Messages encrypted client-side with AES-256. Server only stores ciphertext — cannot decrypt. For group chats: sender distributes a group session key to each member individually, encrypted with their public key. Server acts as blind message store and key distribution service only.`,
+        answer: "Signal Protocol: each client generates a key bundle (identity key, signed prekey, one-time prekeys). Published to the server's key distribution server on registration. When A sends to B: A fetches B's key bundle, derives a shared secret using X3DH (Extended Triple Diffie-Hellman). Messages encrypted client-side with AES-256. Server only stores ciphertext — cannot decrypt. For group chats: sender distributes a group session key to each member individually, encrypted with their public key. Server acts as blind message store and key distribution service only.",
         followUps: [
           "How do you handle key rotation?",
           "How does E2E encryption work for group chats with 1000 members?",
@@ -183,68 +183,68 @@ async def consume_messages():
       "Presence fan-out storm: user with 5000 contacts goes online → 5000 presence events → filter to only contacts who are also online"
     ],
     visual: {
-      type: 'layered',
-      title: '💬 Real-Time Chat System (WhatsApp Scale)',
+      type: "layered",
+      title: "💬 Real-Time Chat System (WhatsApp Scale)",
       layers: [
         {
-          id: 'l1',
-          label: 'Client Layer',
-          color: '#58a6ff',
-          protocols: 'WebSocket / HTTPS',
+          id: "l1",
+          label: "Client Layer",
+          color: "#58a6ff",
+          protocols: "WebSocket / HTTPS",
           services: [
-            { id: 's1', label: 'Mobile App', icon: '📱', sublabel: 'iOS / Android' },
-            { id: 's2', label: 'Web App', icon: '💻', sublabel: 'Browser / PWA' }
+            { id: "s1", label: "Mobile App", icon: "📱", sublabel: "iOS / Android" },
+            { id: "s2", label: "Web App", icon: "💻", sublabel: "Browser / PWA" }
           ]
         },
         {
-          id: 'l2',
-          label: 'Connection Layer',
-          color: '#3fb950',
-          protocols: 'WebSocket / TCP — sticky sessions by user_id hash',
+          id: "l2",
+          label: "Connection Layer",
+          color: "#3fb950",
+          protocols: "WebSocket / TCP — sticky sessions by user_id hash",
           services: [
-            { id: 's3', label: 'WS Server 1', icon: '🔌', sublabel: 'User A conn' },
-            { id: 's4', label: 'WS Server 2', icon: '🔌', sublabel: 'User B conn' },
-            { id: 's5', label: 'L4 Load Balancer', icon: '⚖️', sublabel: 'Consistent hash' }
+            { id: "s3", label: "WS Server 1", icon: "🔌", sublabel: "User A conn" },
+            { id: "s4", label: "WS Server 2", icon: "🔌", sublabel: "User B conn" },
+            { id: "s5", label: "L4 Load Balancer", icon: "⚖️", sublabel: "Consistent hash" }
           ]
         },
         {
-          id: 'l3',
-          label: 'Messaging Layer',
-          color: '#ffa657',
-          protocols: 'Kafka topic: chat-messages — partitioned by conversation_id',
+          id: "l3",
+          label: "Messaging Layer",
+          color: "#ffa657",
+          protocols: "Kafka topic: chat-messages — partitioned by conversation_id",
           services: [
-            { id: 's6', label: 'Kafka', icon: '⚡', sublabel: 'chat-messages topic' },
-            { id: 's7', label: 'Message Router', icon: '🔀', sublabel: 'fan-out to servers' },
-            { id: 's8', label: 'Push Worker', icon: '📲', sublabel: 'APNs / FCM' }
+            { id: "s6", label: "Kafka", icon: "⚡", sublabel: "chat-messages topic" },
+            { id: "s7", label: "Message Router", icon: "🔀", sublabel: "fan-out to servers" },
+            { id: "s8", label: "Push Worker", icon: "📲", sublabel: "APNs / FCM" }
           ]
         },
         {
-          id: 'l4',
-          label: 'Storage Layer',
-          color: '#bc8cff',
-          protocols: 'CQL (Cassandra) / Redis — partition key: conversation_id',
+          id: "l4",
+          label: "Storage Layer",
+          color: "#bc8cff",
+          protocols: "CQL (Cassandra) / Redis — partition key: conversation_id",
           services: [
-            { id: 's9', label: 'Cassandra', icon: '🗄️', sublabel: '100B msgs/day · TTL 1yr' },
-            { id: 's10', label: 'Redis Presence', icon: '🟢', sublabel: 'TTL 35s heartbeat' },
-            { id: 's11', label: 'S3 / CDN', icon: '🖼️', sublabel: 'Media storage' }
+            { id: "s9", label: "Cassandra", icon: "🗄️", sublabel: "100B msgs/day · TTL 1yr" },
+            { id: "s10", label: "Redis Presence", icon: "🟢", sublabel: "TTL 35s heartbeat" },
+            { id: "s11", label: "S3 / CDN", icon: "🖼️", sublabel: "Media storage" }
           ]
         }
       ],
       flows: [
         {
-          name: '📨 Send Message',
-          path: ['s1', 's5', 's3', 's6', 's4', 's2'],
-          color: '#3fb950'
+          name: "📨 Send Message",
+          path: ["s1", "s5", "s3", "s6", "s4", "s2"],
+          color: "#3fb950"
         },
         {
-          name: '📢 Group Chat Fan-out',
-          path: ['s1', 's5', 's3', 's6', 's7', 's4'],
-          color: '#ffa657'
+          name: "📢 Group Chat Fan-out",
+          path: ["s1", "s5", "s3", "s6", "s7", "s4"],
+          color: "#ffa657"
         },
         {
-          name: '🔔 Offline Delivery',
-          path: ['s3', 's6', 's9', 's8', 's2'],
-          color: '#bc8cff'
+          name: "🔔 Offline Delivery",
+          path: ["s3", "s6", "s9", "s8", "s2"],
+          color: "#bc8cff"
         }
       ]
     }

@@ -235,22 +235,22 @@
       var fStep=0,fTimer=null;
       function renderFlow(){
         var s=FSTEPS[fStep];
-        mount.querySelector('#sr-flow-nodes').innerHTML=FNODES.map(function(n,i){
-          return '<div class="sr-block '+n.type+(s.active===n.id?' active':'')+'">'+n.label+'<div style="font-size:10px;opacity:.7;font-weight:400">'+n.sub+'</div></div>'+(i<FNODES.length-1?'<div class="sr-arrow">→</div>':'');
-        }).join('');
-        mount.querySelector('#sr-flow-detail').innerHTML=s.detail;
-        mount.querySelector('#sr-finfo').innerHTML=s.info;
-        mount.querySelector('#sr-fstep').textContent='Step '+(fStep+1)+'/'+FSTEPS.length;
+        mount.querySelector("#sr-flow-nodes").innerHTML=FNODES.map(function(n,i){
+          return "<div class=\"sr-block "+n.type+(s.active===n.id?" active":"")+"\">"+n.label+"<div style=\"font-size:10px;opacity:.7;font-weight:400\">"+n.sub+"</div></div>"+(i<FNODES.length-1?"<div class=\"sr-arrow\">→</div>":"");
+        }).join("");
+        mount.querySelector("#sr-flow-detail").innerHTML=s.detail;
+        mount.querySelector("#sr-finfo").innerHTML=s.info;
+        mount.querySelector("#sr-fstep").textContent="Step "+(fStep+1)+"/"+FSTEPS.length;
       }
-      function fStop(){clearInterval(fTimer);fTimer=null;mount.querySelector('#sr-fplay').textContent='▶ Play';}
-      mount.querySelector('#sr-fplay').addEventListener('click',function(){if(fTimer){fStop();}else{fTimer=setInterval(function(){fStep=Math.min(fStep+1,FSTEPS.length-1);renderFlow();if(fStep===FSTEPS.length-1)fStop();},1800);mount.querySelector('#sr-fplay').textContent='⏸ Pause';}});
-      mount.querySelector('#sr-fnext').addEventListener('click',function(){fStop();fStep=Math.min(fStep+1,FSTEPS.length-1);renderFlow();});
-      mount.querySelector('#sr-fprev').addEventListener('click',function(){fStop();fStep=Math.max(fStep-1,0);renderFlow();});
-      mount.querySelector('#sr-freset').addEventListener('click',function(){fStop();fStep=0;renderFlow();});
+      function fStop(){clearInterval(fTimer);fTimer=null;mount.querySelector("#sr-fplay").textContent="▶ Play";}
+      mount.querySelector("#sr-fplay").addEventListener("click",function(){if(fTimer){fStop();}else{fTimer=setInterval(function(){fStep=Math.min(fStep+1,FSTEPS.length-1);renderFlow();if(fStep===FSTEPS.length-1)fStop();},1800);mount.querySelector("#sr-fplay").textContent="⏸ Pause";}});
+      mount.querySelector("#sr-fnext").addEventListener("click",function(){fStop();fStep=Math.min(fStep+1,FSTEPS.length-1);renderFlow();});
+      mount.querySelector("#sr-fprev").addEventListener("click",function(){fStop();fStep=Math.max(fStep-1,0);renderFlow();});
+      mount.querySelector("#sr-freset").addEventListener("click",function(){fStop();fStep=0;renderFlow();});
       renderFlow();
 
       // COMPATIBILITY
-      var compatMode='backward';
+      var compatMode="backward";
       var COMPAT_DATA={
         backward:{
           label:"BACKWARD (default)",color:"#3dd68c",
@@ -283,29 +283,29 @@
       };
       function renderCompat(){
         var s=COMPAT_DATA[compatMode];
-        mount.querySelector('#sr-compat-content').innerHTML='<div class="sr-box" style="border-color:'+s.color+'44">'+
-          '<div style="font-size:13px;font-weight:700;color:'+s.color+';margin-bottom:6px">'+s.label+'</div>'+
-          '<div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.5">'+s.desc+'</div>'+
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'+
-          '<div><div style="font-size:11px;font-weight:600;color:#3dd68c;margin-bottom:4px">✓ Allowed</div>'+s.allowed.map(function(a){return '<div style="font-size:11px;color:#3dd68c;margin-bottom:2px">• '+a+'</div>';}).join('')+'</div>'+
-          '<div><div style="font-size:11px;font-weight:600;color:#f47067;margin-bottom:4px">✗ Rejected by Registry</div>'+s.forbidden.map(function(f){return '<div style="font-size:11px;color:#f47067;margin-bottom:2px">• '+f+'</div>';}).join('')+'</div></div>'+
-          '<div style="background:#0d1117;border-radius:6px;padding:8px;font-size:11px;color:#f5b944">📦 Deploy strategy: '+s.deploy+'</div></div>';
+        mount.querySelector("#sr-compat-content").innerHTML="<div class=\"sr-box\" style=\"border-color:"+s.color+"44\">"+
+          "<div style=\"font-size:13px;font-weight:700;color:"+s.color+";margin-bottom:6px\">"+s.label+"</div>"+
+          "<div style=\"font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.5\">"+s.desc+"</div>"+
+          "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px\">"+
+          "<div><div style=\"font-size:11px;font-weight:600;color:#3dd68c;margin-bottom:4px\">✓ Allowed</div>"+s.allowed.map(function(a){return "<div style=\"font-size:11px;color:#3dd68c;margin-bottom:2px\">• "+a+"</div>";}).join("")+"</div>"+
+          "<div><div style=\"font-size:11px;font-weight:600;color:#f47067;margin-bottom:4px\">✗ Rejected by Registry</div>"+s.forbidden.map(function(f){return "<div style=\"font-size:11px;color:#f47067;margin-bottom:2px\">• "+f+"</div>";}).join("")+"</div></div>"+
+          "<div style=\"background:#0d1117;border-radius:6px;padding:8px;font-size:11px;color:#f5b944\">📦 Deploy strategy: "+s.deploy+"</div></div>";
       }
-      mount.querySelectorAll('.sr-stab[data-compat]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.sr-stab[data-compat]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');compatMode=b.dataset.compat;renderCompat();});
+      mount.querySelectorAll(".sr-stab[data-compat]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".sr-stab[data-compat]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");compatMode=b.dataset.compat;renderCompat();});
       });
       renderCompat();
 
       // TABS
-      mount.querySelectorAll('.srbtn[data-tab]').forEach(function(btn){
-        btn.addEventListener('click',function(){
-          mount.querySelectorAll('.srbtn[data-tab]').forEach(function(b){b.classList.remove('on');});
-          mount.querySelectorAll('.srp').forEach(function(p){p.classList.remove('on');});
-          btn.classList.add('on');
-          mount.querySelector('#sr-'+btn.dataset.tab).classList.add('on');
+      mount.querySelectorAll(".srbtn[data-tab]").forEach(function(btn){
+        btn.addEventListener("click",function(){
+          mount.querySelectorAll(".srbtn[data-tab]").forEach(function(b){b.classList.remove("on");});
+          mount.querySelectorAll(".srp").forEach(function(p){p.classList.remove("on");});
+          btn.classList.add("on");
+          mount.querySelector("#sr-"+btn.dataset.tab).classList.add("on");
         });
       });
-      mount.querySelectorAll('.sr-q-card').forEach(function(c){c.addEventListener('click',function(){c.classList.toggle('open');});});
+      mount.querySelectorAll(".sr-q-card").forEach(function(c){c.addEventListener("click",function(){c.classList.toggle("open");});});
     },
     concept: `**L1 (30s ELI5):** Schema Registry = central contract for message shapes. Producers say "my data looks like this" (schema). Consumers use same schema to decode. Evolve schema without breaking consumers.
 
@@ -344,7 +344,7 @@ consumer.subscribe(List.of("orders"));
 // Register schema via REST
 // curl -X POST http://schema-registry:8081/subjects/orders-value/versions \\
 //   -H "Content-Type: application/vnd.schemaregistry.v1+json" \\
-//   -d '{"schema": "{\"type\":\"record\",\"name\":\"Order\",...}"}'`
+//   -d '{"schema": "{\\"type\\":\\"record\\",\\"name\\":\\"Order\\",...}"}'`
     },
     gotchas: [
       "BACKWARD compatibility (default) means old consumers can read NEW data — deploy consumers before producers",

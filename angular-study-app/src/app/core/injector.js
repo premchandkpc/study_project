@@ -7,7 +7,7 @@
  *   const svc = window.App.Injector.inject('MyService');
  */
 (function () {
-  'use strict';
+  "use strict";
   window.App = window.App || {};
 
   window.App.Injector = {
@@ -21,7 +21,7 @@
 
     inject(token) {
       if (!this._registry.has(token)) {
-        throw new Error('[Injector] No provider for: ' + token);
+        throw new Error("[Injector] No provider for: " + token);
       }
       return this._registry.get(token);
     },

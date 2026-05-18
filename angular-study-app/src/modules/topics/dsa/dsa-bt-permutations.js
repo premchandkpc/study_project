@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-bt-permutations",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Password cracker — generate all orderings of a character set.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'backtrack.permutations',
-        time:  'O(n!)',
-        space: 'O(n)',
+        title: "backtrack.permutations",
+        time:  "O(n!)",
+        space: "O(n)",
         code: `function permute(nums) {
   const result = [];
   function backtrack(current, remaining) {

@@ -4,22 +4,22 @@
  * Load after: core/signal.js, core/injector.js
  */
 (function () {
-  'use strict';
+  "use strict";
   const { Injector, signal } = window.App;
 
-  window.App.Router = Injector.provide('Router', () => {
+  window.App.Router = Injector.provide("Router", () => {
     function parseHash() {
-      const h = (location.hash || '#/').replace(/^#/, '');
-      const [path, query] = h.split('?');
-      return { path: path || '/', query: query || '' };
+      const h = (location.hash || "#/").replace(/^#/, "");
+      const [path, query] = h.split("?");
+      return { path: path || "/", query: query || "" };
     }
 
     const current = signal(parseHash());
-    window.addEventListener('hashchange', () => current.set(parseHash()));
+    window.addEventListener("hashchange", () => current.set(parseHash()));
 
     return {
       current,
-      navigate: (path) => { location.hash = '#' + path; },
+      navigate: (path) => { location.hash = "#" + path; },
     };
   });
 })();

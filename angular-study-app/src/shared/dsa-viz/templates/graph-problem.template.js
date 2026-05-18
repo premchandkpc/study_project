@@ -6,11 +6,11 @@
  * Examples: BFS, DFS, Dijkstra, Number of Islands, Topological Sort.
  */
 (function () {
-  'use strict';
+  "use strict";
   window.DSA = window.DSA || {};
 
   class GraphProblem extends window.DSA.Problem {
-    getPatternLabel() { return 'Graph Traversal'; }
+    getPatternLabel() { return "Graph Traversal"; }
 
     getTracerOpts() {
       return {
@@ -24,12 +24,12 @@
           dist:    true,
         },
         vars: [
-          'node', 'curr', 'u', 'v',
-          'start', 'end', 'target',
-          'level', 'depth',
-          'count', 'components',
-          'rows', 'cols', 'r', 'c',
-          'dist', 'cost',
+          "node", "curr", "u", "v",
+          "start", "end", "target",
+          "level", "depth",
+          "count", "components",
+          "rows", "cols", "r", "c",
+          "dist", "cost",
         ],
       };
     }
@@ -40,16 +40,16 @@
 
         // Phase detection
         if (!step.phase) {
-          const nar = (step.narration || step.codeLine || '').toLowerCase();
-          if (nar.includes('queue') || nar.includes('enqueue'))        step.phase = 'enqueue';
-          else if (nar.includes('dequeue') || nar.includes('shift'))   step.phase = 'dequeue';
-          else if (nar.includes('visit') || nar.includes('mark'))      step.phase = 'visit';
-          else if (nar.includes('push') || nar.includes('stack'))      step.phase = 'push';
-          else if (nar.includes('pop'))                                 step.phase = 'pop';
-          else if (nar.includes('relax') || nar.includes('dist'))      step.phase = 'relax';
-          else if (nar.includes('found') || nar.includes('result'))    step.phase = 'found';
-          else if (nar.includes('neighbor') || nar.includes('adj'))    step.phase = 'explore';
-          else                                                           step.phase = 'scan';
+          const nar = (step.narration || step.codeLine || "").toLowerCase();
+          if (nar.includes("queue") || nar.includes("enqueue"))        step.phase = "enqueue";
+          else if (nar.includes("dequeue") || nar.includes("shift"))   step.phase = "dequeue";
+          else if (nar.includes("visit") || nar.includes("mark"))      step.phase = "visit";
+          else if (nar.includes("push") || nar.includes("stack"))      step.phase = "push";
+          else if (nar.includes("pop"))                                 step.phase = "pop";
+          else if (nar.includes("relax") || nar.includes("dist"))      step.phase = "relax";
+          else if (nar.includes("found") || nar.includes("result"))    step.phase = "found";
+          else if (nar.includes("neighbor") || nar.includes("adj"))    step.phase = "explore";
+          else                                                           step.phase = "scan";
         }
 
         return step;

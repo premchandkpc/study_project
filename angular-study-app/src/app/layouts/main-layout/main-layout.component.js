@@ -12,7 +12,7 @@
  *   export class MainLayoutComponent {}
  */
 (function () {
-  'use strict';
+  "use strict";
   window.App = window.App || {};
 
   /**
@@ -25,7 +25,7 @@
   window.App.MainLayoutComponent = function MainLayoutComponent(root) {
     const { Router } = window.App;
 
-    root.classList.add('app-shell', 'home-mode');
+    root.classList.add("app-shell", "home-mode");
     root.innerHTML = `
       <header class="app-header" id="app-header">
         <button class="hdr-back" id="hdr-back" aria-label="Go to home">← Study Lab</button>
@@ -41,23 +41,23 @@
       <main  class="main"    role="main"></main>
     `;
 
-    const headerEl  = root.querySelector('.app-header');
-    const sidebarEl = root.querySelector('.sidebar');
-    const mainEl    = root.querySelector('.main');
+    const headerEl  = root.querySelector(".app-header");
+    const sidebarEl = root.querySelector(".sidebar");
+    const mainEl    = root.querySelector(".main");
 
     // Sync home-mode class with route (mirrors Angular Router + HostBinding)
     Router.current.subscribe(({ path }) => {
-      const isHome  = path === '/' || path === '';
-      const isCoder = path === '/coder';
-      root.classList.toggle('home-mode', isHome);
-      if (!isCoder) root.classList.remove('coder-mode');
+      const isHome  = path === "/" || path === "";
+      const isCoder = path === "/coder";
+      root.classList.toggle("home-mode", isHome);
+      if (!isCoder) root.classList.remove("coder-mode");
     });
 
-    root.querySelector('#hdr-back').addEventListener('click',
-      () => Router.navigate('/')
+    root.querySelector("#hdr-back").addEventListener("click",
+      () => Router.navigate("/")
     );
-    root.querySelector('#hdr-coder-btn').addEventListener('click',
-      () => Router.navigate('/coder')
+    root.querySelector("#hdr-coder-btn").addEventListener("click",
+      () => Router.navigate("/coder")
     );
 
     return { headerEl, sidebarEl, mainEl };

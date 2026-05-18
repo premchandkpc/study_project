@@ -6,11 +6,11 @@
  * Examples: Valid Parentheses, Daily Temperatures, Largest Rectangle in Histogram.
  */
 (function () {
-  'use strict';
+  "use strict";
   window.DSA = window.DSA || {};
 
   class StackProblem extends window.DSA.Problem {
-    getPatternLabel() { return 'Monotonic Stack'; }
+    getPatternLabel() { return "Monotonic Stack"; }
 
     getTracerOpts() {
       return {
@@ -22,12 +22,12 @@
           answer:   true,
         },
         vars: [
-          'i', 'j',
-          'top', 'curr', 'prev',
-          'area', 'maxArea',
-          'width', 'height', 'h',
-          'count', 'result',
-          'ch', 'char',
+          "i", "j",
+          "top", "curr", "prev",
+          "area", "maxArea",
+          "width", "height", "h",
+          "count", "result",
+          "ch", "char",
         ],
       };
     }
@@ -38,13 +38,13 @@
 
         // Phase detection
         if (!step.phase) {
-          const nar = (step.narration || step.codeLine || '').toLowerCase();
-          if (nar.includes('push'))                                    step.phase = 'push';
-          else if (nar.includes('pop'))                                step.phase = 'pop';
-          else if (nar.includes('area') || nar.includes('max'))       step.phase = 'compute';
-          else if (nar.includes('match') || nar.includes('valid'))    step.phase = 'match';
-          else if (nar.includes('return') || nar.includes('result'))  step.phase = 'done';
-          else                                                          step.phase = 'scan';
+          const nar = (step.narration || step.codeLine || "").toLowerCase();
+          if (nar.includes("push"))                                    step.phase = "push";
+          else if (nar.includes("pop"))                                step.phase = "pop";
+          else if (nar.includes("area") || nar.includes("max"))       step.phase = "compute";
+          else if (nar.includes("match") || nar.includes("valid"))    step.phase = "match";
+          else if (nar.includes("return") || nar.includes("result"))  step.phase = "done";
+          else                                                          step.phase = "scan";
         }
 
         return step;

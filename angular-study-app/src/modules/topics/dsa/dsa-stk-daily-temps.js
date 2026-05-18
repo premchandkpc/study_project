@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-stk-daily-temps",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Stock ticker — how many days until a stock price rises above today's closing price?`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'stack.dailyTemp',
-        time:  'O(n)',
-        space: 'O(n)',
+        title: "stack.dailyTemp",
+        time:  "O(n)",
+        space: "O(n)",
         code: `function dailyTemperatures(temps) {
   const result = new Array(temps.length).fill(0);
   const stack = [];

@@ -1,9 +1,9 @@
 (function() {
   var topic = {
-  id:"sd-case-video-platform", area:"sysdesign",
-  title:"Case Study: Video Platform (Netflix / YouTube)",
-  tag:"Case Study", tags:["netflix","youtube","video streaming","hls","dash","adaptive bitrate","cdn","transcoding","chunked upload"],
-  concept:`**Requirements:** 500M users, 1B hours watched/day, 500 hours of video uploaded/minute.
+    id:"sd-case-video-platform", area:"sysdesign",
+    title:"Case Study: Video Platform (Netflix / YouTube)",
+    tag:"Case Study", tags:["netflix","youtube","video streaming","hls","dash","adaptive bitrate","cdn","transcoding","chunked upload"],
+    concept:`**Requirements:** 500M users, 1B hours watched/day, 500 hours of video uploaded/minute.
 
 **Upload pipeline:**
 1. **Chunked upload** — client splits video into 5-10MB chunks, uploads in parallel. Resumable on failure.
@@ -27,10 +27,10 @@ Two-stage: candidate generation (ALS matrix factorisation — 1M videos → top 
 - View counts, likes: Redis (real-time) + Cassandra (batch aggregated)
 - Search index: Elasticsearch
 - CDN: Netflix uses their own Open Connect CDN; YouTube uses Google's CDN`,
-  why:`Video streaming design is a common senior-level question. Transcoding pipeline, HLS/DASH, and CDN strategy are unique to this domain.`,
-  example:{
-    language:"yaml",
-    code:`# Video transcoding pipeline — AWS MediaConvert or custom FFmpeg workers
+    why:"Video streaming design is a common senior-level question. Transcoding pipeline, HLS/DASH, and CDN strategy are unique to this domain.",
+    example:{
+      language:"yaml",
+      code:`# Video transcoding pipeline — AWS MediaConvert or custom FFmpeg workers
 
 # 1. Upload initiation
 POST /uploads/initiate
@@ -66,74 +66,74 @@ https://cdn.example.com/videos/abc123/360p/playlist.m3u8
 # 6. CDN pre-warm for popular content
 # On publish, push first 30s of all resolutions to all PoPs (popular content anticipation)
 # Long-tail content: serve from S3 on cache miss`,
-    notes:"Netflix's Open Connect appliances are deployed IN ISP datacenters — video bytes travel only from ISP's own rack to user. Eliminates internet transit cost."
-  },
-  interview:[
-    {question:"How does adaptive bitrate streaming work?",
-     answer:`ABR (HLS/DASH) works in 5 steps:\n1. Server transcodes video into multiple quality levels (2160p → 240p) and divides each into short segments (2-10 seconds).\n2. A manifest file lists all quality variants with bandwidth requirements.\n3. Player downloads the manifest, picks initial quality based on measured bandwidth.\n4. Player downloads segment, measures download time. If download took longer than segment duration → bandwidth too low → switch to lower quality next segment.\n5. If download is consistently fast → buffer ahead and switch to higher quality.\n\n**Key insight:** Switching happens at segment boundaries — seamless. Player maintains a 15-30 second buffer to absorb network jitter without pause.\n\nHLS uses \`.m3u8\` (Apple format, supported natively by iOS/Safari). DASH is ISO standard (Chrome, Android). Both achieve same result — adaptive quality.`,
-     followUps:["Why does Netflix pre-transcode to AV1 codec?","How do you handle DRM (Digital Rights Management) for premium content?"]
+      notes:"Netflix's Open Connect appliances are deployed IN ISP datacenters — video bytes travel only from ISP's own rack to user. Eliminates internet transit cost."
+    },
+    interview:[
+      {question:"How does adaptive bitrate streaming work?",
+        answer:"ABR (HLS/DASH) works in 5 steps:\n1. Server transcodes video into multiple quality levels (2160p → 240p) and divides each into short segments (2-10 seconds).\n2. A manifest file lists all quality variants with bandwidth requirements.\n3. Player downloads the manifest, picks initial quality based on measured bandwidth.\n4. Player downloads segment, measures download time. If download took longer than segment duration → bandwidth too low → switch to lower quality next segment.\n5. If download is consistently fast → buffer ahead and switch to higher quality.\n\n**Key insight:** Switching happens at segment boundaries — seamless. Player maintains a 15-30 second buffer to absorb network jitter without pause.\n\nHLS uses `.m3u8` (Apple format, supported natively by iOS/Safari). DASH is ISO standard (Chrome, Android). Both achieve same result — adaptive quality.",
+        followUps:["Why does Netflix pre-transcode to AV1 codec?","How do you handle DRM (Digital Rights Management) for premium content?"]
+      }
+    ],
+    tradeoffs:{
+      pros:["HLS/DASH: works over plain HTTP, CDN-friendly, adaptive quality","Chunked upload: resumable, parallel — fast for large files","Distributed transcoding: elastic scale — 500h/minute is feasible"],
+      cons:["Transcoding is compute-intensive and expensive ($0.50/min of video for 1080p)","Manifest + segment files multiply storage (6 resolutions × many segments)","ABR introduces complexity in player implementation"],
+      when:"HLS for iOS/Safari. DASH for Android/Chrome. AV1 codec for bandwidth-constrained mobile markets. Always CDN for video — sending video from origin is economically infeasible at scale."
+    },
+    visual: {
+      type: "layered",
+      title: "Video Platform Architecture — Upload to Stream",
+      layers: [
+        {
+          id: "client",
+          label: "Client Layer",
+          color: "#3fb950",
+          protocols: "HTTPS / HLS / DASH",
+          services: [
+            { id: "web",    label: "Web Player",    icon: "🌐" },
+            { id: "mobile", label: "Mobile App",    icon: "📱" },
+            { id: "tv",     label: "Smart TV",      icon: "📺" },
+          ],
+        },
+        {
+          id: "api",
+          label: "API Layer",
+          color: "#58a6ff",
+          protocols: "REST / gRPC",
+          services: [
+            { id: "upload_api",  label: "Upload API",    icon: "📤" },
+            { id: "stream_api",  label: "Stream API",    icon: "▶️" },
+            { id: "search_api",  label: "Search API",    icon: "🔍" },
+          ],
+        },
+        {
+          id: "processing",
+          label: "Processing Layer",
+          color: "#ffa657",
+          protocols: "Kafka / SQS → Workers",
+          services: [
+            { id: "transcode",   label: "Transcode Workers", icon: "⚙️" },
+            { id: "thumbnail",   label: "Thumbnail Gen",     icon: "🖼️" },
+            { id: "metadata_svc",label: "Metadata Service",  icon: "📋" },
+          ],
+        },
+        {
+          id: "storage",
+          label: "Storage Layer",
+          color: "#bc8cff",
+          protocols: "S3 / CDN / PostgreSQL",
+          services: [
+            { id: "s3_raw",   label: "S3 Raw Bucket",   icon: "🗄️" },
+            { id: "cdn",      label: "CDN (200+ PoPs)",  icon: "🌍" },
+            { id: "postgres", label: "PostgreSQL Meta",  icon: "🐘" },
+          ],
+        },
+      ],
+      flows: [
+        { name: "Upload Flow",  path: ["web","upload_api","transcode","s3_raw","cdn"],         color: "#3fb950" },
+        { name: "Stream Flow",  path: ["mobile","stream_api","cdn"],                           color: "#58a6ff" },
+        { name: "Search Flow",  path: ["tv","search_api","metadata_svc","postgres"],           color: "#ffa657" },
+      ],
     }
-  ],
-  tradeoffs:{
-    pros:["HLS/DASH: works over plain HTTP, CDN-friendly, adaptive quality","Chunked upload: resumable, parallel — fast for large files","Distributed transcoding: elastic scale — 500h/minute is feasible"],
-    cons:["Transcoding is compute-intensive and expensive ($0.50/min of video for 1080p)","Manifest + segment files multiply storage (6 resolutions × many segments)","ABR introduces complexity in player implementation"],
-    when:"HLS for iOS/Safari. DASH for Android/Chrome. AV1 codec for bandwidth-constrained mobile markets. Always CDN for video — sending video from origin is economically infeasible at scale."
-  },
-  visual: {
-    type: 'layered',
-    title: 'Video Platform Architecture — Upload to Stream',
-    layers: [
-      {
-        id: 'client',
-        label: 'Client Layer',
-        color: '#3fb950',
-        protocols: 'HTTPS / HLS / DASH',
-        services: [
-          { id: 'web',    label: 'Web Player',    icon: '🌐' },
-          { id: 'mobile', label: 'Mobile App',    icon: '📱' },
-          { id: 'tv',     label: 'Smart TV',      icon: '📺' },
-        ],
-      },
-      {
-        id: 'api',
-        label: 'API Layer',
-        color: '#58a6ff',
-        protocols: 'REST / gRPC',
-        services: [
-          { id: 'upload_api',  label: 'Upload API',    icon: '📤' },
-          { id: 'stream_api',  label: 'Stream API',    icon: '▶️' },
-          { id: 'search_api',  label: 'Search API',    icon: '🔍' },
-        ],
-      },
-      {
-        id: 'processing',
-        label: 'Processing Layer',
-        color: '#ffa657',
-        protocols: 'Kafka / SQS → Workers',
-        services: [
-          { id: 'transcode',   label: 'Transcode Workers', icon: '⚙️' },
-          { id: 'thumbnail',   label: 'Thumbnail Gen',     icon: '🖼️' },
-          { id: 'metadata_svc',label: 'Metadata Service',  icon: '📋' },
-        ],
-      },
-      {
-        id: 'storage',
-        label: 'Storage Layer',
-        color: '#bc8cff',
-        protocols: 'S3 / CDN / PostgreSQL',
-        services: [
-          { id: 's3_raw',   label: 'S3 Raw Bucket',   icon: '🗄️' },
-          { id: 'cdn',      label: 'CDN (200+ PoPs)',  icon: '🌍' },
-          { id: 'postgres', label: 'PostgreSQL Meta',  icon: '🐘' },
-        ],
-      },
-    ],
-    flows: [
-      { name: 'Upload Flow',  path: ['web','upload_api','transcode','s3_raw','cdn'],         color: '#3fb950' },
-      { name: 'Stream Flow',  path: ['mobile','stream_api','cdn'],                           color: '#58a6ff' },
-      { name: 'Search Flow',  path: ['tv','search_api','metadata_svc','postgres'],           color: '#ffa657' },
-    ],
-  }
-};
+  };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);
 })();

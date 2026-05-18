@@ -14,7 +14,7 @@
 - **Compacted topics**: retain only the latest value per key — used for event sourcing read models.
 - **Schema Registry**: Avro/Protobuf schemas with versioning and compatibility checks.`,
     why:
-`Kafka decouples producers from consumers in time and space — no direct RPC. This enables **event sourcing**, **CQRS**, **audit logs**, and **async workflows**. Consumer groups allow independent replay at different rates. The durable log is the ground truth; services can replay from offset 0 to rebuild state after a bug. Exactly-once is the hardest part — understand the two-phase commit involved.`,
+"Kafka decouples producers from consumers in time and space — no direct RPC. This enables **event sourcing**, **CQRS**, **audit logs**, and **async workflows**. Consumer groups allow independent replay at different rates. The durable log is the ground truth; services can replay from offset 0 to rebuild state after a bug. Exactly-once is the hardest part — understand the two-phase commit involved.",
     example: {
       language: "java",
       code:
@@ -68,19 +68,19 @@ public void onOrderEvent(
 // ── Consumer group lag monitoring ─────────────────────────────────────────
 // kafka-consumer-groups.sh --bootstrap-server localhost:9092 \\
 //   --describe --group inventory-service`,
-      notes: `The **outbox pattern** is the safe alternative to \`@Transactional\` across DB + Kafka: write the event to an \`outbox\` table in the same DB transaction, then a separate relay polls and publishes to Kafka. Eliminates dual-write failure modes.`
+      notes: "The **outbox pattern** is the safe alternative to `@Transactional` across DB + Kafka: write the event to an `outbox` table in the same DB transaction, then a separate relay polls and publishes to Kafka. Eliminates dual-write failure modes."
     },
     interview: [
       {
         question: "How does Kafka achieve exactly-once delivery?",
         answer:
-`Three components: (1) **Idempotent producer** — each message gets a sequence number; the broker deduplicates retries per producer epoch. (2) **Transactional producer** — \`beginTransaction\`, \`send\`, \`commitTransaction\` atomically. (3) **Transactional consumer** — reads only committed messages (\`isolation.level=read_committed\`). Together, a consume-transform-produce pipeline is exactly-once. Note: exactly-once is producer-broker-consumer — your downstream DB still needs idempotency on the consumer side.`,
+"Three components: (1) **Idempotent producer** — each message gets a sequence number; the broker deduplicates retries per producer epoch. (2) **Transactional producer** — `beginTransaction`, `send`, `commitTransaction` atomically. (3) **Transactional consumer** — reads only committed messages (`isolation.level=read_committed`). Together, a consume-transform-produce pipeline is exactly-once. Note: exactly-once is producer-broker-consumer — your downstream DB still needs idempotency on the consumer side.",
         followUps: ["What is a producer epoch?", "How does the outbox pattern compare?", "What is a zombie producer?"]
       },
       {
         question: "How do you handle a slow consumer without losing messages?",
         answer:
-`Kafka retains messages for the configured retention period regardless of consumption speed. Options: (1) **Scale consumers** up to the number of partitions. (2) **Repartition** the topic with more partitions to allow more parallelism. (3) **Batch consumption** — process N records per poll. (4) **Back-pressure**: pause the consumer with \`consumer.pause()\` until the downstream drains. Monitor lag via \`consumer group describe\` or Kafka exporter + Prometheus.`,
+"Kafka retains messages for the configured retention period regardless of consumption speed. Options: (1) **Scale consumers** up to the number of partitions. (2) **Repartition** the topic with more partitions to allow more parallelism. (3) **Batch consumption** — process N records per poll. (4) **Back-pressure**: pause the consumer with `consumer.pause()` until the downstream drains. Monitor lag via `consumer group describe` or Kafka exporter + Prometheus.",
         followUps: ["What is consumer group rebalancing and how do you minimize it?", "What are sticky partition assignments?"]
       }
     ],
@@ -95,7 +95,7 @@ public void onOrderEvent(
         "Exactly-once is complex and adds latency.",
         "Small message overhead — better for batched events than RPC-style calls."
       ],
-      when: `**Kafka** for async workflows, event sourcing, audit logs, and high-throughput pipelines. **RabbitMQ** for task queues with complex routing. **SQS/SNS** for AWS-native workloads. Avoid Kafka for synchronous request/response — use gRPC.`
+      when: "**Kafka** for async workflows, event sourcing, audit logs, and high-throughput pipelines. **RabbitMQ** for task queues with complex routing. **SQS/SNS** for AWS-native workloads. Avoid Kafka for synchronous request/response — use gRPC."
     }
   };
   window.MICRO_TOPICS = (window.MICRO_TOPICS || []).concat([topic]);

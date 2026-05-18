@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-stk-valid-paren",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Code compiler — every opening bracket must be closed in the correct order.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'stack.validParen',
-        time:  'O(n)',
-        space: 'O(n)',
+        title: "stack.validParen",
+        time:  "O(n)",
+        space: "O(n)",
         code: `function isValid(s) {
   const stack = [];
   const map = { ')': '(', '}': '{', ']': '[' };

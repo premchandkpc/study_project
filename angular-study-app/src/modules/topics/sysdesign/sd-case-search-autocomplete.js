@@ -42,7 +42,7 @@
 - Index queries by \`{lang}:{prefix}\` key. Tokenize CJK by character (not word boundary).
 - Use Unicode normalization (NFC) before indexing.
 - RTL (Arabic/Hebrew): reverse prefix direction for Trie traversal.`,
-    why: `Typeahead is asked in every FAANG interview. It cleanly demonstrates: Trie data structures, Redis for in-memory key-value, CDN caching strategy, batch vs stream processing pipelines, and personalization blending — all in one compact problem.`,
+    why: "Typeahead is asked in every FAANG interview. It cleanly demonstrates: Trie data structures, Redis for in-memory key-value, CDN caching strategy, batch vs stream processing pipelines, and personalization blending — all in one compact problem.",
     example: {
       language: "python",
       code: `# Autocomplete service — FastAPI + Redis
@@ -128,7 +128,7 @@ async def autocomplete(q: str, lang: str = "en", user_id: str = None):
     interview: [
       {
         question: "How would you design autocomplete for Google Search?",
-        answer: `Two-layer architecture: (1) Offline pipeline — Spark job aggregates query logs hourly, computes top-10 per prefix, stores in Redis keyed by prefix. (2) Serving — on each keystroke, check CDN cache (for short common prefixes), then Redis O(1) lookup. On miss, traverse in-memory Trie. Personalization layer blends user history (Redis sorted set) with global results at 70/30 ratio. Cache-Control headers allow CDN to cache non-personalized responses for 1 char prefix like "a" = millions of QPS absorbed by CDN.`,
+        answer: "Two-layer architecture: (1) Offline pipeline — Spark job aggregates query logs hourly, computes top-10 per prefix, stores in Redis keyed by prefix. (2) Serving — on each keystroke, check CDN cache (for short common prefixes), then Redis O(1) lookup. On miss, traverse in-memory Trie. Personalization layer blends user history (Redis sorted set) with global results at 70/30 ratio. Cache-Control headers allow CDN to cache non-personalized responses for 1 char prefix like \"a\" = millions of QPS absorbed by CDN.",
         followUps: [
           "How would you handle real-time trending queries (Taylor Swift going viral)?",
           "How does your design handle 50 different languages?",
@@ -137,7 +137,7 @@ async def autocomplete(q: str, lang: str = "en", user_id: str = None):
       },
       {
         question: "How do you handle 100K QPS on prefix search?",
-        answer: `CDN handles the first line — short 1–2 char prefixes like "a", "th" are queried millions of times. Cache with TTL=60s absorbs >80% of traffic. Remaining traffic hits Redis: O(1) GET on precomputed key. Redis can handle 100K ops/sec per node; shard by first char of prefix (26 shards for English). In-memory Trie on app servers handles cache misses. With Redis cluster + CDN, 100K QPS is comfortably handled with <5ms p99 at serving layer.`,
+        answer: "CDN handles the first line — short 1–2 char prefixes like \"a\", \"th\" are queried millions of times. Cache with TTL=60s absorbs >80% of traffic. Remaining traffic hits Redis: O(1) GET on precomputed key. Redis can handle 100K ops/sec per node; shard by first char of prefix (26 shards for English). In-memory Trie on app servers handles cache misses. With Redis cluster + CDN, 100K QPS is comfortably handled with <5ms p99 at serving layer.",
         followUps: [
           "How do you keep CDN caches fresh when trending queries change?",
           "How do you handle the thundering herd when CDN cache expires for 'th'?",
@@ -146,7 +146,7 @@ async def autocomplete(q: str, lang: str = "en", user_id: str = None):
       },
       {
         question: "How often do you update the trie / Redis data?",
-        answer: `Two update frequencies: (1) Batch (hourly) — Spark job processes last hour of query logs, recomputes top-10 per prefix for stable queries. Updates Redis with new data. (2) Real-time stream (Flink, lag ~5 minutes) — detects sudden spikes in query frequency (viral events, breaking news) and injects those into Redis immediately with a short TTL=10 minutes so they expire if the trend dies. The Trie is rebuilt nightly from the full dataset and hot-reloaded on serving nodes without downtime (atomic pointer swap).`,
+        answer: "Two update frequencies: (1) Batch (hourly) — Spark job processes last hour of query logs, recomputes top-10 per prefix for stable queries. Updates Redis with new data. (2) Real-time stream (Flink, lag ~5 minutes) — detects sudden spikes in query frequency (viral events, breaking news) and injects those into Redis immediately with a short TTL=10 minutes so they expire if the trend dies. The Trie is rebuilt nightly from the full dataset and hot-reloaded on serving nodes without downtime (atomic pointer swap).",
         followUps: [
           "How do you detect a 'trending' query vs a one-off spike?",
           "How do you hot-reload the Trie without downtime?",
@@ -155,7 +155,7 @@ async def autocomplete(q: str, lang: str = "en", user_id: str = None):
       },
       {
         question: "How do you handle multilingual support?",
-        answer: `Namespace Redis keys by language: \`autocomplete:{lang}:{prefix}\`. Tokenization differs: Latin languages — lowercase + strip diacritics. CJK (Chinese/Japanese/Korean) — each character is a unit (no spaces), prefix = first N characters. Arabic/Hebrew (RTL) — store and match on visual order; normalize using Unicode BiDi algorithm. Apply Unicode NFC normalization before indexing. Separate Trie per language (memory is cheap). For languages with very small corpora, fall back to English cross-lingual suggestions.`,
+        answer: "Namespace Redis keys by language: `autocomplete:{lang}:{prefix}`. Tokenization differs: Latin languages — lowercase + strip diacritics. CJK (Chinese/Japanese/Korean) — each character is a unit (no spaces), prefix = first N characters. Arabic/Hebrew (RTL) — store and match on visual order; normalize using Unicode BiDi algorithm. Apply Unicode NFC normalization before indexing. Separate Trie per language (memory is cheap). For languages with very small corpora, fall back to English cross-lingual suggestions.",
         followUps: [
           "How do you handle typos and fuzzy matching in autocomplete?",
           "How would you support voice search (speech-to-text prefix)?",
@@ -186,73 +186,73 @@ async def autocomplete(q: str, lang: str = "en", user_id: str = None):
       "Filter offensive/illegal suggestions via a blocklist applied at Redis write time (not serve time — don't waste latency on filtering)"
     ],
     visual: {
-      type: 'layered',
-      title: '🔍 Search Autocomplete Architecture (Google Typeahead)',
+      type: "layered",
+      title: "🔍 Search Autocomplete Architecture (Google Typeahead)",
       layers: [
         {
-          id: 'l1',
-          label: 'Client Layer',
-          color: '#58a6ff',
-          protocols: 'HTTPS — keystroke triggers query per 150ms debounce',
+          id: "l1",
+          label: "Client Layer",
+          color: "#58a6ff",
+          protocols: "HTTPS — keystroke triggers query per 150ms debounce",
           services: [
-            { id: 's1', label: 'Browser',     icon: '🌐', sublabel: 'Debounce 150ms' },
-            { id: 's2', label: 'Mobile App',  icon: '📱', sublabel: 'Native typeahead' }
+            { id: "s1", label: "Browser",     icon: "🌐", sublabel: "Debounce 150ms" },
+            { id: "s2", label: "Mobile App",  icon: "📱", sublabel: "Native typeahead" }
           ]
         },
         {
-          id: 'l2',
-          label: 'Edge Layer',
-          color: '#3fb950',
-          protocols: 'CDN cached for 1–3 char prefixes · Rate limiter: 10 req/s per IP',
+          id: "l2",
+          label: "Edge Layer",
+          color: "#3fb950",
+          protocols: "CDN cached for 1–3 char prefixes · Rate limiter: 10 req/s per IP",
           services: [
-            { id: 's3', label: 'CDN Cache',     icon: '🌍', sublabel: 'Short prefix HIT' },
-            { id: 's4', label: 'Rate Limiter',  icon: '🚦', sublabel: '10 req/s per IP' },
-            { id: 's5', label: 'API Gateway',   icon: '🔀', sublabel: 'Auth + routing' }
+            { id: "s3", label: "CDN Cache",     icon: "🌍", sublabel: "Short prefix HIT" },
+            { id: "s4", label: "Rate Limiter",  icon: "🚦", sublabel: "10 req/s per IP" },
+            { id: "s5", label: "API Gateway",   icon: "🔀", sublabel: "Auth + routing" }
           ]
         },
         {
-          id: 'l3',
-          label: 'Search Layer',
-          color: '#ffa657',
-          protocols: 'In-memory Trie · Redis O(1) prefix lookup · Personalization blend 70/30',
+          id: "l3",
+          label: "Search Layer",
+          color: "#ffa657",
+          protocols: "In-memory Trie · Redis O(1) prefix lookup · Personalization blend 70/30",
           services: [
-            { id: 's6', label: 'Trie Server',       icon: '🌳', sublabel: 'In-memory Trie' },
-            { id: 's7', label: 'Suggestion Ranker', icon: '🏆', sublabel: '70% global + 30% personal' },
-            { id: 's8', label: 'Profile Service',   icon: '👤', sublabel: 'User history' }
+            { id: "s6", label: "Trie Server",       icon: "🌳", sublabel: "In-memory Trie" },
+            { id: "s7", label: "Suggestion Ranker", icon: "🏆", sublabel: "70% global + 30% personal" },
+            { id: "s8", label: "Profile Service",   icon: "👤", sublabel: "User history" }
           ]
         },
         {
-          id: 'l4',
-          label: 'Data Layer',
-          color: '#bc8cff',
-          protocols: 'Redis key: autocomplete:{lang}:{prefix} · ElasticSearch for fallback fuzzy',
+          id: "l4",
+          label: "Data Layer",
+          color: "#bc8cff",
+          protocols: "Redis key: autocomplete:{lang}:{prefix} · ElasticSearch for fallback fuzzy",
           services: [
-            { id: 's9',  label: 'Redis Cache',    icon: '⚡', sublabel: 'O(1) prefix lookup' },
-            { id: 's10', label: 'ElasticSearch',  icon: '🔎', sublabel: 'Fuzzy + multilingual' },
-            { id: 's11', label: 'Spark / Hadoop', icon: '🔥', sublabel: 'Hourly batch top-K' }
+            { id: "s9",  label: "Redis Cache",    icon: "⚡", sublabel: "O(1) prefix lookup" },
+            { id: "s10", label: "ElasticSearch",  icon: "🔎", sublabel: "Fuzzy + multilingual" },
+            { id: "s11", label: "Spark / Hadoop", icon: "🔥", sublabel: "Hourly batch top-K" }
           ]
         }
       ],
       flows: [
         {
-          name: '⚡ Cache Hit (1–2 chars)',
-          path: ['s1', 's3', 's7', 's9'],
-          color: '#3fb950'
+          name: "⚡ Cache Hit (1–2 chars)",
+          path: ["s1", "s3", "s7", "s9"],
+          color: "#3fb950"
         },
         {
-          name: '🌳 Trie Fallback',
-          path: ['s1', 's4', 's5', 's6', 's7', 's9'],
-          color: '#ffa657'
+          name: "🌳 Trie Fallback",
+          path: ["s1", "s4", "s5", "s6", "s7", "s9"],
+          color: "#ffa657"
         },
         {
-          name: '👤 Personalized Query',
-          path: ['s1', 's5', 's7', 's8', 's9'],
-          color: '#bc8cff'
+          name: "👤 Personalized Query",
+          path: ["s1", "s5", "s7", "s8", "s9"],
+          color: "#bc8cff"
         },
         {
-          name: '🔄 Batch Index Update',
-          path: ['s11', 's9', 's6'],
-          color: '#58a6ff'
+          name: "🔄 Batch Index Update",
+          path: ["s11", "s9", "s6"],
+          color: "#58a6ff"
         }
       ]
     }

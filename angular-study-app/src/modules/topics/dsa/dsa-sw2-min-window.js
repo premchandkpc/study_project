@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-sw2-min-window",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Log search — find the shortest log excerpt that contains all required keywords.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'sliding2.minWindow',
-        time:  'O(n+m)',
-        space: 'O(m)',
+        title: "sliding2.minWindow",
+        time:  "O(n+m)",
+        space: "O(m)",
         code: `function minWindow(s, t) {
   const need = {};
   for (const ch of t) need[ch] = (need[ch] || 0) + 1;

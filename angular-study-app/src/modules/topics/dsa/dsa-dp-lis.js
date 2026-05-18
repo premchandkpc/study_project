@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dp-lis",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** Signal trend analysis — keep order, skip elements, find the longest rising chain.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'dp.lis',
-        time:  'O(n²)',
-        space: 'O(n)',
+        title: "dp.lis",
+        time:  "O(n²)",
+        space: "O(n)",
         code: `function lengthOfLIS(nums) {
   const dp = new Array(nums.length).fill(1);
   let maxLen = 1;

@@ -14,7 +14,7 @@
 - **\`ConfigDict\`**: \`strict\`, \`from_attributes\` (ORM mode), \`frozen\`.
 - **\`TypeAdapter\`**: validate arbitrary types without a model class.`,
     why:
-`Pydantic is used by FastAPI, LangChain, AWS CDK, and hundreds of data pipelines for runtime validation of external data. Incorrect validation of untrusted input (APIs, Kafka messages, CSV files) is a security and reliability risk. Pydantic v2's Rust core makes it viable even in tight loops.`,
+"Pydantic is used by FastAPI, LangChain, AWS CDK, and hundreds of data pipelines for runtime validation of external data. Incorrect validation of untrusted input (APIs, Kafka messages, CSV files) is a security and reliability risk. Pydantic v2's Rust core makes it viable even in tight loops.",
     example: {
       language: "python",
       code:
@@ -69,19 +69,19 @@ class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     name: str`,
-      notes: `Use \`model_config = ConfigDict(strict=True)\` when you don't want Pydantic to coerce types (e.g., string → int). Use \`model_dump(mode="json")\` to get JSON-serializable dicts for Redis/Kafka.`
+      notes: "Use `model_config = ConfigDict(strict=True)` when you don't want Pydantic to coerce types (e.g., string → int). Use `model_dump(mode=\"json\")` to get JSON-serializable dicts for Redis/Kafka."
     },
     interview: [
       {
         question: "What changed between Pydantic v1 and v2?",
         answer:
-`V2 rewrites the validation core in Rust — 5–50× faster. API changes: \`@validator\` → \`@field_validator\` (class method, explicit \`mode='before'|'after'\`), \`orm_mode\` → \`from_attributes\`, \`.dict()\` → \`.model_dump()\`, \`.json()\` → \`.model_dump_json()\`. Validator order changed. \`@root_validator\` → \`@model_validator\`. Many v1 workarounds (custom \`__get_validators__\`) have cleaner v2 equivalents via \`Annotated\`.`,
+"V2 rewrites the validation core in Rust — 5–50× faster. API changes: `@validator` → `@field_validator` (class method, explicit `mode='before'|'after'`), `orm_mode` → `from_attributes`, `.dict()` → `.model_dump()`, `.json()` → `.model_dump_json()`. Validator order changed. `@root_validator` → `@model_validator`. Many v1 workarounds (custom `__get_validators__`) have cleaner v2 equivalents via `Annotated`.",
         followUps: ["How do you migrate a large codebase from v1 to v2?", "What is a Pydantic TypeAdapter?"]
       },
       {
         question: "How do you validate data from a database ORM without duplicating models?",
         answer:
-`Use \`ConfigDict(from_attributes=True)\` — Pydantic reads attributes from ORM objects as if they were dict keys. Pattern: have one SQLAlchemy model and a \`*Out\` Pydantic model for serialization. For write paths, a \`*In\` model validates user input. This keeps ORM models mutable and Pydantic models focused on validation/serialization.`,
+"Use `ConfigDict(from_attributes=True)` — Pydantic reads attributes from ORM objects as if they were dict keys. Pattern: have one SQLAlchemy model and a `*Out` Pydantic model for serialization. For write paths, a `*In` model validates user input. This keeps ORM models mutable and Pydantic models focused on validation/serialization.",
         followUps: ["How do you handle lazy-loaded relationships?", "Pydantic vs marshmallow?"]
       }
     ],
@@ -96,7 +96,7 @@ class UserOut(BaseModel):
         "Frozen models add immutability overhead for large nested objects.",
         "Complex cross-field validators can be hard to test in isolation."
       ],
-      when: `**Pydantic** for validating external data (API, Kafka, CSV). **dataclasses** for internal data structures that don't need validation. **TypedDict** for lightweight dict typing without runtime overhead.`
+      when: "**Pydantic** for validating external data (API, Kafka, CSV). **dataclasses** for internal data structures that don't need validation. **TypedDict** for lightweight dict typing without runtime overhead."
     }
   };
   window.PYTHON_TOPICS = (window.PYTHON_TOPICS || []).concat([topic]);

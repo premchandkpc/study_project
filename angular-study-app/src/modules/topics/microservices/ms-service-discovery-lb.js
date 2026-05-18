@@ -13,7 +13,7 @@
 **Kubernetes**: services are DNS entries (\`svc.namespace.svc.cluster.local\`) backed by kube-proxy or Envoy. Pod readiness and liveness probes drive endpoint registration.
 **Health checks**: liveness (should restart?), readiness (should receive traffic?), startup (still booting?).`,
     why:
-`In cloud environments, pod IPs change constantly. DNS-based discovery with TTL and health checks ensures traffic only reaches healthy instances. Readiness probes are critical for zero-downtime deployments — new pods must pass readiness before old ones are terminated. Missing liveness probes cause zombie pods to silently absorb traffic.`,
+"In cloud environments, pod IPs change constantly. DNS-based discovery with TTL and health checks ensures traffic only reaches healthy instances. Readiness probes are critical for zero-downtime deployments — new pods must pass readiness before old ones are terminated. Missing liveness probes cause zombie pods to silently absorb traffic.",
     example: {
       language: "go",
       code:
@@ -91,19 +91,19 @@ func (a *App) Run() {
 func (a *App) warmup()  {}
 type DB struct{}
 func (d DB) Ping() error { return nil }`,
-      notes: `In Kubernetes: set \`terminationGracePeriodSeconds\` to accommodate the drain sleep. Separate liveness and readiness — a temporarily overloaded pod should fail readiness (stops traffic) but not liveness (avoids unnecessary restart).`
+      notes: "In Kubernetes: set `terminationGracePeriodSeconds` to accommodate the drain sleep. Separate liveness and readiness — a temporarily overloaded pod should fail readiness (stops traffic) but not liveness (avoids unnecessary restart)."
     },
     interview: [
       {
         question: "What is the difference between liveness and readiness probes?",
         answer:
-`**Liveness**: "is this container broken beyond self-repair?" — if it fails, Kubernetes **restarts** the pod. Use for deadlocks or unrecoverable errors. **Readiness**: "is this container ready to serve traffic?" — if it fails, the pod is **removed from the Service endpoint** (no traffic) but not restarted. Use for temporary unavailability (DB connection pool exhausted, cache warming). **Never** make readiness depend on an external service — cascading failures will bring down healthy pods.`,
+"**Liveness**: \"is this container broken beyond self-repair?\" — if it fails, Kubernetes **restarts** the pod. Use for deadlocks or unrecoverable errors. **Readiness**: \"is this container ready to serve traffic?\" — if it fails, the pod is **removed from the Service endpoint** (no traffic) but not restarted. Use for temporary unavailability (DB connection pool exhausted, cache warming). **Never** make readiness depend on an external service — cascading failures will bring down healthy pods.",
         followUps: ["What is a startup probe and when is it needed?", "How does Kubernetes drain a node?"]
       },
       {
         question: "How does client-side load balancing work in gRPC with Kubernetes?",
         answer:
-`Kubernetes \`Service\` round-robins at the TCP level — bad for gRPC which uses persistent HTTP/2 connections. All traffic goes to the first connected pod. Fix: use **headless service** (\`clusterIP: None\`) — DNS returns all pod IPs. gRPC client library (with service config) or Envoy sidecar does round-robin across the pod list, creating per-pod gRPC connections. Istio automates this via the sidecar proxy.`,
+"Kubernetes `Service` round-robins at the TCP level — bad for gRPC which uses persistent HTTP/2 connections. All traffic goes to the first connected pod. Fix: use **headless service** (`clusterIP: None`) — DNS returns all pod IPs. gRPC client library (with service config) or Envoy sidecar does round-robin across the pod list, creating per-pod gRPC connections. Istio automates this via the sidecar proxy.",
         followUps: ["What is connection-level vs request-level load balancing?", "How does Envoy handle gRPC health checking?"]
       }
     ],
@@ -118,7 +118,7 @@ func (d DB) Ping() error { return nil }`,
         "Kubernetes Service is L4 — no gRPC-level load balancing without a mesh.",
         "Flapping probes cause thundering herd of restarts under transient failures."
       ],
-      when: `**Kubernetes Service + DNS** for most cases. **Headless Service + client-side LB** for gRPC. **Istio/Envoy** when you need sophisticated traffic shaping, retries, or mTLS.`
+      when: "**Kubernetes Service + DNS** for most cases. **Headless Service + client-side LB** for gRPC. **Istio/Envoy** when you need sophisticated traffic shaping, retries, or mTLS."
     }
   };
   window.MICRO_TOPICS = (window.MICRO_TOPICS || []).concat([topic]);

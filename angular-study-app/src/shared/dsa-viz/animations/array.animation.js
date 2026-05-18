@@ -8,22 +8,22 @@
  * no state. Templates call these when rendering step visuals.
  */
 (function () {
-  'use strict';
+  "use strict";
   window.DSA = window.DSA || {};
 
   const Colors = {
-    WINDOW:      '#1f6feb',   // blue — active window
-    POINTER_L:   '#e3b341',   // yellow — left pointer / i
-    POINTER_R:   '#f0883e',   // orange — right pointer / j
-    POINTER_MID: '#a78bfa',   // purple — mid pointer
-    ACTIVE:      '#56d364',   // green — current element
-    MATCH:       '#56d364',   // green — found / match
-    MISMATCH:    '#f85149',   // red — mismatch
-    VISITED:     '#30363d',   // dim — already processed
-    DEFAULT:     '#21262d',   // base cell bg
-    RESULT:      '#238636',   // dark green — result set
-    SHRINK:      '#bc4c00',   // dark orange — shrink signal
-    EXPAND:      '#1f6feb44', // transparent blue — expand
+    WINDOW:      "#1f6feb",   // blue — active window
+    POINTER_L:   "#e3b341",   // yellow — left pointer / i
+    POINTER_R:   "#f0883e",   // orange — right pointer / j
+    POINTER_MID: "#a78bfa",   // purple — mid pointer
+    ACTIVE:      "#56d364",   // green — current element
+    MATCH:       "#56d364",   // green — found / match
+    MISMATCH:    "#f85149",   // red — mismatch
+    VISITED:     "#30363d",   // dim — already processed
+    DEFAULT:     "#21262d",   // base cell bg
+    RESULT:      "#238636",   // dark green — result set
+    SHRINK:      "#bc4c00",   // dark orange — shrink signal
+    EXPAND:      "#1f6feb44", // transparent blue — expand
   };
 
   const ArrayAnimation = {
@@ -50,25 +50,25 @@
         ptrMap[idx].push(name);
       });
 
-      el.innerHTML = '';
-      el.style.cssText = 'display:flex;gap:4px;align-items:flex-end;padding:8px 4px;flex-wrap:wrap;';
+      el.innerHTML = "";
+      el.style.cssText = "display:flex;gap:4px;align-items:flex-end;padding:8px 4px;flex-wrap:wrap;";
 
       arr.forEach((val, i) => {
-        const wrap = document.createElement('div');
-        wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:3px;';
+        const wrap = document.createElement("div");
+        wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:3px;";
 
         // Pointer label above cell
-        const ptrEl = document.createElement('div');
-        ptrEl.style.cssText = 'font-size:10px;font-weight:700;height:14px;color:#e3b341;font-family:JetBrains Mono,monospace;';
-        if (ptrMap[i]) ptrEl.textContent = ptrMap[i].join(',');
+        const ptrEl = document.createElement("div");
+        ptrEl.style.cssText = "font-size:10px;font-weight:700;height:14px;color:#e3b341;font-family:JetBrains Mono,monospace;";
+        if (ptrMap[i]) ptrEl.textContent = ptrMap[i].join(",");
         wrap.appendChild(ptrEl);
 
         // Cell
-        const cell = document.createElement('div');
+        const cell = document.createElement("div");
         const inWindow = win && i >= win[0] && i <= win[1];
-        let bg = inWindow ? (windowColor || Colors.WINDOW) + '33' : Colors.DEFAULT;
-        let border = inWindow ? (windowColor || Colors.WINDOW) : '#30363d';
-        if (highlights[i]) { bg = highlights[i] + '33'; border = highlights[i]; }
+        let bg = inWindow ? (windowColor || Colors.WINDOW) + "33" : Colors.DEFAULT;
+        let border = inWindow ? (windowColor || Colors.WINDOW) : "#30363d";
+        if (highlights[i]) { bg = highlights[i] + "33"; border = highlights[i]; }
 
         cell.style.cssText = `
           width:36px;height:36px;display:flex;align-items:center;justify-content:center;
@@ -76,12 +76,12 @@
           font-size:13px;font-weight:700;color:#e6edf3;font-family:JetBrains Mono,monospace;
           transition:background .2s,border-color .2s;
         `;
-        cell.textContent = val !== undefined && val !== null ? String(val) : '?';
+        cell.textContent = val !== undefined && val !== null ? String(val) : "?";
         wrap.appendChild(cell);
 
         // Index label below
-        const idxEl = document.createElement('div');
-        idxEl.style.cssText = 'font-size:10px;color:#484f58;font-family:JetBrains Mono,monospace;';
+        const idxEl = document.createElement("div");
+        idxEl.style.cssText = "font-size:10px;color:#484f58;font-family:JetBrains Mono,monospace;";
         idxEl.textContent = labels[i] !== undefined ? labels[i] : String(i);
         wrap.appendChild(idxEl);
 
@@ -140,15 +140,15 @@
      * @param {number}      [topHighlight] — index to highlight as current top
      */
     renderStack(el, stack, topHighlight) {
-      el.innerHTML = '';
-      el.style.cssText = 'display:flex;flex-direction:column-reverse;gap:4px;';
+      el.innerHTML = "";
+      el.style.cssText = "display:flex;flex-direction:column-reverse;gap:4px;";
       stack.forEach((val, i) => {
-        const cell = document.createElement('div');
+        const cell = document.createElement("div");
         const isTop = i === stack.length - 1;
         cell.style.cssText = `
           padding:6px 14px;min-width:60px;text-align:center;
-          background:${isTop ? Colors.ACTIVE + '22' : Colors.DEFAULT};
-          border:2px solid ${isTop ? Colors.ACTIVE : '#30363d'};
+          background:${isTop ? Colors.ACTIVE + "22" : Colors.DEFAULT};
+          border:2px solid ${isTop ? Colors.ACTIVE : "#30363d"};
           border-radius:6px;font-size:12px;font-weight:700;color:#e6edf3;
           font-family:JetBrains Mono,monospace;
         `;
@@ -156,7 +156,7 @@
         el.appendChild(cell);
       });
       if (stack.length === 0) {
-        el.innerHTML = '<div style="color:#484f58;font-size:11px;padding:4px">empty</div>';
+        el.innerHTML = "<div style=\"color:#484f58;font-size:11px;padding:4px\">empty</div>";
       }
     },
   };

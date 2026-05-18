@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dpx-jump-game",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Level progression — can a player reach the final level given jump distances?`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'dpx.jumpGame',
-        time:  'O(n)',
-        space: 'O(1)',
+        title: "dpx.jumpGame",
+        time:  "O(n)",
+        space: "O(1)",
         code: `function canJump(nums) {
   let maxReach = 0;
   for (let i = 0; i < nums.length; i++) {

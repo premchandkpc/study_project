@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-graph-topo-sort",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Build system — compile dependencies before the module that needs them. Package manager dependency resolution.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'graph.topoSort',
-        time:  'O(V+E)',
-        space: 'O(V)',
+        title: "graph.topoSort",
+        time:  "O(V+E)",
+        space: "O(V)",
         code: `function canFinish(numCourses, prerequisites) {
   const adj = Array.from({ length: numCourses }, () => []);
   for (const [a, b] of prerequisites) adj[b].push(a);

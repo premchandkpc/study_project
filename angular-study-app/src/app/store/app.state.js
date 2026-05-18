@@ -7,7 +7,7 @@
  *   export interface AppState { progress: ProgressState; ui: UiState; router: RouterState; }
  */
 (function () {
-  'use strict';
+  "use strict";
   const { signal, Injector } = window.App;
 
   window.App.Store = window.App.Store || {};
@@ -18,12 +18,12 @@
     progress: new Set(),
 
     // Current route
-    router: { path: '/', query: '' },
+    router: { path: "/", query: "" },
 
     // UI transient state
     ui: {
       sidebarOpen:    true,
-      searchQuery:    '',
+      searchQuery:    "",
       collapsedAreas: {
         java: true, golang: true, python: true, microservices: true,
         sysdesign: true, dsa: true, kafka: true, rust: true,
@@ -45,5 +45,5 @@
   window.App.Store.State = State;
 
   // Register as DI service for components that prefer inject() pattern
-  Injector.provide('AppState', () => State);
+  Injector.provide("AppState", () => State);
 })();

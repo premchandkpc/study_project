@@ -177,36 +177,36 @@
       var PCOLS=["p0","p1","p2","p3","p4","p5"];
       function renderGroup() {
         var s=GSTEPS[gStep];
-        mount.querySelector('#cg-consumers').innerHTML=s.consumers.map(function(c){
-          return '<div class="cg-node '+c.state+'"><span class="cg-dot '+c.state+'"></span>'+c.id+(c.leader?'<span class="cg-leader">LEADER</span>':'')+'<span style="margin-left:auto;font-size:11px;color:#8b949e">'+c.state+'</span></div>';
-        }).join('');
-        mount.querySelector('#cg-broker-state').innerHTML=s.broker;
+        mount.querySelector("#cg-consumers").innerHTML=s.consumers.map(function(c){
+          return "<div class=\"cg-node "+c.state+"\"><span class=\"cg-dot "+c.state+"\"></span>"+c.id+(c.leader?"<span class=\"cg-leader\">LEADER</span>":"")+"<span style=\"margin-left:auto;font-size:11px;color:#8b949e\">"+c.state+"</span></div>";
+        }).join("");
+        mount.querySelector("#cg-broker-state").innerHTML=s.broker;
         var phAll=["FindCoord","JoinGroup","SyncGroup","Stable","Commit","Rebalance"];
-        mount.querySelector('#cg-phases').innerHTML=phAll.map(function(ph){
+        mount.querySelector("#cg-phases").innerHTML=phAll.map(function(ph){
           var done=s.phases.indexOf(ph)>=0;
           var act=done&&s.phases[s.phases.length-1]===ph;
-          return '<div class="cg-phase '+(act?'active':done?'done':'')+'">'+ph+'</div>';
-        }).join('');
-        mount.querySelector('#cg-assignments').innerHTML=s.assignments.map(function(p,i){
-          return '<div class="cg-part '+PCOLS[i]+'">'+p+'</div>';
-        }).join('');
-        mount.querySelector('#cg-ginfo').innerHTML=s.info;
-        mount.querySelector('#cg-gstep').textContent='Step '+(gStep+1)+' / '+GSTEPS.length;
+          return "<div class=\"cg-phase "+(act?"active":done?"done":"")+"\">"+ph+"</div>";
+        }).join("");
+        mount.querySelector("#cg-assignments").innerHTML=s.assignments.map(function(p,i){
+          return "<div class=\"cg-part "+PCOLS[i]+"\">"+p+"</div>";
+        }).join("");
+        mount.querySelector("#cg-ginfo").innerHTML=s.info;
+        mount.querySelector("#cg-gstep").textContent="Step "+(gStep+1)+" / "+GSTEPS.length;
       }
-      function gStop(){clearInterval(gTimer);gTimer=null;mount.querySelector('#cg-gplay').textContent='▶ Play';}
-      function gStart(){gTimer=setInterval(function(){gStep=Math.min(gStep+1,GSTEPS.length-1);renderGroup();if(gStep===GSTEPS.length-1)gStop();},1800);mount.querySelector('#cg-gplay').textContent='⏸ Pause';}
-      mount.querySelector('#cg-gplay').addEventListener('click',function(){gTimer?gStop():gStart();});
-      mount.querySelector('#cg-gnext').addEventListener('click',function(){gStop();gStep=Math.min(gStep+1,GSTEPS.length-1);renderGroup();});
-      mount.querySelector('#cg-gprev').addEventListener('click',function(){gStop();gStep=Math.max(gStep-1,0);renderGroup();});
-      mount.querySelector('#cg-greset').addEventListener('click',function(){gStop();gStep=0;renderGroup();});
+      function gStop(){clearInterval(gTimer);gTimer=null;mount.querySelector("#cg-gplay").textContent="▶ Play";}
+      function gStart(){gTimer=setInterval(function(){gStep=Math.min(gStep+1,GSTEPS.length-1);renderGroup();if(gStep===GSTEPS.length-1)gStop();},1800);mount.querySelector("#cg-gplay").textContent="⏸ Pause";}
+      mount.querySelector("#cg-gplay").addEventListener("click",function(){gTimer?gStop():gStart();});
+      mount.querySelector("#cg-gnext").addEventListener("click",function(){gStop();gStep=Math.min(gStep+1,GSTEPS.length-1);renderGroup();});
+      mount.querySelector("#cg-gprev").addEventListener("click",function(){gStop();gStep=Math.max(gStep-1,0);renderGroup();});
+      mount.querySelector("#cg-greset").addEventListener("click",function(){gStop();gStep=0;renderGroup();});
       renderGroup();
 
       // REBALANCE
-      var rbMode='eager';
+      var rbMode="eager";
       function renderRebalance() {
-        var el=mount.querySelector('#cg-rb-content');
-        if(rbMode==='eager') {
-          el.innerHTML='<div class="cg-eager-note">⚠️ Eager: ALL partitions revoked from ALL consumers before reassignment. Full stop-the-world pause.</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px" id="cg-esteps"></div><div class="cg-info" id="cg-einfo">Play to simulate eager rebalance when C-3 joins.</div><div class="cg-ctrls"><button id="cg-eprev">◀ Prev</button><button id="cg-eplay">▶ Play</button><button id="cg-enext">Next ▶</button><button id="cg-ereset">↺ Reset</button><span class="cg-step-info" id="cg-estep">Step 1/4</span></div>';
+        var el=mount.querySelector("#cg-rb-content");
+        if(rbMode==="eager") {
+          el.innerHTML="<div class=\"cg-eager-note\">⚠️ Eager: ALL partitions revoked from ALL consumers before reassignment. Full stop-the-world pause.</div><div style=\"display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px\" id=\"cg-esteps\"></div><div class=\"cg-info\" id=\"cg-einfo\">Play to simulate eager rebalance when C-3 joins.</div><div class=\"cg-ctrls\"><button id=\"cg-eprev\">◀ Prev</button><button id=\"cg-eplay\">▶ Play</button><button id=\"cg-enext\">Next ▶</button><button id=\"cg-ereset\">↺ Reset</button><span class=\"cg-step-info\" id=\"cg-estep\">Step 1/4</span></div>";
           var ES=[
             {title:"Before",consumers:[{l:"C-1",p:["P0","P1"]},{l:"C-2",p:["P2","P3"]}],info:"C-1→P0,P1. C-2→P2,P3. C-3 about to join.",color:"#3dd68c"},
             {title:"Revoke ALL",consumers:[{l:"C-1",p:[]},{l:"C-2",p:[]},{l:"C-3",p:[]}],info:"<b>ALL partitions revoked.</b> Zero fetching. Stop-the-world begins.",color:"#f47067"},
@@ -214,20 +214,20 @@
             {title:"Reassign",consumers:[{l:"C-1",p:["P0","P1"]},{l:"C-2",p:["P2","P3"]},{l:"C-3",p:["P4","P5"]}],info:"New assign. C-3 gets P4,P5. <b>P0-P3 unchanged but were revoked unnecessarily.</b>",color:"#3dd68c"},
           ];
           var eS=0,eT=null;
-          function rE(){
-            var eEl=mount.querySelector('#cg-esteps');if(!eEl)return;
-            eEl.innerHTML=ES.map(function(s,i){return '<div style="background:#161b22;border:1px solid '+(i===eS?s.color:'#30363d')+';border-radius:8px;padding:8px;opacity:'+(i<=eS?1:0.4)+'"><div style="font-size:11px;font-weight:600;color:'+s.color+';margin-bottom:4px">'+s.title+'</div>'+s.consumers.map(function(c){return '<div style="font-size:11px;color:#cdd9e5">'+c.l+': '+(c.p.length?c.p.join(','):'<span style="color:#f47067">idle</span>')+'</div>';}).join('')+'</div>';}).join('');
-            mount.querySelector('#cg-einfo').innerHTML=ES[eS].info;
-            mount.querySelector('#cg-estep').textContent='Step '+(eS+1)+'/'+ES.length;
-          }
-          function eStop(){clearInterval(eT);eT=null;var b=mount.querySelector('#cg-eplay');if(b)b.textContent='▶ Play';}
-          mount.querySelector('#cg-eplay').addEventListener('click',function(){if(eT){eStop();}else{eT=setInterval(function(){eS=Math.min(eS+1,ES.length-1);rE();if(eS===ES.length-1)eStop();},1600);mount.querySelector('#cg-eplay').textContent='⏸ Pause';}});
-          mount.querySelector('#cg-enext').addEventListener('click',function(){eStop();eS=Math.min(eS+1,ES.length-1);rE();});
-          mount.querySelector('#cg-eprev').addEventListener('click',function(){eStop();eS=Math.max(eS-1,0);rE();});
-          mount.querySelector('#cg-ereset').addEventListener('click',function(){eStop();eS=0;rE();});
+          var rE = function(){
+            var eEl=mount.querySelector("#cg-esteps");if(!eEl)return;
+            eEl.innerHTML=ES.map(function(s,i){return "<div style=\"background:#161b22;border:1px solid "+(i===eS?s.color:"#30363d")+";border-radius:8px;padding:8px;opacity:"+(i<=eS?1:0.4)+"\"><div style=\"font-size:11px;font-weight:600;color:"+s.color+";margin-bottom:4px\">"+s.title+"</div>"+s.consumers.map(function(c){return "<div style=\"font-size:11px;color:#cdd9e5\">"+c.l+": "+(c.p.length?c.p.join(","):"<span style=\"color:#f47067\">idle</span>")+"</div>";}).join("")+"</div>";}).join("");
+            mount.querySelector("#cg-einfo").innerHTML=ES[eS].info;
+            mount.querySelector("#cg-estep").textContent="Step "+(eS+1)+"/"+ES.length;
+          };
+          var eStop = function(){clearInterval(eT);eT=null;var b=mount.querySelector("#cg-eplay");if(b)b.textContent="▶ Play";};
+          mount.querySelector("#cg-eplay").addEventListener("click",function(){if(eT){eStop();}else{eT=setInterval(function(){eS=Math.min(eS+1,ES.length-1);rE();if(eS===ES.length-1)eStop();},1600);mount.querySelector("#cg-eplay").textContent="⏸ Pause";}});
+          mount.querySelector("#cg-enext").addEventListener("click",function(){eStop();eS=Math.min(eS+1,ES.length-1);rE();});
+          mount.querySelector("#cg-eprev").addEventListener("click",function(){eStop();eS=Math.max(eS-1,0);rE();});
+          mount.querySelector("#cg-ereset").addEventListener("click",function(){eStop();eS=0;rE();});
           rE();
         } else {
-          el.innerHTML='<div class="cg-coop-note">✓ Cooperative: only partitions that MOVE are revoked. Others keep fetching. 2-round protocol.</div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px" id="cg-csteps"></div><div class="cg-info" id="cg-cinfo">CooperativeStickyAssignor: round 1 revokes movers, round 2 assigns to new owner.</div><div class="cg-ctrls"><button id="cg-cprev">◀ Prev</button><button id="cg-cplay">▶ Play</button><button id="cg-cnext">Next ▶</button><button id="cg-creset">↺ Reset</button><span class="cg-step-info" id="cg-cstep">Step 1/5</span></div>';
+          el.innerHTML="<div class=\"cg-coop-note\">✓ Cooperative: only partitions that MOVE are revoked. Others keep fetching. 2-round protocol.</div><div style=\"display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px\" id=\"cg-csteps\"></div><div class=\"cg-info\" id=\"cg-cinfo\">CooperativeStickyAssignor: round 1 revokes movers, round 2 assigns to new owner.</div><div class=\"cg-ctrls\"><button id=\"cg-cprev\">◀ Prev</button><button id=\"cg-cplay\">▶ Play</button><button id=\"cg-cnext\">Next ▶</button><button id=\"cg-creset\">↺ Reset</button><span class=\"cg-step-info\" id=\"cg-cstep\">Step 1/5</span></div>";
           var CS=[
             {title:"Before",consumers:[{l:"C-1",p:["P0","P1"],s:"stable"},{l:"C-2",p:["P2","P3"],s:"stable"}],info:"2 consumers stable. C-3 joining. P4,P5 unassigned (new topic partitions).",color:"#3dd68c"},
             {title:"Round 1 Join",consumers:[{l:"C-1",p:["P0","P1"],s:"stable"},{l:"C-2",p:["P2","P3"],s:"stable"},{l:"C-3",p:[],s:"joining"}],info:"<b>Round 1:</b> C-3 sends JoinGroup. Only new P4,P5 need assignment. C-1,C-2 keep fetching.",color:"#58a6ff"},
@@ -236,27 +236,27 @@
             {title:"Stable",consumers:[{l:"C-1",p:["P0","P1"],s:"stable"},{l:"C-2",p:["P2","P3"],s:"stable"},{l:"C-3",p:["P4","P5"],s:"stable"}],info:"All stable. Sticky: same partitions stay with same consumer unless forced to move.",color:"#3dd68c"},
           ];
           var cS=0,cT=null;
-          function rC(){
-            var cEl=mount.querySelector('#cg-csteps');if(!cEl)return;
-            cEl.innerHTML=CS.map(function(s,i){return '<div style="background:#161b22;border:1px solid '+(i===cS?s.color:'#30363d')+';border-radius:8px;padding:8px;opacity:'+(i<=cS?1:0.4)+'"><div style="font-size:11px;font-weight:600;color:'+s.color+';margin-bottom:4px">'+s.title+'</div>'+s.consumers.map(function(c){return '<div style="font-size:11px;color:'+(c.s==="stable"?"#3dd68c":c.s==="joining"?"#f5b944":"#58a6ff")+'">'+c.l+': '+(c.p.length?c.p.join(','):'waiting')+'</div>';}).join('')+'</div>';}).join('');
-            mount.querySelector('#cg-cinfo').innerHTML=CS[cS].info;
-            mount.querySelector('#cg-cstep').textContent='Step '+(cS+1)+'/'+CS.length;
-          }
-          function cStop(){clearInterval(cT);cT=null;var b=mount.querySelector('#cg-cplay');if(b)b.textContent='▶ Play';}
-          mount.querySelector('#cg-cplay').addEventListener('click',function(){if(cT){cStop();}else{cT=setInterval(function(){cS=Math.min(cS+1,CS.length-1);rC();if(cS===CS.length-1)cStop();},1600);mount.querySelector('#cg-cplay').textContent='⏸ Pause';}});
-          mount.querySelector('#cg-cnext').addEventListener('click',function(){cStop();cS=Math.min(cS+1,CS.length-1);rC();});
-          mount.querySelector('#cg-cprev').addEventListener('click',function(){cStop();cS=Math.max(cS-1,0);rC();});
-          mount.querySelector('#cg-creset').addEventListener('click',function(){cStop();cS=0;rC();});
+          var rC = function(){
+            var cEl=mount.querySelector("#cg-csteps");if(!cEl)return;
+            cEl.innerHTML=CS.map(function(s,i){return "<div style=\"background:#161b22;border:1px solid "+(i===cS?s.color:"#30363d")+";border-radius:8px;padding:8px;opacity:"+(i<=cS?1:0.4)+"\"><div style=\"font-size:11px;font-weight:600;color:"+s.color+";margin-bottom:4px\">"+s.title+"</div>"+s.consumers.map(function(c){return "<div style=\"font-size:11px;color:"+(c.s==="stable"?"#3dd68c":c.s==="joining"?"#f5b944":"#58a6ff")+"\">"+c.l+": "+(c.p.length?c.p.join(","):"waiting")+"</div>";}).join("")+"</div>";}).join("");
+            mount.querySelector("#cg-cinfo").innerHTML=CS[cS].info;
+            mount.querySelector("#cg-cstep").textContent="Step "+(cS+1)+"/"+CS.length;
+          };
+          var cStop = function(){clearInterval(cT);cT=null;var b=mount.querySelector("#cg-cplay");if(b)b.textContent="▶ Play";};
+          mount.querySelector("#cg-cplay").addEventListener("click",function(){if(cT){cStop();}else{cT=setInterval(function(){cS=Math.min(cS+1,CS.length-1);rC();if(cS===CS.length-1)cStop();},1600);mount.querySelector("#cg-cplay").textContent="⏸ Pause";}});
+          mount.querySelector("#cg-cnext").addEventListener("click",function(){cStop();cS=Math.min(cS+1,CS.length-1);rC();});
+          mount.querySelector("#cg-cprev").addEventListener("click",function(){cStop();cS=Math.max(cS-1,0);rC();});
+          mount.querySelector("#cg-creset").addEventListener("click",function(){cStop();cS=0;rC();});
           rC();
         }
       }
-      mount.querySelectorAll('.cg-stab[data-rb]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.cg-stab[data-rb]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');rbMode=b.dataset.rb;renderRebalance();});
+      mount.querySelectorAll(".cg-stab[data-rb]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".cg-stab[data-rb]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");rbMode=b.dataset.rb;renderRebalance();});
       });
       renderRebalance();
 
       // STRATEGIES
-      var stratMode='range';
+      var stratMode="range";
       var STRATS={
         range:{desc:"Per-topic consecutive ranges. Consumer-0 always gets P0 from every topic.",assignments:[{c:"C-0",p:["A:P0","A:P1","B:P0","B:P1"]},{c:"C-1",p:["A:P2","A:P3","B:P2","B:P3"]},{c:"C-2",p:["A:P4","A:P5","B:P4","B:P5"]}],warn:"C-0 gets P0 from every topic. Hot partition → C-0 overloaded.",after:null},
         roundrobin:{desc:"Flatten all topic-partitions, assign round-robin. Most even distribution.",assignments:[{c:"C-0",p:["A:P0","A:P3","B:P0","B:P3"]},{c:"C-1",p:["A:P1","A:P4","B:P1","B:P4"]},{c:"C-2",p:["A:P2","A:P5","B:P2","B:P5"]}],warn:"Requires all consumers subscribe to same topics. Imbalanced with different subscriptions.",after:null},
@@ -265,14 +265,14 @@
       var COLS=["p0","p1","p2","p3","p4","p5"];
       function renderStrat(){
         var s=STRATS[stratMode];
-        var el=mount.querySelector('#cg-strat-content');
-        el.innerHTML='<div class="cg-box"><div style="font-size:12px;color:#8b949e;margin-bottom:10px">'+s.desc+'</div>'+
-          s.assignments.map(function(a,i){return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="cg-consumer-label">'+a.c+'</span><div style="display:flex;gap:4px;flex-wrap:wrap">'+a.p.map(function(p,j){return '<div class="cg-part '+COLS[(i*2+j)%6]+'" style="padding:3px 8px;font-size:11px">'+p+'</div>';}).join('')+'</div></div>';}).join('')+
-          (s.after?'<div style="margin-top:10px;border-top:1px solid #30363d;padding-top:10px"><div style="font-size:11px;color:#f5b944;margin-bottom:6px">After C-1 leaves:</div>'+s.after.rows.map(function(a,i){return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="cg-consumer-label">'+a.c+'</span><div style="display:flex;gap:4px;flex-wrap:wrap">'+a.p.map(function(p,j){return '<div class="cg-part '+COLS[j%6]+'" style="padding:3px 8px;font-size:11px">'+p+'</div>';}).join('')+'</div></div>';}).join('')+'<div style="font-size:11px;color:#3dd68c">'+s.after.note+'</div></div>':'')+'</div>'+
-          '<div style="margin-top:8px;background:#f5b94415;border:1px solid #f5b944;border-radius:6px;padding:8px 12px;font-size:12px;color:#f5b944">⚠️ '+s.warn+'</div>';
+        var el=mount.querySelector("#cg-strat-content");
+        el.innerHTML="<div class=\"cg-box\"><div style=\"font-size:12px;color:#8b949e;margin-bottom:10px\">"+s.desc+"</div>"+
+          s.assignments.map(function(a,i){return "<div style=\"display:flex;align-items:center;gap:8px;margin-bottom:6px\"><span class=\"cg-consumer-label\">"+a.c+"</span><div style=\"display:flex;gap:4px;flex-wrap:wrap\">"+a.p.map(function(p,j){return "<div class=\"cg-part "+COLS[(i*2+j)%6]+"\" style=\"padding:3px 8px;font-size:11px\">"+p+"</div>";}).join("")+"</div></div>";}).join("")+
+          (s.after?"<div style=\"margin-top:10px;border-top:1px solid #30363d;padding-top:10px\"><div style=\"font-size:11px;color:#f5b944;margin-bottom:6px\">After C-1 leaves:</div>"+s.after.rows.map(function(a){return "<div style=\"display:flex;align-items:center;gap:8px;margin-bottom:6px\"><span class=\"cg-consumer-label\">"+a.c+"</span><div style=\"display:flex;gap:4px;flex-wrap:wrap\">"+a.p.map(function(p,j){return "<div class=\"cg-part "+COLS[j%6]+"\" style=\"padding:3px 8px;font-size:11px\">"+p+"</div>";}).join("")+"</div></div>";}).join("")+"<div style=\"font-size:11px;color:#3dd68c\">"+s.after.note+"</div></div>":"")+"</div>"+
+          "<div style=\"margin-top:8px;background:#f5b94415;border:1px solid #f5b944;border-radius:6px;padding:8px 12px;font-size:12px;color:#f5b944\">⚠️ "+s.warn+"</div>";
       }
-      mount.querySelectorAll('.cg-stab[data-strat]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.cg-stab[data-strat]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');stratMode=b.dataset.strat;renderStrat();});
+      mount.querySelectorAll(".cg-stab[data-strat]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".cg-stab[data-strat]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");stratMode=b.dataset.strat;renderStrat();});
       });
       renderStrat();
 
@@ -284,19 +284,19 @@
         var now=Date.now(),since=hbState.kicked?MAX_POLL+1:Math.min(now-hbState.lastPoll,MAX_POLL+1);
         var pct=Math.min(since/MAX_POLL*100,100);
         var color=since>MAX_POLL?"#f47067":since>MAX_POLL*0.7?"#f5b944":"#3dd68c";
-        mount.querySelector('#cg-hb-bars').innerHTML=
-          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="cg-hb-label">Heartbeats sent</span><span class="cg-hb-val">'+hbState.hbCount+'</span></div>'+
-          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="cg-hb-label">poll() calls</span><span class="cg-hb-val">'+hbState.pollCount+'</span></div>'+
-          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="cg-hb-label">Time since poll()</span><div style="flex:1;background:#0d1117;border-radius:4px;height:8px;overflow:hidden;margin:0 8px"><div style="height:8px;border-radius:4px;background:'+color+';width:'+pct+'%;transition:width .3s"></div></div><span style="font-size:12px;color:'+color+'">'+Math.round(since/1000)+'s / '+(MAX_POLL/1000)+'s</span></div>';
-        var res=mount.querySelector('#cg-hb-result');
-        if(hbState.kicked){res.innerHTML='<div style="background:#f4706715;border:1px solid #f47067;border-radius:6px;padding:8px 12px;color:#f47067;font-size:12px">⚠️ max.poll.interval.ms exceeded! Consumer kicked from group despite healthy heartbeats. Rebalance triggered.</div>';}
-        else if(since>MAX_POLL*0.7){res.innerHTML='<div style="background:#f5b94415;border:1px solid #f5b944;border-radius:6px;padding:8px 12px;color:#f5b944;font-size:12px">⚠️ Approaching limit. Call poll() soon or increase max.poll.interval.ms.</div>';}
-        else{res.innerHTML='<div style="color:#3dd68c;font-size:12px">✓ Consumer healthy. Heartbeats flowing, poll() called regularly.</div>';}
+        mount.querySelector("#cg-hb-bars").innerHTML=
+          "<div style=\"display:flex;align-items:center;gap:8px;margin-bottom:6px\"><span class=\"cg-hb-label\">Heartbeats sent</span><span class=\"cg-hb-val\">"+hbState.hbCount+"</span></div>"+
+          "<div style=\"display:flex;align-items:center;gap:8px;margin-bottom:6px\"><span class=\"cg-hb-label\">poll() calls</span><span class=\"cg-hb-val\">"+hbState.pollCount+"</span></div>"+
+          "<div style=\"display:flex;align-items:center;gap:8px;margin-bottom:6px\"><span class=\"cg-hb-label\">Time since poll()</span><div style=\"flex:1;background:#0d1117;border-radius:4px;height:8px;overflow:hidden;margin:0 8px\"><div style=\"height:8px;border-radius:4px;background:"+color+";width:"+pct+"%;transition:width .3s\"></div></div><span style=\"font-size:12px;color:"+color+"\">"+Math.round(since/1000)+"s / "+(MAX_POLL/1000)+"s</span></div>";
+        var res=mount.querySelector("#cg-hb-result");
+        if(hbState.kicked){res.innerHTML="<div style=\"background:#f4706715;border:1px solid #f47067;border-radius:6px;padding:8px 12px;color:#f47067;font-size:12px\">⚠️ max.poll.interval.ms exceeded! Consumer kicked from group despite healthy heartbeats. Rebalance triggered.</div>";}
+        else if(since>MAX_POLL*0.7){res.innerHTML="<div style=\"background:#f5b94415;border:1px solid #f5b944;border-radius:6px;padding:8px 12px;color:#f5b944;font-size:12px\">⚠️ Approaching limit. Call poll() soon or increase max.poll.interval.ms.</div>";}
+        else{res.innerHTML="<div style=\"color:#3dd68c;font-size:12px\">✓ Consumer healthy. Heartbeats flowing, poll() called regularly.</div>";}
       }
       function startHb(){
         hbState={lastPoll:Date.now(),hbCount:0,pollCount:0,kicked:false,slowPoll:false};
-        mount.querySelector('#cg-hb-slowpoll').textContent='Simulate Slow poll()';
-        mount.querySelector('#cg-hb-slowpoll').style.opacity='1';
+        mount.querySelector("#cg-hb-slowpoll").textContent="Simulate Slow poll()";
+        mount.querySelector("#cg-hb-slowpoll").style.opacity="1";
         hbTimer=setInterval(function(){
           if(hbState.kicked)return;
           hbState.hbCount++;
@@ -305,25 +305,25 @@
           renderHbBars();
         },500);
       }
-      mount.querySelector('#cg-hb-slowpoll').addEventListener('click',function(){
+      mount.querySelector("#cg-hb-slowpoll").addEventListener("click",function(){
         hbState.slowPoll=true;
-        mount.querySelector('#cg-hb-slowpoll').textContent='⚠️ Slow poll() active...';
-        mount.querySelector('#cg-hb-slowpoll').style.opacity='0.5';
+        mount.querySelector("#cg-hb-slowpoll").textContent="⚠️ Slow poll() active...";
+        mount.querySelector("#cg-hb-slowpoll").style.opacity="0.5";
       });
-      mount.querySelector('#cg-hb-reset2').addEventListener('click',function(){clearInterval(hbTimer);startHb();});
+      mount.querySelector("#cg-hb-reset2").addEventListener("click",function(){clearInterval(hbTimer);startHb();});
       startHb();
 
       // TAB SWITCHING
-      mount.querySelectorAll('.cgbtn[data-tab]').forEach(function(btn){
-        btn.addEventListener('click',function(){
-          mount.querySelectorAll('.cgbtn[data-tab]').forEach(function(b){b.classList.remove('on');});
-          mount.querySelectorAll('.cgp').forEach(function(p){p.classList.remove('on');});
-          btn.classList.add('on');
-          mount.querySelector('#cg-'+btn.dataset.tab).classList.add('on');
+      mount.querySelectorAll(".cgbtn[data-tab]").forEach(function(btn){
+        btn.addEventListener("click",function(){
+          mount.querySelectorAll(".cgbtn[data-tab]").forEach(function(b){b.classList.remove("on");});
+          mount.querySelectorAll(".cgp").forEach(function(p){p.classList.remove("on");});
+          btn.classList.add("on");
+          mount.querySelector("#cg-"+btn.dataset.tab).classList.add("on");
         });
       });
-      mount.querySelectorAll('.cg-q-card').forEach(function(card){
-        card.addEventListener('click',function(){card.classList.toggle('open');});
+      mount.querySelectorAll(".cg-q-card").forEach(function(card){
+        card.addEventListener("click",function(){card.classList.toggle("open");});
       });
     },
     concept: `**L1 (30s ELI5):** Consumer group = team sharing a partition queue. Each partition → exactly one consumer. Add consumers → Kafka redistributes work (rebalance).

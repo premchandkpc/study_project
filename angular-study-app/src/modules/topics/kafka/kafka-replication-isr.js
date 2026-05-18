@@ -213,24 +213,24 @@
       var rStep=0,rTimer=null;
       function renderReplication(){
         var s=RSTEPS[rStep];
-        mount.querySelector('#ir-brokers').innerHTML=s.brokers.map(function(b){
-          var entries=b.log.map(function(v,i){return '<div class="ir-log-entry '+(v?'committed':'missing')+'" title="offset '+i+'">'+i+'</div>';}).join('');
-          return '<div class="ir-broker '+b.role+'"><div class="ir-broker-label '+b.role+'">'+b.id+' — '+b.role.replace('-',' ')+'</div>'+entries+'<div style="margin-top:6px"><span class="ir-hwm">HWM='+b.hwm+'</span> <span class="ir-leo">LEO='+b.leo+'</span></div></div>';
-        }).join('');
-        mount.querySelector('#ir-isr-badges').innerHTML=s.isr.map(function(id){return '<span class="ir-badge isr">'+id+'</span>';}).join('')+
-          s.brokers.filter(function(b){return s.isr.indexOf(b.id)<0;}).map(function(b){return '<span class="ir-badge out">'+b.id+' out</span>';}).join('');
-        mount.querySelector('#ir-rinfo').innerHTML=s.info;
-        mount.querySelector('#ir-rstep').textContent='Step '+(rStep+1)+'/'+RSTEPS.length;
+        mount.querySelector("#ir-brokers").innerHTML=s.brokers.map(function(b){
+          var entries=b.log.map(function(v,i){return "<div class=\"ir-log-entry "+(v?"committed":"missing")+"\" title=\"offset "+i+"\">"+i+"</div>";}).join("");
+          return "<div class=\"ir-broker "+b.role+"\"><div class=\"ir-broker-label "+b.role+"\">"+b.id+" — "+b.role.replace("-"," ")+"</div>"+entries+"<div style=\"margin-top:6px\"><span class=\"ir-hwm\">HWM="+b.hwm+"</span> <span class=\"ir-leo\">LEO="+b.leo+"</span></div></div>";
+        }).join("");
+        mount.querySelector("#ir-isr-badges").innerHTML=s.isr.map(function(id){return "<span class=\"ir-badge isr\">"+id+"</span>";}).join("")+
+          s.brokers.filter(function(b){return s.isr.indexOf(b.id)<0;}).map(function(b){return "<span class=\"ir-badge out\">"+b.id+" out</span>";}).join("");
+        mount.querySelector("#ir-rinfo").innerHTML=s.info;
+        mount.querySelector("#ir-rstep").textContent="Step "+(rStep+1)+"/"+RSTEPS.length;
       }
-      function rStop(){clearInterval(rTimer);rTimer=null;mount.querySelector('#ir-rplay').textContent='▶ Play';}
-      mount.querySelector('#ir-rplay').addEventListener('click',function(){if(rTimer){rStop();}else{rTimer=setInterval(function(){rStep=Math.min(rStep+1,RSTEPS.length-1);renderReplication();if(rStep===RSTEPS.length-1)rStop();},1800);mount.querySelector('#ir-rplay').textContent='⏸ Pause';}});
-      mount.querySelector('#ir-rnext').addEventListener('click',function(){rStop();rStep=Math.min(rStep+1,RSTEPS.length-1);renderReplication();});
-      mount.querySelector('#ir-rprev').addEventListener('click',function(){rStop();rStep=Math.max(rStep-1,0);renderReplication();});
-      mount.querySelector('#ir-rreset').addEventListener('click',function(){rStop();rStep=0;renderReplication();});
+      function rStop(){clearInterval(rTimer);rTimer=null;mount.querySelector("#ir-rplay").textContent="▶ Play";}
+      mount.querySelector("#ir-rplay").addEventListener("click",function(){if(rTimer){rStop();}else{rTimer=setInterval(function(){rStep=Math.min(rStep+1,RSTEPS.length-1);renderReplication();if(rStep===RSTEPS.length-1)rStop();},1800);mount.querySelector("#ir-rplay").textContent="⏸ Pause";}});
+      mount.querySelector("#ir-rnext").addEventListener("click",function(){rStop();rStep=Math.min(rStep+1,RSTEPS.length-1);renderReplication();});
+      mount.querySelector("#ir-rprev").addEventListener("click",function(){rStop();rStep=Math.max(rStep-1,0);renderReplication();});
+      mount.querySelector("#ir-rreset").addEventListener("click",function(){rStop();rStep=0;renderReplication();});
       renderReplication();
 
       // ISR
-      var isrMode='normal';
+      var isrMode="normal";
       var ISR_SCENARIOS={
         normal:{desc:"All replicas in sync. HWM == min(all LEOs). Consumers see all committed data.",brokers:[{id:"B0",role:"leader",log:[1,1,1,1],leo:4,hwm:4,isr:true},{id:"B1",role:"follower",log:[1,1,1,1],leo:4,hwm:4,isr:true},{id:"B2",role:"follower",log:[1,1,1,1],leo:4,hwm:4,isr:true}]},
         lag:{desc:"B2 falling behind. Still in ISR. HWM bounded by B2's LEO. Producer acks wait for B2.",brokers:[{id:"B0",role:"leader",log:[1,1,1,1,1],leo:5,hwm:3,isr:true},{id:"B1",role:"follower",log:[1,1,1,1,0],leo:4,hwm:3,isr:true},{id:"B2",role:"follower",log:[1,1,1,0,0],leo:3,hwm:3,isr:true}]},
@@ -238,17 +238,17 @@
       };
       function renderIsrSim(){
         var s=ISR_SCENARIOS[isrMode];
-        var el=mount.querySelector('#ir-isr-content');
-        el.innerHTML='<div class="ir-box"><div style="font-size:12px;color:#8b949e;margin-bottom:10px">'+s.desc+'</div>'+
-          '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+
+        var el=mount.querySelector("#ir-isr-content");
+        el.innerHTML="<div class=\"ir-box\"><div style=\"font-size:12px;color:#8b949e;margin-bottom:10px\">"+s.desc+"</div>"+
+          "<div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:8px\">"+
           s.brokers.map(function(b){
-            return '<div class="ir-broker '+b.role+'"><div class="ir-broker-label '+b.role+'">'+b.id+'<span class="ir-badge '+(b.isr?'isr':'out')+'" style="margin-left:6px;font-size:9px">'+(b.isr?'ISR':'OUT')+'</span></div>'+
-              b.log.map(function(v,i){return '<div class="ir-log-entry '+(v?'committed':'missing')+'" style="width:22px;height:22px;font-size:10px">'+i+'</div>';}).join('')+
-              '<div style="margin-top:6px"><span class="ir-hwm">HWM='+b.hwm+'</span> <span class="ir-leo">LEO='+b.leo+'</span></div></div>';
-          }).join('')+'</div></div>';
+            return "<div class=\"ir-broker "+b.role+"\"><div class=\"ir-broker-label "+b.role+"\">"+b.id+"<span class=\"ir-badge "+(b.isr?"isr":"out")+"\" style=\"margin-left:6px;font-size:9px\">"+(b.isr?"ISR":"OUT")+"</span></div>"+
+              b.log.map(function(v,i){return "<div class=\"ir-log-entry "+(v?"committed":"missing")+"\" style=\"width:22px;height:22px;font-size:10px\">"+i+"</div>";}).join("")+
+              "<div style=\"margin-top:6px\"><span class=\"ir-hwm\">HWM="+b.hwm+"</span> <span class=\"ir-leo\">LEO="+b.leo+"</span></div></div>";
+          }).join("")+"</div></div>";
       }
-      mount.querySelectorAll('.ir-stab[data-isr]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.ir-stab[data-isr]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');isrMode=b.dataset.isr;renderIsrSim();});
+      mount.querySelectorAll(".ir-stab[data-isr]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".ir-stab[data-isr]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");isrMode=b.dataset.isr;renderIsrSim();});
       });
       renderIsrSim();
 
@@ -263,49 +263,49 @@
       var fStep=0,fTimer=null;
       function renderFailure(){
         var s=FSTEPS[fStep];
-        mount.querySelector('#ir-fbrokers').innerHTML=s.brokers.map(function(b){
-          var roleColor={'leader':'#e8741a','follower':'#58a6ff','dead':'#f47067'}[b.role]||'#8b949e';
-          return '<div class="ir-broker '+(b.state==="dead"?'dead':b.role)+'" style="'+(b.state==="electing"?"border-color:#f5b944;":"")+'">'+
-            '<div class="ir-broker-label" style="color:'+roleColor+'">'+b.id+'</div>'+
-            '<div style="font-size:12px;color:'+roleColor+'">'+b.role+(b.state==="dead"?' ☠️':b.state==="recovering"?' (recovering)':b.state==="electing"?' ⚡':' ✓')+'</div></div>';
-        }).join('');
-        mount.querySelector('#ir-finfo').innerHTML=s.info;
-        mount.querySelector('#ir-fstep').textContent='Step '+(fStep+1)+'/'+FSTEPS.length;
+        mount.querySelector("#ir-fbrokers").innerHTML=s.brokers.map(function(b){
+          var roleColor={"leader":"#e8741a","follower":"#58a6ff","dead":"#f47067"}[b.role]||"#8b949e";
+          return "<div class=\"ir-broker "+(b.state==="dead"?"dead":b.role)+"\" style=\""+(b.state==="electing"?"border-color:#f5b944;":"")+"\">"+
+            "<div class=\"ir-broker-label\" style=\"color:"+roleColor+"\">"+b.id+"</div>"+
+            "<div style=\"font-size:12px;color:"+roleColor+"\">"+b.role+(b.state==="dead"?" ☠️":b.state==="recovering"?" (recovering)":b.state==="electing"?" ⚡":" ✓")+"</div></div>";
+        }).join("");
+        mount.querySelector("#ir-finfo").innerHTML=s.info;
+        mount.querySelector("#ir-fstep").textContent="Step "+(fStep+1)+"/"+FSTEPS.length;
       }
-      function fStop(){clearInterval(fTimer);fTimer=null;mount.querySelector('#ir-fplay').textContent='▶ Play';}
-      mount.querySelector('#ir-fplay').addEventListener('click',function(){if(fTimer){fStop();}else{fTimer=setInterval(function(){fStep=Math.min(fStep+1,FSTEPS.length-1);renderFailure();if(fStep===FSTEPS.length-1)fStop();},1800);mount.querySelector('#ir-fplay').textContent='⏸ Pause';}});
-      mount.querySelector('#ir-fnext').addEventListener('click',function(){fStop();fStep=Math.min(fStep+1,FSTEPS.length-1);renderFailure();});
-      mount.querySelector('#ir-fprev').addEventListener('click',function(){fStop();fStep=Math.max(fStep-1,0);renderFailure();});
-      mount.querySelector('#ir-freset').addEventListener('click',function(){fStop();fStep=0;renderFailure();});
+      function fStop(){clearInterval(fTimer);fTimer=null;mount.querySelector("#ir-fplay").textContent="▶ Play";}
+      mount.querySelector("#ir-fplay").addEventListener("click",function(){if(fTimer){fStop();}else{fTimer=setInterval(function(){fStep=Math.min(fStep+1,FSTEPS.length-1);renderFailure();if(fStep===FSTEPS.length-1)fStop();},1800);mount.querySelector("#ir-fplay").textContent="⏸ Pause";}});
+      mount.querySelector("#ir-fnext").addEventListener("click",function(){fStop();fStep=Math.min(fStep+1,FSTEPS.length-1);renderFailure();});
+      mount.querySelector("#ir-fprev").addEventListener("click",function(){fStop();fStep=Math.max(fStep-1,0);renderFailure();});
+      mount.querySelector("#ir-freset").addEventListener("click",function(){fStop();fStep=0;renderFailure();});
       renderFailure();
 
       // ACKS
-      var ackMode='0';
+      var ackMode="0";
       var ACK_FLOWS={
-        '0':{color:"#f47067",steps:["Producer sends","No ack wait","Producer continues"]},
-        '1':{color:"#f5b944",steps:["Producer sends","Leader writes","Leader acks producer","Followers fetch async"]},
-        'all':{color:"#3dd68c",steps:["Producer sends","Leader writes","B1 fetches → acks","B2 fetches → acks","Leader acks producer (all ISR confirmed)"]},
+        "0":{color:"#f47067",steps:["Producer sends","No ack wait","Producer continues"]},
+        "1":{color:"#f5b944",steps:["Producer sends","Leader writes","Leader acks producer","Followers fetch async"]},
+        "all":{color:"#3dd68c",steps:["Producer sends","Leader writes","B1 fetches → acks","B2 fetches → acks","Leader acks producer (all ISR confirmed)"]},
       };
       function renderAckFlow(){
         var s=ACK_FLOWS[ackMode];
-        mount.querySelector('#ir-ack-flow').innerHTML='<div class="ir-box"><div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">'+
-          s.steps.map(function(step,i){return '<div style="background:#0d1117;border:1px solid '+s.color+'44;border-radius:6px;padding:6px 10px;font-size:12px;color:'+s.color+'">'+step+'</div>'+(i<s.steps.length-1?'<div style="color:#8b949e;font-size:16px">→</div>':'');}).join('')+'</div></div>';
+        mount.querySelector("#ir-ack-flow").innerHTML="<div class=\"ir-box\"><div style=\"display:flex;gap:4px;flex-wrap:wrap;align-items:center\">"+
+          s.steps.map(function(step,i){return "<div style=\"background:#0d1117;border:1px solid "+s.color+"44;border-radius:6px;padding:6px 10px;font-size:12px;color:"+s.color+"\">"+step+"</div>"+(i<s.steps.length-1?"<div style=\"color:#8b949e;font-size:16px\">→</div>":"");}).join("")+"</div></div>";
       }
-      mount.querySelectorAll('.ir-stab[data-ack]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.ir-stab[data-ack]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');ackMode=b.dataset.ack;renderAckFlow();});
+      mount.querySelectorAll(".ir-stab[data-ack]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".ir-stab[data-ack]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");ackMode=b.dataset.ack;renderAckFlow();});
       });
       renderAckFlow();
 
       // TABS
-      mount.querySelectorAll('.irbtn[data-tab]').forEach(function(btn){
-        btn.addEventListener('click',function(){
-          mount.querySelectorAll('.irbtn[data-tab]').forEach(function(b){b.classList.remove('on');});
-          mount.querySelectorAll('.irp').forEach(function(p){p.classList.remove('on');});
-          btn.classList.add('on');
-          mount.querySelector('#ir-'+btn.dataset.tab).classList.add('on');
+      mount.querySelectorAll(".irbtn[data-tab]").forEach(function(btn){
+        btn.addEventListener("click",function(){
+          mount.querySelectorAll(".irbtn[data-tab]").forEach(function(b){b.classList.remove("on");});
+          mount.querySelectorAll(".irp").forEach(function(p){p.classList.remove("on");});
+          btn.classList.add("on");
+          mount.querySelector("#ir-"+btn.dataset.tab).classList.add("on");
         });
       });
-      mount.querySelectorAll('.ir-q-card').forEach(function(c){c.addEventListener('click',function(){c.classList.toggle('open');});});
+      mount.querySelectorAll(".ir-q-card").forEach(function(c){c.addEventListener("click",function(){c.classList.toggle("open");});});
     },
     concept: `**L1 (30s ELI5):** Kafka replicates each partition to N brokers. One is leader (takes writes), others are followers (copy). If leader dies, a follower takes over. No data loss if all ISR have the data.
 

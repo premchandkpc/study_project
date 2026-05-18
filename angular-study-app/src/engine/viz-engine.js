@@ -1,5 +1,5 @@
 (function () {
-  'use strict';
+  "use strict";
 
   /*
    * VizEngine — central dispatcher for all topic visualizations.
@@ -25,15 +25,15 @@
       if (!config) return;
 
       // Legacy function support
-      if (typeof config === 'function') {
+      if (typeof config === "function") {
         try { config(mount); }
         catch (e) { this._err(mount, e.message); }
         return;
       }
 
       // Raw escape hatch — config.render is an imperative function
-      if (config.type === 'raw') {
-        if (typeof config.render === 'function') {
+      if (config.type === "raw") {
+        if (typeof config.render === "function") {
           try { config.render(mount); }
           catch (e) { this._err(mount, e.message); }
         }
@@ -42,7 +42,7 @@
 
       var renderer = this._renderers[config.type];
       if (!renderer) {
-        this._err(mount, 'VizEngine: no renderer for type "' + config.type + '"');
+        this._err(mount, "VizEngine: no renderer for type \"" + config.type + "\"");
         return;
       }
 
@@ -51,8 +51,8 @@
     },
 
     _err: function (mount, msg) {
-      mount.innerHTML = '<div style="color:#f85149;padding:16px;font-family:monospace;font-size:12px">' +
-        'VizEngine error: ' + msg + '</div>';
+      mount.innerHTML = "<div style=\"color:#f85149;padding:16px;font-family:monospace;font-size:12px\">" +
+        "VizEngine error: " + msg + "</div>";
     },
   };
 })();

@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-tp-three-sum",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Financial reconciliation — find three transactions that exactly cancel each other out.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'twoptr.threeSum',
-        time:  'O(n²)',
-        space: 'O(1)',
+        title: "twoptr.threeSum",
+        time:  "O(n²)",
+        space: "O(1)",
         code: `function threeSum(nums) {
   nums.sort((a, b) => a - b);
   const result = [];

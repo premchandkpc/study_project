@@ -9,7 +9,7 @@
  *   @Input() type: 'info' | 'warn' | 'success' | 'code'
  */
 (function () {
-  'use strict';
+  "use strict";
   window.App = window.App || {};
 
   /**
@@ -24,20 +24,20 @@
       </div>
     `;
 
-    const labelEl = host.querySelector('[data-narr-label]');
-    const textEl  = host.querySelector('[data-narr-text]');
+    const labelEl = host.querySelector("[data-narr-label]");
+    const textEl  = host.querySelector("[data-narr-text]");
 
     // type: 'info' | 'warn' | 'success' | 'code'
     function update(label, text, type) {
-      labelEl.textContent = label || '';
-      textEl.textContent  = text  || '';
+      labelEl.textContent = label || "";
+      textEl.textContent  = text  || "";
 
       // swap type class — mirrors Angular HostBinding('[class]')
-      textEl.className = 'narration-text narration-' + (type || 'info');
+      textEl.className = "narration-text narration-" + (type || "info");
 
       // CSS animation re-trigger trick (mirrors Angular animation trigger)
-      textEl.style.animation = 'none';
-      requestAnimationFrame(() => { textEl.style.animation = ''; });
+      textEl.style.animation = "none";
+      requestAnimationFrame(() => { textEl.style.animation = ""; });
     }
 
     return { update };

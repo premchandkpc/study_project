@@ -13,7 +13,7 @@
 
 A Context is **immutable** and forms a tree — cancelling a parent cancels all children. The zero value (\`context.Background()\`) never cancels; \`context.TODO()\` signals placeholder intent.`,
     why:
-`Without context, you can't cleanly cancel in-flight requests when a client disconnects or a timeout fires. In microservices, context propagates **distributed traces** (OpenTelemetry injects span IDs via \`context.WithValue\`). Goroutines that ignore context leak resources until the process dies.`,
+"Without context, you can't cleanly cancel in-flight requests when a client disconnects or a timeout fires. In microservices, context propagates **distributed traces** (OpenTelemetry injects span IDs via `context.WithValue`). Goroutines that ignore context leak resources until the process dies.",
     example: {
       language: "go",
       code:
@@ -67,19 +67,19 @@ func main() {
     mux.HandleFunc("/", handler)
     http.ListenAndServe(":8080", withTraceID(mux))
 }`,
-      notes: `Never store contexts in structs — pass them as the first function argument. Use typed unexported keys for context values to prevent key collisions across packages.`
+      notes: "Never store contexts in structs — pass them as the first function argument. Use typed unexported keys for context values to prevent key collisions across packages."
     },
     interview: [
       {
         question: "What's the difference between context.Background() and context.TODO()?",
         answer:
-`Semantically equivalent at runtime — both return a non-nil, empty context. **\`Background()\`** is the root of any context tree (used in main, init, tests). **\`TODO()\`** signals "I know this should carry a context but I haven't plumbed one yet" — it's a code search anchor for future refactoring. Linters can flag \`TODO\` to track tech debt.`,
+"Semantically equivalent at runtime — both return a non-nil, empty context. **`Background()`** is the root of any context tree (used in main, init, tests). **`TODO()`** signals \"I know this should carry a context but I haven't plumbed one yet\" — it's a code search anchor for future refactoring. Linters can flag `TODO` to track tech debt.",
         followUps: ["When should context.WithValue be avoided?", "How does OpenTelemetry use context?"]
       },
       {
         question: "How do you propagate context across goroutine boundaries?",
         answer:
-`Pass the context explicitly as the first argument to the goroutine's function. Never copy a context into a closure that outlives the cancellation scope without checking \`ctx.Done()\`. Pattern: \`go func(ctx context.Context) { select { case <-ctx.Done(): return; case result <- compute(): } }(ctx)\`.`,
+"Pass the context explicitly as the first argument to the goroutine's function. Never copy a context into a closure that outlives the cancellation scope without checking `ctx.Done()`. Pattern: `go func(ctx context.Context) { select { case <-ctx.Done(): return; case result <- compute(): } }(ctx)`.",
         followUps: ["What happens to child goroutines if the parent context is cancelled?", "goroutine leak + context?"]
       }
     ],
@@ -94,7 +94,7 @@ func main() {
         "Verbose to plumb through every function signature in large codebases.",
         "Cannot add context to callback-style or event-driven APIs retro-actively."
       ],
-      when: `Pass context to every function that does I/O, sleeps, or spawns goroutines. Use context values only for request-scoped metadata (trace IDs, auth), never for optional function arguments.`
+      when: "Pass context to every function that does I/O, sleeps, or spawns goroutines. Use context values only for request-scoped metadata (trace IDs, auth), never for optional function arguments."
     }
   };
   window.GO_TOPICS = (window.GO_TOPICS || []).concat([topic]);

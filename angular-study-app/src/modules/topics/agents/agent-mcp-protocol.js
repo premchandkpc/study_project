@@ -11,7 +11,7 @@
 - **MCP Clients**: (like IDEs or Agents) consume these servers.
 It standardizes how context is fetched, allowing one "Skill" to work across different AI models (Claude, GPT, Gemini). It’s essentially "USB for AI models".`,
     why:
-`Before MCP, every integration was custom (e.g., a specific plugin for ChatGPT). MCP allows developers to build a **capability once** and use it everywhere. It solves the "context fragmentation" problem in agentic workflows. For SDEs, it's the standard for building "pluggable" AI features.`,
+"Before MCP, every integration was custom (e.g., a specific plugin for ChatGPT). MCP allows developers to build a **capability once** and use it everywhere. It solves the \"context fragmentation\" problem in agentic workflows. For SDEs, it's the standard for building \"pluggable\" AI features.",
     example: {
       language: "javascript",
       code:
@@ -37,13 +37,13 @@ server.tool(
 
 // MCP clients can now 'discover' and 'call' this tool
 server.start();`,
-      notes: `MCP is heavily used in IDEs like **Cursor** or **Windsurf** to give the AI access to the filesystem and terminal in a standardized way.`
+      notes: "MCP is heavily used in IDEs like **Cursor** or **Windsurf** to give the AI access to the filesystem and terminal in a standardized way."
     },
     interview: [
       {
         question: "How does MCP differ from traditional REST APIs?",
         answer:
-`REST is for human-to-machine or machine-to-machine. **MCP** is optimized for **machine-to-model**. It includes metadata specifically for LLMs: descriptions of tools, resource schemas, and structured prompts. It’s a higher-level abstraction that encompasses discovery, context fetching, and tool execution in one protocol.`,
+"REST is for human-to-machine or machine-to-machine. **MCP** is optimized for **machine-to-model**. It includes metadata specifically for LLMs: descriptions of tools, resource schemas, and structured prompts. It’s a higher-level abstraction that encompasses discovery, context fetching, and tool execution in one protocol.",
         followUps: ["What are 'Resources' in MCP?", "How do 'Prompts' work as a feature in MCP?"]
       }
     ],
@@ -58,7 +58,7 @@ server.start();`,
         "Adds another layer of abstraction/latency.",
         "Requires specific SDK support in the client."
       ],
-      when: `Use **MCP** when building tools that need to be shared across different AI clients or when building a platform that hosts many pluggable AI capabilities.`
+      when: "Use **MCP** when building tools that need to be shared across different AI clients or when building a platform that hosts many pluggable AI capabilities."
     }
   };
   window.AGENT_TOPICS = (window.AGENT_TOPICS || []).concat([topic]);

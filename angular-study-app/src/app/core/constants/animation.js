@@ -4,7 +4,7 @@
  * Exposes: window.App.Constants.Animation
  */
 (function () {
-  'use strict';
+  "use strict";
   window.App = window.App || {};
   window.App.Constants = window.App.Constants || {};
 
@@ -22,16 +22,16 @@
     DSA_STEP:      800,    // DSA tracer step interval
 
     // Easing
-    EASE_OUT:      'cubic-bezier(0.16, 1, 0.3, 1)',
-    EASE_IN_OUT:   'cubic-bezier(0.4, 0, 0.2, 1)',
-    SPRING:        'cubic-bezier(0.34, 1.56, 0.64, 1)',
+    EASE_OUT:      "cubic-bezier(0.16, 1, 0.3, 1)",
+    EASE_IN_OUT:   "cubic-bezier(0.4, 0, 0.2, 1)",
+    SPRING:        "cubic-bezier(0.34, 1.56, 0.64, 1)",
 
     // Step playback states
     STATE: Object.freeze({
-      IDLE:    'idle',
-      PLAYING: 'playing',
-      PAUSED:  'paused',
-      DONE:    'done',
+      IDLE:    "idle",
+      PLAYING: "playing",
+      PAUSED:  "paused",
+      DONE:    "done",
     }),
   });
 })();

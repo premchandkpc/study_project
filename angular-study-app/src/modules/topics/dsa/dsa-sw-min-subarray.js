@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-sw-min-subarray",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** Quota tracker — shortest run of events that reaches a required total.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'sliding.minSubarraySum',
-        time:  'O(n)',
-        space: 'O(1)',
+        title: "sliding.minSubarraySum",
+        time:  "O(n)",
+        space: "O(1)",
         code: `function minSubArrayLen(target, nums) {
   let left = 0;
   let sum = 0;

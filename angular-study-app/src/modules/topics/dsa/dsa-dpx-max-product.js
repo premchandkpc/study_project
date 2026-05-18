@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dpx-max-product",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Signal processing — find the stretch of multiplied sensor values that peaks highest.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'dpx.maxProduct',
-        time:  'O(n)',
-        space: 'O(1)',
+        title: "dpx.maxProduct",
+        time:  "O(n)",
+        space: "O(1)",
         code: `function maxProduct(nums) {
   let maxProd = nums[0];
   let minProd = nums[0];

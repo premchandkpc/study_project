@@ -1,19 +1,19 @@
 (function () {
-  'use strict';
+  "use strict";
 
   window.JAVA_TOPICS = (window.JAVA_TOPICS || []).concat([{
-    id:    'java-completablefuture',
-    area:  'java',
-    title: 'CompletableFuture Pipeline',
-    tag:   'Async',
-    tags:  ['java', 'completablefuture', 'async', 'pipeline', 'concurrency', 'non-blocking'],
+    id:    "java-completablefuture",
+    area:  "java",
+    title: "CompletableFuture Pipeline",
+    tag:   "Async",
+    tags:  ["java", "completablefuture", "async", "pipeline", "concurrency", "non-blocking"],
 
-    concept: `CompletableFuture<T> is Java's promise/future for async composition. Unlike Future.get() (blocking), CompletableFuture chains non-blocking callbacks: thenApply (transform), thenCompose (flatMap), thenCombine (merge two futures), thenAccept (consume), exceptionally (error recovery). Stages run on ForkJoinPool.commonPool() by default or a custom Executor. allOf() fans out; anyOf() races.`,
+    concept: "CompletableFuture<T> is Java's promise/future for async composition. Unlike Future.get() (blocking), CompletableFuture chains non-blocking callbacks: thenApply (transform), thenCompose (flatMap), thenCombine (merge two futures), thenAccept (consume), exceptionally (error recovery). Stages run on ForkJoinPool.commonPool() by default or a custom Executor. allOf() fans out; anyOf() races.",
 
-    why: `Blocking threads on Future.get() wastes thread pool capacity under load. CompletableFuture enables async pipelines: HTTP call → parse → DB write — each stage hands off to ForkJoinPool without blocking. Essential for high-throughput services without reactive frameworks. Java 8+ standard library, no additional dependency.`,
+    why: "Blocking threads on Future.get() wastes thread pool capacity under load. CompletableFuture enables async pipelines: HTTP call → parse → DB write — each stage hands off to ForkJoinPool without blocking. Essential for high-throughput services without reactive frameworks. Java 8+ standard library, no additional dependency.",
 
     example: {
-      language: 'java',
+      language: "java",
       code: `// Sequential blocking (BAD for high throughput)
 User user = userService.getUser(id);          // blocks
 Orders orders = orderService.getOrders(id);   // blocks
@@ -38,51 +38,51 @@ CompletableFuture.supplyAsync(() -> httpClient.fetch(url))     // async fetch
     },
 
     interview: [
-      'Difference between thenApply and thenCompose?',
-      'What thread executes thenApply callbacks?',
-      'How do you run two futures in parallel and combine results?',
-      'What happens when a CompletableFuture stage throws an exception?',
-      'Difference between exceptionally, handle, and whenComplete?',
+      "Difference between thenApply and thenCompose?",
+      "What thread executes thenApply callbacks?",
+      "How do you run two futures in parallel and combine results?",
+      "What happens when a CompletableFuture stage throws an exception?",
+      "Difference between exceptionally, handle, and whenComplete?",
     ],
 
     tradeoffs: {
       pros: [
-        'Non-blocking pipeline — thread freed while I/O waits',
-        'allOf/anyOf for fan-out parallelism',
-        'Built into Java 8+ stdlib — no extra dependency',
-        'Composable: chain arbitrary async operations',
+        "Non-blocking pipeline — thread freed while I/O waits",
+        "allOf/anyOf for fan-out parallelism",
+        "Built into Java 8+ stdlib — no extra dependency",
+        "Composable: chain arbitrary async operations",
       ],
       cons: [
-        'Error handling verbose — exceptionally/handle on every stage',
-        'Stack traces lose context across async boundaries',
-        'Debugging hard — async callbacks across threads',
-        'Replaced by virtual threads (Java 21) for simple I/O — only needed for fan-out',
+        "Error handling verbose — exceptionally/handle on every stage",
+        "Stack traces lose context across async boundaries",
+        "Debugging hard — async callbacks across threads",
+        "Replaced by virtual threads (Java 21) for simple I/O — only needed for fan-out",
       ],
     },
 
     gotchas: [
-      'thenApply runs on completing thread (ForkJoinPool or caller) — use thenApplyAsync to specify executor',
-      'thenCompose is flatMap — if fn returns CF<T>, thenApply wraps it: CF<CF<T>>',
-      'allOf returns CF<Void> — call .get() on each individual future to extract results',
-      'Unhandled exceptions silently complete exceptionally — always add exceptionally/handle',
+      "thenApply runs on completing thread (ForkJoinPool or caller) — use thenApplyAsync to specify executor",
+      "thenCompose is flatMap — if fn returns CF<T>, thenApply wraps it: CF<CF<T>>",
+      "allOf returns CF<Void> — call .get() on each individual future to extract results",
+      "Unhandled exceptions silently complete exceptionally — always add exceptionally/handle",
     ],
 
     visual: function (mount) {
       var steps = [
         {
-          phase: 'render',
-          narration: 'Step 1 — supplyAsync creates a CF stage running on ForkJoinPool. Calling thread is not blocked — it continues immediately.',
+          phase: "render",
+          narration: "Step 1 — supplyAsync creates a CF stage running on ForkJoinPool. Calling thread is not blocked — it continues immediately.",
           nodes: [
-            { id: 'caller',  label: 'Calling Thread\n(not blocked)',       type: 'client',    active: true },
-            { id: 'cf',      label: 'CompletableFuture\n<User> (pending)', type: 'component', active: true },
-            { id: 'fjp',     label: 'ForkJoinPool\ncommonPool',            type: 'store',     active: true },
-            { id: 'task',    label: '() -> userService\n.getUser(id)',     type: 'action',    active: true },
+            { id: "caller",  label: "Calling Thread\n(not blocked)",       type: "client",    active: true },
+            { id: "cf",      label: "CompletableFuture\n<User> (pending)", type: "component", active: true },
+            { id: "fjp",     label: "ForkJoinPool\ncommonPool",            type: "store",     active: true },
+            { id: "task",    label: "() -> userService\n.getUser(id)",     type: "action",    active: true },
           ],
           edges: [
-            { from: 'caller', to: 'cf',   label: 'supplyAsync()', active: true },
-            { from: 'cf',     to: 'fjp',  label: 'submit task', active: true, color: '#ffa657' },
-            { from: 'fjp',    to: 'task', label: 'runs on pool thread', active: true },
-            { from: 'caller', to: 'cf',   label: 'returns immediately', active: false },
+            { from: "caller", to: "cf",   label: "supplyAsync()", active: true },
+            { from: "cf",     to: "fjp",  label: "submit task", active: true, color: "#ffa657" },
+            { from: "fjp",    to: "task", label: "runs on pool thread", active: true },
+            { from: "caller", to: "cf",   label: "returns immediately", active: false },
           ],
           code: `// supplyAsync — submit supplier, get CF back immediately
 CompletableFuture<User> cf =
@@ -102,20 +102,20 @@ User user = cf.join();          // blocking, unchecked exception
 cf.thenAccept(user -> render(user));`,
         },
         {
-          phase: 'effect',
-          narration: 'Step 2 — thenApply (map). Transforms result synchronously on the completing thread. thenApplyAsync runs on a new pool thread.',
+          phase: "effect",
+          narration: "Step 2 — thenApply (map). Transforms result synchronously on the completing thread. thenApplyAsync runs on a new pool thread.",
           nodes: [
-            { id: 'cf1',    label: 'CF<String>\n(raw JSON)',          type: 'component', active: true },
-            { id: 'apply1', label: 'thenApply\nJsonParser::parse',    type: 'action',    active: true },
-            { id: 'cf2',    label: 'CF<User>\n(parsed)',              type: 'component', active: true },
-            { id: 'apply2', label: 'thenApply\nUser::toDto',          type: 'action',    active: true },
-            { id: 'cf3',    label: 'CF<UserDto>\n(final)',            type: 'component', active: true },
+            { id: "cf1",    label: "CF<String>\n(raw JSON)",          type: "component", active: true },
+            { id: "apply1", label: "thenApply\nJsonParser::parse",    type: "action",    active: true },
+            { id: "cf2",    label: "CF<User>\n(parsed)",              type: "component", active: true },
+            { id: "apply2", label: "thenApply\nUser::toDto",          type: "action",    active: true },
+            { id: "cf3",    label: "CF<UserDto>\n(final)",            type: "component", active: true },
           ],
           edges: [
-            { from: 'cf1',    to: 'apply1', label: 'on complete', active: true },
-            { from: 'apply1', to: 'cf2',    label: 'transform', active: true, color: '#3fb950' },
-            { from: 'cf2',    to: 'apply2', label: 'on complete', active: true },
-            { from: 'apply2', to: 'cf3',    label: 'transform', active: true, color: '#3fb950' },
+            { from: "cf1",    to: "apply1", label: "on complete", active: true },
+            { from: "apply1", to: "cf2",    label: "transform", active: true, color: "#3fb950" },
+            { from: "cf2",    to: "apply2", label: "on complete", active: true },
+            { from: "apply2", to: "cf3",    label: "transform", active: true, color: "#3fb950" },
           ],
           code: `// thenApply = map: T → U (synchronous fn, runs on completing thread)
 CompletableFuture<UserDto> pipeline =
@@ -131,18 +131,18 @@ CompletableFuture<UserDto> pipeline =
 // thenApplyAsync always submits to executor`,
         },
         {
-          phase: 'update',
-          narration: 'Step 3 — thenCompose (flatMap). When the next stage is itself async (returns another CF), use thenCompose to avoid CF<CF<T>>.',
+          phase: "update",
+          narration: "Step 3 — thenCompose (flatMap). When the next stage is itself async (returns another CF), use thenCompose to avoid CF<CF<T>>.",
           nodes: [
-            { id: 'cfA',     label: 'CF<String>\n(raw data)',           type: 'component', active: true },
-            { id: 'compose', label: 'thenCompose\ndata → dbSave(data)',  type: 'action',    active: true },
-            { id: 'inner',   label: 'CF<SaveResult>\n(inner async)',     type: 'component', active: true },
-            { id: 'cfB',     label: 'CF<SaveResult>\n(flattened)',       type: 'component', active: true },
+            { id: "cfA",     label: "CF<String>\n(raw data)",           type: "component", active: true },
+            { id: "compose", label: "thenCompose\ndata → dbSave(data)",  type: "action",    active: true },
+            { id: "inner",   label: "CF<SaveResult>\n(inner async)",     type: "component", active: true },
+            { id: "cfB",     label: "CF<SaveResult>\n(flattened)",       type: "component", active: true },
           ],
           edges: [
-            { from: 'cfA',     to: 'compose', label: 'on complete', active: true },
-            { from: 'compose', to: 'inner',   label: 'fn returns CF', active: true },
-            { from: 'inner',   to: 'cfB',     label: 'flatMap → unwrap', active: true, color: '#3fb950' },
+            { from: "cfA",     to: "compose", label: "on complete", active: true },
+            { from: "compose", to: "inner",   label: "fn returns CF", active: true },
+            { from: "inner",   to: "cfB",     label: "flatMap → unwrap", active: true, color: "#3fb950" },
           ],
           code: `// thenCompose = flatMap: T → CompletableFuture<U>
 // Use when the next step is ALSO async
@@ -163,18 +163,18 @@ fetchData()
     .thenAccept(v -> log.info("Done"));     // consume, returns CF<Void>`,
         },
         {
-          phase: 'commit',
-          narration: 'Step 4 — thenCombine / allOf for parallel fan-out. Two independent futures run simultaneously, combined when both complete.',
+          phase: "commit",
+          narration: "Step 4 — thenCombine / allOf for parallel fan-out. Two independent futures run simultaneously, combined when both complete.",
           nodes: [
-            { id: 'cfUser',   label: 'supplyAsync\nfetchUser()',    type: 'component', active: true },
-            { id: 'cfOrder',  label: 'supplyAsync\nfetchOrders()', type: 'component', active: true },
-            { id: 'combine',  label: 'thenCombine\n(User, Orders) → Dashboard', type: 'action', active: true },
-            { id: 'result',   label: 'CF<Dashboard>\n(parallel)', type: 'store',     active: true },
+            { id: "cfUser",   label: "supplyAsync\nfetchUser()",    type: "component", active: true },
+            { id: "cfOrder",  label: "supplyAsync\nfetchOrders()", type: "component", active: true },
+            { id: "combine",  label: "thenCombine\n(User, Orders) → Dashboard", type: "action", active: true },
+            { id: "result",   label: "CF<Dashboard>\n(parallel)", type: "store",     active: true },
           ],
           edges: [
-            { from: 'cfUser',  to: 'combine', label: 'when done', active: true, color: '#3fb950' },
-            { from: 'cfOrder', to: 'combine', label: 'when done', active: true, color: '#3fb950' },
-            { from: 'combine', to: 'result',  label: 'both ready → merge', active: true, color: '#ffa657' },
+            { from: "cfUser",  to: "combine", label: "when done", active: true, color: "#3fb950" },
+            { from: "cfOrder", to: "combine", label: "when done", active: true, color: "#3fb950" },
+            { from: "combine", to: "result",  label: "both ready → merge", active: true, color: "#ffa657" },
           ],
           code: `// thenCombine — merge 2 futures when BOTH complete
 CompletableFuture<User> userCF =
@@ -198,20 +198,20 @@ all.thenRun(() -> {
 CompletableFuture<Object> fastest = CompletableFuture.anyOf(cache, db, fallback);`,
         },
         {
-          phase: 'cleanup',
-          narration: 'Step 5 — Error handling. exceptionally recovers from one stage. handle processes both success and failure. whenComplete runs always (like finally).',
+          phase: "cleanup",
+          narration: "Step 5 — Error handling. exceptionally recovers from one stage. handle processes both success and failure. whenComplete runs always (like finally).",
           nodes: [
-            { id: 'stage1',  label: 'fetchData()\n→ NetworkException',  type: 'reducer',   active: true },
-            { id: 'except',  label: 'exceptionally\nreturn cached data', type: 'action',    active: true },
-            { id: 'handle',  label: 'handle\n(result, ex) → both',       type: 'action',    active: true },
-            { id: 'when',    label: 'whenComplete\n(always runs)',        type: 'network',   active: true },
-            { id: 'recover', label: 'CF<Data>\n(recovered)',             type: 'component', active: true },
+            { id: "stage1",  label: "fetchData()\n→ NetworkException",  type: "reducer",   active: true },
+            { id: "except",  label: "exceptionally\nreturn cached data", type: "action",    active: true },
+            { id: "handle",  label: "handle\n(result, ex) → both",       type: "action",    active: true },
+            { id: "when",    label: "whenComplete\n(always runs)",        type: "network",   active: true },
+            { id: "recover", label: "CF<Data>\n(recovered)",             type: "component", active: true },
           ],
           edges: [
-            { from: 'stage1', to: 'except', label: 'exception', active: true, color: '#f85149' },
-            { from: 'except', to: 'recover',label: 'fallback value', active: true, color: '#3fb950' },
-            { from: 'stage1', to: 'handle', label: 'success OR failure', active: true, color: '#ffa657' },
-            { from: 'stage1', to: 'when',   label: 'always', active: true },
+            { from: "stage1", to: "except", label: "exception", active: true, color: "#f85149" },
+            { from: "except", to: "recover",label: "fallback value", active: true, color: "#3fb950" },
+            { from: "stage1", to: "handle", label: "success OR failure", active: true, color: "#ffa657" },
+            { from: "stage1", to: "when",   label: "always", active: true },
           ],
           code: `CompletableFuture.supplyAsync(() -> fetchData(url))
 
@@ -241,15 +241,15 @@ CompletableFuture<Object> fastest = CompletableFuture.anyOf(cache, db, fallback)
       ];
 
       window.ReactViz.panel(mount, {
-        title: 'CompletableFuture Pipeline',
-        time:  'O(1) per stage',
-        space: 'O(pipeline depth)',
+        title: "CompletableFuture Pipeline",
+        time:  "O(1) per stage",
+        space: "O(pipeline depth)",
         steps: steps,
         renderStep: function (vizEl, codeEl, step) {
-          window.ReactViz.FlowDiagram.render(vizEl, step.nodes, step.edges, { layout: 'vertical' });
+          window.ReactViz.FlowDiagram.render(vizEl, step.nodes, step.edges, { layout: "vertical" });
           codeEl.innerHTML =
-            window.ReactViz.label('CODE') +
-            window.ReactViz.codeBlock(step.code, 'java');
+            window.ReactViz.label("CODE") +
+            window.ReactViz.codeBlock(step.code, "java");
         },
       });
     },

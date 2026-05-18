@@ -27,21 +27,21 @@
   const NODE_R = 24;
 
   const NODE_STATES = {
-    active:   { fill: '#1f3a5f', stroke: '#58a6ff', text: '#58a6ff' },
-    frontier: { fill: '#272012', stroke: '#e3b341', text: '#e3b341' },
-    visited:  { fill: '#0d1f12', stroke: '#238636', text: '#56d364' },
-    success:  { fill: '#0d2818', stroke: '#56d364', text: '#56d364' },
-    error:    { fill: '#2d0f0f', stroke: '#f78166', text: '#f78166' },
-    warn:     { fill: '#272012', stroke: '#d29922', text: '#e3b341' },
-    path:     { fill: '#1a1040', stroke: '#8957e5', text: '#d2a8ff' },
-    default:  { fill: '#21262d', stroke: '#30363d', text: '#cdd9e5' },
+    active:   { fill: "#1f3a5f", stroke: "#58a6ff", text: "#58a6ff" },
+    frontier: { fill: "#272012", stroke: "#e3b341", text: "#e3b341" },
+    visited:  { fill: "#0d1f12", stroke: "#238636", text: "#56d364" },
+    success:  { fill: "#0d2818", stroke: "#56d364", text: "#56d364" },
+    error:    { fill: "#2d0f0f", stroke: "#f78166", text: "#f78166" },
+    warn:     { fill: "#272012", stroke: "#d29922", text: "#e3b341" },
+    path:     { fill: "#1a1040", stroke: "#8957e5", text: "#d2a8ff" },
+    default:  { fill: "#21262d", stroke: "#30363d", text: "#cdd9e5" },
   };
 
   const EDGE_STATES = {
-    active:   '#58a6ff',
-    path:     '#e3b341',
-    rejected: '#f85149',
-    default:  '#30363d',
+    active:   "#58a6ff",
+    path:     "#e3b341",
+    rejected: "#f85149",
+    default:  "#30363d",
   };
 
   /* auto-layout nodes in circle if no x/y provided */
@@ -69,7 +69,7 @@
     const H = cfg.height || 320;
     const directed = cfg.directed ?? false;
 
-    const container = DSAViz.makeContainer(mount, cfg.title || '');
+    const container = DSAViz.makeContainer(mount, cfg.title || "");
     autoLayout(nodes, W, H);
 
     const nodeMap = {};
@@ -95,38 +95,38 @@
       const len = Math.sqrt(dx*dx + dy*dy) || 1;
       const ox = -dy/len*4, oy = dx/len*4;
 
-      const isActive = ehi[key] === 'active' || ehi[key] === 'path';
-      const line = DSAViz.svgEl('line', {
+      const isActive = ehi[key] === "active" || ehi[key] === "path";
+      const line = DSAViz.svgEl("line", {
         x1: fn._x + ox, y1: fn._y + oy,
         x2: tn._x + ox, y2: tn._y + oy,
-        stroke: eColor, 'stroke-width': isActive ? 2.5 : 1.5,
-        'stroke-dasharray': ehi[key] === 'rejected' ? '4 3' : 'none',
-        'marker-end': directed ? `url(#arrowDefault)` : 'none',
+        stroke: eColor, "stroke-width": isActive ? 2.5 : 1.5,
+        "stroke-dasharray": ehi[key] === "rejected" ? "4 3" : "none",
+        "marker-end": directed ? "url(#arrowDefault)" : "none",
       });
       svg.appendChild(line);
 
       if (e.weight !== undefined) {
         const mx = (fn._x + tn._x) / 2 + ox * 2;
         const my = (fn._y + tn._y) / 2 + oy * 2 - 8;
-        const wt = DSAViz.svgEl('text', {
-          x: mx, y: my, fill: eColor, 'font-size': '13',
-          'text-anchor': 'middle', 'font-family': 'Inter,system-ui,sans-serif',
+        const wt = DSAViz.svgEl("text", {
+          x: mx, y: my, fill: eColor, "font-size": "13",
+          "text-anchor": "middle", "font-family": "Inter,system-ui,sans-serif",
         });
         wt.textContent = e.weight;
         svg.appendChild(wt);
       }
 
       if (isActive) {
-        const anim = DSAViz.svgEl('animate', { attributeName: 'stroke-opacity', from: '1', to: '0.4', dur: '0.8s', repeatCount: 'indefinite', direction: 'alternate' });
+        const anim = DSAViz.svgEl("animate", { attributeName: "stroke-opacity", from: "1", to: "0.4", dur: "0.8s", repeatCount: "indefinite", direction: "alternate" });
         line.appendChild(anim);
       }
     });
 
     /* directed marker */
     if (directed) {
-      const defs = DSAViz.svgEl('defs');
-      const marker = DSAViz.svgEl('marker', { id:'arrowDefault', markerWidth:'8', markerHeight:'8', refX:'28', refY:'3', orient:'auto' });
-      const path = DSAViz.svgEl('path', { d:'M0,0 L6,3 L0,6 Z', fill:'#30363d' });
+      const defs = DSAViz.svgEl("defs");
+      const marker = DSAViz.svgEl("marker", { id:"arrowDefault", markerWidth:"8", markerHeight:"8", refX:"28", refY:"3", orient:"auto" });
+      const path = DSAViz.svgEl("path", { d:"M0,0 L6,3 L0,6 Z", fill:"#30363d" });
       marker.appendChild(path); defs.appendChild(marker);
       svg.prepend(defs);
     }
@@ -134,29 +134,29 @@
     /* nodes */
     nodes.forEach(n => {
       const s = NODE_STATES[hi[n.id]] || NODE_STATES.default;
-      const g = DSAViz.svgEl('g');
+      const g = DSAViz.svgEl("g");
 
       /* pulse ring for active */
-      if (hi[n.id] === 'active') {
-        const ring = DSAViz.svgEl('circle', { cx: n._x, cy: n._y, r: NODE_R + 5,
-          fill: 'none', stroke: s.stroke, 'stroke-width': 1.5, opacity: '0.3' });
-        const anim = DSAViz.svgEl('animate', { attributeName: 'r', from: NODE_R+2, to: NODE_R+12, dur:'1.2s', repeatCount:'indefinite' });
-        const animOp = DSAViz.svgEl('animate', { attributeName: 'opacity', from:'0.4', to:'0', dur:'1.2s', repeatCount:'indefinite' });
+      if (hi[n.id] === "active") {
+        const ring = DSAViz.svgEl("circle", { cx: n._x, cy: n._y, r: NODE_R + 5,
+          fill: "none", stroke: s.stroke, "stroke-width": 1.5, opacity: "0.3" });
+        const anim = DSAViz.svgEl("animate", { attributeName: "r", from: NODE_R+2, to: NODE_R+12, dur:"1.2s", repeatCount:"indefinite" });
+        const animOp = DSAViz.svgEl("animate", { attributeName: "opacity", from:"0.4", to:"0", dur:"1.2s", repeatCount:"indefinite" });
         ring.appendChild(anim); ring.appendChild(animOp); g.appendChild(ring);
       }
 
-      const circle = DSAViz.svgEl('circle', { cx: n._x, cy: n._y, r: NODE_R,
-        fill: s.fill, stroke: s.stroke, 'stroke-width': 2 });
-      const label = DSAViz.svgEl('text', { x: n._x, y: n._y,
-        fill: s.text, 'font-size': '13', 'font-weight': '700',
-        'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-family': 'Inter,JetBrains Mono,system-ui' });
+      const circle = DSAViz.svgEl("circle", { cx: n._x, cy: n._y, r: NODE_R,
+        fill: s.fill, stroke: s.stroke, "stroke-width": 2 });
+      const label = DSAViz.svgEl("text", { x: n._x, y: n._y,
+        fill: s.text, "font-size": "13", "font-weight": "700",
+        "text-anchor": "middle", "dominant-baseline": "central", "font-family": "Inter,JetBrains Mono,system-ui" });
       label.textContent = n.label ?? n.id;
       g.appendChild(circle); g.appendChild(label);
 
       /* distance label below */
       if (distances[n.id] !== undefined) {
-        const dist = DSAViz.svgEl('text', { x: n._x, y: n._y + NODE_R + 14,
-          fill: '#e3b341', 'font-size': '13', 'text-anchor': 'middle', 'font-family': 'Inter,system-ui,sans-serif' });
+        const dist = DSAViz.svgEl("text", { x: n._x, y: n._y + NODE_R + 14,
+          fill: "#e3b341", "font-size": "13", "text-anchor": "middle", "font-family": "Inter,system-ui,sans-serif" });
         dist.textContent = `d:${distances[n.id]}`;
         g.appendChild(dist);
       }
@@ -168,12 +168,12 @@
 
     /* visited / stack / queue panels */
     const panels = [];
-    if (cfg.visited?.length) panels.push(makeChipPanel('Visited', cfg.visited, '#56d364'));
-    if (cfg.queue?.length)   panels.push(makeChipPanel('Queue (BFS)', cfg.queue, '#e3b341'));
-    if (cfg.stack?.length)   panels.push(makeChipPanel('Stack (DFS)', cfg.stack, '#8957e5'));
+    if (cfg.visited?.length) panels.push(makeChipPanel("Visited", cfg.visited, "#56d364"));
+    if (cfg.queue?.length)   panels.push(makeChipPanel("Queue (BFS)", cfg.queue, "#e3b341"));
+    if (cfg.stack?.length)   panels.push(makeChipPanel("Stack (DFS)", cfg.stack, "#8957e5"));
     if (panels.length) {
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;';
+      const row = document.createElement("div");
+      row.style.cssText = "display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;";
       panels.forEach(p => row.appendChild(p));
       container.appendChild(row);
     }
@@ -182,17 +182,17 @@
   }
 
   function makeChipPanel(label, items, color) {
-    const wrap = document.createElement('div');
-    wrap.style.cssText = `background:#21262d;border:1px solid #30363d;border-radius:8px;padding:8px 12px;`;
-    const lbl = document.createElement('div');
+    const wrap = document.createElement("div");
+    wrap.style.cssText = "background:#21262d;border:1px solid #30363d;border-radius:8px;padding:8px 12px;";
+    const lbl = document.createElement("div");
     lbl.style.cssText = `font-size:13px;font-family:'Inter',system-ui,sans-serif;color:${color};font-weight:700;margin-bottom:6px;`;
     lbl.textContent = label;
     wrap.appendChild(lbl);
-    const chips = document.createElement('div');
-    chips.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;';
+    const chips = document.createElement("div");
+    chips.style.cssText = "display:flex;gap:4px;flex-wrap:wrap;";
     items.forEach((v, i) => {
-      const c = document.createElement('span');
-      c.style.cssText = `background:${i===0?color+'33':'transparent'};border:1px solid ${color}66;
+      const c = document.createElement("span");
+      c.style.cssText = `background:${i===0?color+"33":"transparent"};border:1px solid ${color}66;
         color:${color};font-size:13px;padding:2px 7px;border-radius:12px;font-family:'Inter',system-ui,sans-serif;`;
       c.textContent = v;
       chips.appendChild(c);
@@ -203,14 +203,14 @@
 
   function animate(mount, steps, opts = {}) {
     const { DSAViz } = window;
-    const nar = DSAViz.makeNarration('Press ▶▶ or Play to start');
-    mount.innerHTML = '';
+    const nar = DSAViz.makeNarration("Press ▶▶ or Play to start");
+    mount.innerHTML = "";
     mount.appendChild(nar);
-    const vizDiv = document.createElement('div');
+    const vizDiv = document.createElement("div");
     mount.appendChild(vizDiv);
 
     const ctrl = DSAViz.makeStepCtrl(steps, (step, idx) => {
-      if (!step) { vizDiv.innerHTML = ''; nar.update('Reset'); return; }
+      if (!step) { vizDiv.innerHTML = ""; nar.update("Reset"); return; }
       render(vizDiv, step);
       nar.update(step.narration || `Step ${idx+1}`);
       ctrl._updateCtr?.();

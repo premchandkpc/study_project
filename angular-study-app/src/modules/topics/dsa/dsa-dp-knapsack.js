@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dp-knapsack",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** Capacity planning — every item is a yes/no decision.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'dp.knapsack',
-        time:  'O(nW)',
-        space: 'O(nW)',
+        title: "dp.knapsack",
+        time:  "O(nW)",
+        space: "O(nW)",
         code: `function knapsack(weights, values, capacity) {
   const n = weights.length;
   const dp = Array.from({ length: n + 1 }, () => new Array(capacity + 1).fill(0));

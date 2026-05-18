@@ -12,7 +12,7 @@
 - **Parameters**: JSON Schema defining the expected inputs.
 The LLM doesn't "run" the code; it generates a **Structured Call** (JSON) which the system then executes.`,
     why:
-`The **Description** is the most important part of a skill. If the description is vague, the LLM will misapply the tool. Senior SDEs must treat Tool Definitions as "Prompt Engineering for Functions". Well-defined skills make agents reliable and predictable.`,
+"The **Description** is the most important part of a skill. If the description is vague, the LLM will misapply the tool. Senior SDEs must treat Tool Definitions as \"Prompt Engineering for Functions\". Well-defined skills make agents reliable and predictable.",
     example: {
       language: "javascript",
       code:
@@ -39,13 +39,13 @@ const SEARCH_SKILL = {
 
 // Response from LLM when it wants to use this skill:
 // { "tool": "search_knowledge_base", "parameters": { "topic": "JVM", "limit": 5 } }`,
-      notes: `Always include 'examples' in the parameter descriptions to help the LLM understand the expected format of inputs (e.g., date formats, ID types).`
+      notes: "Always include 'examples' in the parameter descriptions to help the LLM understand the expected format of inputs (e.g., date formats, ID types)."
     },
     interview: [
       {
         question: "What is 'Tool Fatigue' in agents?",
         answer:
-`**Tool Fatigue** occurs when an agent is provided with too many tools (e.g., 50+). The LLM's performance degrades: it gets confused about which tool to pick, hallucinate tool names, or forgets to use tools entirely. **Solution**: Use 'Tool Discovery' or group tools into 'Skillsets' that are injected into the prompt only when relevant.`,
+"**Tool Fatigue** occurs when an agent is provided with too many tools (e.g., 50+). The LLM's performance degrades: it gets confused about which tool to pick, hallucinate tool names, or forgets to use tools entirely. **Solution**: Use 'Tool Discovery' or group tools into 'Skillsets' that are injected into the prompt only when relevant.",
         followUps: ["How do you handle tool execution errors?", "What is 'Self-Healing' tool calling?"]
       }
     ],
@@ -60,7 +60,7 @@ const SEARCH_SKILL = {
         "LLMs can still 'hallucinate' tool calls if the prompt is weak.",
         "Complexity in managing tool dependencies and auth."
       ],
-      when: `Use **Function Calling** (Skills) whenever the LLM needs to interact with an external system, perform a calculation, or access private data.`
+      when: "Use **Function Calling** (Skills) whenever the LLM needs to interact with an external system, perform a calculation, or access private data."
     }
   };
   window.AGENT_TOPICS = (window.AGENT_TOPICS || []).concat([topic]);

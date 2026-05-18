@@ -11,7 +11,7 @@
 **L3 (10min):** Escape analysis: if an object never escapes a method/thread, JIT allocates it on stack (scalar replacement). Eliminates GC pressure. Breaks: objects stored in fields, returned, passed to unresolved callees. Inline caches: monomorphic (fast) → bimorphic → megamorphic (slow — IC fails, virtual dispatch).
 **L4 (30min):** C2 IR = sea-of-nodes graph. TLAB (Thread-Local Allocation Buffer) — object allocation is a pointer bump, ~5ns. Major GC pause = stop-the-world. JFR + async-profiler = production profiling without overhead. VarHandle replaces Unsafe for memory fence operations. Graal JIT (EE/CE) = alternative C2 written in Java — supports AOT for native-image.`,
     why:
-`**Production win:** Checkout service's hot path allocating ~50 BigDecimal objects per request. 10K RPS = 500K objects/sec = constant Minor GC pressure, 5ms pauses every 200ms. Profiled with async-profiler: BigDecimal.multiply allocates heavily. Refactored to long arithmetic (scaled integers). GC pressure drops 80%, p99 latency 5ms → 0.8ms.`,
+"**Production win:** Checkout service's hot path allocating ~50 BigDecimal objects per request. 10K RPS = 500K objects/sec = constant Minor GC pressure, 5ms pauses every 200ms. Profiled with async-profiler: BigDecimal.multiply allocates heavily. Refactored to long arithmetic (scaled integers). GC pressure drops 80%, p99 latency 5ms → 0.8ms.",
     flow: {
       title: "JIT Tiered Compilation: warm-up to full optimisation",
       caption: "Click each tier to see what happens",
@@ -94,33 +94,33 @@
     visual: function(mount) {
       var S = {tab:0, qi:0};
       var TRICKS = [
-        {wrong:'Microbenchmark with a plain main() method gives accurate results',
-         right:'No warmup = interpreter, not JIT. Dead-code elimination removes results. Use JMH with @Warmup(iterations=5), multiple @Fork, Blackhole.consume().'},
-        {wrong:'"String + concat is slow, always use StringBuilder"',
-         right:'JDK 9+ uses invokedynamic + StringConcatFactory. Simple string + is equivalent to StringBuilder. String.format() is still 8-10x slower due to parsing.'},
-        {wrong:'Object allocation is expensive in Java',
-         right:'TLAB bump-pointer allocation is ~5ns. Short-lived objects optimised by escape analysis (stack alloc). GC overhead comes from SURVIVING objects, not allocations.'},
-        {wrong:'@Transactional readOnly=true has no performance impact',
-         right:'readOnly=true disables dirty checking (Hibernate skips snapshotting all managed entities on flush). Big win under load. Also signals read-replica routing in some setups.'}
+        {wrong:"Microbenchmark with a plain main() method gives accurate results",
+          right:"No warmup = interpreter, not JIT. Dead-code elimination removes results. Use JMH with @Warmup(iterations=5), multiple @Fork, Blackhole.consume()."},
+        {wrong:"\"String + concat is slow, always use StringBuilder\"",
+          right:"JDK 9+ uses invokedynamic + StringConcatFactory. Simple string + is equivalent to StringBuilder. String.format() is still 8-10x slower due to parsing."},
+        {wrong:"Object allocation is expensive in Java",
+          right:"TLAB bump-pointer allocation is ~5ns. Short-lived objects optimised by escape analysis (stack alloc). GC overhead comes from SURVIVING objects, not allocations."},
+        {wrong:"@Transactional readOnly=true has no performance impact",
+          right:"readOnly=true disables dirty checking (Hibernate skips snapshotting all managed entities on flush). Big win under load. Also signals read-replica routing in some setups."}
       ];
       var QS = [
-        {q:'What is escape analysis? How do you verify it fired?',
-         a:'C2 proves object doesn\'t escape method/thread → allocates on stack (scalar replacement). Verify: -XX:+UnlockDiagnosticVMOptions -XX:+PrintEliminateAllocations. Measure: async-profiler --alloc to see allocation rate before/after.'},
-        {q:'Why are microbenchmarks usually wrong without JMH?',
-         a:'Three problems: (1) no warmup — measuring interpreter code, (2) dead code elimination — JIT removes unused results, (3) constant folding — inputs become compile-time constants. JMH solves all three: Blackhole.consume, @State, multiple forks.'},
-        {q:'What is a megamorphic call site and why is it slow?',
-         a:'JIT inline cache supports 1-2 concrete types (mono/bimorphic). With 3+ types the IC becomes megamorphic — no inline possible, falls back to virtual dispatch. 3-5x slower than inlined call. Fix: use final classes, limit polymorphism in hot paths.'}
+        {q:"What is escape analysis? How do you verify it fired?",
+          a:"C2 proves object doesn't escape method/thread → allocates on stack (scalar replacement). Verify: -XX:+UnlockDiagnosticVMOptions -XX:+PrintEliminateAllocations. Measure: async-profiler --alloc to see allocation rate before/after."},
+        {q:"Why are microbenchmarks usually wrong without JMH?",
+          a:"Three problems: (1) no warmup — measuring interpreter code, (2) dead code elimination — JIT removes unused results, (3) constant folding — inputs become compile-time constants. JMH solves all three: Blackhole.consume, @State, multiple forks."},
+        {q:"What is a megamorphic call site and why is it slow?",
+          a:"JIT inline cache supports 1-2 concrete types (mono/bimorphic). With 3+ types the IC becomes megamorphic — no inline possible, falls back to virtual dispatch. 3-5x slower than inlined call. Fix: use final classes, limit polymorphism in hot paths."}
       ];
       var TIERS=[
-        {tier:'T0',label:'Interpreter',    color:'#8b949e', speed:'~100ns', info:'Pure bytecode interpretation. No compilation. Fast startup, slow execution. Counts invocations.'},
-        {tier:'T1',label:'C1 Simple',      color:'#58a6ff', speed:'~20ns',  info:'Quick C1 compile, minimal profiling. 2000 invocation threshold. 3-5x faster than interpreter.'},
-        {tier:'T2',label:'C1 Limited',     color:'#1f6feb', speed:'~15ns',  info:'C1 with some type feedback collection. Prepares profile for C2.'},
-        {tier:'T3',label:'C1 Full Profile',color:'#a371f7', speed:'~15ns',  info:'Full C1 profiling: type feedback, branch counters. Rich data for C2 speculative opts.'},
-        {tier:'T4',label:'C2 Optimised',   color:'#3fb950', speed:'~3ns',   info:'Maximum optimisation. Inlining, escape analysis, loop unrolling, vectorisation. Can deoptimise if assumptions break.'}
+        {tier:"T0",label:"Interpreter",    color:"#8b949e", speed:"~100ns", info:"Pure bytecode interpretation. No compilation. Fast startup, slow execution. Counts invocations."},
+        {tier:"T1",label:"C1 Simple",      color:"#58a6ff", speed:"~20ns",  info:"Quick C1 compile, minimal profiling. 2000 invocation threshold. 3-5x faster than interpreter."},
+        {tier:"T2",label:"C1 Limited",     color:"#1f6feb", speed:"~15ns",  info:"C1 with some type feedback collection. Prepares profile for C2."},
+        {tier:"T3",label:"C1 Full Profile",color:"#a371f7", speed:"~15ns",  info:"Full C1 profiling: type feedback, branch counters. Rich data for C2 speculative opts."},
+        {tier:"T4",label:"C2 Optimised",   color:"#3fb950", speed:"~3ns",   info:"Maximum optimisation. Inlining, escape analysis, loop unrolling, vectorisation. Can deoptimise if assumptions break."}
       ];
       function css(){
-        if(document.getElementById('jit-style'))return;
-        var s=document.createElement('style');s.id='jit-style';
+        if(document.getElementById("jit-style"))return;
+        var s=document.createElement("style");s.id="jit-style";
         s.textContent=`
 .jit{font-family:'Courier New',monospace;background:#0d1117;color:#e6edf3;border-radius:10px;overflow:hidden}
 .jit-tabs{display:flex;background:#161b22;border-bottom:1px solid #30363d}
@@ -149,45 +149,45 @@
       }
       var selT=0, selEA=0;
       var EA_CASES=[
-        {label:'Stack alloc (escapes=false)', color:'#3fb950', info:'new Point(x,y) used only locally → C2 scalar replaces: x and y become int stack variables. Zero heap allocation, zero GC.'},
-        {label:'Heap alloc (list.add)',        color:'#f85149', info:'list.add(new Point(x,y)) — object escapes via parameter. Must be heap-allocated. Subject to GC.'},
-        {label:'Heap alloc (return)',          color:'#f1b150', info:'return new Point(x,y) — escapes via return value. Heap allocated. Caller decides lifetime.'},
-        {label:'Thread escapes (volatile)',    color:'#a371f7', info:'volatile field = escapes to another thread → heap alloc. EA only scalar-replaces thread-local objects.'}
+        {label:"Stack alloc (escapes=false)", color:"#3fb950", info:"new Point(x,y) used only locally → C2 scalar replaces: x and y become int stack variables. Zero heap allocation, zero GC."},
+        {label:"Heap alloc (list.add)",        color:"#f85149", info:"list.add(new Point(x,y)) — object escapes via parameter. Must be heap-allocated. Subject to GC."},
+        {label:"Heap alloc (return)",          color:"#f1b150", info:"return new Point(x,y) — escapes via return value. Heap allocated. Caller decides lifetime."},
+        {label:"Thread escapes (volatile)",    color:"#a371f7", info:"volatile field = escapes to another thread → heap alloc. EA only scalar-replaces thread-local objects."}
       ];
       function render(){
         css();
-        mount.innerHTML=`<div class="jit"><div class="jit-tabs">`
-          +`<button class="jit-tab ${S.tab===0?'on':''}" id="jtt0">🚀 JIT Tiers</button>`
-          +`<button class="jit-tab ${S.tab===1?'on':''}" id="jtt1">📦 Escape Analysis</button>`
-          +`<button class="jit-tab ${S.tab===2?'on':''}" id="jtt2">⚠️ Tricky + Interview</button>`
-          +`</div><div class="jit-body" id="jit-body"></div></div>`;
-        mount.querySelector('#jtt0').onclick=()=>{S.tab=0;render()};
-        mount.querySelector('#jtt1').onclick=()=>{S.tab=1;render()};
-        mount.querySelector('#jtt2').onclick=()=>{S.tab=2;render()};
+        mount.innerHTML="<div class=\"jit\"><div class=\"jit-tabs\">"
+          +`<button class="jit-tab ${S.tab===0?"on":""}" id="jtt0">🚀 JIT Tiers</button>`
+          +`<button class="jit-tab ${S.tab===1?"on":""}" id="jtt1">📦 Escape Analysis</button>`
+          +`<button class="jit-tab ${S.tab===2?"on":""}" id="jtt2">⚠️ Tricky + Interview</button>`
+          +"</div><div class=\"jit-body\" id=\"jit-body\"></div></div>";
+        mount.querySelector("#jtt0").onclick=()=>{S.tab=0;render();};
+        mount.querySelector("#jtt1").onclick=()=>{S.tab=1;render();};
+        mount.querySelector("#jtt2").onclick=()=>{S.tab=2;render();};
         renderBody();
       }
       function renderBody(){
-        var b=mount.querySelector('#jit-body');
+        var b=mount.querySelector("#jit-body");
         if(S.tab===0){
           var speeds=[100,20,15,15,3];
-          b.innerHTML='<div style="font-size:11px;color:#8b949e;margin-bottom:10px">Click each tier — see relative speed and what JIT does</div>'
-            +'<div class="jit-tier-row">'+TIERS.map((t,i)=>`<button class="jit-tier-btn" id="jtt${i}" style="border-color:${selT===i?t.color:'#30363d'};color:${selT===i?t.color:'#8b949e'};background:${selT===i?t.color+'22':'#21262d'}">${t.tier} ${t.label}</button>`).join('')+'</div>'
-            +'<div style="margin-bottom:12px">'+TIERS.map((t,i)=>`<div class="jit-bar-wrap"><div class="jit-bar-label" style="color:${t.color}">${t.speed}</div><div class="jit-bar-track"><div class="jit-bar-fill" style="width:${(100/speeds[i])*2}%;background:${t.color}"></div></div><span style="font-size:10px;color:#8b949e">${t.tier}</span></div>`).join('')+'</div>'
+          b.innerHTML="<div style=\"font-size:11px;color:#8b949e;margin-bottom:10px\">Click each tier — see relative speed and what JIT does</div>"
+            +"<div class=\"jit-tier-row\">"+TIERS.map((t,i)=>`<button class="jit-tier-btn" id="jtt${i}" style="border-color:${selT===i?t.color:"#30363d"};color:${selT===i?t.color:"#8b949e"};background:${selT===i?t.color+"22":"#21262d"}">${t.tier} ${t.label}</button>`).join("")+"</div>"
+            +"<div style=\"margin-bottom:12px\">"+TIERS.map((t,i)=>`<div class="jit-bar-wrap"><div class="jit-bar-label" style="color:${t.color}">${t.speed}</div><div class="jit-bar-track"><div class="jit-bar-fill" style="width:${(100/speeds[i])*2}%;background:${t.color}"></div></div><span style="font-size:10px;color:#8b949e">${t.tier}</span></div>`).join("")+"</div>"
             +`<div class="jit-info">${TIERS[selT].info}</div>`;
-          TIERS.forEach((_,i)=>{mount.querySelector('#jtt'+i).onclick=()=>{selT=i;renderBody()}});
+          TIERS.forEach((_,i)=>{mount.querySelector("#jtt"+i).onclick=()=>{selT=i;renderBody();};});
         } else if(S.tab===1){
-          b.innerHTML='<div style="font-size:11px;color:#8b949e;margin-bottom:10px">Escape Analysis: does this object leave the method? → determines allocation site</div>'
-            +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'+EA_CASES.map((c,i)=>`<button style="padding:6px 10px;border-radius:5px;border:2px solid ${selEA===i?c.color:'#30363d'};background:${selEA===i?c.color+'22':'#21262d'};color:${selEA===i?c.color:'#8b949e'};font-size:11px;cursor:pointer;font-family:inherit;font-weight:600" id="eac${i}">${c.label}</button>`).join('')+'</div>'
-            +`<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px"><div style="font-size:28px;font-weight:800;color:${EA_CASES[selEA].color}">${selEA===0?'Stack':'Heap'}</div><div style="font-size:12px;color:${EA_CASES[selEA].color};font-weight:700">${selEA===0?'✓ Zero allocation':'⚠️ GC pressure'}</div></div>`
+          b.innerHTML="<div style=\"font-size:11px;color:#8b949e;margin-bottom:10px\">Escape Analysis: does this object leave the method? → determines allocation site</div>"
+            +"<div style=\"display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px\">"+EA_CASES.map((c,i)=>`<button style="padding:6px 10px;border-radius:5px;border:2px solid ${selEA===i?c.color:"#30363d"};background:${selEA===i?c.color+"22":"#21262d"};color:${selEA===i?c.color:"#8b949e"};font-size:11px;cursor:pointer;font-family:inherit;font-weight:600" id="eac${i}">${c.label}</button>`).join("")+"</div>"
+            +`<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px"><div style="font-size:28px;font-weight:800;color:${EA_CASES[selEA].color}">${selEA===0?"Stack":"Heap"}</div><div style="font-size:12px;color:${EA_CASES[selEA].color};font-weight:700">${selEA===0?"✓ Zero allocation":"⚠️ GC pressure"}</div></div>`
             +`<div class="jit-info">${EA_CASES[selEA].info}</div>`;
-          EA_CASES.forEach((_,i)=>{mount.querySelector('#eac'+i).onclick=()=>{selEA=i;renderBody()}});
+          EA_CASES.forEach((_,i)=>{mount.querySelector("#eac"+i).onclick=()=>{selEA=i;renderBody();};});
         } else {
-          b.innerHTML='<div style="font-size:11px;color:#8b949e;font-weight:700;text-transform:uppercase;margin-bottom:10px">Common Mistakes</div>'
-            +TRICKS.map((t,i)=>`<div class="jit-trick"><div style="font-size:10px;color:#8b949e;margin-bottom:5px">Trap ${i+1}</div><div class="jit-bad">${t.wrong}</div><div class="jit-good">${t.right}</div></div>`).join('')
-            +'<div style="font-size:11px;color:#8b949e;font-weight:700;text-transform:uppercase;margin:14px 0 10px">Interview Mode</div>'
+          b.innerHTML="<div style=\"font-size:11px;color:#8b949e;font-weight:700;text-transform:uppercase;margin-bottom:10px\">Common Mistakes</div>"
+            +TRICKS.map((t,i)=>`<div class="jit-trick"><div style="font-size:10px;color:#8b949e;margin-bottom:5px">Trap ${i+1}</div><div class="jit-bad">${t.wrong}</div><div class="jit-good">${t.right}</div></div>`).join("")
+            +"<div style=\"font-size:11px;color:#8b949e;font-weight:700;text-transform:uppercase;margin:14px 0 10px\">Interview Mode</div>"
             +`<div class="jit-qbox"><div class="jit-qtext" id="jit-qt">${QS[S.qi].q}</div><button class="jit-btn" id="jit-rev">Reveal Answer</button><button class="jit-btn2" id="jit-nxt">Next Q ▶</button><div class="jit-ans" id="jit-an">${QS[S.qi].a}</div></div>`;
-          mount.querySelector('#jit-rev').onclick=()=>{mount.querySelector('#jit-an').style.display='block'};
-          mount.querySelector('#jit-nxt').onclick=()=>{S.qi=(S.qi+1)%QS.length;renderBody()};
+          mount.querySelector("#jit-rev").onclick=()=>{mount.querySelector("#jit-an").style.display="block";};
+          mount.querySelector("#jit-nxt").onclick=()=>{S.qi=(S.qi+1)%QS.length;renderBody();};
         }
       }
       render();
@@ -237,7 +237,7 @@ double distance(int x1,int y1,int x2,int y2){
     tradeoffs: {
       pros:["JIT specialises to actual call sites — often beats AOT","TLAB allocation ~5ns — cheapest of any runtime","JFR + async-profiler are best-in-class profiling tools"],
       cons:["Warmup cost matters for short-lived processes (CLIs, lambdas)","Deoptimisation cliffs from megamorphic sites","C2 bugs rare but real — pin JDK versions in prod"],
-      when:`**HotSpot** for long-running services where warmup time is acceptable. **GraalVM native-image** for CLIs, lambdas, sidecars where startup time dominates.`
+      when:"**HotSpot** for long-running services where warmup time is acceptable. **GraalVM native-image** for CLIs, lambdas, sidecars where startup time dominates."
     }
   };
   window.JAVA_TOPICS = (window.JAVA_TOPICS || []).concat([topic]);

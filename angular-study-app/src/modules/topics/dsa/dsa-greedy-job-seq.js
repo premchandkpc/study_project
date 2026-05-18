@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-greedy-job-seq",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** Batch scheduler — most profitable jobs compete for limited slots.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'greedy.jobSeq',
-        time:  'O(n²)',
-        space: 'O(n)',
+        title: "greedy.jobSeq",
+        time:  "O(n²)",
+        space: "O(n)",
         code: `function jobSequencing(jobs) {
   jobs.sort((a, b) => b.profit - a.profit);
   const maxDeadline = Math.max(...jobs.map(j => j.deadline));

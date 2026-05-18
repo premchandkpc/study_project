@@ -31,13 +31,13 @@
   window.DSAViz = window.DSAViz || {};
 
   const STATE_STYLES = {
-    active:  { bg: '#1f3a5f', border: '#58a6ff', text: '#58a6ff' },
-    current: { bg: '#1f3a5f', border: '#1f6feb', text: '#ffffff' },
-    memo:    { bg: '#1a0f30', border: '#8957e5', text: '#d2a8ff' }, /* cache hit */
-    filled:  { bg: '#0d2818', border: '#238636', text: '#56d364' }, /* completed cell */
-    source:  { bg: '#272012', border: '#e3b341', text: '#e3b341' }, /* dependency source */
-    default: { bg: '#21262d', border: '#30363d', text: '#cdd9e5' },
-    empty:   { bg: '#161b22', border: '#21262d', text: '#484f58' },
+    active:  { bg: "#1f3a5f", border: "#58a6ff", text: "#58a6ff" },
+    current: { bg: "#1f3a5f", border: "#1f6feb", text: "#ffffff" },
+    memo:    { bg: "#1a0f30", border: "#8957e5", text: "#d2a8ff" }, /* cache hit */
+    filled:  { bg: "#0d2818", border: "#238636", text: "#56d364" }, /* completed cell */
+    source:  { bg: "#272012", border: "#e3b341", text: "#e3b341" }, /* dependency source */
+    default: { bg: "#21262d", border: "#30363d", text: "#cdd9e5" },
+    empty:   { bg: "#161b22", border: "#21262d", text: "#484f58" },
   };
 
   /* ── 1D TABLE ───────────────────────────────────────────────── */
@@ -50,55 +50,55 @@
 
     const CELL = Math.max(40, Math.min(60, Math.floor(560 / Math.max(dp.length, 1))));
 
-    const container = DSAViz.makeContainer(mount, cfg.title || '');
+    const container = DSAViz.makeContainer(mount, cfg.title || "");
 
     /* formula bar */
     if (cfg.formula) {
-      const fBar = document.createElement('div');
+      const fBar = document.createElement("div");
       fBar.style.cssText = `background:#0d1117;border:1px solid #21262d;border-radius:6px;
         padding:7px 12px;font-size:13px;color:#e3b341;font-family:monospace;margin-bottom:10px;`;
       fBar.textContent = cfg.formula;
       container.appendChild(fBar);
     }
 
-    const wrap = document.createElement('div');
-    wrap.style.cssText = `display:flex;gap:3px;align-items:flex-end;flex-wrap:nowrap;overflow-x:auto;padding:10px 4px 24px;`;
+    const wrap = document.createElement("div");
+    wrap.style.cssText = "display:flex;gap:3px;align-items:flex-end;flex-wrap:nowrap;overflow-x:auto;padding:10px 4px 24px;";
 
     dp.forEach((val, i) => {
-      const col = document.createElement('div');
+      const col = document.createElement("div");
       col.style.cssText = `display:flex;flex-direction:column;align-items:center;position:relative;min-width:${CELL}px;`;
 
       const isCurrent = i === ptr;
-      const s = STATE_STYLES[isCurrent ? 'current' : (hi[i] || (val === '' || val === undefined ? 'empty' : 'default'))];
+      const s = STATE_STYLES[isCurrent ? "current" : (hi[i] || (val === "" || val === undefined ? "empty" : "default"))];
 
       /* pointer caret */
       if (isCurrent) {
-        const caret = document.createElement('div');
-        caret.style.cssText = `font-size:11px;color:#58a6ff;margin-bottom:2px;`;
-        caret.textContent = '▼';
+        const caret = document.createElement("div");
+        caret.style.cssText = "font-size:11px;color:#58a6ff;margin-bottom:2px;";
+        caret.textContent = "▼";
         col.appendChild(caret);
       }
 
-      const box = document.createElement('div');
+      const box = document.createElement("div");
       box.style.cssText = `width:${CELL}px;height:${CELL}px;display:flex;justify-content:center;
         align-items:center;background:${s.bg};border:2px solid ${s.border};border-radius:6px;
         font-size:${String(val).length > 4 ? 10 : 14}px;font-weight:700;color:${s.text};
         transition:all .25s;position:relative;`;
-      if (isCurrent) box.style.boxShadow = `0 0 12px #1f6feb88`;
-      box.textContent = val === Infinity ? '∞' : (val === '' ? '?' : val);
+      if (isCurrent) box.style.boxShadow = "0 0 12px #1f6feb88";
+      box.textContent = val === Infinity ? "∞" : (val === "" ? "?" : val);
 
       /* memo hit indicator */
-      if (hi[i] === 'memo') {
-        const star = document.createElement('div');
-        star.style.cssText = `position:absolute;top:-6px;right:-6px;font-size:9px;color:#8957e5;`;
-        star.textContent = '★';
+      if (hi[i] === "memo") {
+        const star = document.createElement("div");
+        star.style.cssText = "position:absolute;top:-6px;right:-6px;font-size:9px;color:#8957e5;";
+        star.textContent = "★";
         box.appendChild(star);
       }
 
       col.appendChild(box);
 
-      const idxLbl = document.createElement('div');
-      idxLbl.style.cssText = `font-size:10px;color:#768390;margin-top:4px;text-align:center;`;
+      const idxLbl = document.createElement("div");
+      idxLbl.style.cssText = "font-size:10px;color:#768390;margin-top:4px;text-align:center;";
       idxLbl.textContent = indices[i] !== undefined ? indices[i] : `[${i}]`;
       col.appendChild(idxLbl);
 
@@ -127,18 +127,18 @@
     /* overlay arrows for dp[i][j] ← dp[?][?] dependencies */
     if (cfg.arrows?.length) {
       const container = mount;
-      const table = container.querySelector('table');
+      const table = container.querySelector("table");
       if (!table) return;
-      const svgOverlay = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svgOverlay.style.cssText = `position:absolute;top:0;left:0;pointer-events:none;width:100%;height:100%;z-index:5;overflow:visible;`;
+      const svgOverlay = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svgOverlay.style.cssText = "position:absolute;top:0;left:0;pointer-events:none;width:100%;height:100%;z-index:5;overflow:visible;";
       const tableWrap = table.parentElement;
-      tableWrap.style.position = 'relative';
+      tableWrap.style.position = "relative";
       tableWrap.appendChild(svgOverlay);
 
-      const tds = [...table.querySelectorAll('td')];
+      const tds = [...table.querySelectorAll("td")];
       const cols = (cfg.dp[0] || []).length;
 
-      cfg.arrows.forEach(({ from: [fr, fc], to: [tr2, tc], color = '#e3b341' }) => {
+      cfg.arrows.forEach(({ from: [fr, fc], to: [tr2, tc], color = "#e3b341" }) => {
         const fTd = tds[fr * cols + fc];
         const tTd = tds[tr2 * cols + tc];
         if (!fTd || !tTd) return;
@@ -151,7 +151,7 @@
           fr2.top + fr2.height/2 - tableR.top,
           tr22.left + tr22.width/2 - tableR.left,
           tr22.top + tr22.height/2 - tableR.top,
-          color, '', false
+          color, "", false
         );
       });
     }
@@ -166,22 +166,22 @@
       root: cfg.root,
       highlights: cfg.highlights || {},
       narration: cfg.narration,
-      title: cfg.title || 'Recursion Tree',
+      title: cfg.title || "Recursion Tree",
     };
     /* memo hits show as 'memo' state — map to 'warn' in tree */
     Object.entries(treeCfg.highlights).forEach(([k, v]) => {
-      if (v === 'memo') treeCfg.highlights[k] = 'warn';
+      if (v === "memo") treeCfg.highlights[k] = "warn";
     });
     DSAViz.tree.render(mount, treeCfg);
     /* legend */
-    const leg = document.createElement('div');
-    leg.style.cssText = `display:flex;gap:10px;margin-top:8px;font-size:11px;flex-wrap:wrap;`;
+    const leg = document.createElement("div");
+    leg.style.cssText = "display:flex;gap:10px;margin-top:8px;font-size:11px;flex-wrap:wrap;";
     [
-      { color:'#56d364', label:'✓ solved (new call)' },
-      { color:'#e3b341', label:'★ memo hit (reused)' },
-      { color:'#58a6ff', label:'◉ currently computing' },
+      { color:"#56d364", label:"✓ solved (new call)" },
+      { color:"#e3b341", label:"★ memo hit (reused)" },
+      { color:"#58a6ff", label:"◉ currently computing" },
     ].forEach(({ color, label }) => {
-      const it = document.createElement('span');
+      const it = document.createElement("span");
       it.style.color = color;
       it.textContent = label;
       leg.appendChild(it);
@@ -192,18 +192,18 @@
   /* ── ANIMATE ────────────────────────────────────────────────── */
   function animate(mount, steps, opts = {}) {
     const { DSAViz } = window;
-    const nar = DSAViz.makeNarration('Press ▶▶ or Play to start');
-    mount.innerHTML = '';
+    const nar = DSAViz.makeNarration("Press ▶▶ or Play to start");
+    mount.innerHTML = "";
     mount.appendChild(nar);
-    const vizDiv = document.createElement('div');
+    const vizDiv = document.createElement("div");
     mount.appendChild(vizDiv);
 
     const ctrl = DSAViz.makeStepCtrl(steps, (step, idx) => {
-      if (!step) { vizDiv.innerHTML = ''; nar.update('Reset'); return; }
-      const type = step._type || 'table1D';
-      if (type === 'table1D') table1D(vizDiv, step);
-      else if (type === 'table2D') table2D(vizDiv, step);
-      else if (type === 'memoTree') memoTree(vizDiv, step);
+      if (!step) { vizDiv.innerHTML = ""; nar.update("Reset"); return; }
+      const type = step._type || "table1D";
+      if (type === "table1D") table1D(vizDiv, step);
+      else if (type === "table2D") table2D(vizDiv, step);
+      else if (type === "memoTree") memoTree(vizDiv, step);
       nar.update(step.narration || `Step ${idx+1}`);
       ctrl._updateCtr?.();
     });

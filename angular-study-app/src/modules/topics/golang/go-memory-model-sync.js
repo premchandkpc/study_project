@@ -15,7 +15,7 @@ Key primitives:
 - **\`sync.Map\`** — concurrent map, optimised for read-heavy workloads.
 - **\`sync/atomic\`** — lock-free load/store/CAS on int32/64, pointers, \`atomic.Value\`.`,
     why:
-`Go does **not** prevent data races by language design (unlike Rust). The race detector (\`-race\`) catches them at runtime but incurs 5–10× overhead. Production incidents commonly trace back to maps accessed concurrently without locks. \`sync.Once\` is the idiomatic singleton pattern; double-checked locking with \`atomic\` is fragile without it.`,
+"Go does **not** prevent data races by language design (unlike Rust). The race detector (`-race`) catches them at runtime but incurs 5–10× overhead. Production incidents commonly trace back to maps accessed concurrently without locks. `sync.Once` is the idiomatic singleton pattern; double-checked locking with `atomic` is fragile without it.",
     example: {
       language: "go",
       code:
@@ -70,19 +70,19 @@ func main() {
     wg.Wait()
     fmt.Println("count:", ctr.Value()) // always 1000
 }`,
-      notes: `Never copy a \`sync.Mutex\` after first use (vet catches this). Prefer \`defer mu.Unlock()\` immediately after \`Lock()\` to avoid forgetting under panics/returns.`
+      notes: "Never copy a `sync.Mutex` after first use (vet catches this). Prefer `defer mu.Unlock()` immediately after `Lock()` to avoid forgetting under panics/returns."
     },
     interview: [
       {
         question: "When would you use sync.Map over a mutex-protected map?",
         answer:
-`\`sync.Map\` is optimised for two patterns: (1) many goroutines reading the same keys (read-mostly), or (2) disjoint keys written by different goroutines. It uses an internal read-only shard for reads (lock-free) and a dirty map for writes. For high-write or iteration-heavy workloads, a \`RWMutex\` map is faster and easier to reason about.`,
+"`sync.Map` is optimised for two patterns: (1) many goroutines reading the same keys (read-mostly), or (2) disjoint keys written by different goroutines. It uses an internal read-only shard for reads (lock-free) and a dirty map for writes. For high-write or iteration-heavy workloads, a `RWMutex` map is faster and easier to reason about.",
         followUps: ["How does sync.Map avoid starvation on promotion?", "What is the cost of sync.Map.Range?"]
       },
       {
         question: "What is a data race vs a race condition?",
         answer:
-`A **data race** is a specific memory safety violation: two goroutines access the same memory location concurrently, at least one writes, with no synchronisation. It causes undefined behaviour. A **race condition** is a logical bug where the outcome depends on interleaving — it can exist even with no data race (e.g., TOCTOU). The race detector finds data races; logical races require testing and analysis.`,
+"A **data race** is a specific memory safety violation: two goroutines access the same memory location concurrently, at least one writes, with no synchronisation. It causes undefined behaviour. A **race condition** is a logical bug where the outcome depends on interleaving — it can exist even with no data race (e.g., TOCTOU). The race detector finds data races; logical races require testing and analysis.",
         followUps: ["Can -race miss races?", "What is the cost of -race in production?"]
       }
     ],
@@ -97,7 +97,7 @@ func main() {
         "sync.Map has no typed API, returns interface{}.",
         "Atomics alone cannot express multi-field transactions — still need locks."
       ],
-      when: `**Mutex** for general shared state. **RWMutex** when reads dominate. **atomic** for single-value counters/flags. **sync.Once** for singletons. **channels** when you're transferring ownership, not sharing state.`
+      when: "**Mutex** for general shared state. **RWMutex** when reads dominate. **atomic** for single-value counters/flags. **sync.Once** for singletons. **channels** when you're transferring ownership, not sharing state."
     }
   };
   window.GO_TOPICS = (window.GO_TOPICS || []).concat([topic]);

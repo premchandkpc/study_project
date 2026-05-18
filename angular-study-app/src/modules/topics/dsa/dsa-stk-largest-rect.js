@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-stk-largest-rect",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Billboard placement — largest rectangular space in a city skyline.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'stack.largestRect',
-        time:  'O(n)',
-        space: 'O(n)',
+        title: "stack.largestRect",
+        time:  "O(n)",
+        space: "O(n)",
         code: `function largestRectangleArea(heights) {
   const stack = [];
   let maxArea = 0;

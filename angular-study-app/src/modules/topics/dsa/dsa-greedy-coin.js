@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-greedy-coin",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** Works for standard currencies; fails on non-canonical coin sets.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'greedy.greedyCoin',
-        time:  'O(n)',
-        space: 'O(1)',
+        title: "greedy.greedyCoin",
+        time:  "O(n)",
+        space: "O(1)",
         code: `function greedyCoinChange(coins, amount) {
   coins.sort((a, b) => b - a);
   let count = 0;

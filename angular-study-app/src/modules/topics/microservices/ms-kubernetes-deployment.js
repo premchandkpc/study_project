@@ -14,7 +14,7 @@
 - **ConfigMap / Secret**: externalize config from image.
 - **Topology spread constraints**: spread pods across zones for HA.`,
     why:
-`Mis-set resource requests cause the scheduler to over-pack nodes → OOMKills cascade. Under-set CPU limits cause noisy neighbor throttling. No PDB means rolling node drains take down too many pods simultaneously. Zero-downtime deployments require correct readiness probes AND correct \`terminationGracePeriodSeconds\`.`,
+"Mis-set resource requests cause the scheduler to over-pack nodes → OOMKills cascade. Under-set CPU limits cause noisy neighbor throttling. No PDB means rolling node drains take down too many pods simultaneously. Zero-downtime deployments require correct readiness probes AND correct `terminationGracePeriodSeconds`.",
     example: {
       language: "go",
       code:
@@ -102,19 +102,19 @@ func main() {
     dbPassword := os.Getenv("DB_PASSWORD")   // injected via Secret
     fmt.Println("connecting with password len:", len(dbPassword))
 }`,
-      notes: `Set **requests = expected steady-state usage** and **limits = peak burst**. Never set CPU limit too low — JVM and GC need burst CPU at startup. Use \`kubectl top pods\` and VPA (Vertical Pod Autoscaler) recommendations to right-size.`
+      notes: "Set **requests = expected steady-state usage** and **limits = peak burst**. Never set CPU limit too low — JVM and GC need burst CPU at startup. Use `kubectl top pods` and VPA (Vertical Pod Autoscaler) recommendations to right-size."
     },
     interview: [
       {
         question: "What happens when a pod exceeds its memory limit?",
         answer:
-`The Linux kernel OOMKills the container — the pod is restarted (RestartPolicy). This is different from CPU: CPU throttling just slows the process, memory over-limit causes a hard kill. Symptoms: repeated \`OOMKilled\` in \`kubectl describe pod\`. Fix: increase the memory limit, find the memory leak, or use a streaming approach instead of loading data in memory.`,
+"The Linux kernel OOMKills the container — the pod is restarted (RestartPolicy). This is different from CPU: CPU throttling just slows the process, memory over-limit causes a hard kill. Symptoms: repeated `OOMKilled` in `kubectl describe pod`. Fix: increase the memory limit, find the memory leak, or use a streaming approach instead of loading data in memory.",
         followUps: ["What is eviction vs OOMKill?", "How does the kubelet eviction manager work?"]
       },
       {
         question: "How do you achieve zero-downtime deployments in Kubernetes?",
         answer:
-`Five requirements: (1) Readiness probe configured correctly — new pods only get traffic when ready. (2) \`maxUnavailable: 0\` in rolling update strategy. (3) Graceful shutdown in the app — handle SIGTERM, drain in-flight requests. (4) \`terminationGracePeriodSeconds\` > drain time. (5) PDB \`minAvailable\` ensures minimum running during node drains. All five must be in place — missing any one causes downtime.`,
+"Five requirements: (1) Readiness probe configured correctly — new pods only get traffic when ready. (2) `maxUnavailable: 0` in rolling update strategy. (3) Graceful shutdown in the app — handle SIGTERM, drain in-flight requests. (4) `terminationGracePeriodSeconds` > drain time. (5) PDB `minAvailable` ensures minimum running during node drains. All five must be in place — missing any one causes downtime.",
         followUps: ["What is preStop hook and when do you need it?", "How does Kubernetes handle SIGTERM → SIGKILL?"]
       }
     ],
@@ -129,7 +129,7 @@ func main() {
         "Rolling updates with stateful services (DBs) require extra care.",
         "HPA reacts slowly to sudden traffic spikes — pre-scale or use KEDA."
       ],
-      when: `**Kubernetes Deployment** for all stateless services. **StatefulSet** for stateful workloads (Kafka, Redis). **DaemonSet** for node-level agents (log shippers, metrics collectors). Use **KEDA** for event-driven autoscaling (Kafka consumer lag, queue depth).`
+      when: "**Kubernetes Deployment** for all stateless services. **StatefulSet** for stateful workloads (Kafka, Redis). **DaemonSet** for node-level agents (log shippers, metrics collectors). Use **KEDA** for event-driven autoscaling (Kafka consumer lag, queue depth)."
     }
   };
   window.MICRO_TOPICS = (window.MICRO_TOPICS || []).concat([topic]);

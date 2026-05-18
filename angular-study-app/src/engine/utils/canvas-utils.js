@@ -1,35 +1,35 @@
 (function () {
-  'use strict';
+  "use strict";
 
   window.CVU = {
     // Colors
     C: {
-      bg:     '#0d1117',
-      card:   '#161b22',
-      border: '#30363d',
-      text:   '#e6edf3',
-      gray:   '#8b949e',
-      green:  '#3fb950',
-      blue:   '#58a6ff',
-      orange: '#ffa657',
-      red:    '#f85149',
-      purple: '#bc8cff',
-      yellow: '#e3b341',
+      bg:     "#0d1117",
+      card:   "#161b22",
+      border: "#30363d",
+      text:   "#e6edf3",
+      gray:   "#8b949e",
+      green:  "#3fb950",
+      blue:   "#58a6ff",
+      orange: "#ffa657",
+      red:    "#f85149",
+      purple: "#bc8cff",
+      yellow: "#e3b341",
     },
 
     // Protocol → color
     PROTO: {
-      REST:      '#58a6ff',
-      HTTP:      '#58a6ff',
-      HTTPS:     '#58a6ff',
-      gRPC:      '#bc8cff',
-      GraphQL:   '#f78166',
-      WebSocket: '#3fb950',
-      Kafka:     '#ffa657',
-      SQS:       '#ffa657',
-      SNS:       '#e3b341',
-      TCP:       '#8b949e',
-      UDP:       '#8b949e',
+      REST:      "#58a6ff",
+      HTTP:      "#58a6ff",
+      HTTPS:     "#58a6ff",
+      gRPC:      "#bc8cff",
+      GraphQL:   "#f78166",
+      WebSocket: "#3fb950",
+      Kafka:     "#ffa657",
+      SQS:       "#ffa657",
+      SNS:       "#e3b341",
+      TCP:       "#8b949e",
+      UDP:       "#8b949e",
     },
 
     roundRect: function (ctx, x, y, w, h, r, fill, stroke, lw) {
@@ -53,23 +53,23 @@
     },
 
     text: function (ctx, str, x, y, color, size, align, weight) {
-      ctx.fillStyle  = color  || '#e6edf3';
-      ctx.font       = (weight || 'normal') + ' ' + (size || 13) + 'px "Inter", "JetBrains Mono", monospace';
-      ctx.textAlign  = align  || 'center';
-      ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle  = color  || "#e6edf3";
+      ctx.font       = (weight || "normal") + " " + (size || 13) + "px \"Inter\", \"JetBrains Mono\", monospace";
+      ctx.textAlign  = align  || "center";
+      ctx.textBaseline = "alphabetic";
       ctx.fillText(str, x, y);
     },
 
     wrapText: function (ctx, str, x, y, maxWidth, lineHeight, color, size, align, weight, maxLines) {
-      var text = String(str || '');
+      var text = String(str || "");
       var words = text.split(/\s+/);
       var lines = [];
-      var line = '';
-      ctx.fillStyle = color || '#e6edf3';
-      ctx.font = (weight || 'normal') + ' ' + (size || 13) + 'px "Inter", "JetBrains Mono", monospace';
-      ctx.textAlign = align || 'center';
+      var line = "";
+      ctx.fillStyle = color || "#e6edf3";
+      ctx.font = (weight || "normal") + " " + (size || 13) + "px \"Inter\", \"JetBrains Mono\", monospace";
+      ctx.textAlign = align || "center";
       for (var i = 0; i < words.length; i++) {
-        var test = line ? line + ' ' + words[i] : words[i];
+        var test = line ? line + " " + words[i] : words[i];
         if (ctx.measureText(test).width > maxWidth && line) {
           lines.push(line);
           line = words[i];
@@ -80,7 +80,7 @@
       if (line) lines.push(line);
       if (maxLines && lines.length > maxLines) {
         lines = lines.slice(0, maxLines);
-        lines[maxLines - 1] = lines[maxLines - 1].replace(/\s+\S*$/, '') + '...';
+        lines[maxLines - 1] = lines[maxLines - 1].replace(/\s+\S*$/, "") + "...";
       }
       var startY = y - ((lines.length - 1) * lineHeight) / 2;
       lines.forEach(function (l, idx) { ctx.fillText(l, x, startY + idx * lineHeight); });
@@ -88,7 +88,7 @@
     },
 
     arrow: function (ctx, x1, y1, x2, y2, color, lw, dashed) {
-      ctx.strokeStyle = color || '#8b949e';
+      ctx.strokeStyle = color || "#8b949e";
       ctx.lineWidth   = lw    || 1.5;
       if (dashed) ctx.setLineDash([5, 3]); else ctx.setLineDash([]);
       ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
@@ -101,17 +101,17 @@
       ctx.lineTo(x2 - hs * Math.cos(angle - Math.PI / 6), y2 - hs * Math.sin(angle - Math.PI / 6));
       ctx.lineTo(x2 - hs * Math.cos(angle + Math.PI / 6), y2 - hs * Math.sin(angle + Math.PI / 6));
       ctx.closePath();
-      ctx.fillStyle = color || '#8b949e';
+      ctx.fillStyle = color || "#8b949e";
       ctx.fill();
     },
 
     dot: function (ctx, x, y, r, color) {
       ctx.beginPath(); ctx.arc(x, y, r || 6, 0, Math.PI * 2);
-      ctx.fillStyle = color || '#e6edf3'; ctx.fill();
+      ctx.fillStyle = color || "#e6edf3"; ctx.fill();
     },
 
     clearBg: function (ctx, w, h) {
-      ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = "#0d1117"; ctx.fillRect(0, 0, w, h);
     },
 
     makeCanvas: function (mount, w, h) {
@@ -119,39 +119,39 @@
       var cssWidth = Math.round(rect.width || mount.clientWidth || w);
       if (cssWidth < w) cssWidth = w;
       var dpr = window.devicePixelRatio || 1;
-      var c = document.createElement('canvas');
+      var c = document.createElement("canvas");
       c.width  = Math.round(cssWidth * dpr);
       c.height = Math.round(h * dpr);
-      c.style.cssText = 'width:100%;height:' + h + 'px;max-width:none;border-radius:14px;background:#0d1117;display:block;margin:0 auto;box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 18px 50px rgba(0,0,0,.28);';
+      c.style.cssText = "width:100%;height:" + h + "px;max-width:none;border-radius:14px;background:#0d1117;display:block;margin:0 auto;box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 18px 50px rgba(0,0,0,.28);";
       // store logical dimensions for renderers
       c._logicalWidth  = cssWidth;
       c._logicalHeight = h;
       c._dpr           = dpr;
-      var ctx = c.getContext('2d');
+      var ctx = c.getContext("2d");
       ctx.scale(dpr, dpr);
       mount.appendChild(c);
       return c;
     },
 
     makeBtn: function (label, color) {
-      var b = document.createElement('button');
+      var b = document.createElement("button");
       b.textContent = label;
-      b.style.cssText = 'padding:7px 14px;border-radius:8px;border:1px solid ' +
-        (color ? color + '66' : '#30363d') + ';background:#1f2937;color:' +
-        (color || '#e6edf3') + ';cursor:pointer;font-size:13px;font-weight:700;font-family:"Inter",system-ui,sans-serif';
+      b.style.cssText = "padding:7px 14px;border-radius:8px;border:1px solid " +
+        (color ? color + "66" : "#30363d") + ";background:#1f2937;color:" +
+        (color || "#e6edf3") + ";cursor:pointer;font-size:13px;font-weight:700;font-family:\"Inter\",system-ui,sans-serif";
       return b;
     },
 
     makeCtrlRow: function (mount) {
-      var d = document.createElement('div');
-      d.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:12px;justify-content:center;flex-wrap:wrap';
+      var d = document.createElement("div");
+      d.style.cssText = "display:flex;align-items:center;gap:10px;margin-bottom:12px;justify-content:center;flex-wrap:wrap";
       mount.appendChild(d);
       return d;
     },
 
     makeStatus: function (mount) {
-      var d = document.createElement('div');
-      d.style.cssText = 'text-align:center;font-family:"Inter",system-ui,sans-serif;font-size:13px;color:#9aaabb;margin-top:10px;min-height:18px';
+      var d = document.createElement("div");
+      d.style.cssText = "text-align:center;font-family:\"Inter\",system-ui,sans-serif;font-size:13px;color:#9aaabb;margin-top:10px;min-height:18px";
       mount.appendChild(d);
       return d;
     },
@@ -160,31 +160,31 @@
     // opts: { color, size, weight, align, base }
     textOpts: function (ctx, str, x, y, opts) {
       opts = opts || {};
-      ctx.fillStyle    = opts.color  || '#e8eef5';
-      ctx.font         = (opts.weight || 600) + ' ' + (opts.size || 14) + 'px "Inter", system-ui, sans-serif';
-      ctx.textAlign    = opts.align  || 'center';
-      ctx.textBaseline = opts.base   || 'middle';
-      ctx.fillText(str || '', x, y);
+      ctx.fillStyle    = opts.color  || "#e8eef5";
+      ctx.font         = (opts.weight || 600) + " " + (opts.size || 14) + "px \"Inter\", system-ui, sans-serif";
+      ctx.textAlign    = opts.align  || "center";
+      ctx.textBaseline = opts.base   || "middle";
+      ctx.fillText(str || "", x, y);
     },
 
     // opts-object word-wrap — used by architecture canvas renderer
     // opts: { color, size, weight, align, base, maxLines }
     wrapOpts: function (ctx, str, x, y, maxW, lineH, opts) {
       opts = opts || {};
-      var words = String(str || '').split(/\s+/);
+      var words = String(str || "").split(/\s+/);
       var lines = [];
-      var line  = '';
-      ctx.font = (opts.weight || 500) + ' ' + (opts.size || 13) + 'px "Inter", system-ui, sans-serif';
+      var line  = "";
+      ctx.font = (opts.weight || 500) + " " + (opts.size || 13) + "px \"Inter\", system-ui, sans-serif";
       var self = this;
       words.forEach(function (word) {
-        var next = line ? line + ' ' + word : word;
+        var next = line ? line + " " + word : word;
         if (ctx.measureText(next).width > maxW && line) { lines.push(line); line = word; }
         else line = next;
       });
       if (line) lines.push(line);
       var max     = opts.maxLines || 3;
       var clipped = lines.slice(0, max);
-      if (lines.length > max) clipped[max - 1] = clipped[max - 1].replace(/\s+\S*$/, '') + '...';
+      if (lines.length > max) clipped[max - 1] = clipped[max - 1].replace(/\s+\S*$/, "") + "...";
       var start = y - ((clipped.length - 1) * lineH) / 2;
       clipped.forEach(function (l, i) { self.textOpts(ctx, l, x, start + i * lineH, opts); });
       return clipped.length * lineH;
@@ -199,9 +199,9 @@
       var start = { x: a.x + Math.cos(ang) * 62, y: a.y + Math.sin(ang) * 38 };
       var end   = { x: b.x - Math.cos(ang) * 62, y: b.y - Math.sin(ang) * 38 };
       ctx.save();
-      ctx.strokeStyle = color || '#8b949e';
+      ctx.strokeStyle = color || "#8b949e";
       ctx.lineWidth   = 2.5;
-      ctx.lineCap     = 'round';
+      ctx.lineCap     = "round";
       if (dashed) ctx.setLineDash([8, 8]);
       ctx.beginPath();
       ctx.moveTo(start.x, start.y);
@@ -217,7 +217,7 @@
       ctx.lineTo(-11, -6);
       ctx.lineTo(-11, 6);
       ctx.closePath();
-      ctx.fillStyle = color || '#8b949e';
+      ctx.fillStyle = color || "#8b949e";
       ctx.fill();
       ctx.restore();
       return { start: start, end: end, cx: cx, cy: cy };

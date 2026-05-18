@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   var topic = {
     id: "db-btree-lsm",
     area: "databases",
@@ -7,7 +7,7 @@
     tag: "Storage",
     tags: ["database", "btree", "lsm", "storage", "rocksdb", "innodb", "write-amplification", "read-amplification"],
 
-    analogy: `**Kid analogy (8th grade):** A B-Tree is like a library where every book is kept in sorted alphabetical order on shelves — finding any book is fast because you just binary-search the shelves, but putting a new book away means shuffling other books around to keep the order. An LSM Tree is like a sticky-note system: you always write new notes on a fresh top pad (super fast), then occasionally a librarian sorts and merges all the pads into the shelves at night. Reads are slower because you might need to check multiple pads, but writes are blazing fast.`,
+    analogy: "**Kid analogy (8th grade):** A B-Tree is like a library where every book is kept in sorted alphabetical order on shelves — finding any book is fast because you just binary-search the shelves, but putting a new book away means shuffling other books around to keep the order. An LSM Tree is like a sticky-note system: you always write new notes on a fresh top pad (super fast), then occasionally a librarian sorts and merges all the pads into the shelves at night. Reads are slower because you might need to check multiple pads, but writes are blazing fast.",
 
     concept: `**B-Tree and LSM Tree are the two dominant storage engine data structures in modern databases.**
 
@@ -35,7 +35,7 @@ LSM Trees dominate write-intensive use cases: time-series ingestion (InfluxDB, P
 The real-world choice depends on your read:write ratio. If you read 10× more than you write, use a B-Tree-backed engine. If you write 10× more than you read, use LSM. Hybrid engines like WiredTiger (MongoDB) blend both approaches.`,
 
     example: {
-      language: 'sql',
+      language: "sql",
       code: `-- B-Tree: Efficient for range scans and point lookups
 -- PostgreSQL EXPLAIN shows B-Tree index scan
 EXPLAIN ANALYZE
@@ -63,39 +63,39 @@ VALUES (uuid(), toTimestamp(now()), 'page_view');
 -- RocksDB: Check Bloom filter stats (LSM internals)
 -- rocksdb.bloom.filter.useful: 9823441   <- Bloom saved these reads
 -- rocksdb.bloom.filter.full.positive: 12  <- actual SSTable reads needed`,
-      notes: 'B-Tree index scans deliver consistent sub-ms reads; LSM inserts are always sequential appends to MemTable — Bloom filters prevent reads from scanning all SSTables.'
+      notes: "B-Tree index scans deliver consistent sub-ms reads; LSM inserts are always sequential appends to MemTable — Bloom filters prevent reads from scanning all SSTables."
     },
 
     visual: {
-      type: 'swimlane',
-      title: 'B-Tree vs LSM Tree: Write & Read Paths',
+      type: "swimlane",
+      title: "B-Tree vs LSM Tree: Write & Read Paths",
       lanes: [
         {
-          id: 'btree-lane',
-          label: 'B-Tree (PostgreSQL / InnoDB)',
-          color: '#58a6ff',
-          description: 'In-place updates, sorted pages, random I/O',
-          badge: 'Read-Optimized',
+          id: "btree-lane",
+          label: "B-Tree (PostgreSQL / InnoDB)",
+          color: "#58a6ff",
+          description: "In-place updates, sorted pages, random I/O",
+          badge: "Read-Optimized",
           nodes: [
-            { id: 'bt-write', label: 'Write Request', icon: '✏️', sublabel: 'UPDATE row' },
-            { id: 'bt-wal', label: 'WAL Entry', icon: '📝', sublabel: 'fsync on commit' },
-            { id: 'bt-page', label: 'Find B-Tree Page', icon: '🔍', sublabel: 'O(log N) descent' },
-            { id: 'bt-update', label: 'Update In-Place', icon: '📄', sublabel: 'dirty page in buffer' },
-            { id: 'bt-flush', label: 'Checkpoint Flush', icon: '💾', sublabel: 'random I/O to disk' }
+            { id: "bt-write", label: "Write Request", icon: "✏️", sublabel: "UPDATE row" },
+            { id: "bt-wal", label: "WAL Entry", icon: "📝", sublabel: "fsync on commit" },
+            { id: "bt-page", label: "Find B-Tree Page", icon: "🔍", sublabel: "O(log N) descent" },
+            { id: "bt-update", label: "Update In-Place", icon: "📄", sublabel: "dirty page in buffer" },
+            { id: "bt-flush", label: "Checkpoint Flush", icon: "💾", sublabel: "random I/O to disk" }
           ]
         },
         {
-          id: 'lsm-lane',
-          label: 'LSM Tree (RocksDB / Cassandra)',
-          color: '#3fb950',
-          description: 'Append-only writes, compaction merges SSTables',
-          badge: 'Write-Optimized',
+          id: "lsm-lane",
+          label: "LSM Tree (RocksDB / Cassandra)",
+          color: "#3fb950",
+          description: "Append-only writes, compaction merges SSTables",
+          badge: "Write-Optimized",
           nodes: [
-            { id: 'lsm-write', label: 'Write Request', icon: '✏️', sublabel: 'INSERT row' },
-            { id: 'lsm-wal', label: 'WAL Append', icon: '📝', sublabel: 'sequential I/O' },
-            { id: 'lsm-mem', label: 'MemTable Insert', icon: '🧠', sublabel: 'in-memory skip list' },
-            { id: 'lsm-flush', label: 'Flush to L0 SSTable', icon: '📦', sublabel: 'when MemTable full (64MB)' },
-            { id: 'lsm-compact', label: 'Compaction', icon: '🔄', sublabel: 'L0→L1→L2 merge sort' }
+            { id: "lsm-write", label: "Write Request", icon: "✏️", sublabel: "INSERT row" },
+            { id: "lsm-wal", label: "WAL Append", icon: "📝", sublabel: "sequential I/O" },
+            { id: "lsm-mem", label: "MemTable Insert", icon: "🧠", sublabel: "in-memory skip list" },
+            { id: "lsm-flush", label: "Flush to L0 SSTable", icon: "📦", sublabel: "when MemTable full (64MB)" },
+            { id: "lsm-compact", label: "Compaction", icon: "🔄", sublabel: "L0→L1→L2 merge sort" }
           ]
         }
       ]

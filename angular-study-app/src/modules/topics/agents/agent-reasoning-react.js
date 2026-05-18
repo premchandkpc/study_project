@@ -12,7 +12,7 @@
 - **Observing**: The result of the action is fed back into the prompt as an "Observation".
 The loop repeats until the LLM decides it has the final answer. This prevents the LLM from "hallucinating" facts by forcing it to verify information via tools.`,
     why:
-`LLMs are excellent at language but lack real-time data or computational precision. ReAct allows them to **interact with the world** (search, APIs, databases). It turns a "static" model into a "dynamic" problem solver. For Senior SDEs, understanding the control loop of an agent is key to building reliable AI systems.`,
+"LLMs are excellent at language but lack real-time data or computational precision. ReAct allows them to **interact with the world** (search, APIs, databases). It turns a \"static\" model into a \"dynamic\" problem solver. For Senior SDEs, understanding the control loop of an agent is key to building reliable AI systems.",
     example: {
       language: "python",
       code:
@@ -50,7 +50,7 @@ def get_weather(city):
 
 agent = Agent(model_stub, {"get_weather": get_weather})
 agent.run("What is the weather in London?")`,
-      notes: `In production, use frameworks like **LangChain**, **CrewAI**, or **AutoGPT** which provide robust ReAct implementations and error handling for malformed actions.`
+      notes: "In production, use frameworks like **LangChain**, **CrewAI**, or **AutoGPT** which provide robust ReAct implementations and error handling for malformed actions."
     },
     interview: [
       {
@@ -73,7 +73,7 @@ agent.run("What is the weather in London?")`,
         "Token usage increases with every loop iteration.",
         "Fragile: Malformed tool outputs can break the reasoning chain."
       ],
-      when: `Use **ReAct** when the task requires multi-step logic and external data. Use simple **Zero-Shot** prompting if the task is purely linguistic or the data is already in context.`
+      when: "Use **ReAct** when the task requires multi-step logic and external data. Use simple **Zero-Shot** prompting if the task is purely linguistic or the data is already in context."
     }
   };
   window.AGENT_TOPICS = (window.AGENT_TOPICS || []).concat([topic]);

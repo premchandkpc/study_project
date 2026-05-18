@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dp-edit-distance",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** Spell-check, search suggestions, diff tools.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'dp.editDistance',
-        time:  'O(mn)',
-        space: 'O(mn)',
+        title: "dp.editDistance",
+        time:  "O(mn)",
+        space: "O(mn)",
         code: `function minDistance(word1, word2) {
   const m = word1.length;
   const n = word2.length;

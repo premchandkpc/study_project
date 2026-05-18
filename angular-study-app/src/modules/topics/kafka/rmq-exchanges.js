@@ -215,136 +215,136 @@
       var QUEUE_MAP={payment:0,shipping:1,email:2};
       function sendDirect(key){
         Object.keys(QUEUE_MAP).forEach(function(k){
-          var qEl=mount.querySelector('#re-dq-'+QUEUE_MAP[k]);
-          var mEl=mount.querySelector('#re-dm-'+QUEUE_MAP[k]);
-          qEl.className='re-queue idle';
-          mEl.innerHTML='';
+          var qEl=mount.querySelector("#re-dq-"+QUEUE_MAP[k]);
+          var mEl=mount.querySelector("#re-dm-"+QUEUE_MAP[k]);
+          qEl.className="re-queue idle";
+          mEl.innerHTML="";
         });
-        mount.querySelector('#re-direct-exch').classList.add('active');
+        mount.querySelector("#re-direct-exch").classList.add("active");
         setTimeout(function(){
-          mount.querySelector('#re-direct-exch').classList.remove('active');
+          mount.querySelector("#re-direct-exch").classList.remove("active");
           if(QUEUE_MAP[key]!==undefined){
             var idx=QUEUE_MAP[key];
-            var qEl=mount.querySelector('#re-dq-'+idx);
-            qEl.className='re-queue receiving';
-            mount.querySelector('#re-dm-'+idx).innerHTML='<div class="re-msg direct">'+key+'</div>';
-            mount.querySelector('#re-dstatus').innerHTML='✓ Message with key "<b>'+key+'</b>" routed to <b>'+key+'-queue</b>.';
+            var qEl=mount.querySelector("#re-dq-"+idx);
+            qEl.className="re-queue receiving";
+            mount.querySelector("#re-dm-"+idx).innerHTML="<div class=\"re-msg direct\">"+key+"</div>";
+            mount.querySelector("#re-dstatus").innerHTML="✓ Message with key \"<b>"+key+"</b>\" routed to <b>"+key+"-queue</b>.";
           } else {
-            mount.querySelector('#re-dstatus').innerHTML='⚠️ Routing key "<b>'+key+'</b>" has no binding → message <b>dropped</b>.';
+            mount.querySelector("#re-dstatus").innerHTML="⚠️ Routing key \"<b>"+key+"</b>\" has no binding → message <b>dropped</b>.";
           }
         },400);
       }
-      mount.querySelectorAll('.re-stab[data-dkey]').forEach(function(b){
-        b.addEventListener('click',function(){
-          mount.querySelectorAll('.re-stab[data-dkey]').forEach(function(x){x.classList.remove('on');});
-          b.classList.add('on');
+      mount.querySelectorAll(".re-stab[data-dkey]").forEach(function(b){
+        b.addEventListener("click",function(){
+          mount.querySelectorAll(".re-stab[data-dkey]").forEach(function(x){x.classList.remove("on");});
+          b.classList.add("on");
           sendDirect(b.dataset.dkey);
         });
       });
 
       // FANOUT
-      mount.querySelector('#re-fanout-send').addEventListener('click',function(){
-        mount.querySelector('#re-fanout-exch').classList.add('active');
+      mount.querySelector("#re-fanout-send").addEventListener("click",function(){
+        mount.querySelector("#re-fanout-exch").classList.add("active");
         [0,1,2,3].forEach(function(i){
-          var qEl=mount.querySelector('#re-fq-'+i);
-          var mEl=mount.querySelector('#re-fm-'+i);
-          qEl.className='re-queue idle';
-          mEl.innerHTML='';
+          var qEl=mount.querySelector("#re-fq-"+i);
+          var mEl=mount.querySelector("#re-fm-"+i);
+          qEl.className="re-queue idle";
+          mEl.innerHTML="";
         });
         setTimeout(function(){
-          mount.querySelector('#re-fanout-exch').classList.remove('active');
+          mount.querySelector("#re-fanout-exch").classList.remove("active");
           [0,1,2,3].forEach(function(i){
-            mount.querySelector('#re-fq-'+i).className='re-queue receiving';
-            mount.querySelector('#re-fm-'+i).innerHTML='<div class="re-msg fanout">msg</div>';
+            mount.querySelector("#re-fq-"+i).className="re-queue receiving";
+            mount.querySelector("#re-fm-"+i).innerHTML="<div class=\"re-msg fanout\">msg</div>";
           });
-          mount.querySelector('#re-fstatus').innerHTML='✓ All 4 queues received a copy. <b>Routing key ignored.</b>';
+          mount.querySelector("#re-fstatus").innerHTML="✓ All 4 queues received a copy. <b>Routing key ignored.</b>";
         },400);
       });
-      mount.querySelector('#re-fanout-reset').addEventListener('click',function(){
+      mount.querySelector("#re-fanout-reset").addEventListener("click",function(){
         [0,1,2,3].forEach(function(i){
-          mount.querySelector('#re-fq-'+i).className='re-queue idle';
-          mount.querySelector('#re-fm-'+i).innerHTML='';
+          mount.querySelector("#re-fq-"+i).className="re-queue idle";
+          mount.querySelector("#re-fm-"+i).innerHTML="";
         });
-        mount.querySelector('#re-fstatus').innerHTML='All bound queues receive a copy. Routing key ignored.';
+        mount.querySelector("#re-fstatus").innerHTML="All bound queues receive a copy. Routing key ignored.";
       });
 
       // TOPIC
       var TOPIC_PATTERNS=[
-        {pattern:'order.#',idx:0},
-        {pattern:'order.payment.*',idx:1},
-        {pattern:'*.shipping.*',idx:2},
-        {pattern:'user.#',idx:3},
+        {pattern:"order.#",idx:0},
+        {pattern:"order.payment.*",idx:1},
+        {pattern:"*.shipping.*",idx:2},
+        {pattern:"user.#",idx:3},
       ];
       function topicMatch(pattern,key){
-        var pParts=pattern.split('.');
-        var kParts=key.split('.');
+        var pParts=pattern.split(".");
+        var kParts=key.split(".");
         function match(pi,ki){
           if(pi===pParts.length&&ki===kParts.length)return true;
-          if(pi<pParts.length&&pParts[pi]==='#'){
+          if(pi<pParts.length&&pParts[pi]==="#"){
             for(var j=ki;j<=kParts.length;j++){if(match(pi+1,j))return true;}
             return false;
           }
           if(pi>=pParts.length||ki>=kParts.length)return false;
-          if(pParts[pi]==='*'||pParts[pi]===kParts[ki])return match(pi+1,ki+1);
+          if(pParts[pi]==="*"||pParts[pi]===kParts[ki])return match(pi+1,ki+1);
           return false;
         }
         return match(0,0);
       }
-      var curTKey='order.payment.success';
+      var curTKey="order.payment.success";
       function sendTopic(key){
         curTKey=key;
-        mount.querySelector('#re-tkey-display').textContent=key;
-        mount.querySelector('#re-topic-exch').classList.add('active');
+        mount.querySelector("#re-tkey-display").textContent=key;
+        mount.querySelector("#re-topic-exch").classList.add("active");
         TOPIC_PATTERNS.forEach(function(tp){
-          var qEl=mount.querySelector('#re-tq-'+tp.idx);
-          var mEl=mount.querySelector('#re-tm-'+tp.idx);
-          qEl.className='re-queue idle';mEl.innerHTML='';
+          var qEl=mount.querySelector("#re-tq-"+tp.idx);
+          var mEl=mount.querySelector("#re-tm-"+tp.idx);
+          qEl.className="re-queue idle";mEl.innerHTML="";
         });
         setTimeout(function(){
-          mount.querySelector('#re-topic-exch').classList.remove('active');
+          mount.querySelector("#re-topic-exch").classList.remove("active");
           var matched=[];
           TOPIC_PATTERNS.forEach(function(tp){
             if(topicMatch(tp.pattern,key)){
-              mount.querySelector('#re-tq-'+tp.idx).className='re-queue receiving';
-              mount.querySelector('#re-tm-'+tp.idx).innerHTML='<div class="re-msg topic">'+key.split('.').pop()+'</div>';
+              mount.querySelector("#re-tq-"+tp.idx).className="re-queue receiving";
+              mount.querySelector("#re-tm-"+tp.idx).innerHTML="<div class=\"re-msg topic\">"+key.split(".").pop()+"</div>";
               matched.push(tp.pattern);
             }
           });
-          mount.querySelector('#re-tstatus').innerHTML=matched.length?'✓ Matched patterns: <b>'+matched.join(', ')+'</b>':'⚠️ No pattern matched — message <b>dropped</b>.';
+          mount.querySelector("#re-tstatus").innerHTML=matched.length?"✓ Matched patterns: <b>"+matched.join(", ")+"</b>":"⚠️ No pattern matched — message <b>dropped</b>.";
         },400);
       }
-      mount.querySelectorAll('.re-stab[data-tkey]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.re-stab[data-tkey]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');sendTopic(b.dataset.tkey);});
+      mount.querySelectorAll(".re-stab[data-tkey]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".re-stab[data-tkey]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");sendTopic(b.dataset.tkey);});
       });
-      sendTopic('order.payment.success');
+      sendTopic("order.payment.success");
 
       // HEADERS
       var HDR_SCENARIOS={
-        'mobile-notif':{headers:{platform:'mobile',type:'notification'},matched:['mobile-queue','analytics-queue'],info:'x-match:all: platform=mobile ✓ AND type=notification ✓ → mobile-queue. x-match:any: type=notification ✓ → analytics-queue.'},
-        'high-prio':{headers:{priority:'high',platform:'web'},matched:['urgent-queue'],info:'x-match:any: priority=high ✓ → urgent-queue. analytics: type not in {notification,alert} → no match.'},
-        'alert':{headers:{type:'alert',source:'monitor'},matched:['urgent-queue','analytics-queue'],info:'x-match:any: type=alert ✓ → urgent-queue. analytics: type=alert ✓ → analytics-queue. Mobile: type=alert ≠ notification → no match.'},
-        'low-prio':{headers:{priority:'low',platform:'desktop'},matched:[],info:'No headers match any binding rules. Message dropped (or sent to alternate-exchange if configured).'},
+        "mobile-notif":{headers:{platform:"mobile",type:"notification"},matched:["mobile-queue","analytics-queue"],info:"x-match:all: platform=mobile ✓ AND type=notification ✓ → mobile-queue. x-match:any: type=notification ✓ → analytics-queue."},
+        "high-prio":{headers:{priority:"high",platform:"web"},matched:["urgent-queue"],info:"x-match:any: priority=high ✓ → urgent-queue. analytics: type not in {notification,alert} → no match."},
+        "alert":{headers:{type:"alert",source:"monitor"},matched:["urgent-queue","analytics-queue"],info:"x-match:any: type=alert ✓ → urgent-queue. analytics: type=alert ✓ → analytics-queue. Mobile: type=alert ≠ notification → no match."},
+        "low-prio":{headers:{priority:"low",platform:"desktop"},matched:[],info:"No headers match any binding rules. Message dropped (or sent to alternate-exchange if configured)."},
       };
-      mount.querySelectorAll('.re-stab[data-hdr]').forEach(function(b){
-        b.addEventListener('click',function(){
-          mount.querySelectorAll('.re-stab[data-hdr]').forEach(function(x){x.classList.remove('on');});
-          b.classList.add('on');
+      mount.querySelectorAll(".re-stab[data-hdr]").forEach(function(b){
+        b.addEventListener("click",function(){
+          mount.querySelectorAll(".re-stab[data-hdr]").forEach(function(x){x.classList.remove("on");});
+          b.classList.add("on");
           var s=HDR_SCENARIOS[b.dataset.hdr];
-          var hdrsStr=Object.entries(s.headers).map(function(e){return e[0]+'='+e[1];}).join(', ');
-          mount.querySelector('#re-hstatus').innerHTML='<b>Headers:</b> {'+hdrsStr+'}<br><b>Matched:</b> '+(s.matched.length?s.matched.join(', '):'none (dropped)')+'<br>'+s.info;
+          var hdrsStr=Object.entries(s.headers).map(function(e){return e[0]+"="+e[1];}).join(", ");
+          mount.querySelector("#re-hstatus").innerHTML="<b>Headers:</b> {"+hdrsStr+"}<br><b>Matched:</b> "+(s.matched.length?s.matched.join(", "):"none (dropped)")+"<br>"+s.info;
         });
       });
 
       // TABS
-      mount.querySelectorAll('.rebtn[data-tab]').forEach(function(btn){
-        btn.addEventListener('click',function(){
-          mount.querySelectorAll('.rebtn[data-tab]').forEach(function(b){b.classList.remove('on');});
-          mount.querySelectorAll('.rep').forEach(function(p){p.classList.remove('on');});
-          btn.classList.add('on');
-          mount.querySelector('#re-'+btn.dataset.tab).classList.add('on');
+      mount.querySelectorAll(".rebtn[data-tab]").forEach(function(btn){
+        btn.addEventListener("click",function(){
+          mount.querySelectorAll(".rebtn[data-tab]").forEach(function(b){b.classList.remove("on");});
+          mount.querySelectorAll(".rep").forEach(function(p){p.classList.remove("on");});
+          btn.classList.add("on");
+          mount.querySelector("#re-"+btn.dataset.tab).classList.add("on");
         });
       });
-      mount.querySelectorAll('.re-q-card').forEach(function(c){c.addEventListener('click',function(){c.classList.toggle('open');});});
+      mount.querySelectorAll(".re-q-card").forEach(function(c){c.addEventListener("click",function(){c.classList.toggle("open");});});
     },
     concept: `**L1 (30s ELI5):** Exchange = post office router. Message arrives with routing key. Exchange decides which queue(s) to deliver to based on type and bindings.
 

@@ -4,7 +4,7 @@
  * Each DSA topic file calls this directly — no global _dsaRenderViz needed.
  */
 (function () {
-  'use strict';
+  "use strict";
   window.DSAViz = window.DSAViz || {};
   window.DSAViz.topic = window.DSAViz.topic || {};
 
@@ -24,14 +24,14 @@
     try {
       const steps = window.DSAViz.tracer.run(opts.code, opts.tracer || {});
       window.DSAViz.runtime.create(mount, {
-        title:           opts.title || '',
-        code:            opts.code  || '',   // ← populates code panel
-        timeComplexity:  opts.time  || '',   // ← correct key name
-        spaceComplexity: opts.space || '',   // ← correct key name
+        title:           opts.title || "",
+        code:            opts.code  || "",   // ← populates code panel
+        timeComplexity:  opts.time  || "",   // ← correct key name
+        spaceComplexity: opts.space || "",   // ← correct key name
       }).animate(steps);
     } catch (e) {
       mount.innerHTML = `<div style="color:#f85149;padding:16px;font-size:12px;font-family:monospace">Render error: ${e.message}</div>`;
-      console.error('[DSAViz.topic.render]', e);
+      console.error("[DSAViz.topic.render]", e);
     }
   };
 })();

@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-bs-find-min-rotated",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Find the rotation point in a circular log ring buffer.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'bsearch.findMinRotated',
-        time:  'O(log n)',
-        space: 'O(1)',
+        title: "bsearch.findMinRotated",
+        time:  "O(log n)",
+        space: "O(1)",
         code: `function findMin(nums) {
   let left = 0;
   let right = nums.length - 1;

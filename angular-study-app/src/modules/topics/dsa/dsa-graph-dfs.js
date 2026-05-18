@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-graph-dfs",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** Dependency exploration — fully inspect one branch before moving to the next.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'graph.dfs',
-        time:  'O(V+E)',
-        space: 'O(V)',
+        title: "graph.dfs",
+        time:  "O(V+E)",
+        space: "O(V)",
         code: `const visited = {};
 const order = [];
 function dfs(graph, node) {

@@ -189,36 +189,36 @@
         { msgs:[2,2,2,2,2,2,2,2], committed:8, fetch:8, info:"All 8 messages processed and committed. Lag=0. Consumer caught up.", crash:null },
       ];
       var oStep=0, oTimer=null;
-      function msgClass(v) { return v===0?'unread':v===1?'processing':v===2?'done':'skip'; }
+      function msgClass(v) { return v===0?"unread":v===1?"processing":v===2?"done":"skip"; }
       function renderOffsets(crashed) {
         var s = OSTEPS[oStep];
-        mount.querySelector('#oc-msgs').innerHTML = s.msgs.map(function(m,i){
-          return '<div class="oc-msg '+msgClass(m)+'" title="offset '+i+'">'+i+'</div>';
-        }).join('');
-        mount.querySelector('#oc-committed').textContent = crashed != null ? crashed : s.committed;
-        mount.querySelector('#oc-fetch').textContent = s.fetch;
+        mount.querySelector("#oc-msgs").innerHTML = s.msgs.map(function(m,i){
+          return "<div class=\"oc-msg "+msgClass(m)+"\" title=\"offset "+i+"\">"+i+"</div>";
+        }).join("");
+        mount.querySelector("#oc-committed").textContent = crashed != null ? crashed : s.committed;
+        mount.querySelector("#oc-fetch").textContent = s.fetch;
         var lag = s.fetch - (crashed != null ? crashed : s.committed);
-        mount.querySelector('#oc-lag').textContent = lag;
-        mount.querySelector('#oc-oinfo').innerHTML = s.info;
-        mount.querySelector('#oc-ostep').textContent = 'Step '+(oStep+1)+'/'+OSTEPS.length;
+        mount.querySelector("#oc-lag").textContent = lag;
+        mount.querySelector("#oc-oinfo").innerHTML = s.info;
+        mount.querySelector("#oc-ostep").textContent = "Step "+(oStep+1)+"/"+OSTEPS.length;
       }
-      function oStop(){clearInterval(oTimer);oTimer=null;mount.querySelector('#oc-oplay').textContent='▶ Play';}
-      function oStart(){oTimer=setInterval(function(){oStep=Math.min(oStep+1,OSTEPS.length-1);renderOffsets();if(oStep===OSTEPS.length-1)oStop();},1700);mount.querySelector('#oc-oplay').textContent='⏸ Pause';}
-      mount.querySelector('#oc-oplay').addEventListener('click',function(){oTimer?oStop():oStart();});
-      mount.querySelector('#oc-onext').addEventListener('click',function(){oStop();oStep=Math.min(oStep+1,OSTEPS.length-1);renderOffsets();});
-      mount.querySelector('#oc-oprev').addEventListener('click',function(){oStop();oStep=Math.max(oStep-1,0);renderOffsets();});
-      mount.querySelector('#oc-oreset').addEventListener('click',function(){oStop();oStep=0;renderOffsets();mount.querySelector('#oc-crash-msg').classList.remove('show');});
-      mount.querySelector('#oc-ocrash').addEventListener('click',function(){
+      function oStop(){clearInterval(oTimer);oTimer=null;mount.querySelector("#oc-oplay").textContent="▶ Play";}
+      function oStart(){oTimer=setInterval(function(){oStep=Math.min(oStep+1,OSTEPS.length-1);renderOffsets();if(oStep===OSTEPS.length-1)oStop();},1700);mount.querySelector("#oc-oplay").textContent="⏸ Pause";}
+      mount.querySelector("#oc-oplay").addEventListener("click",function(){oTimer?oStop():oStart();});
+      mount.querySelector("#oc-onext").addEventListener("click",function(){oStop();oStep=Math.min(oStep+1,OSTEPS.length-1);renderOffsets();});
+      mount.querySelector("#oc-oprev").addEventListener("click",function(){oStop();oStep=Math.max(oStep-1,0);renderOffsets();});
+      mount.querySelector("#oc-oreset").addEventListener("click",function(){oStop();oStep=0;renderOffsets();mount.querySelector("#oc-crash-msg").classList.remove("show");});
+      mount.querySelector("#oc-ocrash").addEventListener("click",function(){
         oStop();
-        var committed = parseInt(mount.querySelector('#oc-committed').textContent);
+        var committed = parseInt(mount.querySelector("#oc-committed").textContent);
         var fetch = OSTEPS[oStep].fetch;
-        mount.querySelector('#oc-crash-msg').innerHTML = '💥 <b>Consumer crashed at fetch='+fetch+'</b>. Last committed='+committed+'. On restart, will re-fetch from <b>'+committed+'</b>. Messages '+committed+'-'+(fetch-1)+' will be reprocessed → <b>at-least-once duplicates</b>.';
-        mount.querySelector('#oc-crash-msg').classList.add('show');
+        mount.querySelector("#oc-crash-msg").innerHTML = "💥 <b>Consumer crashed at fetch="+fetch+"</b>. Last committed="+committed+". On restart, will re-fetch from <b>"+committed+"</b>. Messages "+committed+"-"+(fetch-1)+" will be reprocessed → <b>at-least-once duplicates</b>.";
+        mount.querySelector("#oc-crash-msg").classList.add("show");
       });
       renderOffsets();
 
       // DELIVERY SEMANTICS SIM
-      var semMode='alo';
+      var semMode="alo";
       var SEM_FLOWS = {
         alo: {
           title:"At-Least-Once",color:"#e8741a",
@@ -256,23 +256,23 @@
       };
       function renderSem(){
         var s=SEM_FLOWS[semMode];
-        var el=mount.querySelector('#oc-sem-content');
-        el.innerHTML='<div class="oc-box"><div style="font-size:12px;font-weight:600;color:'+s.color+';margin-bottom:10px">'+s.title+' Flow</div><div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">'+
+        var el=mount.querySelector("#oc-sem-content");
+        el.innerHTML="<div class=\"oc-box\"><div style=\"font-size:12px;font-weight:600;color:"+s.color+";margin-bottom:10px\">"+s.title+" Flow</div><div style=\"display:flex;gap:4px;flex-wrap:wrap;align-items:center\">"+
           s.steps.map(function(step,i){
-            return '<div style="background:'+(step.bad?'#f4706715':'#0d1117')+';border:1px solid '+(step.bad?'#f47067':s.color+'44')+';border-radius:6px;padding:6px 10px;text-align:center">'+
-              '<div style="font-size:11px;font-weight:600;color:'+(step.bad?'#f47067':s.color)+'">'+step.label+'</div>'+
-              '<div style="font-size:10px;color:#8b949e;margin-top:3px;max-width:90px">'+step.desc+'</div>'+
-            '</div>'+
-            (i<s.steps.length-1?'<div style="color:#8b949e;font-size:16px">→</div>':'');
-          }).join('')+'</div></div>';
+            return "<div style=\"background:"+(step.bad?"#f4706715":"#0d1117")+";border:1px solid "+(step.bad?"#f47067":s.color+"44")+";border-radius:6px;padding:6px 10px;text-align:center\">"+
+              "<div style=\"font-size:11px;font-weight:600;color:"+(step.bad?"#f47067":s.color)+"\">"+step.label+"</div>"+
+              "<div style=\"font-size:10px;color:#8b949e;margin-top:3px;max-width:90px\">"+step.desc+"</div>"+
+            "</div>"+
+            (i<s.steps.length-1?"<div style=\"color:#8b949e;font-size:16px\">→</div>":"");
+          }).join("")+"</div></div>";
       }
-      mount.querySelectorAll('.oc-stab[data-sem]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.oc-stab[data-sem]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');semMode=b.dataset.sem;renderSem();});
+      mount.querySelectorAll(".oc-stab[data-sem]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".oc-stab[data-sem]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");semMode=b.dataset.sem;renderSem();});
       });
       renderSem();
 
       // COMMIT STRATEGIES
-      var commitMode='auto';
+      var commitMode="auto";
       var COMMIT_DATA = {
         auto: {
           color:"#f47067",
@@ -333,13 +333,13 @@ while (true) {
       };
       function renderCommit(){
         var s=COMMIT_DATA[commitMode];
-        var el=mount.querySelector('#oc-commit-content');
-        el.innerHTML='<div class="oc-box"><div style="font-size:12px;color:#cdd9e5;margin-bottom:8px">'+s.desc+'</div>'+
-          '<div style="background:'+(commitMode==='auto'?'#f4706715':commitMode==='manual'?'#3dd68c15':'#161b22')+';border:1px solid '+s.color+';border-radius:6px;padding:8px 12px;font-size:12px;color:'+s.color+';margin-bottom:10px">Risk: '+s.risk+'</div>'+
-          '<pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px;font-size:12px;color:#cdd9e5;overflow-x:auto;font-family:JetBrains Mono,monospace">'+s.code+'</pre></div>';
+        var el=mount.querySelector("#oc-commit-content");
+        el.innerHTML="<div class=\"oc-box\"><div style=\"font-size:12px;color:#cdd9e5;margin-bottom:8px\">"+s.desc+"</div>"+
+          "<div style=\"background:"+(commitMode==="auto"?"#f4706715":commitMode==="manual"?"#3dd68c15":"#161b22")+";border:1px solid "+s.color+";border-radius:6px;padding:8px 12px;font-size:12px;color:"+s.color+";margin-bottom:10px\">Risk: "+s.risk+"</div>"+
+          "<pre style=\"background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px;font-size:12px;color:#cdd9e5;overflow-x:auto;font-family:JetBrains Mono,monospace\">"+s.code+"</pre></div>";
       }
-      mount.querySelectorAll('.oc-stab[data-commit]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.oc-stab[data-commit]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');commitMode=b.dataset.commit;renderCommit();});
+      mount.querySelectorAll(".oc-stab[data-commit]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".oc-stab[data-commit]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");commitMode=b.dataset.commit;renderCommit();});
       });
       renderCommit();
 
@@ -353,31 +353,31 @@ while (true) {
       ];
       var esStep=0,esTimer=null;
       function renderEos(){
-        mount.querySelector('#oc-eos-steps').innerHTML=EOS_STEPS.map(function(s,i){
-          return '<div style="background:#161b22;border:1px solid '+(i===esStep?s.color:'#30363d')+';border-radius:8px;padding:10px;opacity:'+(i<=esStep?1:0.4)+';transition:all .3s">'+
-            '<div style="font-size:12px;font-weight:700;color:'+s.color+';margin-bottom:4px">'+s.title+'</div>'+
-            '<div style="font-size:11px;color:#8b949e">'+s.desc+'</div></div>';
-        }).join('');
-        mount.querySelector('#oc-eos-info').innerHTML=EOS_STEPS[esStep].desc;
-        mount.querySelector('#oc-esstep').textContent='Step '+(esStep+1)+'/'+EOS_STEPS.length;
+        mount.querySelector("#oc-eos-steps").innerHTML=EOS_STEPS.map(function(s,i){
+          return "<div style=\"background:#161b22;border:1px solid "+(i===esStep?s.color:"#30363d")+";border-radius:8px;padding:10px;opacity:"+(i<=esStep?1:0.4)+";transition:all .3s\">"+
+            "<div style=\"font-size:12px;font-weight:700;color:"+s.color+";margin-bottom:4px\">"+s.title+"</div>"+
+            "<div style=\"font-size:11px;color:#8b949e\">"+s.desc+"</div></div>";
+        }).join("");
+        mount.querySelector("#oc-eos-info").innerHTML=EOS_STEPS[esStep].desc;
+        mount.querySelector("#oc-esstep").textContent="Step "+(esStep+1)+"/"+EOS_STEPS.length;
       }
-      function esStop(){clearInterval(esTimer);esTimer=null;mount.querySelector('#oc-esplay').textContent='▶ Play';}
-      mount.querySelector('#oc-esplay').addEventListener('click',function(){if(esTimer){esStop();}else{esTimer=setInterval(function(){esStep=Math.min(esStep+1,EOS_STEPS.length-1);renderEos();if(esStep===EOS_STEPS.length-1)esStop();},1800);mount.querySelector('#oc-esplay').textContent='⏸ Pause';}});
-      mount.querySelector('#oc-esnext').addEventListener('click',function(){esStop();esStep=Math.min(esStep+1,EOS_STEPS.length-1);renderEos();});
-      mount.querySelector('#oc-esprev').addEventListener('click',function(){esStop();esStep=Math.max(esStep-1,0);renderEos();});
-      mount.querySelector('#oc-esreset').addEventListener('click',function(){esStop();esStep=0;renderEos();});
+      function esStop(){clearInterval(esTimer);esTimer=null;mount.querySelector("#oc-esplay").textContent="▶ Play";}
+      mount.querySelector("#oc-esplay").addEventListener("click",function(){if(esTimer){esStop();}else{esTimer=setInterval(function(){esStep=Math.min(esStep+1,EOS_STEPS.length-1);renderEos();if(esStep===EOS_STEPS.length-1)esStop();},1800);mount.querySelector("#oc-esplay").textContent="⏸ Pause";}});
+      mount.querySelector("#oc-esnext").addEventListener("click",function(){esStop();esStep=Math.min(esStep+1,EOS_STEPS.length-1);renderEos();});
+      mount.querySelector("#oc-esprev").addEventListener("click",function(){esStop();esStep=Math.max(esStep-1,0);renderEos();});
+      mount.querySelector("#oc-esreset").addEventListener("click",function(){esStop();esStep=0;renderEos();});
       renderEos();
 
       // TABS
-      mount.querySelectorAll('.ocbtn[data-tab]').forEach(function(btn){
-        btn.addEventListener('click',function(){
-          mount.querySelectorAll('.ocbtn[data-tab]').forEach(function(b){b.classList.remove('on');});
-          mount.querySelectorAll('.ocp').forEach(function(p){p.classList.remove('on');});
-          btn.classList.add('on');
-          mount.querySelector('#oc-'+btn.dataset.tab).classList.add('on');
+      mount.querySelectorAll(".ocbtn[data-tab]").forEach(function(btn){
+        btn.addEventListener("click",function(){
+          mount.querySelectorAll(".ocbtn[data-tab]").forEach(function(b){b.classList.remove("on");});
+          mount.querySelectorAll(".ocp").forEach(function(p){p.classList.remove("on");});
+          btn.classList.add("on");
+          mount.querySelector("#oc-"+btn.dataset.tab).classList.add("on");
         });
       });
-      mount.querySelectorAll('.oc-q-card').forEach(function(c){c.addEventListener('click',function(){c.classList.toggle('open');});});
+      mount.querySelectorAll(".oc-q-card").forEach(function(c){c.addEventListener("click",function(){c.classList.toggle("open");});});
     },
     concept: `**L1 (30s ELI5):** Offset = bookmark in a partition. Commit = save bookmark. At-least-once = save after reading (may re-read). At-most-once = save before reading (may lose). Exactly-once = atomic save + publish.
 

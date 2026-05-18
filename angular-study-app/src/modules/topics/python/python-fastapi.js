@@ -13,7 +13,7 @@
 - **Background tasks**: \`BackgroundTasks\` for fire-and-forget after response.
 - **Lifecycle events**: \`@app.lifespan\` for startup/shutdown (DB pools, caches).`,
     why:
-`FastAPI rivals Node.js and Go in I/O throughput benchmarks while keeping Python ergonomics. The killer feature is eliminating manual serialization — annotate once, get validation, OpenAPI docs, and editor completion for free. The DI system makes auth and DB sessions testable without monkeypatching.`,
+"FastAPI rivals Node.js and Go in I/O throughput benchmarks while keeping Python ergonomics. The killer feature is eliminating manual serialization — annotate once, get validation, OpenAPI docs, and editor completion for free. The DI system makes auth and DB sessions testable without monkeypatching.",
     example: {
       language: "python",
       code:
@@ -73,19 +73,19 @@ async def create_order(
 
 async def send_confirmation(email: str) -> None:
     pass  # fire-and-forget after response sent`,
-      notes: `Use \`asyncpg\` (not psycopg2) for async DB. Test with \`TestClient\` for sync or \`AsyncClient\` (httpx) for async. Override dependencies in tests with \`app.dependency_overrides\`.`
+      notes: "Use `asyncpg` (not psycopg2) for async DB. Test with `TestClient` for sync or `AsyncClient` (httpx) for async. Override dependencies in tests with `app.dependency_overrides`."
     },
     interview: [
       {
         question: "How does FastAPI's dependency injection differ from Spring's?",
         answer:
-`FastAPI uses **function arguments** as the DI declaration — no annotation processing, no XML, no IoC container startup. \`Depends(fn)\` is resolved at request time with automatic scope management. Spring's IoC is application-scope by default; FastAPI scoping is per-request unless you use caching. Both support testing by swapping implementations.`,
+"FastAPI uses **function arguments** as the DI declaration — no annotation processing, no XML, no IoC container startup. `Depends(fn)` is resolved at request time with automatic scope management. Spring's IoC is application-scope by default; FastAPI scoping is per-request unless you use caching. Both support testing by swapping implementations.",
         followUps: ["How do you implement request-scoped dependencies?", "How does FastAPI handle dependency errors?"]
       },
       {
         question: "How do you handle database transactions across multiple operations in FastAPI?",
         answer:
-`Acquire a connection, start a transaction in the dependency, yield the connection, and either commit or rollback in the finally block. Pattern: \`async with conn.transaction(): yield conn\` inside the dependency. This ensures atomicity across multiple endpoint DB calls that use the same injected connection.`,
+"Acquire a connection, start a transaction in the dependency, yield the connection, and either commit or rollback in the finally block. Pattern: `async with conn.transaction(): yield conn` inside the dependency. This ensures atomicity across multiple endpoint DB calls that use the same injected connection.",
         followUps: ["How do you handle nested transactions in asyncpg?", "What is a savepoint?"]
       }
     ],
@@ -100,7 +100,7 @@ async def send_confirmation(email: str) -> None:
         "ASGI adds complexity: must avoid blocking code in async paths.",
         "Smaller ecosystem than Django for admin, auth, and ORM."
       ],
-      when: `**FastAPI** for new async REST/GraphQL services. **Django** when you need the full admin, ORM, and auth battery out of the box. **Flask** for small scripts and prototypes.`
+      when: "**FastAPI** for new async REST/GraphQL services. **Django** when you need the full admin, ORM, and auth battery out of the box. **Flask** for small scripts and prototypes."
     }
   };
   window.PYTHON_TOPICS = (window.PYTHON_TOPICS || []).concat([topic]);

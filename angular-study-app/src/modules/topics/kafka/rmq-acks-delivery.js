@@ -179,60 +179,60 @@
 </div>`;
 
       // CONSUMER ACKS
-      var ackState='idle';
-      var ackMode='manual';
+      var ackState="idle";
+      var ackMode="manual";
       function renderAckMode(){
-        var el=mount.querySelector('#ad-ack-mode-note');
-        if(ackMode==='manual'){
-          el.innerHTML='<div style="background:#3dd68c15;border:1px solid #3dd68c;border-radius:6px;padding:8px 12px;font-size:12px;color:#3dd68c;margin-top:4px">Manual ack: consumer must call basicAck/basicNack. Message held as UNACKED until explicit ack. Crash → requeued. At-least-once.</div>';
+        var el=mount.querySelector("#ad-ack-mode-note");
+        if(ackMode==="manual"){
+          el.innerHTML="<div style=\"background:#3dd68c15;border:1px solid #3dd68c;border-radius:6px;padding:8px 12px;font-size:12px;color:#3dd68c;margin-top:4px\">Manual ack: consumer must call basicAck/basicNack. Message held as UNACKED until explicit ack. Crash → requeued. At-least-once.</div>";
         } else {
-          el.innerHTML='<div style="background:#f4706715;border:1px solid #f47067;border-radius:6px;padding:8px 12px;font-size:12px;color:#f47067;margin-top:4px">Auto ack: broker removes message on delivery. No unacked state. Consumer crash = message LOST. At-most-once. Fast but dangerous for critical data.</div>';
+          el.innerHTML="<div style=\"background:#f4706715;border:1px solid #f47067;border-radius:6px;padding:8px 12px;font-size:12px;color:#f47067;margin-top:4px\">Auto ack: broker removes message on delivery. No unacked state. Consumer crash = message LOST. At-most-once. Fast but dangerous for critical data.</div>";
         }
       }
       function setAckState(state,msg){
         ackState=state;
-        var qmsg=mount.querySelector('#ad-qmsg');
-        var unbar=mount.querySelector('#ad-unacked-bar');
-        var status=mount.querySelector('#ad-ack-flow-status');
-        if(state==='idle'){qmsg.className='ad-msg-box ready';qmsg.textContent='msg #1';unbar.style.display='none';status.textContent='';}
-        else if(state==='fetched'){qmsg.className='ad-msg-box unacked';qmsg.textContent='msg #1';unbar.style.display='block';status.innerHTML='<span style="color:#f5b944">UNACKED</span>';}
-        else if(state==='acked'){qmsg.className='ad-msg-box acked';qmsg.textContent='✓';unbar.style.display='none';status.innerHTML='<span style="color:#3dd68c">Acked ✓ — removed from queue</span>';}
-        else if(state==='nacked-requeue'){qmsg.className='ad-msg-box requeued';qmsg.textContent='↩';unbar.style.display='none';status.innerHTML='<span style="color:#58a6ff">Nacked+requeued → back to queue front</span>';}
-        else if(state==='nacked-drop'){qmsg.className='ad-msg-box nacked';qmsg.textContent='✗';unbar.style.display='none';status.innerHTML='<span style="color:#f47067">Nacked+dropped → DLQ (if configured)</span>';}
-        else if(state==='crashed'){qmsg.className='ad-msg-box requeued';qmsg.textContent='↩';unbar.style.display='none';status.innerHTML='<span style="color:#58a6ff">Consumer crashed → unacked messages requeued to front</span>';}
-        mount.querySelector('#ad-cainfo').innerHTML=msg||'Consumer ack tells broker message processed. Unacked = held by consumer until ack/nack/crash.';
+        var qmsg=mount.querySelector("#ad-qmsg");
+        var unbar=mount.querySelector("#ad-unacked-bar");
+        var status=mount.querySelector("#ad-ack-flow-status");
+        if(state==="idle"){qmsg.className="ad-msg-box ready";qmsg.textContent="msg #1";unbar.style.display="none";status.textContent="";}
+        else if(state==="fetched"){qmsg.className="ad-msg-box unacked";qmsg.textContent="msg #1";unbar.style.display="block";status.innerHTML="<span style=\"color:#f5b944\">UNACKED</span>";}
+        else if(state==="acked"){qmsg.className="ad-msg-box acked";qmsg.textContent="✓";unbar.style.display="none";status.innerHTML="<span style=\"color:#3dd68c\">Acked ✓ — removed from queue</span>";}
+        else if(state==="nacked-requeue"){qmsg.className="ad-msg-box requeued";qmsg.textContent="↩";unbar.style.display="none";status.innerHTML="<span style=\"color:#58a6ff\">Nacked+requeued → back to queue front</span>";}
+        else if(state==="nacked-drop"){qmsg.className="ad-msg-box nacked";qmsg.textContent="✗";unbar.style.display="none";status.innerHTML="<span style=\"color:#f47067\">Nacked+dropped → DLQ (if configured)</span>";}
+        else if(state==="crashed"){qmsg.className="ad-msg-box requeued";qmsg.textContent="↩";unbar.style.display="none";status.innerHTML="<span style=\"color:#58a6ff\">Consumer crashed → unacked messages requeued to front</span>";}
+        mount.querySelector("#ad-cainfo").innerHTML=msg||"Consumer ack tells broker message processed. Unacked = held by consumer until ack/nack/crash.";
       }
-      mount.querySelector('#ad-fetch').addEventListener('click',function(){if(ackState!=='idle')return;setAckState('fetched','Message fetched. In <b>UNACKED</b> state. Broker holds slot. Consumer must ack/nack.');});
-      mount.querySelector('#ad-ack').addEventListener('click',function(){if(ackState!=='fetched')return;setAckState('acked','<b>basicAck</b> sent. Broker removes message. Slot freed.');});
-      mount.querySelector('#ad-nack-requeue').addEventListener('click',function(){if(ackState!=='fetched')return;setAckState('nacked-requeue','<b>basicNack(requeue=true)</b>. Message back to front. Risk: infinite retry loop if processing always fails. Use DLQ.');setTimeout(function(){setAckState('idle','');},2000);});
-      mount.querySelector('#ad-nack-drop').addEventListener('click',function(){if(ackState!=='fetched')return;setAckState('nacked-drop','<b>basicNack(requeue=false)</b>. Message sent to dead letter exchange/queue (if configured) or discarded.');});
-      mount.querySelector('#ad-crash').addEventListener('click',function(){if(ackState!=='fetched'){setAckState('idle','💥 Crashed with no unacked messages — no effect.');return;}setAckState('crashed','💥 <b>Consumer crashed!</b> All unacked messages requeued to front of queue.');setTimeout(function(){setAckState('idle','');},2000);});
-      mount.querySelector('#ad-reset-ack').addEventListener('click',function(){setAckState('idle','');});
-      mount.querySelectorAll('.ad-stab[data-ackmode]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.ad-stab[data-ackmode]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');ackMode=b.dataset.ackmode;renderAckMode();});
+      mount.querySelector("#ad-fetch").addEventListener("click",function(){if(ackState!=="idle")return;setAckState("fetched","Message fetched. In <b>UNACKED</b> state. Broker holds slot. Consumer must ack/nack.");});
+      mount.querySelector("#ad-ack").addEventListener("click",function(){if(ackState!=="fetched")return;setAckState("acked","<b>basicAck</b> sent. Broker removes message. Slot freed.");});
+      mount.querySelector("#ad-nack-requeue").addEventListener("click",function(){if(ackState!=="fetched")return;setAckState("nacked-requeue","<b>basicNack(requeue=true)</b>. Message back to front. Risk: infinite retry loop if processing always fails. Use DLQ.");setTimeout(function(){setAckState("idle","");},2000);});
+      mount.querySelector("#ad-nack-drop").addEventListener("click",function(){if(ackState!=="fetched")return;setAckState("nacked-drop","<b>basicNack(requeue=false)</b>. Message sent to dead letter exchange/queue (if configured) or discarded.");});
+      mount.querySelector("#ad-crash").addEventListener("click",function(){if(ackState!=="fetched"){setAckState("idle","💥 Crashed with no unacked messages — no effect.");return;}setAckState("crashed","💥 <b>Consumer crashed!</b> All unacked messages requeued to front of queue.");setTimeout(function(){setAckState("idle","");},2000);});
+      mount.querySelector("#ad-reset-ack").addEventListener("click",function(){setAckState("idle","");});
+      mount.querySelectorAll(".ad-stab[data-ackmode]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".ad-stab[data-ackmode]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");ackMode=b.dataset.ackmode;renderAckMode();});
       });
       renderAckMode();
-      setAckState('idle');
+      setAckState("idle");
 
       // PREFETCH
       var pfMode=1, pfQueue=[], pfUnacked=[], pfCount=0;
       function initPfQueue(){pfQueue=[];pfCount=0;for(var i=1;i<=10;i++){pfQueue.push(i);}pfUnacked=[];}
       function renderPf(){
-        mount.querySelector('#ad-pf-queue').innerHTML=pfQueue.map(function(n){return '<div class="ad-msg-box ready" style="width:24px;height:24px;font-size:9px">'+n+'</div>';}).join('')+(pfQueue.length===0?'<div style="color:#30363d;font-size:11px">empty</div>':'');
-        mount.querySelector('#ad-pf-unacked').innerHTML=pfUnacked.map(function(n){return '<div class="ad-msg-box unacked" style="width:24px;height:24px;font-size:9px">'+n+'</div>';}).join('')+(pfUnacked.length===0?'<div style="color:#30363d;font-size:11px">none</div>':'');
+        mount.querySelector("#ad-pf-queue").innerHTML=pfQueue.map(function(n){return "<div class=\"ad-msg-box ready\" style=\"width:24px;height:24px;font-size:9px\">"+n+"</div>";}).join("")+(pfQueue.length===0?"<div style=\"color:#30363d;font-size:11px\">empty</div>":"");
+        mount.querySelector("#ad-pf-unacked").innerHTML=pfUnacked.map(function(n){return "<div class=\"ad-msg-box unacked\" style=\"width:24px;height:24px;font-size:9px\">"+n+"</div>";}).join("")+(pfUnacked.length===0?"<div style=\"color:#30363d;font-size:11px\">none</div>":"");
       }
       initPfQueue();renderPf();
-      mount.querySelectorAll('.ad-stab[data-pf]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.ad-stab[data-pf]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');pfMode=b.dataset.pf==='unlimited'?Infinity:parseInt(b.dataset.pf);mount.querySelector('#ad-pf-status').innerHTML='Prefetch set to '+(pfMode===Infinity?'unlimited':pfMode)+'. Try fetching messages.';});
+      mount.querySelectorAll(".ad-stab[data-pf]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".ad-stab[data-pf]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");pfMode=b.dataset.pf==="unlimited"?Infinity:parseInt(b.dataset.pf);mount.querySelector("#ad-pf-status").innerHTML="Prefetch set to "+(pfMode===Infinity?"unlimited":pfMode)+". Try fetching messages.";});
       });
-      mount.querySelector('#ad-pf-fetch').addEventListener('click',function(){
-        if(!pfQueue.length){mount.querySelector('#ad-pf-status').innerHTML='Queue empty.';return;}
-        if(pfUnacked.length>=pfMode){mount.querySelector('#ad-pf-status').innerHTML='⚠️ Prefetch limit reached ('+pfMode+'). Consumer blocked until messages acked.';return;}
+      mount.querySelector("#ad-pf-fetch").addEventListener("click",function(){
+        if(!pfQueue.length){mount.querySelector("#ad-pf-status").innerHTML="Queue empty.";return;}
+        if(pfUnacked.length>=pfMode){mount.querySelector("#ad-pf-status").innerHTML="⚠️ Prefetch limit reached ("+pfMode+"). Consumer blocked until messages acked.";return;}
         var n=pfQueue.shift();pfUnacked.push(n);renderPf();
-        mount.querySelector('#ad-pf-status').innerHTML='Fetched msg '+n+'. Unacked: '+pfUnacked.length+'/'+(pfMode===Infinity?'∞':pfMode)+'. Queue: '+pfQueue.length+' remaining.';
+        mount.querySelector("#ad-pf-status").innerHTML="Fetched msg "+n+". Unacked: "+pfUnacked.length+"/"+(pfMode===Infinity?"∞":pfMode)+". Queue: "+pfQueue.length+" remaining.";
       });
-      mount.querySelector('#ad-pf-ackall').addEventListener('click',function(){var n=pfUnacked.length;pfUnacked=[];renderPf();mount.querySelector('#ad-pf-status').innerHTML='Acked '+n+' messages. Consumer ready to fetch more.';});
-      mount.querySelector('#ad-pf-reset').addEventListener('click',function(){initPfQueue();renderPf();mount.querySelector('#ad-pf-status').innerHTML='Prefetch limits how many messages a consumer holds unacked.';});
+      mount.querySelector("#ad-pf-ackall").addEventListener("click",function(){var n=pfUnacked.length;pfUnacked=[];renderPf();mount.querySelector("#ad-pf-status").innerHTML="Acked "+n+" messages. Consumer ready to fetch more.";});
+      mount.querySelector("#ad-pf-reset").addEventListener("click",function(){initPfQueue();renderPf();mount.querySelector("#ad-pf-status").innerHTML="Prefetch limits how many messages a consumer holds unacked.";});
 
       // PUBLISHER CONFIRMS
       var PSTEPS=[
@@ -244,31 +244,31 @@
       ];
       var pStep=0,pTimer=null;
       function renderPub(){
-        mount.querySelector('#ad-pub-steps').innerHTML=PSTEPS.map(function(s,i){
-          return '<div style="background:#161b22;border:1px solid '+(i===pStep?s.color:'#30363d')+';border-radius:8px;padding:8px;opacity:'+(i<=pStep?1:0.4)+';transition:all .3s">'+
-            '<div style="font-size:11px;font-weight:700;color:'+s.color+';margin-bottom:4px">'+s.title+'</div>'+
-            '<div style="font-size:10px;color:#8b949e">'+s.desc+'</div></div>';
-        }).join('');
-        mount.querySelector('#ad-pub-info').innerHTML='<b style="color:'+PSTEPS[pStep].color+'">'+PSTEPS[pStep].title+':</b> '+PSTEPS[pStep].desc;
-        mount.querySelector('#ad-pstep').textContent='Step '+(pStep+1)+'/'+PSTEPS.length;
+        mount.querySelector("#ad-pub-steps").innerHTML=PSTEPS.map(function(s,i){
+          return "<div style=\"background:#161b22;border:1px solid "+(i===pStep?s.color:"#30363d")+";border-radius:8px;padding:8px;opacity:"+(i<=pStep?1:0.4)+";transition:all .3s\">"+
+            "<div style=\"font-size:11px;font-weight:700;color:"+s.color+";margin-bottom:4px\">"+s.title+"</div>"+
+            "<div style=\"font-size:10px;color:#8b949e\">"+s.desc+"</div></div>";
+        }).join("");
+        mount.querySelector("#ad-pub-info").innerHTML="<b style=\"color:"+PSTEPS[pStep].color+"\">"+PSTEPS[pStep].title+":</b> "+PSTEPS[pStep].desc;
+        mount.querySelector("#ad-pstep").textContent="Step "+(pStep+1)+"/"+PSTEPS.length;
       }
-      function pStop(){clearInterval(pTimer);pTimer=null;mount.querySelector('#ad-pplay').textContent='▶ Play';}
-      mount.querySelector('#ad-pplay').addEventListener('click',function(){if(pTimer){pStop();}else{pTimer=setInterval(function(){pStep=Math.min(pStep+1,PSTEPS.length-1);renderPub();if(pStep===PSTEPS.length-1)pStop();},1700);mount.querySelector('#ad-pplay').textContent='⏸ Pause';}});
-      mount.querySelector('#ad-pnext').addEventListener('click',function(){pStop();pStep=Math.min(pStep+1,PSTEPS.length-1);renderPub();});
-      mount.querySelector('#ad-pprev').addEventListener('click',function(){pStop();pStep=Math.max(pStep-1,0);renderPub();});
-      mount.querySelector('#ad-preset').addEventListener('click',function(){pStop();pStep=0;renderPub();});
+      function pStop(){clearInterval(pTimer);pTimer=null;mount.querySelector("#ad-pplay").textContent="▶ Play";}
+      mount.querySelector("#ad-pplay").addEventListener("click",function(){if(pTimer){pStop();}else{pTimer=setInterval(function(){pStep=Math.min(pStep+1,PSTEPS.length-1);renderPub();if(pStep===PSTEPS.length-1)pStop();},1700);mount.querySelector("#ad-pplay").textContent="⏸ Pause";}});
+      mount.querySelector("#ad-pnext").addEventListener("click",function(){pStop();pStep=Math.min(pStep+1,PSTEPS.length-1);renderPub();});
+      mount.querySelector("#ad-pprev").addEventListener("click",function(){pStop();pStep=Math.max(pStep-1,0);renderPub();});
+      mount.querySelector("#ad-preset").addEventListener("click",function(){pStop();pStep=0;renderPub();});
       renderPub();
 
       // TABS
-      mount.querySelectorAll('.adbtn[data-tab]').forEach(function(btn){
-        btn.addEventListener('click',function(){
-          mount.querySelectorAll('.adbtn[data-tab]').forEach(function(b){b.classList.remove('on');});
-          mount.querySelectorAll('.adp').forEach(function(p){p.classList.remove('on');});
-          btn.classList.add('on');
-          mount.querySelector('#ad-'+btn.dataset.tab).classList.add('on');
+      mount.querySelectorAll(".adbtn[data-tab]").forEach(function(btn){
+        btn.addEventListener("click",function(){
+          mount.querySelectorAll(".adbtn[data-tab]").forEach(function(b){b.classList.remove("on");});
+          mount.querySelectorAll(".adp").forEach(function(p){p.classList.remove("on");});
+          btn.classList.add("on");
+          mount.querySelector("#ad-"+btn.dataset.tab).classList.add("on");
         });
       });
-      mount.querySelectorAll('.ad-q-card').forEach(function(c){c.addEventListener('click',function(){c.classList.toggle('open');});});
+      mount.querySelectorAll(".ad-q-card").forEach(function(c){c.addEventListener("click",function(){c.classList.toggle("open");});});
     },
     concept: `**L1 (30s ELI5):** Ack = "got it, done". Nack = "failed, put it back (or discard)". Prefetch = "give me max N at a time". Publisher confirm = broker says "I saved your message".
 

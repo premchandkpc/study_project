@@ -175,11 +175,11 @@
 
       // QUEUE TYPES
       var QTYPE_DATA={
-        'classic-durable':{name:"Classic Durable Queue",color:"#3dd68c",icon:"💾",
+        "classic-durable":{name:"Classic Durable Queue",color:"#3dd68c",icon:"💾",
           desc:"Survives broker restart. Messages with delivery_mode=2 also persisted to disk. Standard choice for production.",
           props:[{k:"durable",v:"true",n:"Survives restart"},{k:"auto-delete",v:"false",n:"Manual deletion only"},{k:"exclusive",v:"false",n:"Multiple connections"},{k:"x-queue-type",v:"classic",n:"Default type"}],
           note:"Need persistent messages (delivery_mode=2) too — durable queue alone doesn't persist message payloads."},
-        'classic-transient':{name:"Classic Transient Queue",color:"#f59134",icon:"⚡",
+        "classic-transient":{name:"Classic Transient Queue",color:"#f59134",icon:"⚡",
           desc:"Lost on broker restart. Fast (no disk I/O for durability). Use for temporary, ephemeral work.",
           props:[{k:"durable",v:"false",n:"Lost on restart"},{k:"auto-delete",v:"true (optional)",n:"Delete when no consumers"},{k:"exclusive",v:"true (optional)",n:"Single connection"},{k:"x-queue-type",v:"classic",n:"Default type"}],
           note:"Use for RPC reply queues, temp streams. Never for critical data."},
@@ -192,18 +192,18 @@
           props:[{k:"x-queue-type",v:"stream",n:"Stream type"},{k:"x-max-length-bytes",v:"5GB (default)",n:"Max log size"},{k:"x-max-age",v:"7D (optional)",n:"Log retention"},{k:"x-stream-offset",v:"first/last/offset/timestamp",n:"Consumer start position"}],
           note:"Use when multiple consumers need to read same messages independently (Kafka-like fan-out without consumer groups)."},
       };
-      var qtMode='classic-durable';
+      var qtMode="classic-durable";
       function renderQtype(){
         var s=QTYPE_DATA[qtMode];
-        var el=mount.querySelector('#qb-qtype-content');
-        el.innerHTML='<div class="qb-box" style="border-color:'+s.color+'44">'+
-          '<div style="font-size:16px;margin-bottom:6px">'+s.icon+' <span style="font-weight:700;color:'+s.color+'">'+s.name+'</span></div>'+
-          '<div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.5">'+s.desc+'</div>'+
-          '<div class="qb-prop-grid">'+s.props.map(function(p){return '<div class="qb-prop"><div class="qb-prop-name">'+p.k+'</div><div class="qb-prop-val">'+p.v+'</div><div class="qb-prop-note">'+p.n+'</div></div>';}).join('')+'</div>'+
-          '<div style="background:#f5b94415;border:1px solid #f5b944;border-radius:6px;padding:8px 12px;font-size:12px;color:#f5b944">⚠️ '+s.note+'</div></div>';
+        var el=mount.querySelector("#qb-qtype-content");
+        el.innerHTML="<div class=\"qb-box\" style=\"border-color:"+s.color+"44\">"+
+          "<div style=\"font-size:16px;margin-bottom:6px\">"+s.icon+" <span style=\"font-weight:700;color:"+s.color+"\">"+s.name+"</span></div>"+
+          "<div style=\"font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.5\">"+s.desc+"</div>"+
+          "<div class=\"qb-prop-grid\">"+s.props.map(function(p){return "<div class=\"qb-prop\"><div class=\"qb-prop-name\">"+p.k+"</div><div class=\"qb-prop-val\">"+p.v+"</div><div class=\"qb-prop-note\">"+p.n+"</div></div>";}).join("")+"</div>"+
+          "<div style=\"background:#f5b94415;border:1px solid #f5b944;border-radius:6px;padding:8px 12px;font-size:12px;color:#f5b944\">⚠️ "+s.note+"</div></div>";
       }
-      mount.querySelectorAll('.qb-stab[data-qtype]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.qb-stab[data-qtype]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');qtMode=b.dataset.qtype;renderQtype();});
+      mount.querySelectorAll(".qb-stab[data-qtype]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".qb-stab[data-qtype]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");qtMode=b.dataset.qtype;renderQtype();});
       });
       renderQtype();
 
@@ -212,13 +212,13 @@
       var TTL_MS=5000;
       function renderTtlMsgs(){
         var now=Date.now();
-        var el=mount.querySelector('#qb-ttl-msgs');
+        var el=mount.querySelector("#qb-ttl-msgs");
         el.innerHTML=ttlMsgs.map(function(m,i){
           var age=now-m.born;
           var pct=Math.min(age/TTL_MS,1);
           var expired=pct>=1;
-          return '<div class="qb-msg '+(expired?'expired':'ready')+'" title="age:'+(age/1000).toFixed(1)+'s">'+m.id+'</div>';
-        }).join('')+(ttlMsgs.length===0?'<div style="color:#30363d;font-size:12px">queue empty</div>':'');
+          return "<div class=\"qb-msg "+(expired?"expired":"ready")+"\" title=\"age:"+(age/1000).toFixed(1)+"s\">"+m.id+"</div>";
+        }).join("")+(ttlMsgs.length===0?"<div style=\"color:#30363d;font-size:12px\">queue empty</div>":"");
       }
       function startTtlTimer(){
         if(ttlTimer)clearInterval(ttlTimer);
@@ -227,55 +227,55 @@
           var before=ttlMsgs.length;
           ttlMsgs=ttlMsgs.filter(function(m){return now-m.born<TTL_MS;});
           renderTtlMsgs();
-          if(ttlMsgs.length<before)mount.querySelector('#qb-ttl-status').innerHTML='⏰ Message(s) expired after <b>5s TTL</b>. Discarded (or sent to DLQ if configured).';
+          if(ttlMsgs.length<before)mount.querySelector("#qb-ttl-status").innerHTML="⏰ Message(s) expired after <b>5s TTL</b>. Discarded (or sent to DLQ if configured).";
         },200);
       }
-      mount.querySelector('#qb-ttl-add').addEventListener('click',function(){
+      mount.querySelector("#qb-ttl-add").addEventListener("click",function(){
         ttlCount++;
-        ttlMsgs.push({id:'m'+ttlCount,born:Date.now()});
+        ttlMsgs.push({id:"m"+ttlCount,born:Date.now()});
         renderTtlMsgs();
-        mount.querySelector('#qb-ttl-status').innerHTML='Published <b>m'+ttlCount+'</b>. Will expire in 5 seconds if not consumed.';
+        mount.querySelector("#qb-ttl-status").innerHTML="Published <b>m"+ttlCount+"</b>. Will expire in 5 seconds if not consumed.";
         startTtlTimer();
       });
-      mount.querySelector('#qb-ttl-consume').addEventListener('click',function(){
-        if(!ttlMsgs.length){mount.querySelector('#qb-ttl-status').innerHTML='Queue empty.';return;}
+      mount.querySelector("#qb-ttl-consume").addEventListener("click",function(){
+        if(!ttlMsgs.length){mount.querySelector("#qb-ttl-status").innerHTML="Queue empty.";return;}
         var m=ttlMsgs.shift();
         renderTtlMsgs();
-        mount.querySelector('#qb-ttl-status').innerHTML='✓ Consumed <b>'+m.id+'</b>. '+ttlMsgs.length+' remaining.';
+        mount.querySelector("#qb-ttl-status").innerHTML="✓ Consumed <b>"+m.id+"</b>. "+ttlMsgs.length+" remaining.";
       });
-      mount.querySelector('#qb-ttl-reset2').addEventListener('click',function(){
+      mount.querySelector("#qb-ttl-reset2").addEventListener("click",function(){
         clearInterval(ttlTimer);ttlTimer=null;ttlMsgs=[];ttlCount=0;renderTtlMsgs();
-        mount.querySelector('#qb-ttl-status').innerHTML='Messages expire after 5 seconds. Watch them disappear!';
+        mount.querySelector("#qb-ttl-status").innerHTML="Messages expire after 5 seconds. Watch them disappear!";
       });
 
       // PRIORITY
       var prioMsgs=[], prioCount=0;
       function renderPrioMsgs(){
-        var el=mount.querySelector('#qb-prio-msgs');
+        var el=mount.querySelector("#qb-prio-msgs");
         var sorted=prioMsgs.slice().sort(function(a,b){return b.prio-a.prio;});
         el.innerHTML=sorted.map(function(m){
-          var cls=m.prio>=8?'prio-hi':m.prio>=4?'ready':'prio-lo';
-          return '<div class="qb-msg '+cls+'" title="priority:'+m.prio+'">'+m.prio+'</div>';
-        }).join('')+(sorted.length===0?'<div style="color:#30363d;font-size:12px">queue empty</div>':'');
+          var cls=m.prio>=8?"prio-hi":m.prio>=4?"ready":"prio-lo";
+          return "<div class=\"qb-msg "+cls+"\" title=\"priority:"+m.prio+"\">"+m.prio+"</div>";
+        }).join("")+(sorted.length===0?"<div style=\"color:#30363d;font-size:12px\">queue empty</div>":"");
       }
-      mount.querySelectorAll('.qb-stab[data-prio]').forEach(function(b){
-        b.addEventListener('click',function(){
+      mount.querySelectorAll(".qb-stab[data-prio]").forEach(function(b){
+        b.addEventListener("click",function(){
           prioCount++;
           var prio=parseInt(b.dataset.prio);
-          prioMsgs.push({id:'m'+prioCount,prio:prio});
+          prioMsgs.push({id:"m"+prioCount,prio:prio});
           renderPrioMsgs();
-          mount.querySelector('#qb-prio-status').innerHTML='Published m'+prioCount+' with priority <b>'+prio+'</b>. Queue sorted by priority.';
+          mount.querySelector("#qb-prio-status").innerHTML="Published m"+prioCount+" with priority <b>"+prio+"</b>. Queue sorted by priority.";
         });
       });
-      mount.querySelector('#qb-prio-consume').addEventListener('click',function(){
-        if(!prioMsgs.length){mount.querySelector('#qb-prio-status').innerHTML='Queue empty.';return;}
+      mount.querySelector("#qb-prio-consume").addEventListener("click",function(){
+        if(!prioMsgs.length){mount.querySelector("#qb-prio-status").innerHTML="Queue empty.";return;}
         var sorted=prioMsgs.slice().sort(function(a,b){return b.prio-a.prio;});
         var top=sorted[0];
         prioMsgs.splice(prioMsgs.indexOf(top),1);
         renderPrioMsgs();
-        mount.querySelector('#qb-prio-status').innerHTML='✓ Consumed <b>'+top.id+'</b> (priority=<b>'+top.prio+'</b>). Highest priority delivered first.';
+        mount.querySelector("#qb-prio-status").innerHTML="✓ Consumed <b>"+top.id+"</b> (priority=<b>"+top.prio+"</b>). Highest priority delivered first.";
       });
-      mount.querySelector('#qb-prio-reset').addEventListener('click',function(){prioMsgs=[];prioCount=0;renderPrioMsgs();mount.querySelector('#qb-prio-status').innerHTML='Publish messages, then consume — highest priority always delivered first.';});
+      mount.querySelector("#qb-prio-reset").addEventListener("click",function(){prioMsgs=[];prioCount=0;renderPrioMsgs();mount.querySelector("#qb-prio-status").innerHTML="Publish messages, then consume — highest priority always delivered first.";});
       renderPrioMsgs();
 
       // QUORUM
@@ -289,34 +289,34 @@
       var qqStep=0,qqTimer=null;
       function renderQuorum(){
         var s=QSTEPS[qqStep];
-        var stateColor={idle:'#30363d',receiving:'#f5b944',replicating:'#58a6ff',acking:'#f59134',committed:'#3dd68c',consumed:'#d2a8ff'};
-        mount.querySelector('#qb-quorum-steps').innerHTML=QSTEPS.map(function(st,i){
-          return '<div style="background:#161b22;border:1px solid '+(i===qqStep?st.color:'#30363d')+';border-radius:8px;padding:8px;opacity:'+(i<=qqStep?1:0.4)+';transition:all .3s">'+
-            '<div style="font-size:11px;font-weight:700;color:'+st.color+';margin-bottom:4px">'+st.title+'</div>'+
-            '<div style="font-size:10px;color:#8b949e">'+st.desc.substring(0,50)+'...</div></div>';
-        }).join('');
-        mount.querySelector('#qb-qinfo').innerHTML='<b style="color:'+s.color+'">'+s.title+':</b> '+s.desc;
-        mount.querySelector('#qb-qstep').textContent='Step '+(qqqStep=qqStep+1)+'/'+QSTEPS.length;
+        var stateColor={idle:"#30363d",receiving:"#f5b944",replicating:"#58a6ff",acking:"#f59134",committed:"#3dd68c",consumed:"#d2a8ff"};
+        mount.querySelector("#qb-quorum-steps").innerHTML=QSTEPS.map(function(st,i){
+          return "<div style=\"background:#161b22;border:1px solid "+(i===qqStep?st.color:"#30363d")+";border-radius:8px;padding:8px;opacity:"+(i<=qqStep?1:0.4)+";transition:all .3s\">"+
+            "<div style=\"font-size:11px;font-weight:700;color:"+st.color+";margin-bottom:4px\">"+st.title+"</div>"+
+            "<div style=\"font-size:10px;color:#8b949e\">"+st.desc.substring(0,50)+"...</div></div>";
+        }).join("");
+        mount.querySelector("#qb-qinfo").innerHTML="<b style=\"color:"+s.color+"\">"+s.title+":</b> "+s.desc;
+        mount.querySelector("#qb-qstep").textContent="Step "+(qqqStep=qqStep+1)+"/"+QSTEPS.length;
         var qqqStep=qqStep;
-        mount.querySelector('#qb-qstep').textContent='Step '+(qqqStep+1)+'/'+QSTEPS.length;
+        mount.querySelector("#qb-qstep").textContent="Step "+(qqqStep+1)+"/"+QSTEPS.length;
       }
-      function qqStop(){clearInterval(qqTimer);qqTimer=null;mount.querySelector('#qb-qplay').textContent='▶ Play';}
-      mount.querySelector('#qb-qplay').addEventListener('click',function(){if(qqTimer){qqStop();}else{qqTimer=setInterval(function(){qqStep=Math.min(qqStep+1,QSTEPS.length-1);renderQuorum();if(qqStep===QSTEPS.length-1)qqStop();},1700);mount.querySelector('#qb-qplay').textContent='⏸ Pause';}});
-      mount.querySelector('#qb-qnext').addEventListener('click',function(){qqStop();qqStep=Math.min(qqStep+1,QSTEPS.length-1);renderQuorum();});
-      mount.querySelector('#qb-qprev').addEventListener('click',function(){qqStop();qqStep=Math.max(qqStep-1,0);renderQuorum();});
-      mount.querySelector('#qb-qreset').addEventListener('click',function(){qqStop();qqStep=0;renderQuorum();});
+      function qqStop(){clearInterval(qqTimer);qqTimer=null;mount.querySelector("#qb-qplay").textContent="▶ Play";}
+      mount.querySelector("#qb-qplay").addEventListener("click",function(){if(qqTimer){qqStop();}else{qqTimer=setInterval(function(){qqStep=Math.min(qqStep+1,QSTEPS.length-1);renderQuorum();if(qqStep===QSTEPS.length-1)qqStop();},1700);mount.querySelector("#qb-qplay").textContent="⏸ Pause";}});
+      mount.querySelector("#qb-qnext").addEventListener("click",function(){qqStop();qqStep=Math.min(qqStep+1,QSTEPS.length-1);renderQuorum();});
+      mount.querySelector("#qb-qprev").addEventListener("click",function(){qqStop();qqStep=Math.max(qqStep-1,0);renderQuorum();});
+      mount.querySelector("#qb-qreset").addEventListener("click",function(){qqStop();qqStep=0;renderQuorum();});
       renderQuorum();
 
       // TABS
-      mount.querySelectorAll('.qbbtn[data-tab]').forEach(function(btn){
-        btn.addEventListener('click',function(){
-          mount.querySelectorAll('.qbbtn[data-tab]').forEach(function(b){b.classList.remove('on');});
-          mount.querySelectorAll('.qbp').forEach(function(p){p.classList.remove('on');});
-          btn.classList.add('on');
-          mount.querySelector('#qb-'+btn.dataset.tab).classList.add('on');
+      mount.querySelectorAll(".qbbtn[data-tab]").forEach(function(btn){
+        btn.addEventListener("click",function(){
+          mount.querySelectorAll(".qbbtn[data-tab]").forEach(function(b){b.classList.remove("on");});
+          mount.querySelectorAll(".qbp").forEach(function(p){p.classList.remove("on");});
+          btn.classList.add("on");
+          mount.querySelector("#qb-"+btn.dataset.tab).classList.add("on");
         });
       });
-      mount.querySelectorAll('.qb-q-card').forEach(function(c){c.addEventListener('click',function(){c.classList.toggle('open');});});
+      mount.querySelectorAll(".qb-q-card").forEach(function(c){c.addEventListener("click",function(){c.classList.toggle("open");});});
     },
     concept: `**L1 (30s ELI5):** Queue = mailbox. Durable = survives restart. TTL = message auto-expires. Priority = high-priority delivered first. Quorum = replicated across multiple brokers for HA.
 

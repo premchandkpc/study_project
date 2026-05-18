@@ -8,7 +8,7 @@
  *   export const selectIsDone = (id) => createSelector(selectProgress, p => p.has(id));
  */
 (function () {
-  'use strict';
+  "use strict";
   const { Store, TopicsService } = window.App;
   const { State } = Store;
 

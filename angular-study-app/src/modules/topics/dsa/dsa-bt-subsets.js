@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-bt-subsets",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Feature toggle combinations — generate all ON/OFF combinations of feature flags.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'backtrack.subsets',
-        time:  'O(2^n)',
-        space: 'O(n)',
+        title: "backtrack.subsets",
+        time:  "O(2^n)",
+        space: "O(n)",
         code: `function subsets(nums) {
   const result = [];
   function backtrack(start, current) {

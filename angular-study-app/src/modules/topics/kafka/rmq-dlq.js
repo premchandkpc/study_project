@@ -225,77 +225,77 @@ x-dead-letter-exchange: work.exchange</pre>
   </div>
 </div>`;
 
-      var tip = document.getElementById('dl-tip');
+      var tip = document.getElementById("dl-tip");
       function showTip(el, html) {
-        el.addEventListener('mouseenter', function (e) {
+        el.addEventListener("mouseenter", function (e) {
           tip.innerHTML = html;
-          tip.style.display = 'block';
+          tip.style.display = "block";
         });
-        el.addEventListener('mousemove', function (e) {
-          tip.style.left = (e.clientX + 14) + 'px';
-          tip.style.top = (e.clientY - 10) + 'px';
+        el.addEventListener("mousemove", function (e) {
+          tip.style.left = (e.clientX + 14) + "px";
+          tip.style.top = (e.clientY - 10) + "px";
         });
-        el.addEventListener('mouseleave', function () { tip.style.display = 'none'; });
+        el.addEventListener("mouseleave", function () { tip.style.display = "none"; });
       }
 
       // Tab switching
-      document.querySelectorAll('#dl-root .dl-tab').forEach(function (t) {
-        t.addEventListener('click', function () {
-          document.querySelectorAll('#dl-root .dl-tab').forEach(function (x) { x.classList.remove('on'); });
-          document.querySelectorAll('#dl-root .dl-panel').forEach(function (x) { x.classList.remove('on'); });
-          t.classList.add('on');
-          document.getElementById(t.dataset.tab).classList.add('on');
+      document.querySelectorAll("#dl-root .dl-tab").forEach(function (t) {
+        t.addEventListener("click", function () {
+          document.querySelectorAll("#dl-root .dl-tab").forEach(function (x) { x.classList.remove("on"); });
+          document.querySelectorAll("#dl-root .dl-panel").forEach(function (x) { x.classList.remove("on"); });
+          t.classList.add("on");
+          document.getElementById(t.dataset.tab).classList.add("on");
         });
       });
 
       // --- TAB 1: DLQ Basics animation ---
       var basicsSteps = [
         {
-          nodes: { producer: '#3fb950', exchange: '#30363d', wq: '#30363d', dlx: '#30363d', dlq: '#30363d' },
+          nodes: { producer: "#3fb950", exchange: "#30363d", wq: "#30363d", dlx: "#30363d", dlq: "#30363d" },
           arrows: [false, false, false, false],
-          info: 'Step 1 — Producer publishes message to Exchange. Message contains payment data.'
+          info: "Step 1 — Producer publishes message to Exchange. Message contains payment data."
         },
         {
-          nodes: { producer: '#3fb950', exchange: '#58a6ff', wq: '#30363d', dlx: '#30363d', dlq: '#30363d' },
+          nodes: { producer: "#3fb950", exchange: "#58a6ff", wq: "#30363d", dlx: "#30363d", dlq: "#30363d" },
           arrows: [true, false, false, false],
-          info: 'Step 2 — Exchange routes message to Work Queue via routing key binding.'
+          info: "Step 2 — Exchange routes message to Work Queue via routing key binding."
         },
         {
-          nodes: { producer: '#3fb950', exchange: '#58a6ff', wq: '#cdd9e5', dlx: '#30363d', dlq: '#30363d' },
+          nodes: { producer: "#3fb950", exchange: "#58a6ff", wq: "#cdd9e5", dlx: "#30363d", dlq: "#30363d" },
           arrows: [true, true, false, false],
-          info: 'Step 3 — Message sits in Work Queue. Consumer processes... but FAILS. nack(requeue=false).'
+          info: "Step 3 — Message sits in Work Queue. Consumer processes... but FAILS. nack(requeue=false)."
         },
         {
-          nodes: { producer: '#3fb950', exchange: '#58a6ff', wq: '#da3633', dlx: '#f59134', dlq: '#30363d' },
+          nodes: { producer: "#3fb950", exchange: "#58a6ff", wq: "#da3633", dlx: "#f59134", dlq: "#30363d" },
           arrows: [true, true, true, false],
-          info: 'Step 4 — Rejection triggers x-dead-letter-exchange. Message routed to Dead Letter Exchange (DLX).'
+          info: "Step 4 — Rejection triggers x-dead-letter-exchange. Message routed to Dead Letter Exchange (DLX)."
         },
         {
-          nodes: { producer: '#3fb950', exchange: '#58a6ff', wq: '#da3633', dlx: '#f59134', dlq: '#da3633' },
+          nodes: { producer: "#3fb950", exchange: "#58a6ff", wq: "#da3633", dlx: "#f59134", dlq: "#da3633" },
           arrows: [true, true, true, true],
-          info: 'Step 5 — DLX routes to Dead Letter Queue. x-death header records: queue, reason=rejected, count=1, time. Ready for inspection.'
+          info: "Step 5 — DLX routes to Dead Letter Queue. x-death header records: queue, reason=rejected, count=1, time. Ready for inspection."
         }
       ];
       var bStep = 0, bTimer = null, bPlaying = false;
 
       function renderBasics() {
         var s = basicsSteps[bStep];
-        var ids = ['producer', 'exchange', 'wq', 'dlx', 'dlq'];
+        var ids = ["producer", "exchange", "wq", "dlx", "dlq"];
         var colors = [s.nodes.producer, s.nodes.exchange, s.nodes.wq, s.nodes.dlx, s.nodes.dlq];
         ids.forEach(function (id, i) {
-          var el = document.getElementById('dl-n-' + id);
+          var el = document.getElementById("dl-n-" + id);
           if (el) { el.style.borderColor = colors[i]; el.style.color = colors[i]; }
         });
         [0, 1, 2, 3].forEach(function (i) {
-          var el = document.getElementById('dl-a' + i);
-          if (el) el.classList.toggle('lit', s.arrows[i]);
+          var el = document.getElementById("dl-a" + i);
+          if (el) el.classList.toggle("lit", s.arrows[i]);
         });
-        document.getElementById('dl-basics-info').textContent = s.info;
+        document.getElementById("dl-basics-info").textContent = s.info;
       }
 
-      document.getElementById('dl-b-play').addEventListener('click', function () {
+      document.getElementById("dl-b-play").addEventListener("click", function () {
         bPlaying = !bPlaying;
-        this.textContent = bPlaying ? '⏸ Pause' : '▶ Play';
+        this.textContent = bPlaying ? "⏸ Pause" : "▶ Play";
         if (bPlaying) {
           bTimer = setInterval(function () {
             bStep = (bStep + 1) % basicsSteps.length;
@@ -303,48 +303,48 @@ x-dead-letter-exchange: work.exchange</pre>
           }, 1400);
         } else { clearInterval(bTimer); }
       });
-      document.getElementById('dl-b-next').addEventListener('click', function () { bStep = Math.min(bStep + 1, basicsSteps.length - 1); renderBasics(); });
-      document.getElementById('dl-b-prev').addEventListener('click', function () { bStep = Math.max(bStep - 1, 0); renderBasics(); });
-      document.getElementById('dl-b-reset').addEventListener('click', function () {
+      document.getElementById("dl-b-next").addEventListener("click", function () { bStep = Math.min(bStep + 1, basicsSteps.length - 1); renderBasics(); });
+      document.getElementById("dl-b-prev").addEventListener("click", function () { bStep = Math.max(bStep - 1, 0); renderBasics(); });
+      document.getElementById("dl-b-reset").addEventListener("click", function () {
         clearInterval(bTimer); bPlaying = false;
-        document.getElementById('dl-b-play').textContent = '▶ Play';
+        document.getElementById("dl-b-play").textContent = "▶ Play";
         bStep = 0; renderBasics();
       });
 
       // Tooltips on basics nodes
-      showTip(document.getElementById('dl-n-producer'), '<b>Producer</b><br>Publishes messages with routing key.<br><code>channel.publish(exchange, routingKey, Buffer.from(data))</code>');
-      showTip(document.getElementById('dl-n-exchange'), '<b>Exchange</b><br>Routes messages to queues via bindings.<br>Types: direct, fanout, topic, headers');
-      showTip(document.getElementById('dl-n-wq'), '<b>Work Queue</b><br>Declared with x-dead-letter-exchange.<br>Failed messages auto-route to DLX.');
-      showTip(document.getElementById('dl-n-dlx'), '<b>Dead Letter Exchange</b><br>Special exchange receiving dead messages.<br>Routes to DLQ via binding key.');
-      showTip(document.getElementById('dl-n-dlq'), '<b>Dead Letter Queue</b><br>Holds all failed messages with x-death metadata.<br>Inspect: rabbitmqctl list_queues');
+      showTip(document.getElementById("dl-n-producer"), "<b>Producer</b><br>Publishes messages with routing key.<br><code>channel.publish(exchange, routingKey, Buffer.from(data))</code>");
+      showTip(document.getElementById("dl-n-exchange"), "<b>Exchange</b><br>Routes messages to queues via bindings.<br>Types: direct, fanout, topic, headers");
+      showTip(document.getElementById("dl-n-wq"), "<b>Work Queue</b><br>Declared with x-dead-letter-exchange.<br>Failed messages auto-route to DLX.");
+      showTip(document.getElementById("dl-n-dlx"), "<b>Dead Letter Exchange</b><br>Special exchange receiving dead messages.<br>Routes to DLQ via binding key.");
+      showTip(document.getElementById("dl-n-dlq"), "<b>Dead Letter Queue</b><br>Holds all failed messages with x-death metadata.<br>Inspect: rabbitmqctl list_queues");
       renderBasics();
 
       // --- TAB 2: Retry Pattern animation ---
       var retrySteps = [
-        { work: 'payment_123', retry: '', dlq: '', xdeath: 'No x-death yet — message just arrived in work queue.', info: 'Message enters Work Queue. Consumer picks it up...' },
-        { work: '', retry: '', dlq: '', xdeath: 'Processing... FAILED. nack(requeue=false)', info: 'Consumer fails. nack with requeue=false → DLX routes to Retry Queue.' },
-        { work: '', retry: 'payment_123 (waiting 5s)', dlq: '', xdeath: '[{"queue":"work","reason":"rejected","count":1,"time":"now"}]', info: 'Message enters Retry Queue. TTL starts (5 seconds). Message waits.' },
-        { work: 'payment_123 (attempt 2)', retry: '', dlq: '', xdeath: '[{"queue":"work","reason":"rejected","count":1}] — TTL expired, back to work queue!', info: 'TTL expires! Retry Queue dead-letters BACK to work exchange. Attempt 2 begins.' },
-        { work: '', retry: 'payment_123 (waiting 5s)', dlq: '', xdeath: '[{"queue":"work","reason":"rejected","count":2}]', info: 'Fails again. count=2 in x-death. Back to retry queue.' },
-        { work: '', retry: '', dlq: 'payment_123 ⚰️', xdeath: '[{"queue":"work","reason":"rejected","count":3}] — count >= 3, send to DLQ!', info: 'count >= 3! Consumer detects max retries exceeded. Routes to DLQ. Alert engineers.' }
+        { work: "payment_123", retry: "", dlq: "", xdeath: "No x-death yet — message just arrived in work queue.", info: "Message enters Work Queue. Consumer picks it up..." },
+        { work: "", retry: "", dlq: "", xdeath: "Processing... FAILED. nack(requeue=false)", info: "Consumer fails. nack with requeue=false → DLX routes to Retry Queue." },
+        { work: "", retry: "payment_123 (waiting 5s)", dlq: "", xdeath: "[{\"queue\":\"work\",\"reason\":\"rejected\",\"count\":1,\"time\":\"now\"}]", info: "Message enters Retry Queue. TTL starts (5 seconds). Message waits." },
+        { work: "payment_123 (attempt 2)", retry: "", dlq: "", xdeath: "[{\"queue\":\"work\",\"reason\":\"rejected\",\"count\":1}] — TTL expired, back to work queue!", info: "TTL expires! Retry Queue dead-letters BACK to work exchange. Attempt 2 begins." },
+        { work: "", retry: "payment_123 (waiting 5s)", dlq: "", xdeath: "[{\"queue\":\"work\",\"reason\":\"rejected\",\"count\":2}]", info: "Fails again. count=2 in x-death. Back to retry queue." },
+        { work: "", retry: "", dlq: "payment_123 ⚰️", xdeath: "[{\"queue\":\"work\",\"reason\":\"rejected\",\"count\":3}] — count >= 3, send to DLQ!", info: "count >= 3! Consumer detects max retries exceeded. Routes to DLQ. Alert engineers." }
       ];
       var rStep = 0, rTimer = null, rPlaying = false;
 
       function renderRetry() {
         var s = retrySteps[rStep];
-        var wEl = document.getElementById('dl-rq-work');
-        var rEl = document.getElementById('dl-rq-retry');
-        var dEl = document.getElementById('dl-rq-dlq');
-        wEl.innerHTML = s.work ? '<div style="background:#3fb950;color:#0d1117;border-radius:12px;padding:5px 12px;font-size:11px;font-weight:bold;display:inline-block">' + s.work + '</div>' : '';
-        rEl.innerHTML = s.retry ? '<div style="background:#f59134;color:#0d1117;border-radius:12px;padding:5px 12px;font-size:11px;font-weight:bold;display:inline-block">' + s.retry + '</div>' : '';
-        dEl.innerHTML = s.dlq ? '<div style="background:#da3633;color:#fff;border-radius:12px;padding:5px 12px;font-size:11px;font-weight:bold;display:inline-block">' + s.dlq + '</div>' : '';
-        document.getElementById('dl-xdeath').textContent = s.xdeath;
-        document.getElementById('dl-retry-info').textContent = s.info;
+        var wEl = document.getElementById("dl-rq-work");
+        var rEl = document.getElementById("dl-rq-retry");
+        var dEl = document.getElementById("dl-rq-dlq");
+        wEl.innerHTML = s.work ? "<div style=\"background:#3fb950;color:#0d1117;border-radius:12px;padding:5px 12px;font-size:11px;font-weight:bold;display:inline-block\">" + s.work + "</div>" : "";
+        rEl.innerHTML = s.retry ? "<div style=\"background:#f59134;color:#0d1117;border-radius:12px;padding:5px 12px;font-size:11px;font-weight:bold;display:inline-block\">" + s.retry + "</div>" : "";
+        dEl.innerHTML = s.dlq ? "<div style=\"background:#da3633;color:#fff;border-radius:12px;padding:5px 12px;font-size:11px;font-weight:bold;display:inline-block\">" + s.dlq + "</div>" : "";
+        document.getElementById("dl-xdeath").textContent = s.xdeath;
+        document.getElementById("dl-retry-info").textContent = s.info;
       }
 
-      document.getElementById('dl-r-play').addEventListener('click', function () {
+      document.getElementById("dl-r-play").addEventListener("click", function () {
         rPlaying = !rPlaying;
-        this.textContent = rPlaying ? '⏸ Pause' : '▶ Play';
+        this.textContent = rPlaying ? "⏸ Pause" : "▶ Play";
         if (rPlaying) {
           rTimer = setInterval(function () {
             rStep = (rStep + 1) % retrySteps.length;
@@ -352,11 +352,11 @@ x-dead-letter-exchange: work.exchange</pre>
           }, 1800);
         } else { clearInterval(rTimer); }
       });
-      document.getElementById('dl-r-next').addEventListener('click', function () { rStep = Math.min(rStep + 1, retrySteps.length - 1); renderRetry(); });
-      document.getElementById('dl-r-prev').addEventListener('click', function () { rStep = Math.max(rStep - 1, 0); renderRetry(); });
-      document.getElementById('dl-r-reset').addEventListener('click', function () {
+      document.getElementById("dl-r-next").addEventListener("click", function () { rStep = Math.min(rStep + 1, retrySteps.length - 1); renderRetry(); });
+      document.getElementById("dl-r-prev").addEventListener("click", function () { rStep = Math.max(rStep - 1, 0); renderRetry(); });
+      document.getElementById("dl-r-reset").addEventListener("click", function () {
         clearInterval(rTimer); rPlaying = false;
-        document.getElementById('dl-r-play').textContent = '▶ Play';
+        document.getElementById("dl-r-play").textContent = "▶ Play";
         rStep = 0; renderRetry();
       });
       renderRetry();
@@ -364,8 +364,8 @@ x-dead-letter-exchange: work.exchange</pre>
       // --- TAB 3: Reasons ---
       var reasons = {
         rejected: {
-          title: 'rejected',
-          desc: 'Consumer explicitly nacks or rejects message with requeue=false. Most common. Use when message is malformed or business logic fails permanently.',
+          title: "rejected",
+          desc: "Consumer explicitly nacks or rejects message with requeue=false. Most common. Use when message is malformed or business logic fails permanently.",
           code: `// Consumer rejects bad message
 channel.consume('work.queue', function(msg) {
   try {
@@ -376,12 +376,12 @@ channel.consume('work.queue', function(msg) {
     channel.nack(msg, false, false);
   }
 });`,
-          color: '#da3633',
-          flow: ['Consumer reads msg', '→ Processing FAILS', '→ nack(requeue=false)', '→ Broker dead-letters', '→ DLX → DLQ']
+          color: "#da3633",
+          flow: ["Consumer reads msg", "→ Processing FAILS", "→ nack(requeue=false)", "→ Broker dead-letters", "→ DLX → DLQ"]
         },
         expired: {
-          title: 'expired',
-          desc: 'Message TTL elapsed before consumer read it. Set via x-message-ttl on queue or expiration property on message. Silent — no consumer involvement.',
+          title: "expired",
+          desc: "Message TTL elapsed before consumer read it. Set via x-message-ttl on queue or expiration property on message. Silent — no consumer involvement.",
           code: `// Queue-level TTL
 channel.assertQueue('alerts', {
   arguments: { 'x-message-ttl': 60000 } // 1 min
@@ -391,12 +391,12 @@ channel.assertQueue('alerts', {
 channel.publish('ex', 'key', data, {
   expiration: '30000'  // 30 seconds
 });`,
-          color: '#f0883e',
-          flow: ['Message published', '→ Sits in queue', '→ TTL expires (no consumer)', '→ Broker dead-letters', '→ DLX → DLQ']
+          color: "#f0883e",
+          flow: ["Message published", "→ Sits in queue", "→ TTL expires (no consumer)", "→ Broker dead-letters", "→ DLX → DLQ"]
         },
         maxlen: {
-          title: 'maxlen',
-          desc: 'Queue full (x-max-length exceeded) and x-overflow=drop-head. Oldest message(s) dropped and dead-lettered. Prevents memory exhaustion.',
+          title: "maxlen",
+          desc: "Queue full (x-max-length exceeded) and x-overflow=drop-head. Oldest message(s) dropped and dead-lettered. Prevents memory exhaustion.",
           code: `// Bounded queue — drop oldest when full
 channel.assertQueue('events', {
   arguments: {
@@ -407,86 +407,86 @@ channel.assertQueue('events', {
 });
 // Alternative: reject-publish (publisher gets error)
 // 'x-overflow': 'reject-publish'`,
-          color: '#a371f7',
-          flow: ['Queue at max capacity', '→ New message arrives', '→ Oldest msg evicted', '→ Broker dead-letters', '→ DLX → DLQ']
+          color: "#a371f7",
+          flow: ["Queue at max capacity", "→ New message arrives", "→ Oldest msg evicted", "→ Broker dead-letters", "→ DLX → DLQ"]
         }
       };
 
       function renderReason(key) {
         var r = reasons[key];
-        document.getElementById('dl-reason-title').textContent = r.title;
-        document.getElementById('dl-reason-title').style.color = r.color;
-        document.getElementById('dl-reason-desc').textContent = r.desc;
-        document.getElementById('dl-reason-code').innerHTML = '<pre style="margin:0;font-size:11px">' + r.code + '</pre>';
-        var anim = document.getElementById('dl-reason-anim');
+        document.getElementById("dl-reason-title").textContent = r.title;
+        document.getElementById("dl-reason-title").style.color = r.color;
+        document.getElementById("dl-reason-desc").textContent = r.desc;
+        document.getElementById("dl-reason-code").innerHTML = "<pre style=\"margin:0;font-size:11px\">" + r.code + "</pre>";
+        var anim = document.getElementById("dl-reason-anim");
         anim.innerHTML = r.flow.map(function (step, i) {
-          return '<div style="padding:8px 12px;margin-bottom:6px;border-radius:5px;background:#161b22;border:1px solid ' + (i === r.flow.length - 1 ? r.color : '#30363d') + ';color:' + (i === r.flow.length - 1 ? r.color : '#cdd9e5') + ';font-size:12px;transition:all .3s">' + step + '</div>';
-        }).join('');
-        document.getElementById('dl-reasons-info').textContent = 'Reason: ' + r.title + ' — ' + r.desc.substring(0, 80) + '...';
-        ['rejected', 'expired', 'maxlen'].forEach(function (k) {
-          document.getElementById('dl-reason-' + k).classList.toggle('active', k === key);
+          return "<div style=\"padding:8px 12px;margin-bottom:6px;border-radius:5px;background:#161b22;border:1px solid " + (i === r.flow.length - 1 ? r.color : "#30363d") + ";color:" + (i === r.flow.length - 1 ? r.color : "#cdd9e5") + ";font-size:12px;transition:all .3s\">" + step + "</div>";
+        }).join("");
+        document.getElementById("dl-reasons-info").textContent = "Reason: " + r.title + " — " + r.desc.substring(0, 80) + "...";
+        ["rejected", "expired", "maxlen"].forEach(function (k) {
+          document.getElementById("dl-reason-" + k).classList.toggle("active", k === key);
         });
       }
 
-      ['rejected', 'expired', 'maxlen'].forEach(function (k) {
-        document.getElementById('dl-reason-' + k).addEventListener('click', function () { renderReason(k); });
+      ["rejected", "expired", "maxlen"].forEach(function (k) {
+        document.getElementById("dl-reason-" + k).addEventListener("click", function () { renderReason(k); });
       });
-      renderReason('rejected');
+      renderReason("rejected");
 
       // --- TAB 4: Interview ---
       var qas = [
-        { q: 'What happens if DLQ itself fills up?', a: 'Messages are dropped (if x-max-length set) or queue grows unbounded. Best practice: monitor DLQ length, alert at threshold. Never put DLX on a DLQ (infinite loop).' },
-        { q: 'Difference between reject and nack?', a: 'reject = single message. nack = can reject multiple (multiple=true). Both accept requeue flag. Functionally identical for dead-lettering purposes.' },
-        { q: 'How to prevent DLQ infinite loops?', a: 'Check x-death[count] before nacking. If count >= maxRetries, log and ack (discard) or route to a final-dead queue without DLX configured.' },
-        { q: 'Can you set different TTL per message?', a: 'Yes — expiration property on publish (milliseconds as string). If both queue TTL and message TTL set, lower value wins.' },
-        { q: 'How does quorum queue handle dead-lettering?', a: 'Quorum queues support at-least-once dead-lettering. Classic queues use at-most-once. Use x-dead-letter-strategy: at-least-once for safety.' }
+        { q: "What happens if DLQ itself fills up?", a: "Messages are dropped (if x-max-length set) or queue grows unbounded. Best practice: monitor DLQ length, alert at threshold. Never put DLX on a DLQ (infinite loop)." },
+        { q: "Difference between reject and nack?", a: "reject = single message. nack = can reject multiple (multiple=true). Both accept requeue flag. Functionally identical for dead-lettering purposes." },
+        { q: "How to prevent DLQ infinite loops?", a: "Check x-death[count] before nacking. If count >= maxRetries, log and ack (discard) or route to a final-dead queue without DLX configured." },
+        { q: "Can you set different TTL per message?", a: "Yes — expiration property on publish (milliseconds as string). If both queue TTL and message TTL set, lower value wins." },
+        { q: "How does quorum queue handle dead-lettering?", a: "Quorum queues support at-least-once dead-lettering. Classic queues use at-most-once. Use x-dead-letter-strategy: at-least-once for safety." }
       ];
 
-      document.getElementById('dl-qa-list').innerHTML = qas.map(function (qa, i) {
-        return '<div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;margin-bottom:8px;cursor:pointer" onclick="this.querySelector(\'.dl-ans\').style.display=this.querySelector(\'.dl-ans\').style.display===\'none\'?\'block\':\'none\'">' +
-          '<div style="color:#f59134;font-size:12px;font-weight:bold">Q' + (i + 1) + ': ' + qa.q + '</div>' +
-          '<div class="dl-ans" style="display:none;color:#cdd9e5;font-size:12px;margin-top:8px;line-height:1.6">' + qa.a + '</div></div>';
-      }).join('');
+      document.getElementById("dl-qa-list").innerHTML = qas.map(function (qa, i) {
+        return "<div style=\"background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;margin-bottom:8px;cursor:pointer\" onclick=\"this.querySelector('.dl-ans').style.display=this.querySelector('.dl-ans').style.display==='none'?'block':'none'\">" +
+          "<div style=\"color:#f59134;font-size:12px;font-weight:bold\">Q" + (i + 1) + ": " + qa.q + "</div>" +
+          "<div class=\"dl-ans\" style=\"display:none;color:#cdd9e5;font-size:12px;margin-top:8px;line-height:1.6\">" + qa.a + "</div></div>";
+      }).join("");
 
       // WRONG vs CORRECT visual
       var wrongRight = [
         {
-          wrong: 'nack(msg, false, true)\n// requeue=true → goes BACK\n// to same queue, NOT to DLX',
-          right: 'nack(msg, false, false)\n// requeue=false → triggers\n// dead-lettering to DLX',
-          label: 'nack requeue flag'
+          wrong: "nack(msg, false, true)\n// requeue=true → goes BACK\n// to same queue, NOT to DLX",
+          right: "nack(msg, false, false)\n// requeue=false → triggers\n// dead-lettering to DLX",
+          label: "nack requeue flag"
         },
         {
-          wrong: '// DLQ with its OWN DLX\nchannel.assertQueue("dlq", {\n  arguments: {\n    "x-dead-letter-exchange": "dlx2"\n  }\n});\n// INFINITE LOOP!',
-          right: '// DLQ has NO x-dead-letter-exchange\nchannel.assertQueue("payment.dlq", {\n  durable: true\n  // no DLX — messages stay here\n});',
-          label: 'DLQ config'
+          wrong: "// DLQ with its OWN DLX\nchannel.assertQueue(\"dlq\", {\n  arguments: {\n    \"x-dead-letter-exchange\": \"dlx2\"\n  }\n});\n// INFINITE LOOP!",
+          right: "// DLQ has NO x-dead-letter-exchange\nchannel.assertQueue(\"payment.dlq\", {\n  durable: true\n  // no DLX — messages stay here\n});",
+          label: "DLQ config"
         },
         {
-          wrong: 'channel.publish(ex, key, data, {\n  expiration: 30000  // NUMBER\n});\n// Silently ignored — no TTL!',
-          right: 'channel.publish(ex, key, data, {\n  expiration: "30000"  // STRING\n});\n// TTL works correctly',
-          label: 'TTL type'
+          wrong: "channel.publish(ex, key, data, {\n  expiration: 30000  // NUMBER\n});\n// Silently ignored — no TTL!",
+          right: "channel.publish(ex, key, data, {\n  expiration: \"30000\"  // STRING\n});\n// TTL works correctly",
+          label: "TTL type"
         }
       ];
 
-      var wcHtml = '<div style="color:#a371f7;font-size:12px;font-weight:bold;margin-bottom:10px">⚠️ WRONG vs ✓ CORRECT</div>';
+      var wcHtml = "<div style=\"color:#a371f7;font-size:12px;font-weight:bold;margin-bottom:10px\">⚠️ WRONG vs ✓ CORRECT</div>";
       wcHtml += wrongRight.map(function (item) {
-        return '<div style="margin-bottom:12px"><div style="color:#768390;font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">' + item.label + '</div>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
-          '<div style="background:#0d1117;border:2px solid #da3633;border-radius:6px;padding:10px">' +
-          '<div style="color:#da3633;font-size:10px;font-weight:bold;margin-bottom:6px">❌ WRONG</div>' +
-          '<pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.wrong + '</pre></div>' +
-          '<div style="background:#0d1117;border:2px solid #3fb950;border-radius:6px;padding:10px">' +
-          '<div style="color:#3fb950;font-size:10px;font-weight:bold;margin-bottom:6px">✓ CORRECT</div>' +
-          '<pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.right + '</pre></div>' +
-          '</div></div>';
-      }).join('');
-      document.getElementById('dl-gotcha-list').innerHTML = wcHtml;
+        return "<div style=\"margin-bottom:12px\"><div style=\"color:#768390;font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px\">" + item.label + "</div>" +
+          "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:8px\">" +
+          "<div style=\"background:#0d1117;border:2px solid #da3633;border-radius:6px;padding:10px\">" +
+          "<div style=\"color:#da3633;font-size:10px;font-weight:bold;margin-bottom:6px\">❌ WRONG</div>" +
+          "<pre style=\"color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap\">" + item.wrong + "</pre></div>" +
+          "<div style=\"background:#0d1117;border:2px solid #3fb950;border-radius:6px;padding:10px\">" +
+          "<div style=\"color:#3fb950;font-size:10px;font-weight:bold;margin-bottom:6px\">✓ CORRECT</div>" +
+          "<pre style=\"color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap\">" + item.right + "</pre></div>" +
+          "</div></div>";
+      }).join("");
+      document.getElementById("dl-gotcha-list").innerHTML = wcHtml;
 
       // Production story card
-      var prodStory = document.createElement('div');
-      prodStory.style.cssText = 'background:#0d1117;border:1px solid #f59134;border-radius:8px;padding:14px;margin-bottom:14px';
-      prodStory.innerHTML = '<div style="color:#f59134;font-size:12px;font-weight:bold;margin-bottom:6px">🏭 Production Story</div>' +
-        '<div style="color:#cdd9e5;font-size:12px;line-height:1.7">Payment service at 50K RPM. 0.3% messages fail JSON parse (malformed upstream). Without DLQ → messages nacked+requeued → CPU spike, infinite loop, queue floods 500K+ msgs, OOM. Fix: DLQ + retry with x-death count. Now: bad msgs quarantined in 250ms, alerting fires, engineers inspect.</div>';
-      document.getElementById('dl-qa-list').parentNode.insertBefore(prodStory, document.getElementById('dl-qa-list'));
+      var prodStory = document.createElement("div");
+      prodStory.style.cssText = "background:#0d1117;border:1px solid #f59134;border-radius:8px;padding:14px;margin-bottom:14px";
+      prodStory.innerHTML = "<div style=\"color:#f59134;font-size:12px;font-weight:bold;margin-bottom:6px\">🏭 Production Story</div>" +
+        "<div style=\"color:#cdd9e5;font-size:12px;line-height:1.7\">Payment service at 50K RPM. 0.3% messages fail JSON parse (malformed upstream). Without DLQ → messages nacked+requeued → CPU spike, infinite loop, queue floods 500K+ msgs, OOM. Fix: DLQ + retry with x-death count. Now: bad msgs quarantined in 250ms, alerting fires, engineers inspect.</div>";
+      document.getElementById("dl-qa-list").parentNode.insertBefore(prodStory, document.getElementById("dl-qa-list"));
     },
 
     gotchas: [

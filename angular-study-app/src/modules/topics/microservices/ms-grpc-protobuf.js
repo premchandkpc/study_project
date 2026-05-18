@@ -13,7 +13,7 @@
 - **Bidirectional streaming**: both sides stream (real-time).
 Protobuf is binary, schema-versioned, 3–10× smaller than JSON, and generates typed client/server code for 12+ languages. **Reflection** and **gRPC-Gateway** expose JSON/REST.`,
     why:
-`For service-to-service internal APIs, gRPC gives **typed contracts** (no guessing field names), **binary efficiency** (smaller payloads), **bidirectional streaming** (real-time use cases), and **built-in load balancing** with Envoy. Schema evolution is backward-compatible by design — adding optional fields doesn't break old clients.`,
+"For service-to-service internal APIs, gRPC gives **typed contracts** (no guessing field names), **binary efficiency** (smaller payloads), **bidirectional streaming** (real-time use cases), and **built-in load balancing** with Envoy. Schema evolution is backward-compatible by design — adding optional fields doesn't break old clients.",
     example: {
       language: "go",
       code:
@@ -94,19 +94,19 @@ func loggingInterceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo
     log.Printf("method=%s dur=%s err=%v", info.FullMethod, time.Since(start), err)
     return resp, err
 }`,
-      notes: `Always use \`status.Errorf(codes.X, ...)\` to return typed gRPC errors — clients can branch on status codes. Use **interceptors** (middleware) for auth, logging, and tracing — same concept as HTTP middleware.`
+      notes: "Always use `status.Errorf(codes.X, ...)` to return typed gRPC errors — clients can branch on status codes. Use **interceptors** (middleware) for auth, logging, and tracing — same concept as HTTP middleware."
     },
     interview: [
       {
         question: "How does protobuf handle schema evolution?",
         answer:
-`Protobuf fields are identified by **field numbers**, not names. Rules: (1) Never reuse a field number — old clients will misinterpret new data. (2) New fields are optional by default — old clients ignore unknown fields, old servers return zero values for new fields. (3) Removing fields: mark as \`reserved\` to prevent reuse. (4) Never change a field's type. This gives backward and forward compatibility without versioning the entire API.`,
+"Protobuf fields are identified by **field numbers**, not names. Rules: (1) Never reuse a field number — old clients will misinterpret new data. (2) New fields are optional by default — old clients ignore unknown fields, old servers return zero values for new fields. (3) Removing fields: mark as `reserved` to prevent reuse. (4) Never change a field's type. This gives backward and forward compatibility without versioning the entire API.",
         followUps: ["What is reserved in proto3?", "How does proto3 differ from proto2?"]
       },
       {
         question: "When would you choose REST over gRPC for service-to-service calls?",
         answer:
-`**REST** when: clients are browsers (gRPC-Web requires a proxy), the API is public (REST is universally toolable), you need simple cache-ability (HTTP caching on GET), or teams don't want the proto toolchain. **gRPC** when: performance matters (binary, HTTP/2 multiplexing), you need streaming, or strong typed contracts across many language teams. Internally in a microservice cluster, gRPC is almost always the better choice.`,
+"**REST** when: clients are browsers (gRPC-Web requires a proxy), the API is public (REST is universally toolable), you need simple cache-ability (HTTP caching on GET), or teams don't want the proto toolchain. **gRPC** when: performance matters (binary, HTTP/2 multiplexing), you need streaming, or strong typed contracts across many language teams. Internally in a microservice cluster, gRPC is almost always the better choice.",
         followUps: ["What is gRPC-Gateway?", "How do you document gRPC APIs?"]
       }
     ],
@@ -121,7 +121,7 @@ func loggingInterceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo
         "gRPC-Web requires a proxy for browser clients.",
         "Proto toolchain adds build complexity."
       ],
-      when: `**gRPC** for internal service-to-service APIs. **REST/JSON** for public APIs and browser clients. **GraphQL** for flexible client-driven queries with a single backend endpoint.`
+      when: "**gRPC** for internal service-to-service APIs. **REST/JSON** for public APIs and browser clients. **GraphQL** for flexible client-driven queries with a single backend endpoint."
     }
   };
   window.MICRO_TOPICS = (window.MICRO_TOPICS || []).concat([topic]);

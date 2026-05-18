@@ -1,9 +1,9 @@
 (function() {
   var topic = {
-  id:"sd-kubernetes-prod", area:"sysdesign",
-  title:"Kubernetes in Production — Pods, HPA & Rolling Deploys",
-  tag:"Compute", tags:["kubernetes","k8s","pod","deployment","hpa","service","ingress","rolling deploy","liveness probe","readiness probe"],
-  concept:`**Core Kubernetes objects:**
+    id:"sd-kubernetes-prod", area:"sysdesign",
+    title:"Kubernetes in Production — Pods, HPA & Rolling Deploys",
+    tag:"Compute", tags:["kubernetes","k8s","pod","deployment","hpa","service","ingress","rolling deploy","liveness probe","readiness probe"],
+    concept:`**Core Kubernetes objects:**
 
 **Pod** — smallest deployable unit. One or more containers sharing network namespace and volumes. Ephemeral — never SSH into a pod.
 
@@ -28,10 +28,10 @@ New pods start → pass readiness probe → added to service endpoints → old p
 - **Liveness** — is pod alive? Failure → container restart.
 - **Readiness** — is pod ready to receive traffic? Failure → removed from service endpoints (but not restarted).
 - **Startup** — for slow-starting apps. Disables liveness until started.`,
-  why:`K8s is the industry standard for container orchestration. Interview questions cover deployments, scaling, networking, and troubleshooting. Understanding probes alone can save hours of incident debugging.`,
-  example:{
-    language:"yaml",
-    code:`# Production-grade Deployment
+    why:"K8s is the industry standard for container orchestration. Interview questions cover deployments, scaling, networking, and troubleshooting. Understanding probes alone can save hours of incident debugging.",
+    example:{
+      language:"yaml",
+      code:`# Production-grade Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -105,98 +105,98 @@ spec:
         target:
           type: AverageValue
           averageValue: "30"     # Scale up if >30 msgs/pod`,
-    notes:"Always set resource requests+limits. Without them, pods can starve other pods (requests) or be OOMKilled (limits). requests=what scheduler uses; limits=hard cap."
-  },
-  interview:[
-    {question:"What happens when a pod fails its liveness probe?",
-     answer:`The kubelet on the node restarts the container (not the pod). The pod itself stays — it retains its IP, volumes, and resource reservation. The container's process is killed and restarted according to the pod's \`restartPolicy\` (default: Always).\n\n**Key distinction from readiness:** A failed readiness probe removes the pod from Service endpoints (no traffic) but doesn't restart it. A failed liveness probe restarts the container.\n\n**Common pitfall:** Setting liveness probe path same as a heavyweight health endpoint. If liveness probe itself causes load → cascade. Use a simple fast endpoint for liveness (\`/live\`) separate from deep health check.`,
-     followUps:["What is pod disruption budget and why is it important?","How does K8s handle node failure?"]
-    }
-  ],
-  tradeoffs:{
-    pros:["Self-healing (pod restart, node replacement)","Declarative — desired state reconciled automatically","Rich ecosystem: Helm, Kustomize, ArgoCD, KEDA"],
-    cons:["Steep learning curve","etcd is a critical single point — must be HA","Networking complexity (CNI, service mesh)"],
-    when:"K8s for anything running more than a handful of microservices in production. Use managed K8s (EKS, GKE, AKS) — running your own control plane is expensive."
-  },
-  visual: {
-    type: 'layered',
-    title: '☸️ Kubernetes Production Architecture',
-    layers: [
-      {
-        id: 'client',
-        label: 'Client Layer',
-        color: '#58a6ff',
-        protocols: 'kubectl / HTTP / gRPC',
-        services: [
-          { id: 'kubectl', label: 'kubectl', icon: '💻', sublabel: 'CLI' },
-          { id: 'app-client', label: 'App Client', icon: '🌐', sublabel: 'HTTPS' },
-          { id: 'cicd', label: 'CI/CD', icon: '🔄', sublabel: 'GitOps / ArgoCD' }
-        ]
-      },
-      {
-        id: 'ingress',
-        label: 'Ingress Layer',
-        color: '#ffa657',
-        protocols: 'HTTP / TLS Termination',
-        services: [
-          { id: 'ingress-ctrl', label: 'Ingress Controller', icon: '🔀', sublabel: 'Nginx / Traefik' },
-          { id: 'lb', label: 'Cloud LB', icon: '⚖️', sublabel: 'L4 / L7' }
-        ]
-      },
-      {
-        id: 'control-plane',
-        label: 'Control Plane',
-        color: '#bc8cff',
-        protocols: 'xDS / etcd / Watch API',
-        services: [
-          { id: 'api-server', label: 'API Server', icon: '🧩', sublabel: 'REST + Watch' },
-          { id: 'etcd', label: 'etcd', icon: '🗃️', sublabel: 'Cluster State' },
-          { id: 'scheduler', label: 'Scheduler', icon: '📋', sublabel: 'Filter → Score → Bind' },
-          { id: 'ctrl-mgr', label: 'Controller Mgr', icon: '⚙️', sublabel: 'ReplicaSet / HPA' }
-        ]
-      },
-      {
-        id: 'node-layer',
-        label: 'Worker Node Layer',
-        color: '#3fb950',
-        protocols: 'CRI / CNI / CSI',
-        services: [
-          { id: 'kubelet', label: 'kubelet', icon: '🤖', sublabel: 'Node Agent' },
-          { id: 'kube-proxy', label: 'kube-proxy', icon: '🔗', sublabel: 'iptables / IPVS' },
-          { id: 'container-rt', label: 'Container Runtime', icon: '🐳', sublabel: 'containerd / CRI-O' }
-        ]
-      },
-      {
-        id: 'pod-layer',
-        label: 'Pod Layer',
-        color: '#e3b341',
-        protocols: 'localhost / Pod Network',
-        services: [
-          { id: 'app-container', label: 'App Container', icon: '📦', sublabel: 'Your code' },
-          { id: 'sidecar', label: 'Sidecar', icon: '🛡️', sublabel: 'Envoy / logging' },
-          { id: 'init-container', label: 'Init Container', icon: '🚀', sublabel: 'Pre-flight checks' },
-          { id: 'hpa', label: 'HPA', icon: '📈', sublabel: 'Auto-scaling' }
-        ]
+      notes:"Always set resource requests+limits. Without them, pods can starve other pods (requests) or be OOMKilled (limits). requests=what scheduler uses; limits=hard cap."
+    },
+    interview:[
+      {question:"What happens when a pod fails its liveness probe?",
+        answer:"The kubelet on the node restarts the container (not the pod). The pod itself stays — it retains its IP, volumes, and resource reservation. The container's process is killed and restarted according to the pod's `restartPolicy` (default: Always).\n\n**Key distinction from readiness:** A failed readiness probe removes the pod from Service endpoints (no traffic) but doesn't restart it. A failed liveness probe restarts the container.\n\n**Common pitfall:** Setting liveness probe path same as a heavyweight health endpoint. If liveness probe itself causes load → cascade. Use a simple fast endpoint for liveness (`/live`) separate from deep health check.",
+        followUps:["What is pod disruption budget and why is it important?","How does K8s handle node failure?"]
       }
     ],
-    flows: [
-      {
-        name: 'Deploy Flow',
-        path: ['cicd', 'api-server', 'etcd', 'scheduler', 'kubelet', 'container-rt', 'app-container'],
-        color: '#3fb950'
-      },
-      {
-        name: 'Request Flow',
-        path: ['app-client', 'lb', 'ingress-ctrl', 'kube-proxy', 'app-container'],
-        color: '#58a6ff'
-      },
-      {
-        name: 'Scale Flow',
-        path: ['ctrl-mgr', 'api-server', 'scheduler', 'kubelet', 'hpa'],
-        color: '#ffa657'
-      }
-    ]
-  }
-};
+    tradeoffs:{
+      pros:["Self-healing (pod restart, node replacement)","Declarative — desired state reconciled automatically","Rich ecosystem: Helm, Kustomize, ArgoCD, KEDA"],
+      cons:["Steep learning curve","etcd is a critical single point — must be HA","Networking complexity (CNI, service mesh)"],
+      when:"K8s for anything running more than a handful of microservices in production. Use managed K8s (EKS, GKE, AKS) — running your own control plane is expensive."
+    },
+    visual: {
+      type: "layered",
+      title: "☸️ Kubernetes Production Architecture",
+      layers: [
+        {
+          id: "client",
+          label: "Client Layer",
+          color: "#58a6ff",
+          protocols: "kubectl / HTTP / gRPC",
+          services: [
+            { id: "kubectl", label: "kubectl", icon: "💻", sublabel: "CLI" },
+            { id: "app-client", label: "App Client", icon: "🌐", sublabel: "HTTPS" },
+            { id: "cicd", label: "CI/CD", icon: "🔄", sublabel: "GitOps / ArgoCD" }
+          ]
+        },
+        {
+          id: "ingress",
+          label: "Ingress Layer",
+          color: "#ffa657",
+          protocols: "HTTP / TLS Termination",
+          services: [
+            { id: "ingress-ctrl", label: "Ingress Controller", icon: "🔀", sublabel: "Nginx / Traefik" },
+            { id: "lb", label: "Cloud LB", icon: "⚖️", sublabel: "L4 / L7" }
+          ]
+        },
+        {
+          id: "control-plane",
+          label: "Control Plane",
+          color: "#bc8cff",
+          protocols: "xDS / etcd / Watch API",
+          services: [
+            { id: "api-server", label: "API Server", icon: "🧩", sublabel: "REST + Watch" },
+            { id: "etcd", label: "etcd", icon: "🗃️", sublabel: "Cluster State" },
+            { id: "scheduler", label: "Scheduler", icon: "📋", sublabel: "Filter → Score → Bind" },
+            { id: "ctrl-mgr", label: "Controller Mgr", icon: "⚙️", sublabel: "ReplicaSet / HPA" }
+          ]
+        },
+        {
+          id: "node-layer",
+          label: "Worker Node Layer",
+          color: "#3fb950",
+          protocols: "CRI / CNI / CSI",
+          services: [
+            { id: "kubelet", label: "kubelet", icon: "🤖", sublabel: "Node Agent" },
+            { id: "kube-proxy", label: "kube-proxy", icon: "🔗", sublabel: "iptables / IPVS" },
+            { id: "container-rt", label: "Container Runtime", icon: "🐳", sublabel: "containerd / CRI-O" }
+          ]
+        },
+        {
+          id: "pod-layer",
+          label: "Pod Layer",
+          color: "#e3b341",
+          protocols: "localhost / Pod Network",
+          services: [
+            { id: "app-container", label: "App Container", icon: "📦", sublabel: "Your code" },
+            { id: "sidecar", label: "Sidecar", icon: "🛡️", sublabel: "Envoy / logging" },
+            { id: "init-container", label: "Init Container", icon: "🚀", sublabel: "Pre-flight checks" },
+            { id: "hpa", label: "HPA", icon: "📈", sublabel: "Auto-scaling" }
+          ]
+        }
+      ],
+      flows: [
+        {
+          name: "Deploy Flow",
+          path: ["cicd", "api-server", "etcd", "scheduler", "kubelet", "container-rt", "app-container"],
+          color: "#3fb950"
+        },
+        {
+          name: "Request Flow",
+          path: ["app-client", "lb", "ingress-ctrl", "kube-proxy", "app-container"],
+          color: "#58a6ff"
+        },
+        {
+          name: "Scale Flow",
+          path: ["ctrl-mgr", "api-server", "scheduler", "kubelet", "hpa"],
+          color: "#ffa657"
+        }
+      ]
+    }
+  };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);
 })();

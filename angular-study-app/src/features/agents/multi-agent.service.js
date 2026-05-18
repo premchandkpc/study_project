@@ -1,58 +1,59 @@
 /* ============================================================
-   MULTI-AGENT SYSTEM
-   Orchestrator → Java | Go | Microservices | SystemDesign | Design
-   ============================================================ */
+  MULTI-AGENT SYSTEM
+  Orchestrator → Java | Go | Microservices | SystemDesign | Design
+  ============================================================ */
+/* global Prism */
 (function () {
 
-/* ── Agent definitions ─────────────────────────────────────── */
-const AGENTS = {
-  orchestrator: {
-    id: "orchestrator", name: "Orchestrator", emoji: "🧠",
-    color: "#4f8cff", desc: "Routes to the right specialist automatically"
-  },
-  java: {
-    id: "java", name: "Java Agent", emoji: "☕",
-    color: "#f0883e", desc: "JVM, Spring, concurrency, JPA deep dives"
-  },
-  golang: {
-    id: "golang", name: "Go Agent", emoji: "🐹",
-    color: "#00acd7", desc: "Goroutines, channels, interfaces, performance"
-  },
-  microservices: {
-    id: "microservices", name: "Microservices Agent", emoji: "🔧",
-    color: "#3fb950", desc: "Distributed systems, Kafka, Saga, service mesh"
-  },
-  sysdesign: {
-    id: "sysdesign", name: "System Design Agent", emoji: "⬡",
-    color: "#00e5ff", desc: "HLD/LLD, case studies, scalability, trade-offs"
-  },
-  design: {
-    id: "design", name: "Design Agent", emoji: "🎨",
-    color: "#bc8cff", desc: "Generates HTML, flow diagrams, architecture data"
+  /* ── Agent definitions ─────────────────────────────────────── */
+  const AGENTS = {
+    orchestrator: {
+      id: "orchestrator", name: "Orchestrator", emoji: "🧠",
+      color: "#4f8cff", desc: "Routes to the right specialist automatically"
+    },
+    java: {
+      id: "java", name: "Java Agent", emoji: "☕",
+      color: "#f0883e", desc: "JVM, Spring, concurrency, JPA deep dives"
+    },
+    golang: {
+      id: "golang", name: "Go Agent", emoji: "🐹",
+      color: "#00acd7", desc: "Goroutines, channels, interfaces, performance"
+    },
+    microservices: {
+      id: "microservices", name: "Microservices Agent", emoji: "🔧",
+      color: "#3fb950", desc: "Distributed systems, Kafka, Saga, service mesh"
+    },
+    sysdesign: {
+      id: "sysdesign", name: "System Design Agent", emoji: "⬡",
+      color: "#00e5ff", desc: "HLD/LLD, case studies, scalability, trade-offs"
+    },
+    design: {
+      id: "design", name: "Design Agent", emoji: "🎨",
+      color: "#bc8cff", desc: "Generates HTML, flow diagrams, architecture data"
+    }
+  };
+
+  /* ── Routing keywords ──────────────────────────────────────── */
+  const ROUTING_RULES = [
+    { agent: "java",         patterns: /\b(java|jvm|spring|hibernate|jpa|maven|gradle|gc|garbage|stream|lambda|completablefuture|webflux|reactor|servlet|tomcat|jetty|bytecode|hotspot|graalvm|record|sealed|generics|optional)\b/ },
+    { agent: "golang",       patterns: /\b(go|golang|goroutine|channel|interface|struct|defer|panic|recover|context|waitgroup|mutex|sync|grpc|protobuf|gorm|gin|echo|fiber|pprof)\b/ },
+    { agent: "microservices",patterns: /\b(microservice|kafka|rabbitmq|saga|circuit.?breaker|service.?mesh|istio|envoy|consul|eureka|cqrs|event.?sourc|outbox|sidecar|grpc|api.?gateway|kong)\b/ },
+    { agent: "sysdesign",    patterns: /\b(system.?design|design|scale|cap.?theorem|consistent.?hash|rate.?limit|load.?balanc|sharding|replication|cdn|dns|caching|redis|dynamo|cassandra|url.?short|social.?feed|video|uber|twitter|netflix|lld|hld)\b/ },
+    { agent: "design",       patterns: /\b(generate|create|build|html|angular|component|template|flow|diagram|architecture|uml|draw|code.?template|topic.?template|scaffold)\b/ }
+  ];
+
+  function routeMessage(msg) {
+    const lower = msg.toLowerCase();
+    for (const rule of ROUTING_RULES) {
+      if (rule.patterns.test(lower)) return rule.agent;
+    }
+    return "orchestrator";
   }
-};
 
-/* ── Routing keywords ──────────────────────────────────────── */
-const ROUTING_RULES = [
-  { agent: "java",         patterns: /\b(java|jvm|spring|hibernate|jpa|maven|gradle|gc|garbage|stream|lambda|completablefuture|webflux|reactor|servlet|tomcat|jetty|bytecode|hotspot|graalvm|record|sealed|generics|optional)\b/ },
-  { agent: "golang",       patterns: /\b(go|golang|goroutine|channel|interface|struct|defer|panic|recover|context|waitgroup|mutex|sync|grpc|protobuf|gorm|gin|echo|fiber|pprof)\b/ },
-  { agent: "microservices",patterns: /\b(microservice|kafka|rabbitmq|saga|circuit.?breaker|service.?mesh|istio|envoy|consul|eureka|cqrs|event.?sourc|outbox|sidecar|grpc|api.?gateway|kong)\b/ },
-  { agent: "sysdesign",    patterns: /\b(system.?design|design|scale|cap.?theorem|consistent.?hash|rate.?limit|load.?balanc|sharding|replication|cdn|dns|caching|redis|dynamo|cassandra|url.?short|social.?feed|video|uber|twitter|netflix|lld|hld)\b/ },
-  { agent: "design",       patterns: /\b(generate|create|build|html|angular|component|template|flow|diagram|architecture|uml|draw|code.?template|topic.?template|scaffold)\b/ }
-];
-
-function routeMessage(msg) {
-  const lower = msg.toLowerCase();
-  for (const rule of ROUTING_RULES) {
-    if (rule.patterns.test(lower)) return rule.agent;
-  }
-  return "orchestrator";
-}
-
-/* ── Knowledge bases per agent ─────────────────────────────── */
-const KB = {
-  orchestrator: {
-    default: `🧠 **I'm the Orchestrator!** I'll route your question to the right specialist.
+  /* ── Knowledge bases per agent ─────────────────────────────── */
+  const KB = {
+    orchestrator: {
+      default: `🧠 **I'm the Orchestrator!** I'll route your question to the right specialist.
 
 **Available specialists:**
 ☕ **Java Agent** — JVM, Spring Boot, concurrency, JPA, streams
@@ -68,13 +69,13 @@ const KB = {
 • "Generate a flow diagram for circuit breaker"
 
 Or click a **Skill** in the Skills tab for instant deep-dive answers!`
-  },
+    },
 
-  java: {
-    default: `☕ **Java Agent** ready! I specialise in JVM internals, Spring ecosystem, and concurrency patterns.
+    java: {
+      default: `☕ **Java Agent** ready! I specialise in JVM internals, Spring ecosystem, and concurrency patterns.
 
 Ask me about: JVM GC · ThreadPools · CompletableFuture · Spring Boot · JPA · WebFlux · Design patterns · Java 17-21 features`,
-    virtual: `☕ **Virtual Threads (Java 21 — Project Loom)**
+      virtual: `☕ **Virtual Threads (Java 21 — Project Loom)**
 
 Virtual threads are lightweight threads managed by the JVM, not OS threads. They allow you to write blocking code that scales like async.
 
@@ -100,7 +101,7 @@ try (var executor = pool) {
 **Key:** Virtual threads are parked (not blocking OS thread) when doing I/O. JVM scheduler mounts them on carrier threads as needed.
 
 **When to use:** I/O-bound workloads (HTTP, DB, file). NOT for CPU-bound (no benefit, use platform threads).`,
-    record: `☕ **Java Records (Java 16+)**
+      record: `☕ **Java Records (Java 16+)**
 
 Records are transparent, immutable data carriers — Java's answer to Kotlin data classes.
 
@@ -135,20 +136,20 @@ sealed interface Shape permits Circle, Rectangle, Triangle {}
 record Circle(double radius) implements Shape {}
 record Rectangle(double w, double h) implements Shape {}
 \`\`\``,
-    concurrency: `☕ See the Concurrency Patterns skill for a complete reference! Key summary:
+      concurrency: `☕ See the Concurrency Patterns skill for a complete reference! Key summary:
 
 • Prefer VirtualThreads (Java 21) for I/O-bound concurrency
 • Use CompletableFuture for async composition
 • ReentrantLock for advanced locking (tryLock, fairness)
 • Atomic* classes for lock-free counters
 • ConcurrentHashMap for concurrent maps (never synchronize on HashMap)`,
-  },
+    },
 
-  golang: {
-    default: `🐹 **Go Agent** ready! I specialise in Go concurrency, idiomatic patterns, and high-performance services.
+    golang: {
+      default: `🐹 **Go Agent** ready! I specialise in Go concurrency, idiomatic patterns, and high-performance services.
 
 Ask me about: goroutines · channels · interfaces · error handling · context · testing · gRPC · pprof`,
-    goroutine: `🐹 **Goroutines — The Go Concurrency Model**
+      goroutine: `🐹 **Goroutines — The Go Concurrency Model**
 
 Goroutines are multiplexed onto OS threads by the Go scheduler (GMP model):
 • G = Goroutine (2KB stack, grows to 1GB)
@@ -182,7 +183,7 @@ func fanOut(in <-chan Job, workers int) []<-chan Result {
     return channels
 }
 \`\`\``,
-    generic: `🐹 **Go Generics (1.18+)**
+      generic: `🐹 **Go Generics (1.18+)**
 
 \`\`\`go
 // Generic function with type constraint
@@ -211,13 +212,13 @@ func (s *Stack[T]) Pop() (T, bool) {
     return last, true
 }
 \`\`\``,
-  },
+    },
 
-  microservices: {
-    default: `🔧 **Microservices Agent** ready! I specialise in distributed systems, event-driven architecture, and service patterns.
+    microservices: {
+      default: `🔧 **Microservices Agent** ready! I specialise in distributed systems, event-driven architecture, and service patterns.
 
 Ask me about: Kafka · Saga · Circuit Breaker · Service Mesh · CQRS · Event Sourcing · gRPC · API Gateway`,
-    grpc: `🔧 **gRPC in Microservices**
+      grpc: `🔧 **gRPC in Microservices**
 
 gRPC uses HTTP/2 + Protobuf. Key advantages: 5-10× smaller payload, streaming, strong contracts.
 
@@ -240,7 +241,7 @@ func authInterceptor(ctx context.Context, req interface{},
 \`\`\`
 
 **Load balancing for gRPC:** gRPC uses HTTP/2 — a single TCP connection. Standard L4 LB won't distribute across backend instances. Use: client-side LB (grpc.Dial with round-robin resolver) or L7-aware LB (Envoy, nginx).`,
-    event: `🔧 **Event-Driven Architecture — Key Patterns**
+      event: `🔧 **Event-Driven Architecture — Key Patterns**
 
 **Outbox pattern (solve dual write):**
 \`\`\`
@@ -263,14 +264,14 @@ public void process(Event event) {
 
 **Event versioning:**
 Use schema registry (Confluent Schema Registry) + Avro/Protobuf. Backward-compatible changes: add optional fields. Breaking changes: new topic + dual publishing during migration.`
-  },
+    },
 
-  sysdesign: {
-    default: `⬡ **System Design Agent** ready! I specialise in HLD/LLD, scalability patterns, and case studies.
+    sysdesign: {
+      default: `⬡ **System Design Agent** ready! I specialise in HLD/LLD, scalability patterns, and case studies.
 
 Ask me about: URL shortener · social feed · video platform · ride sharing · rate limiter · consistent hashing · caching · CAP theorem`,
-    rate: `⬡ **Rate Limiter — Full Design**\n\nSee the Rate Limiter skill for the complete algorithm reference! Quick summary:\n\n• Token bucket: allows burst, smooth average, best for APIs\n• Sliding window: accurate, prevents boundary burst\n• Redis Lua script: atomic check+decrement, no race condition\n• Response headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset`,
-    cache: `⬡ **Caching Strategy — Quick Reference**
+      rate: "⬡ **Rate Limiter — Full Design**\n\nSee the Rate Limiter skill for the complete algorithm reference! Quick summary:\n\n• Token bucket: allows burst, smooth average, best for APIs\n• Sliding window: accurate, prevents boundary burst\n• Redis Lua script: atomic check+decrement, no race condition\n• Response headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset",
+      cache: `⬡ **Caching Strategy — Quick Reference**
 
 Cache hierarchy: Browser → CDN → Reverse Proxy → App Cache (Caffeine) → Redis → DB Buffer
 
@@ -283,7 +284,7 @@ Cache-aside (most common):
 Eviction: LRU (general), LFU (content libraries), TTL (time-sensitive)
 
 Cache stampede prevention: Redis lock on miss (first caller loads, others wait) OR stale-while-revalidate OR probabilistic early expiry (XFetch)`,
-    db: `⬡ **Database Selection Guide**
+      db: `⬡ **Database Selection Guide**
 
 | Need | Choose |
 |------|--------|
@@ -297,10 +298,10 @@ Cache stampede prevention: Redis lock on miss (first caller loads, others wait) 
 | Analytics / OLAP | Redshift / ClickHouse / BigQuery |
 
 **Rule:** Start with PostgreSQL. Add caching (Redis) for reads. Shard only when single primary can't handle writes (>10K TPS).`
-  },
+    },
 
-  design: {
-    default: `🎨 **Design Agent** ready! I can generate:
+    design: {
+      default: `🎨 **Design Agent** ready! I can generate:
 
 • **Topic templates** — complete topic object for any concept
 • **Flow diagrams** — step-by-step animated flows
@@ -312,7 +313,7 @@ Cache stampede prevention: Redis lock on miss (first caller loads, others wait) 
 • "Generate a flow diagram for circuit breaker state machine"
 • "Generate an architecture diagram for CQRS"
 • "Create a UML sequence for OAuth2 flow"`,
-    flow: (concept) => `🎨 **Generated Flow for: ${concept}**
+      flow: (concept) => `🎨 **Generated Flow for: ${concept}**
 
 \`\`\`javascript
 // Add this flow property to your topic object:
@@ -333,7 +334,7 @@ flow: {
 }
 \`\`\`
 Customise node labels and step details for your specific concept!`,
-    arch: (concept) => `🎨 **Generated Architecture for: ${concept}**
+      arch: (concept) => `🎨 **Generated Architecture for: ${concept}**
 
 \`\`\`javascript
 // Add this architecture property to your topic object:
@@ -359,11 +360,11 @@ architecture: {
   ]
 }
 \`\`\``,
-    topic: (concept) => `🎨 **Generated Topic Template for: ${concept}**
+      topic: (concept) => `🎨 **Generated Topic Template for: ${concept}**
 
 \`\`\`javascript
 {
-  id: "${concept.toLowerCase().replace(/\s+/g,'-')}",
+  id: "${concept.toLowerCase().replace(/\s+/g,"-")}",
   area: "sysdesign", // or java/golang/microservices
   title: "${concept}",
   tag: "Architecture",
@@ -401,73 +402,72 @@ public class Example {
   }
 }
 \`\`\``,
-  }
-};
-
-/* ── Response generator ────────────────────────────────────── */
-function generateResponse(agentId, msg) {
-  const lower = msg.toLowerCase();
-  const agent = AGENTS[agentId];
-  const kb = KB[agentId];
-
-  // Check skills registry first
-  const skills = (window.SKILLS_REGISTRY || {})[agentId] || [];
-  for (const skill of skills) {
-    const terms = (skill.title + ' ' + skill.desc).toLowerCase();
-    if (lower.split(/\s+/).some(w => w.length > 3 && terms.includes(w))) {
-      return { text: skill.response, skill, agentId };
     }
-  }
+  };
 
-  // Agent-specific pattern matching
-  if (agentId === 'java') {
-    if (/virtual.?thread|loom/.test(lower)) return { text: kb.virtual, agentId };
-    if (/record|sealed/.test(lower)) return { text: kb.record, agentId };
-    if (/concurren|thread|synchronized/.test(lower)) return { text: kb.concurrency, agentId };
-  }
-  if (agentId === 'golang') {
-    if (/goroutine|pipeline|fan.?out/.test(lower)) return { text: kb.goroutine, agentId };
-    if (/generic|type.?param/.test(lower)) return { text: kb.generic, agentId };
-  }
-  if (agentId === 'microservices') {
-    if (/grpc|protobuf/.test(lower)) return { text: kb.grpc, agentId };
-    if (/event.?driven|outbox|cdc/.test(lower)) return { text: kb.event, agentId };
-  }
-  if (agentId === 'sysdesign') {
-    if (/rate.?limit/.test(lower)) return { text: kb.rate, agentId };
-    if (/cache|caching|redis|lru/.test(lower)) return { text: kb.cache, agentId };
-    if (/database|db|sql|nosql/.test(lower)) return { text: kb.db, agentId };
-  }
-  if (agentId === 'design') {
-    const concept = msg.replace(/generate|create|build|flow|diagram|architecture|uml|topic|for|a|an|the/gi,'').trim() || 'MyComponent';
-    if (/flow/.test(lower)) return { text: kb.flow(concept), agentId };
-    if (/arch/.test(lower)) return { text: kb.arch(concept), agentId };
-    if (/topic|template|scaffold/.test(lower)) return { text: kb.topic(concept), agentId };
-    return { text: kb.default, agentId };
-  }
+  /* ── Response generator ────────────────────────────────────── */
+  function generateResponse(agentId, msg) {
+    const lower = msg.toLowerCase();
+    const kb = KB[agentId];
 
-  return { text: kb.default || AGENTS[agentId].desc, agentId };
-}
-
-/* ── Try server, fall back to local ──────────────────────────  */
-async function fetchReply(agentId, msg) {
-  for (const port of [3001, 3002, 3003]) {
-    try {
-      const res = await fetch(
-        `http://localhost:${port}/api/agent?msg=${encodeURIComponent(msg)}&agent=${agentId}`,
-        { signal: AbortSignal.timeout(1500) }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        return { text: data.reply || data.message, agentId };
+    // Check skills registry first
+    const skills = (window.SKILLS_REGISTRY || {})[agentId] || [];
+    for (const skill of skills) {
+      const terms = (skill.title + " " + skill.desc).toLowerCase();
+      if (lower.split(/\s+/).some(w => w.length > 3 && terms.includes(w))) {
+        return { text: skill.response, skill, agentId };
       }
-    } catch (_) {}
-  }
-  return generateResponse(agentId, msg);
-}
+    }
 
-/* ── Widget HTML ────────────────────────────────────────────── */
-const WIDGET_HTML = `
+    // Agent-specific pattern matching
+    if (agentId === "java") {
+      if (/virtual.?thread|loom/.test(lower)) return { text: kb.virtual, agentId };
+      if (/record|sealed/.test(lower)) return { text: kb.record, agentId };
+      if (/concurren|thread|synchronized/.test(lower)) return { text: kb.concurrency, agentId };
+    }
+    if (agentId === "golang") {
+      if (/goroutine|pipeline|fan.?out/.test(lower)) return { text: kb.goroutine, agentId };
+      if (/generic|type.?param/.test(lower)) return { text: kb.generic, agentId };
+    }
+    if (agentId === "microservices") {
+      if (/grpc|protobuf/.test(lower)) return { text: kb.grpc, agentId };
+      if (/event.?driven|outbox|cdc/.test(lower)) return { text: kb.event, agentId };
+    }
+    if (agentId === "sysdesign") {
+      if (/rate.?limit/.test(lower)) return { text: kb.rate, agentId };
+      if (/cache|caching|redis|lru/.test(lower)) return { text: kb.cache, agentId };
+      if (/database|db|sql|nosql/.test(lower)) return { text: kb.db, agentId };
+    }
+    if (agentId === "design") {
+      const concept = msg.replace(/generate|create|build|flow|diagram|architecture|uml|topic|for|a|an|the/gi,"").trim() || "MyComponent";
+      if (/flow/.test(lower)) return { text: kb.flow(concept), agentId };
+      if (/arch/.test(lower)) return { text: kb.arch(concept), agentId };
+      if (/topic|template|scaffold/.test(lower)) return { text: kb.topic(concept), agentId };
+      return { text: kb.default, agentId };
+    }
+
+    return { text: kb.default || AGENTS[agentId].desc, agentId };
+  }
+
+  /* ── Try server, fall back to local ──────────────────────────  */
+  async function fetchReply(agentId, msg) {
+    for (const port of [3001, 3002, 3003]) {
+      try {
+        const res = await fetch(
+          `http://localhost:${port}/api/agent?msg=${encodeURIComponent(msg)}&agent=${agentId}`,
+          { signal: AbortSignal.timeout(1500) }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          return { text: data.reply || data.message, agentId };
+        }
+      } catch (e) { /* ignore */ }
+    }
+    return generateResponse(agentId, msg);
+  }
+
+  /* ── Widget HTML ────────────────────────────────────────────── */
+  const WIDGET_HTML = `
 <button id="agentToggle" class="agent-fab" title="Open Study Agents">🧠</button>
 <div id="agentPanel" class="agent-panel hidden">
   <div class="agent-panel-header">
@@ -516,210 +516,208 @@ const WIDGET_HTML = `
 </div>
 `;
 
-/* ── State ──────────────────────────────────────────────────── */
-let currentAgent = "orchestrator";
-let currentTab = "chat";
+  /* ── State ──────────────────────────────────────────────────── */
+  let currentAgent = "orchestrator";
 
-/* ── Render skills grid ─────────────────────────────────────── */
-function renderSkills(filterArea) {
-  const grid = document.getElementById("skillsGrid");
-  if (!grid || !window.SKILLS_REGISTRY) return;
-  grid.innerHTML = "";
-  const allSkills = Object.values(window.SKILLS_REGISTRY).flat();
-  allSkills
-    .filter(s => filterArea === "all" || s.area === filterArea)
-    .forEach(skill => {
-      const card = document.createElement("div");
-      card.className = "ma-skill-card";
-      card.innerHTML = `
+  /* ── Render skills grid ─────────────────────────────────────── */
+  function renderSkills(filterArea) {
+    const grid = document.getElementById("skillsGrid");
+    if (!grid || !window.SKILLS_REGISTRY) return;
+    grid.innerHTML = "";
+    const allSkills = Object.values(window.SKILLS_REGISTRY).flat();
+    allSkills
+      .filter(s => filterArea === "all" || s.area === filterArea)
+      .forEach(skill => {
+        const card = document.createElement("div");
+        card.className = "ma-skill-card";
+        card.innerHTML = `
         <div class="ma-skill-icon">${skill.icon}</div>
         <div class="ma-skill-title">${skill.title}</div>
         <div class="ma-skill-desc">${skill.desc}</div>
-        ${skill.topicId ? `<div class="ma-skill-link" data-topic="${skill.topicId}">→ View Topic</div>` : ''}
+        ${skill.topicId ? `<div class="ma-skill-link" data-topic="${skill.topicId}">→ View Topic</div>` : ""}
       `;
-      card.addEventListener("click", () => {
-        switchTab("chat");
-        addMessage(`Tell me about: ${skill.title}`, "user");
-        showReply(skill.agentId || skill.area, skill.title, { text: skill.response, agentId: skill.area });
-      });
-      const topicLink = card.querySelector(".ma-skill-link");
-      if (topicLink) {
-        topicLink.addEventListener("click", (e) => {
-          e.stopPropagation();
-          navigateToTopic(topicLink.dataset.topic);
+        card.addEventListener("click", () => {
+          switchTab("chat");
+          addMessage(`Tell me about: ${skill.title}`, "user");
+          showReply(skill.agentId || skill.area, skill.title, { text: skill.response, agentId: skill.area });
         });
-      }
-      grid.appendChild(card);
-    });
-}
+        const topicLink = card.querySelector(".ma-skill-link");
+        if (topicLink) {
+          topicLink.addEventListener("click", (e) => {
+            e.stopPropagation();
+            navigateToTopic(topicLink.dataset.topic);
+          });
+        }
+        grid.appendChild(card);
+      });
+  }
 
-function navigateToTopic(topicId) {
+  function navigateToTopic(topicId) {
   // Trigger the hash router in app.js
-  window.location.hash = `#topic/${topicId}`;
-  // Close panel
-  document.getElementById("agentPanel").classList.add("hidden");
-  document.getElementById("agentToggle").classList.remove("active");
-}
+    window.location.hash = `#topic/${topicId}`;
+    // Close panel
+    document.getElementById("agentPanel").classList.add("hidden");
+    document.getElementById("agentToggle").classList.remove("active");
+  }
 
-/* ── Switch tab ─────────────────────────────────────────────── */
-function switchTab(tab) {
-  currentTab = tab;
-  document.querySelectorAll(".ma-tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
-  document.getElementById("ma-chat-tab").classList.toggle("hidden", tab !== "chat");
-  document.getElementById("ma-skills-tab").classList.toggle("hidden", tab !== "skills");
-  if (tab === "skills") renderSkills("all");
-}
+  /* ── Switch tab ─────────────────────────────────────────────── */
+  function switchTab(tab) {
+    document.querySelectorAll(".ma-tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+    document.getElementById("ma-chat-tab").classList.toggle("hidden", tab !== "chat");
+    document.getElementById("ma-skills-tab").classList.toggle("hidden", tab !== "skills");
+    if (tab === "skills") renderSkills("all");
+  }
 
-/* ── Render markdown-ish text ──────────────────────────────── */
-function renderMd(text) {
-  return text
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`\n]+)`/g, '<code>$1</code>')
-    .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
-      `<pre class="ma-code"><code class="language-${lang}">${code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</code></pre>`)
-    .replace(/\n/g, '<br>');
-}
+  /* ── Render markdown-ish text ──────────────────────────────── */
+  function renderMd(text) {
+    return text
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/`([^`\n]+)`/g, "<code>$1</code>")
+      .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
+        `<pre class="ma-code"><code class="language-${lang}">${code.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</code></pre>`)
+      .replace(/\n/g, "<br>");
+  }
 
-/* ── Add message to chat ────────────────────────────────────── */
-function addMessage(text, role, meta) {
-  const box = document.getElementById("agentMessages");
-  const wrap = document.createElement("div");
-  wrap.className = "agent-msg " + role;
+  /* ── Add message to chat ────────────────────────────────────── */
+  function addMessage(text, role, meta) {
+    const box = document.getElementById("agentMessages");
+    const wrap = document.createElement("div");
+    wrap.className = "agent-msg " + role;
 
-  const agent = meta?.agentId ? AGENTS[meta.agentId] : null;
-  const emoji = agent ? agent.emoji : (role === "user" ? "👤" : "🧠");
-  const color = agent ? agent.color : "#4f8cff";
+    const agent = meta?.agentId ? AGENTS[meta.agentId] : null;
+    const emoji = agent ? agent.emoji : (role === "user" ? "👤" : "🧠");
+    const color = agent ? agent.color : "#4f8cff";
 
-  if (role === "user") {
-    wrap.innerHTML = `<div class="agent-bubble user-bubble">${renderMd(text)}</div><span class="agent-avatar">${emoji}</span>`;
-  } else {
-    const badge = agent ? `<span class="ma-agent-badge" style="background:${color}20;color:${color};border-color:${color}40">${emoji} ${agent.name}</span>` : '';
-    const followUps = meta?.skill?.followUps?.length
-      ? `<div class="ma-followups">${meta.skill.followUps.map(f => `<button class="ma-followup-btn">${f}</button>`).join('')}</div>`
-      : '';
-    const topicLink = meta?.skill?.topicId
-      ? `<div class="ma-topic-link" data-topic="${meta.skill.topicId}">→ Open full topic in sidebar</div>`
-      : '';
-    wrap.innerHTML = `<span class="agent-avatar">${emoji}</span>
+    if (role === "user") {
+      wrap.innerHTML = `<div class="agent-bubble user-bubble">${renderMd(text)}</div><span class="agent-avatar">${emoji}</span>`;
+    } else {
+      const badge = agent ? `<span class="ma-agent-badge" style="background:${color}20;color:${color};border-color:${color}40">${emoji} ${agent.name}</span>` : "";
+      const followUps = meta?.skill?.followUps?.length
+        ? `<div class="ma-followups">${meta.skill.followUps.map(f => `<button class="ma-followup-btn">${f}</button>`).join("")}</div>`
+        : "";
+      const topicLink = meta?.skill?.topicId
+        ? `<div class="ma-topic-link" data-topic="${meta.skill.topicId}">→ Open full topic in sidebar</div>`
+        : "";
+      wrap.innerHTML = `<span class="agent-avatar">${emoji}</span>
       <div class="agent-bubble">
         ${badge}
         <div class="ma-response-body">${renderMd(text)}</div>
         ${followUps}
         ${topicLink}
       </div>`;
-    wrap.querySelectorAll(".ma-followup-btn").forEach(btn => {
-      btn.addEventListener("click", () => sendMessage(btn.textContent));
-    });
-    wrap.querySelectorAll(".ma-topic-link").forEach(link => {
-      link.addEventListener("click", () => navigateToTopic(link.dataset.topic));
-    });
+      wrap.querySelectorAll(".ma-followup-btn").forEach(btn => {
+        btn.addEventListener("click", () => sendMessage(btn.textContent));
+      });
+      wrap.querySelectorAll(".ma-topic-link").forEach(link => {
+        link.addEventListener("click", () => navigateToTopic(link.dataset.topic));
+      });
+    }
+    box.appendChild(wrap);
+    box.scrollTop = box.scrollHeight;
+
+    // Trigger Prism if available
+    setTimeout(() => {
+      if (window.Prism) Prism.highlightAllUnder(wrap);
+    }, 50);
+    return wrap;
   }
-  box.appendChild(wrap);
-  box.scrollTop = box.scrollHeight;
 
-  // Trigger Prism if available
-  setTimeout(() => {
-    if (window.Prism) Prism.highlightAllUnder(wrap);
-  }, 50);
-  return wrap;
-}
+  /* ── Show reply (with typing indicator) ────────────────────── */
+  async function showReply(agentId, msg, precomputed) {
+    const typing = addMessage("Thinking…", "bot");
+    const result = precomputed || await fetchReply(agentId, msg);
+    typing.remove();
+    addMessage(result.text, "bot", result);
+    return result;
+  }
 
-/* ── Show reply (with typing indicator) ────────────────────── */
-async function showReply(agentId, msg, precomputed) {
-  const typing = addMessage("Thinking…", "bot");
-  const result = precomputed || await fetchReply(agentId, msg);
-  typing.remove();
-  addMessage(result.text, "bot", result);
-  return result;
-}
+  /* ── Send message ───────────────────────────────────────────── */
+  async function sendMessage(text) {
+    const input = document.getElementById("agentInput");
+    const msg = text || input.value.trim();
+    if (!msg) return;
+    if (input) input.value = "";
 
-/* ── Send message ───────────────────────────────────────────── */
-async function sendMessage(text) {
-  const input = document.getElementById("agentInput");
-  const msg = text || input.value.trim();
-  if (!msg) return;
-  if (input) input.value = "";
+    addMessage(msg, "user");
 
-  addMessage(msg, "user");
+    // Route: if orchestrator mode → auto-detect; else use selected agent
+    const agentId = currentAgent === "orchestrator" ? routeMessage(msg) : currentAgent;
 
-  // Route: if orchestrator mode → auto-detect; else use selected agent
-  const agentId = currentAgent === "orchestrator" ? routeMessage(msg) : currentAgent;
-
-  // Update header to show which agent is responding
-  const agent = AGENTS[agentId];
-  document.getElementById("agentHeaderName").textContent = agent.name;
-  document.getElementById("agentHeaderBadge").textContent = agentId.toUpperCase();
-  document.getElementById("agentHeaderBadge").style.background =
+    // Update header to show which agent is responding
+    const agent = AGENTS[agentId];
+    document.getElementById("agentHeaderName").textContent = agent.name;
+    document.getElementById("agentHeaderBadge").textContent = agentId.toUpperCase();
+    document.getElementById("agentHeaderBadge").style.background =
     `linear-gradient(90deg, ${agent.color}88, ${agent.color}44)`;
 
-  await showReply(agentId, msg);
-}
+    await showReply(agentId, msg);
+  }
 
-/* ── Bind events ────────────────────────────────────────────── */
-function bindEvents() {
-  const toggle = document.getElementById("agentToggle");
-  const close  = document.getElementById("agentClose");
-  const send   = document.getElementById("agentSend");
-  const input  = document.getElementById("agentInput");
-  const panel  = document.getElementById("agentPanel");
+  /* ── Bind events ────────────────────────────────────────────── */
+  function bindEvents() {
+    const toggle = document.getElementById("agentToggle");
+    const close  = document.getElementById("agentClose");
+    const send   = document.getElementById("agentSend");
+    const input  = document.getElementById("agentInput");
+    const panel  = document.getElementById("agentPanel");
 
-  toggle.addEventListener("click", () => {
-    const isHidden = panel.classList.contains("hidden");
-    panel.classList.toggle("hidden");
-    toggle.classList.toggle("active");
-    if (isHidden && !document.getElementById("agentMessages").children.length) {
-      addMessage(KB.orchestrator.default, "bot", { agentId: "orchestrator" });
-    }
-  });
-  close.addEventListener("click", () => {
-    panel.classList.add("hidden");
-    toggle.classList.remove("active");
-  });
-  send.addEventListener("click", () => sendMessage());
-  input.addEventListener("keydown", e => { if (e.key === "Enter") sendMessage(); });
-
-  // Tab switching
-  document.querySelectorAll(".ma-tab-btn").forEach(btn =>
-    btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
-
-  // Agent selector
-  document.querySelectorAll(".ma-agent-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".ma-agent-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentAgent = btn.dataset.agent;
-      const agent = AGENTS[currentAgent];
-      document.getElementById("agentHeaderName").textContent = agent.name;
-      document.getElementById("agentHeaderBadge").textContent = currentAgent.toUpperCase();
-      document.getElementById("agentHeaderBadge").style.background =
-        `linear-gradient(90deg, ${agent.color}88, ${agent.color}44)`;
+    toggle.addEventListener("click", () => {
+      const isHidden = panel.classList.contains("hidden");
+      panel.classList.toggle("hidden");
+      toggle.classList.toggle("active");
+      if (isHidden && !document.getElementById("agentMessages").children.length) {
+        addMessage(KB.orchestrator.default, "bot", { agentId: "orchestrator" });
+      }
     });
-  });
+    close.addEventListener("click", () => {
+      panel.classList.add("hidden");
+      toggle.classList.remove("active");
+    });
+    send.addEventListener("click", () => sendMessage());
+    input.addEventListener("keydown", e => { if (e.key === "Enter") sendMessage(); });
 
-  // Skills filter
-  document.addEventListener("click", e => {
-    if (e.target.classList.contains("ma-filter-btn")) {
-      document.querySelectorAll(".ma-filter-btn").forEach(b => b.classList.remove("active"));
-      e.target.classList.add("active");
-      renderSkills(e.target.dataset.area);
-    }
-  });
-}
+    // Tab switching
+    document.querySelectorAll(".ma-tab-btn").forEach(btn =>
+      btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
 
-/* ── Mount ──────────────────────────────────────────────────── */
-function mount() {
-  const container = document.createElement("div");
-  container.id = "agentRoot";
-  container.innerHTML = WIDGET_HTML;
-  document.body.appendChild(container);
-  bindEvents();
-}
+    // Agent selector
+    document.querySelectorAll(".ma-agent-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".ma-agent-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentAgent = btn.dataset.agent;
+        const agent = AGENTS[currentAgent];
+        document.getElementById("agentHeaderName").textContent = agent.name;
+        document.getElementById("agentHeaderBadge").textContent = currentAgent.toUpperCase();
+        document.getElementById("agentHeaderBadge").style.background =
+        `linear-gradient(90deg, ${agent.color}88, ${agent.color}44)`;
+      });
+    });
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", mount);
-} else {
-  mount();
-}
+    // Skills filter
+    document.addEventListener("click", e => {
+      if (e.target.classList.contains("ma-filter-btn")) {
+        document.querySelectorAll(".ma-filter-btn").forEach(b => b.classList.remove("active"));
+        e.target.classList.add("active");
+        renderSkills(e.target.dataset.area);
+      }
+    });
+  }
+
+  /* ── Mount ──────────────────────────────────────────────────── */
+  function mount() {
+    const container = document.createElement("div");
+    container.id = "agentRoot";
+    container.innerHTML = WIDGET_HTML;
+    document.body.appendChild(container);
+    bindEvents();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", mount);
+  } else {
+    mount();
+  }
 
 })();

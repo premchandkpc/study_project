@@ -1,19 +1,19 @@
 (function () {
-  'use strict';
+  "use strict";
 
   window.REACT_TOPICS = (window.REACT_TOPICS || []).concat([{
-    id:    'react-error-boundaries',
-    area:  'react',
-    title: 'Error Boundaries',
-    tag:   'Reliability',
-    tags:  ['react', 'error-boundary', 'error-handling', 'fallback'],
+    id:    "react-error-boundaries",
+    area:  "react",
+    title: "Error Boundaries",
+    tag:   "Reliability",
+    tags:  ["react", "error-boundary", "error-handling", "fallback"],
 
-    concept: `Error Boundaries are class components that implement componentDidCatch() and/or getDerivedStateFromError(). They catch JavaScript errors thrown anywhere in their child component tree during render, lifecycle methods, and constructors — then render a fallback UI instead of crashing the whole app. Errors in event handlers, async code, and SSR are NOT caught.`,
+    concept: "Error Boundaries are class components that implement componentDidCatch() and/or getDerivedStateFromError(). They catch JavaScript errors thrown anywhere in their child component tree during render, lifecycle methods, and constructors — then render a fallback UI instead of crashing the whole app. Errors in event handlers, async code, and SSR are NOT caught.",
 
-    why: `Production React apps need graceful error recovery. Without error boundaries, a single thrown error unmounts the entire React tree. Boundaries scope the blast radius: a broken widget crashes its boundary, not the whole page.`,
+    why: "Production React apps need graceful error recovery. Without error boundaries, a single thrown error unmounts the entire React tree. Boundaries scope the blast radius: a broken widget crashes its boundary, not the whole page.",
 
     example: {
-      language: 'javascript',
+      language: "javascript",
       code: `class ErrorBoundary extends React.Component {
   state = { hasError: false, error: null };
 
@@ -40,52 +40,52 @@
     },
 
     interview: [
-      'What do error boundaries catch? What do they NOT catch?',
-      'Why must error boundaries be class components?',
-      'How do you scope error boundaries for granular recovery?',
-      'Difference between getDerivedStateFromError and componentDidCatch?',
-      'How does React 18 handle errors in concurrent mode?',
+      "What do error boundaries catch? What do they NOT catch?",
+      "Why must error boundaries be class components?",
+      "How do you scope error boundaries for granular recovery?",
+      "Difference between getDerivedStateFromError and componentDidCatch?",
+      "How does React 18 handle errors in concurrent mode?",
     ],
 
     tradeoffs: {
       pros: [
-        'Scopes crash blast radius — broken subtree, not whole app',
-        'Enables custom fallback UI per feature area',
-        'componentDidCatch gives full error + component stack for logging',
+        "Scopes crash blast radius — broken subtree, not whole app",
+        "Enables custom fallback UI per feature area",
+        "componentDidCatch gives full error + component stack for logging",
       ],
       cons: [
-        'Must be class components — no hooks equivalent (use react-error-boundary library)',
-        'Does NOT catch: event handlers, async code (setTimeout/fetch), SSR errors',
-        'Error in error boundary itself crashes to nearest parent boundary',
+        "Must be class components — no hooks equivalent (use react-error-boundary library)",
+        "Does NOT catch: event handlers, async code (setTimeout/fetch), SSR errors",
+        "Error in error boundary itself crashes to nearest parent boundary",
       ],
     },
 
     gotchas: [
-      'Event handler errors need try/catch — boundary will NOT catch them',
-      'Async errors (setTimeout, promises) not caught — need .catch() or window.onerror',
-      'In development, React re-throws errors after boundary catches — for stack traces',
-      'react-error-boundary library adds useErrorBoundary hook for throwing from async',
+      "Event handler errors need try/catch — boundary will NOT catch them",
+      "Async errors (setTimeout, promises) not caught — need .catch() or window.onerror",
+      "In development, React re-throws errors after boundary catches — for stack traces",
+      "react-error-boundary library adds useErrorBoundary hook for throwing from async",
     ],
 
     visual: function (mount) {
       var steps = [
         {
-          phase: 'render',
-          narration: 'Step 1 — Normal render. App → Dashboard → UserWidget all render successfully.',
+          phase: "render",
+          narration: "Step 1 — Normal render. App → Dashboard → UserWidget all render successfully.",
           tree: {
-            name: 'App',
-            type: 'component',
+            name: "App",
+            type: "component",
             children: [
               {
-                name: 'ErrorBoundary',
-                type: 'provider',
+                name: "ErrorBoundary",
+                type: "provider",
                 children: [
                   {
-                    name: 'Dashboard',
-                    type: 'component',
+                    name: "Dashboard",
+                    type: "component",
                     children: [
-                      { name: 'UserWidget', type: 'component' },
-                      { name: 'StatsPanel', type: 'component' },
+                      { name: "UserWidget", type: "component" },
+                      { name: "StatsPanel", type: "component" },
                     ],
                   },
                 ],
@@ -106,22 +106,22 @@ function UserWidget() {
 </ErrorBoundary>`,
         },
         {
-          phase: 'update',
-          narration: 'Step 2 — UserWidget throws during render. fetch returned null, accessing .name throws TypeError.',
+          phase: "update",
+          narration: "Step 2 — UserWidget throws during render. fetch returned null, accessing .name throws TypeError.",
           tree: {
-            name: 'App',
-            type: 'component',
+            name: "App",
+            type: "component",
             children: [
               {
-                name: 'ErrorBoundary',
-                type: 'provider',
+                name: "ErrorBoundary",
+                type: "provider",
                 children: [
                   {
-                    name: 'Dashboard',
-                    type: 'component',
+                    name: "Dashboard",
+                    type: "component",
                     children: [
-                      { name: 'UserWidget 💥 throws!', type: 'component', rerender: true },
-                      { name: 'StatsPanel', type: 'component' },
+                      { name: "UserWidget 💥 throws!", type: "component", rerender: true },
+                      { name: "StatsPanel", type: "component" },
                     ],
                   },
                 ],
@@ -137,25 +137,25 @@ function UserWidget() {
 }`,
         },
         {
-          phase: 'commit',
-          narration: 'Step 3 — Error bubbles up to ErrorBoundary. getDerivedStateFromError() fires, sets hasError=true. React re-renders the boundary.',
+          phase: "commit",
+          narration: "Step 3 — Error bubbles up to ErrorBoundary. getDerivedStateFromError() fires, sets hasError=true. React re-renders the boundary.",
           tree: {
-            name: 'App',
-            type: 'component',
+            name: "App",
+            type: "component",
             children: [
               {
-                name: 'ErrorBoundary',
-                type: 'provider',
+                name: "ErrorBoundary",
+                type: "provider",
                 rerender: true,
-                state: { hasError: true, error: 'TypeError: Cannot read...' },
+                state: { hasError: true, error: "TypeError: Cannot read..." },
                 children: [
                   {
-                    name: 'Dashboard — unmounted',
-                    type: 'component',
+                    name: "Dashboard — unmounted",
+                    type: "component",
                     skipped: true,
                     children: [
-                      { name: 'UserWidget', type: 'component', skipped: true },
-                      { name: 'StatsPanel', type: 'component', skipped: true },
+                      { name: "UserWidget", type: "component", skipped: true },
+                      { name: "StatsPanel", type: "component", skipped: true },
                     ],
                   },
                 ],
@@ -177,26 +177,26 @@ function UserWidget() {
 }`,
         },
         {
-          phase: 'effect',
-          narration: 'Step 4 — ErrorBoundary renders fallback. Sibling routes/components outside the boundary still work.',
+          phase: "effect",
+          narration: "Step 4 — ErrorBoundary renders fallback. Sibling routes/components outside the boundary still work.",
           tree: {
-            name: 'App',
-            type: 'component',
+            name: "App",
+            type: "component",
             children: [
               {
-                name: 'ErrorBoundary',
-                type: 'provider',
+                name: "ErrorBoundary",
+                type: "provider",
                 state: { hasError: true },
                 children: [
                   {
-                    name: 'ErrorCard (fallback)',
-                    type: 'component',
+                    name: "ErrorCard (fallback)",
+                    type: "component",
                   },
                 ],
               },
               {
-                name: 'Navbar (outside boundary)',
-                type: 'component',
+                name: "Navbar (outside boundary)",
+                type: "component",
               },
             ],
           },
@@ -223,24 +223,24 @@ function UserWidget() {
 </>`,
         },
         {
-          phase: 'update',
-          narration: 'Step 5 — Retry pattern. ErrorCard calls onRetry → resets hasError=false → boundary re-renders children fresh.',
+          phase: "update",
+          narration: "Step 5 — Retry pattern. ErrorCard calls onRetry → resets hasError=false → boundary re-renders children fresh.",
           tree: {
-            name: 'App',
-            type: 'component',
+            name: "App",
+            type: "component",
             children: [
               {
-                name: 'ErrorBoundary',
-                type: 'provider',
+                name: "ErrorBoundary",
+                type: "provider",
                 state: { hasError: false },
                 rerender: true,
                 children: [
                   {
-                    name: 'Dashboard',
-                    type: 'component',
+                    name: "Dashboard",
+                    type: "component",
                     children: [
-                      { name: 'UserWidget (retry)', type: 'component', rerender: true },
-                      { name: 'StatsPanel', type: 'component' },
+                      { name: "UserWidget (retry)", type: "component", rerender: true },
+                      { name: "StatsPanel", type: "component" },
                     ],
                   },
                 ],
@@ -268,15 +268,15 @@ function UserWidget() {
       ];
 
       window.ReactViz.panel(mount, {
-        title: 'Error Boundaries',
-        time:  'O(tree depth)',
-        space: 'O(1)',
+        title: "Error Boundaries",
+        time:  "O(tree depth)",
+        space: "O(1)",
         steps: steps,
         renderStep: function (vizEl, codeEl, step) {
           window.ReactViz.ComponentTree.render(vizEl, step.tree);
           codeEl.innerHTML =
-            window.ReactViz.label('CODE') +
-            window.ReactViz.codeBlock(step.code, 'js');
+            window.ReactViz.label("CODE") +
+            window.ReactViz.codeBlock(step.code, "js");
         },
       });
     },

@@ -41,9 +41,9 @@
 
   /* ── STYLE INJECTION ──────────────────────────────────────────── */
   function injectStyles() {
-    if (document.getElementById('dsa-runtime-styles')) return;
-    const s = document.createElement('style');
-    s.id = 'dsa-runtime-styles';
+    if (document.getElementById("dsa-runtime-styles")) return;
+    const s = document.createElement("style");
+    s.id = "dsa-runtime-styles";
     s.textContent = `
       /* ── layout ── */
       .rt-root {
@@ -321,49 +321,49 @@
     injectStyles();
 
     const {
-      code = '',
-      title = '',
-      timeComplexity = '',
-      spaceComplexity = '',
+      code = "",
+      title = "",
+      timeComplexity = "",
+      spaceComplexity = "",
     } = opts;
 
-    const codeLines = typeof code === 'string' ? code.split('\n') : (code || []);
+    const codeLines = typeof code === "string" ? code.split("\n") : (code || []);
 
-    mount.innerHTML = '';
-    const root = el('div', 'rt-root');
+    mount.innerHTML = "";
+    const root = el("div", "rt-root");
     mount.appendChild(root);
 
     /* ── header ── */
-    const header = el('div', 'rt-header');
+    const header = el("div", "rt-header");
     if (title) {
-      const t = el('div', 'rt-title');
+      const t = el("div", "rt-title");
       t.textContent = title;
       header.appendChild(t);
     }
     if (timeComplexity || spaceComplexity) {
       header.appendChild(
-        window.DSAViz.makeComplexityBadge(timeComplexity || '—', spaceComplexity || '—')
+        window.DSAViz.makeComplexityBadge(timeComplexity || "—", spaceComplexity || "—")
       );
     }
     root.appendChild(header);
 
     /* ── main split ── */
     /* ── two-column body ── */
-    const body = el('div', 'rt-body');
+    const body = el("div", "rt-body");
 
     /* LEFT COLUMN: code (top) + narration + tabs (bottom) */
-    const leftCol = el('div', 'rt-left-col');
+    const leftCol = el("div", "rt-left-col");
 
-    const main = el('div', 'rt-main');
-    const codePanel = el('div', 'rt-code-panel');
-    const codeEl = el('div', 'rt-code');
+    const main = el("div", "rt-main");
+    const codePanel = el("div", "rt-code-panel");
+    const codeEl = el("div", "rt-code");
     const lineEls = [];
     codeLines.forEach((line, i) => {
-      const row = el('div', 'rt-code-row');
-      const num = el('span', 'rt-line-num');
+      const row = el("div", "rt-code-row");
+      const num = el("span", "rt-line-num");
       num.textContent = String(i + 1);
-      const text = el('span', 'rt-line-text');
-      text.textContent = line || ' ';
+      const text = el("span", "rt-line-text");
+      text.textContent = line || " ";
       row.appendChild(num);
       row.appendChild(text);
       codeEl.appendChild(row);
@@ -374,28 +374,28 @@
     leftCol.appendChild(main);
 
     /* narration — inside left col */
-    const narWrap = el('div', 'rt-nar-wrap');
-    const nar = window.DSAViz.makeNarration('Press ▶▶ or Play to start');
+    const narWrap = el("div", "rt-nar-wrap");
+    const nar = window.DSAViz.makeNarration("Press ▶▶ or Play to start");
     narWrap.appendChild(nar);
     leftCol.appendChild(narWrap);
 
     /* tabs — inside left col */
-    const TAB_NAMES = ['Variables', 'Memory', 'Timeline', 'Debug'];
-    const bottom = el('div', 'rt-bottom');
-    const tabBar = el('div', 'rt-tab-bar');
+    const TAB_NAMES = ["Variables", "Memory", "Timeline", "Debug"];
+    const bottom = el("div", "rt-bottom");
+    const tabBar = el("div", "rt-tab-bar");
     const tabPanes = {};
-    let activeTab = 'Variables';
+    let activeTab = "Variables";
 
     TAB_NAMES.forEach(name => {
-      const btn = el('button', 'rt-tab');
+      const btn = el("button", "rt-tab");
       btn.textContent = name;
-      if (name === activeTab) btn.classList.add('rt-tab-active');
+      if (name === activeTab) btn.classList.add("rt-tab-active");
       btn.onclick = () => {
         activeTab = name;
-        tabBar.querySelectorAll('.rt-tab').forEach(b => b.classList.remove('rt-tab-active'));
-        btn.classList.add('rt-tab-active');
+        tabBar.querySelectorAll(".rt-tab").forEach(b => b.classList.remove("rt-tab-active"));
+        btn.classList.add("rt-tab-active");
         Object.entries(tabPanes).forEach(([k, p]) => {
-          p.style.display = k === name ? '' : 'none';
+          p.style.display = k === name ? "" : "none";
         });
       };
       tabBar.appendChild(btn);
@@ -403,8 +403,8 @@
     bottom.appendChild(tabBar);
 
     TAB_NAMES.forEach(name => {
-      const pane = el('div', 'rt-tab-pane');
-      pane.style.display = name === activeTab ? '' : 'none';
+      const pane = el("div", "rt-tab-pane");
+      pane.style.display = name === activeTab ? "" : "none";
       bottom.appendChild(pane);
       tabPanes[name] = pane;
     });
@@ -412,15 +412,15 @@
     body.appendChild(leftCol);
 
     /* RIGHT COLUMN: viz panel full height */
-    const rightCol = el('div', 'rt-right-col');
-    const vizPanel = el('div', 'rt-viz-panel');
+    const rightCol = el("div", "rt-right-col");
+    const vizPanel = el("div", "rt-viz-panel");
     rightCol.appendChild(vizPanel);
     body.appendChild(rightCol);
 
     root.appendChild(body);
 
     /* control bar slot */
-    const ctrlSlot = el('div', 'rt-ctrl-slot');
+    const ctrlSlot = el("div", "rt-ctrl-slot");
     root.appendChild(ctrlSlot);
 
     /* timeline state */
@@ -430,38 +430,38 @@
     /* ── RENDER STEP ── */
     function renderStep(step, idx) {
       if (!step) {
-        lineEls.forEach(r => r.classList.remove('rt-active'));
-        vizPanel.innerHTML = '';
-        Object.values(tabPanes).forEach(p => p.innerHTML = '');
+        lineEls.forEach(r => r.classList.remove("rt-active"));
+        vizPanel.innerHTML = "";
+        Object.values(tabPanes).forEach(p => p.innerHTML = "");
         timelineEvents.length = 0;
         prevVars = {};
-        nar.update('Reset');
+        nar.update("Reset");
         return;
       }
 
       /* code highlight */
-      lineEls.forEach(r => r.classList.remove('rt-active'));
+      lineEls.forEach(r => r.classList.remove("rt-active"));
       if (step.line !== undefined && lineEls[step.line]) {
-        lineEls[step.line].classList.add('rt-active');
-        lineEls[step.line].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        lineEls[step.line].classList.add("rt-active");
+        lineEls[step.line].scrollIntoView({ block: "nearest", behavior: "smooth" });
       }
 
       /* narration */
-      const narColor = step.error ? '#f78166' : step.success ? '#56d364' : '#1f6feb';
+      const narColor = step.error ? "#f78166" : step.success ? "#56d364" : "#1f6feb";
       nar.update(step.narration || `Step ${idx + 1}`, narColor);
 
       /* visualizations */
       renderVisuals(vizPanel, step);
 
       /* tab panes */
-      renderVariables(tabPanes['Variables'], step.variables || {}, prevVars);
+      renderVariables(tabPanes["Variables"], step.variables || {}, prevVars);
       prevVars = { ...(step.variables || {}) };
-      renderMemory(tabPanes['Memory'], step.stack || step.callStack || [], step.heap || {});
+      renderMemory(tabPanes["Memory"], step.stack || step.callStack || [], step.heap || {});
       if (step.timeLabel || step.narration) {
-        timelineEvents.push({ t: step.timeLabel || `step ${idx + 1}`, msg: step.narration || '' });
+        timelineEvents.push({ t: step.timeLabel || `step ${idx + 1}`, msg: step.narration || "" });
       }
-      renderTimeline(tabPanes['Timeline'], timelineEvents);
-      renderDebug(tabPanes['Debug'], step, idx);
+      renderTimeline(tabPanes["Timeline"], timelineEvents);
+      renderDebug(tabPanes["Debug"], step, idx);
     }
 
     return {
@@ -471,7 +471,7 @@
           ctrl._updateCtr?.();
         });
         if (opts.speed) ctrl.setSpeed(opts.speed);
-        ctrlSlot.innerHTML = '';
+        ctrlSlot.innerHTML = "";
         ctrlSlot.appendChild(window.DSAViz.makeControlBar(ctrl));
         return ctrl;
       },
@@ -479,10 +479,10 @@
   }
 
   /* ── VISUALIZATION RENDERER ───────────────────────────────────── */
-  const PTR_NAMES = new Set(['i','j','k','l','left','right','mid','ptr','start','end','lo','hi','p','q','slow','fast','top','bot','head','tail']);
+  const PTR_NAMES = new Set(["i","j","k","l","left","right","mid","ptr","start","end","lo","hi","p","q","slow","fast","top","bot","head","tail"]);
 
   function renderVisuals(panel, step) {
-    panel.innerHTML = '';
+    panel.innerHTML = "";
     const { DSAViz } = window;
 
     /* collect integer vars that could be array pointers */
@@ -533,17 +533,17 @@
 
     /* dp */
     if (step.dp) {
-      const block = vizBlock(step.dp.title || 'DP Table');
+      const block = vizBlock(step.dp.title || "DP Table");
       panel.appendChild(block.wrap);
       if (DSAViz.dp) {
-        if (step.dp.type === '2d') DSAViz.dp.table2D(block.inner, step.dp);
+        if (step.dp.type === "2d") DSAViz.dp.table2D(block.inner, step.dp);
         else DSAViz.dp.table1D(block.inner, step.dp);
       }
     }
 
     /* matrix */
     if (step.matrix) {
-      const block = vizBlock(step.matrix.title || 'Matrix');
+      const block = vizBlock(step.matrix.title || "Matrix");
       panel.appendChild(block.wrap);
       if (DSAViz.matrix) DSAViz.matrix.render(block.inner, step.matrix);
     }
@@ -552,9 +552,9 @@
     if (step.maps) {
       Object.entries(step.maps).forEach(([name, mapData]) => {
         const block = vizBlock(`${name} (map)`);
-        const chips = el('div', 'rt-map-chips');
+        const chips = el("div", "rt-map-chips");
         Object.entries(mapData).forEach(([k, v]) => {
-          const chip = el('div', 'rt-map-chip');
+          const chip = el("div", "rt-map-chip");
           chip.innerHTML = `<span style="color:#e3b341">${k}</span><span style="color:#768390">→</span><span style="color:#56d364">${v}</span>`;
           chips.appendChild(chip);
         });
@@ -567,16 +567,16 @@
     if (step.sets) {
       Object.entries(step.sets).forEach(([name, items]) => {
         const block = vizBlock(`${name} (set)`);
-        const pills = el('div', 'rt-map-chips');
+        const pills = el("div", "rt-map-chips");
         if (!items.length) {
-          const empty = el('span');
-          empty.style.cssText = 'color:#484f58;font-size:11px';
-          empty.textContent = '∅ empty';
+          const empty = el("span");
+          empty.style.cssText = "color:#484f58;font-size:11px";
+          empty.textContent = "∅ empty";
           pills.appendChild(empty);
         }
         items.forEach(v => {
-          const pill = el('div', 'rt-map-chip');
-          pill.style.borderColor = '#7c4dff';
+          const pill = el("div", "rt-map-chip");
+          pill.style.borderColor = "#7c4dff";
           pill.innerHTML = `<span style="color:#c9b1ff">${JSON.stringify(v)}</span>`;
           pills.appendChild(pill);
         });
@@ -589,20 +589,20 @@
     if (step.variables) {
       const scalars = {};
       Object.entries(step.variables).forEach(([name, val]) => {
-        if (val !== null && val !== undefined && typeof val !== 'object' && typeof val !== 'function') {
+        if (val !== null && val !== undefined && typeof val !== "object" && typeof val !== "function") {
           scalars[name] = val;
         }
       });
       if (Object.keys(scalars).length) {
-        const block = vizBlock('Variables');
-        const chips = el('div', 'rt-map-chips');
+        const block = vizBlock("Variables");
+        const chips = el("div", "rt-map-chips");
         Object.entries(scalars).forEach(([name, val]) => {
           const isIdx = PTR_NAMES.has(name) && Number.isInteger(val);
-          const chip = el('div', 'rt-map-chip');
-          chip.style.borderColor = isIdx ? '#e3b341' : '#30363d';
+          const chip = el("div", "rt-map-chip");
+          chip.style.borderColor = isIdx ? "#e3b341" : "#30363d";
           chip.innerHTML =
-            `<span style="color:${isIdx ? '#e3b341' : '#58a6ff'};font-weight:700">${name}</span>` +
-            `<span style="color:#768390">=</span>` +
+            `<span style="color:${isIdx ? "#e3b341" : "#58a6ff"};font-weight:700">${name}</span>` +
+            "<span style=\"color:#768390\">=</span>" +
             `<span style="color:#56d364">${JSON.stringify(val)}</span>`;
           chips.appendChild(chip);
         });
@@ -614,16 +614,16 @@
     /* recursion call stack as mini stack visual */
     const stackData = step.stack || step.callStack;
     if (stackData?.length) {
-      const block = vizBlock('Call Stack');
-      const frames = el('div', 'rt-stack-frames');
+      const block = vizBlock("Call Stack");
+      const frames = el("div", "rt-stack-frames");
       [...stackData].reverse().forEach((fn, i) => {
-        const frame = el('div', i === 0 ? 'rt-stack-frame rt-top' : 'rt-stack-frame');
+        const frame = el("div", i === 0 ? "rt-stack-frame rt-top" : "rt-stack-frame");
         frame.textContent = fn;
         frames.appendChild(frame);
       });
       if (step.recursionDepth !== undefined) {
-        const depth = el('div');
-        depth.style.cssText = 'font-size:10px;color:#768390;margin-top:4px';
+        const depth = el("div");
+        depth.style.cssText = "font-size:10px;color:#768390;margin-top:4px";
         depth.textContent = `depth: ${step.recursionDepth}`;
         block.inner.appendChild(depth);
       }
@@ -633,30 +633,30 @@
   }
 
   function vizBlock(name) {
-    const wrap = el('div', 'rt-viz-block');
+    const wrap = el("div", "rt-viz-block");
     if (name) {
-      const lbl = el('div', 'rt-viz-label');
+      const lbl = el("div", "rt-viz-label");
       lbl.textContent = name;
       wrap.appendChild(lbl);
     }
-    const inner = el('div');
+    const inner = el("div");
     wrap.appendChild(inner);
     return { wrap, inner };
   }
 
   /* ── TAB RENDERERS ────────────────────────────────────────────── */
   function renderVariables(pane, vars, prev) {
-    pane.innerHTML = '';
+    pane.innerHTML = "";
     const keys = Object.keys(vars);
     if (!keys.length) {
-      pane.innerHTML = '<span style="color:#768390;font-size:12px">No variables tracked</span>';
+      pane.innerHTML = "<span style=\"color:#768390;font-size:12px\">No variables tracked</span>";
       return;
     }
-    const grid = el('div', 'rt-var-grid');
+    const grid = el("div", "rt-var-grid");
     keys.forEach(name => {
       const val = vars[name];
       const changed = JSON.stringify(prev[name]) !== JSON.stringify(val);
-      const chip = el('div', changed ? 'rt-var-chip rt-changed' : 'rt-var-chip');
+      const chip = el("div", changed ? "rt-var-chip rt-changed" : "rt-var-chip");
       chip.innerHTML = `<span class="rt-var-name">${name}</span><span class="rt-var-eq">=</span><span class="rt-var-val">${JSON.stringify(val)}</span>`;
       grid.appendChild(chip);
     });
@@ -664,45 +664,45 @@
   }
 
   function renderMemory(pane, callStack, heap) {
-    pane.innerHTML = '';
+    pane.innerHTML = "";
     if (callStack.length) {
-      const lbl = el('div', 'rt-mem-section-label');
-      lbl.textContent = 'Call Stack';
+      const lbl = el("div", "rt-mem-section-label");
+      lbl.textContent = "Call Stack";
       pane.appendChild(lbl);
-      const frames = el('div', 'rt-stack-frames');
+      const frames = el("div", "rt-stack-frames");
       [...callStack].reverse().forEach((fn, i) => {
-        const frame = el('div', i === 0 ? 'rt-stack-frame rt-top' : 'rt-stack-frame');
+        const frame = el("div", i === 0 ? "rt-stack-frame rt-top" : "rt-stack-frame");
         frame.textContent = fn;
         frames.appendChild(frame);
       });
       pane.appendChild(frames);
     }
     if (Object.keys(heap).length) {
-      const lbl = el('div', 'rt-mem-section-label');
-      lbl.textContent = 'Heap';
+      const lbl = el("div", "rt-mem-section-label");
+      lbl.textContent = "Heap";
       pane.appendChild(lbl);
-      const rows = el('div', 'rt-heap-rows');
+      const rows = el("div", "rt-heap-rows");
       Object.entries(heap).forEach(([k, v]) => {
-        const row = el('div', 'rt-heap-row');
+        const row = el("div", "rt-heap-row");
         row.innerHTML = `<span style="color:#58a6ff">${k}</span><span style="color:#768390">→</span><span style="color:#cdd9e5">${v}</span>`;
         rows.appendChild(row);
       });
       pane.appendChild(rows);
     }
     if (!callStack.length && !Object.keys(heap).length) {
-      pane.innerHTML = '<span style="color:#768390;font-size:12px">No memory data</span>';
+      pane.innerHTML = "<span style=\"color:#768390;font-size:12px\">No memory data</span>";
     }
   }
 
   function renderTimeline(pane, events) {
-    pane.innerHTML = '';
+    pane.innerHTML = "";
     if (!events.length) return;
-    const list = el('div', 'rt-timeline');
+    const list = el("div", "rt-timeline");
     events.forEach(ev => {
-      const row = el('div', 'rt-tl-row');
-      const t = el('span', 'rt-tl-t');
+      const row = el("div", "rt-tl-row");
+      const t = el("span", "rt-tl-t");
       t.textContent = ev.t;
-      const msg = el('span', 'rt-tl-msg');
+      const msg = el("span", "rt-tl-msg");
       msg.textContent = ev.msg;
       row.appendChild(t);
       row.appendChild(msg);
@@ -713,21 +713,21 @@
   }
 
   function renderDebug(pane, step, idx) {
-    pane.innerHTML = '';
+    pane.innerHTML = "";
     const items = [];
-    if (step.line !== undefined) items.push(['Line', step.line + 1]);
-    if (step.ops !== undefined) items.push(['Operations', step.ops]);
-    if (step.recursionDepth !== undefined) items.push(['Recursion Depth', step.recursionDepth]);
+    if (step.line !== undefined) items.push(["Line", step.line + 1]);
+    if (step.ops !== undefined) items.push(["Operations", step.ops]);
+    if (step.recursionDepth !== undefined) items.push(["Recursion Depth", step.recursionDepth]);
     if (step.variables) {
       Object.entries(step.variables).forEach(([k, v]) => items.push([k, JSON.stringify(v)]));
     }
     if (!items.length) {
-      pane.innerHTML = '<span style="color:#768390;font-size:12px">No debug info</span>';
+      pane.innerHTML = "<span style=\"color:#768390;font-size:12px\">No debug info</span>";
       return;
     }
-    const grid = el('div', 'rt-debug-grid');
+    const grid = el("div", "rt-debug-grid");
     items.forEach(([k, v]) => {
-      const row = el('div', 'rt-debug-row');
+      const row = el("div", "rt-debug-row");
       row.innerHTML = `<span class="rt-debug-key">${k}</span><span class="rt-debug-val">${v}</span>`;
       grid.appendChild(row);
     });

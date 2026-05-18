@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-sw-window-max",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** Rolling leaderboard — each window needs the current peak without rescanning all k values.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'sliding.windowMax',
-        time:  'O(n)',
-        space: 'O(k)',
+        title: "sliding.windowMax",
+        time:  "O(n)",
+        space: "O(k)",
         code: `function maxSlidingWindow(nums, k) {
   const deque = [];
   const result = [];

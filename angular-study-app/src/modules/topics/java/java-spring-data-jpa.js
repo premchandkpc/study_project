@@ -11,7 +11,7 @@
 **L3 (10min):** N+1: iterating a lazy collection issues 1 query per parent. Fix: JOIN FETCH, @EntityGraph, @BatchSize. @Transactional works via AOP proxy — self-invocation bypasses it. read-only transactions skip dirty checking (big perf win). @Version = optimistic lock.
 **L4 (30min):** Hibernate 2nd-level cache (Ehcache/Redis) is per-entity keyed by PK. QueryCache caches result sets. First-level cache is per-session/transaction. Connection pool (HikariCP default): max-lifetime, connection-timeout, leak-detection. MultipleBagFetchException: can't JOIN FETCH 2+ bag collections — use Set or split queries.`,
     why:
-`**Production incident:** Checkout service queries orders with 10 line items each. findByUserId returns 100 orders → Hibernate lazily loads lines for each = 101 queries. With 50 concurrent users = 5050 DB queries/second. DB CPU spikes, latency p99 = 8s. Fix: JOIN FETCH drops to 1 query. Response time: 80ms.`,
+"**Production incident:** Checkout service queries orders with 10 line items each. findByUserId returns 100 orders → Hibernate lazily loads lines for each = 101 queries. With 50 concurrent users = 5050 DB queries/second. DB CPU spikes, latency p99 = 8s. Fix: JOIN FETCH drops to 1 query. Response time: 80ms.",
     flow: {
       title: "Entity Lifecycle: transient → managed → detached → removed",
       caption: "Click each state to see what Hibernate does",
@@ -94,26 +94,26 @@
     visual: function(mount) {
       var S = {tab:0, qi:0};
       var TRICKS = [
-        {wrong:'@Transactional on private method works just fine',
-         right:'AOP proxy only intercepts public methods called from OUTSIDE. Private methods and self-invocation (this.method()) bypass the proxy — no transaction.'},
-        {wrong:'Lazy loading is always safe inside @Transactional',
-         right:'Only safe while session is open (within the transaction). After the method returns, session closes. Accessing lazy collection outside = LazyInitializationException.'},
-        {wrong:'EAGER fetch is safer than LAZY for performance',
-         right:'EAGER on @ManyToMany means EVERY query loads all related entities — even when you don\'t need them. This is usually catastrophically slow. Always start LAZY.'},
-        {wrong:'findAll() then filter in Java is fine for small tables',
-         right:'Small tables grow. "Small" means 100K rows at 3am after 6 months. Always filter in SQL. Database indexes are useless if you filter in Java.'}
+        {wrong:"@Transactional on private method works just fine",
+          right:"AOP proxy only intercepts public methods called from OUTSIDE. Private methods and self-invocation (this.method()) bypass the proxy — no transaction."},
+        {wrong:"Lazy loading is always safe inside @Transactional",
+          right:"Only safe while session is open (within the transaction). After the method returns, session closes. Accessing lazy collection outside = LazyInitializationException."},
+        {wrong:"EAGER fetch is safer than LAZY for performance",
+          right:"EAGER on @ManyToMany means EVERY query loads all related entities — even when you don't need them. This is usually catastrophically slow. Always start LAZY."},
+        {wrong:"findAll() then filter in Java is fine for small tables",
+          right:"Small tables grow. \"Small\" means 100K rows at 3am after 6 months. Always filter in SQL. Database indexes are useless if you filter in Java."}
       ];
       var QS = [
-        {q:'What is the N+1 problem and 3 ways to fix it?',
-         a:'N+1: loading N parents then issuing 1 query per parent to load children = N+1 queries total. Fix: (1) JOIN FETCH in JPQL, (2) @EntityGraph on repository method, (3) @BatchSize(size=100) for batch loading.'},
-        {q:'Why is @Transactional sometimes silently ignored?',
-         a:'Spring AOP wraps the bean in a proxy. Calls through the proxy get transaction management. Self-invocation (this.method()) bypasses the proxy → no transaction. Fix: inject self via @Autowired or use AspectJ weaving.'},
-        {q:'Optimistic vs pessimistic locking — when to use each?',
-         a:'Optimistic: @Version column, checked on commit. Zero contention on read. Fails with OptimisticLockException on conflict — caller retries. Use when conflicts are rare. Pessimistic: SELECT FOR UPDATE, holds DB lock. Use when conflicts are frequent (financial ledgers).'}
+        {q:"What is the N+1 problem and 3 ways to fix it?",
+          a:"N+1: loading N parents then issuing 1 query per parent to load children = N+1 queries total. Fix: (1) JOIN FETCH in JPQL, (2) @EntityGraph on repository method, (3) @BatchSize(size=100) for batch loading."},
+        {q:"Why is @Transactional sometimes silently ignored?",
+          a:"Spring AOP wraps the bean in a proxy. Calls through the proxy get transaction management. Self-invocation (this.method()) bypasses the proxy → no transaction. Fix: inject self via @Autowired or use AspectJ weaving."},
+        {q:"Optimistic vs pessimistic locking — when to use each?",
+          a:"Optimistic: @Version column, checked on commit. Zero contention on read. Fails with OptimisticLockException on conflict — caller retries. Use when conflicts are rare. Pessimistic: SELECT FOR UPDATE, holds DB lock. Use when conflicts are frequent (financial ledgers)."}
       ];
       function css(){
-        if(document.getElementById('jpa-style'))return;
-        var s=document.createElement('style');s.id='jpa-style';
+        if(document.getElementById("jpa-style"))return;
+        var s=document.createElement("style");s.id="jpa-style";
         s.textContent=`
 .jpa{font-family:'Courier New',monospace;background:#0d1117;color:#e6edf3;border-radius:10px;overflow:hidden}
 .jpa-tabs{display:flex;background:#161b22;border-bottom:1px solid #30363d}
@@ -139,61 +139,61 @@
         document.head.appendChild(s);
       }
       var queries=[
-        {label:'findByUserId()',     type:'bad',  count:6, detail:'1 query for orders + 5 lazy loads for lines = N+1 problem'},
-        {label:'JOIN FETCH',         type:'good', count:1, detail:'1 query with JOIN FETCH orders.lines — everything in one round trip'},
-        {label:'@EntityGraph',       type:'good', count:1, detail:'@EntityGraph(attributePaths={"lines"}) — same result, declared on method'},
-        {label:'@BatchSize(100)',     type:'ok',   count:2, detail:'2 queries: 1 for orders, 1 batch for all lines WHERE order_id IN (1,2,3,4,5)'}
+        {label:"findByUserId()",     type:"bad",  count:6, detail:"1 query for orders + 5 lazy loads for lines = N+1 problem"},
+        {label:"JOIN FETCH",         type:"good", count:1, detail:"1 query with JOIN FETCH orders.lines — everything in one round trip"},
+        {label:"@EntityGraph",       type:"good", count:1, detail:"@EntityGraph(attributePaths={\"lines\"}) — same result, declared on method"},
+        {label:"@BatchSize(100)",     type:"ok",   count:2, detail:"2 queries: 1 for orders, 1 batch for all lines WHERE order_id IN (1,2,3,4,5)"}
       ];
       var selQ=0;
       function render(){
         css();
-        mount.innerHTML=`<div class="jpa"><div class="jpa-tabs">`
-          +`<button class="jpa-tab ${S.tab===0?'on':''}" id="jt0">💣 N+1 Demo</button>`
-          +`<button class="jpa-tab ${S.tab===1?'on':''}" id="jt1">🔄 Entity Lifecycle</button>`
-          +`<button class="jpa-tab ${S.tab===2?'on':''}" id="jt2">⚠️ Tricky + Interview</button>`
-          +`</div><div class="jpa-body" id="jpa-body"></div></div>`;
-        mount.querySelector('#jt0').onclick=()=>{S.tab=0;render()};
-        mount.querySelector('#jt1').onclick=()=>{S.tab=1;render()};
-        mount.querySelector('#jt2').onclick=()=>{S.tab=2;render()};
+        mount.innerHTML="<div class=\"jpa\"><div class=\"jpa-tabs\">"
+          +`<button class="jpa-tab ${S.tab===0?"on":""}" id="jt0">💣 N+1 Demo</button>`
+          +`<button class="jpa-tab ${S.tab===1?"on":""}" id="jt1">🔄 Entity Lifecycle</button>`
+          +`<button class="jpa-tab ${S.tab===2?"on":""}" id="jt2">⚠️ Tricky + Interview</button>`
+          +"</div><div class=\"jpa-body\" id=\"jpa-body\"></div></div>";
+        mount.querySelector("#jt0").onclick=()=>{S.tab=0;render();};
+        mount.querySelector("#jt1").onclick=()=>{S.tab=1;render();};
+        mount.querySelector("#jt2").onclick=()=>{S.tab=2;render();};
         renderBody();
       }
       function renderBody(){
-        var b=mount.querySelector('#jpa-body');
+        var b=mount.querySelector("#jpa-body");
         if(S.tab===0){
-          b.innerHTML='<div style="font-size:11px;color:#8b949e;margin-bottom:10px">Loading 5 orders with line items — compare query counts</div>'
-            +'<div class="jpa-q-bar">'+queries.map((q,i)=>`<button class="jpa-q-btn ${selQ===i?q.type:''}" id="jqb${i}">${q.label}</button>`).join('')+'</div>'
-            +`<div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">`
-            +`<div style="font-size:32px;font-weight:800;color:${queries[selQ].type==='bad'?'#f85149':'#3fb950'}">${queries[selQ].count}</div>`
-            +`<div><div style="font-size:11px;color:#8b949e;text-transform:uppercase">SQL queries</div><div style="font-size:13px;font-weight:700;color:${queries[selQ].type==='bad'?'#f85149':'#3fb950'}">${queries[selQ].type==='bad'?'N+1 Problem!':'Efficient'}</div></div>`
-            +`<div style="flex:1;background:#21262d;border-radius:6px;height:12px;overflow:hidden"><div style="height:100%;width:${Math.min(100,queries[selQ].count*16)}%;background:${queries[selQ].type==='bad'?'#f85149':'#3fb950'};transition:width .3s"></div></div>`
+          b.innerHTML="<div style=\"font-size:11px;color:#8b949e;margin-bottom:10px\">Loading 5 orders with line items — compare query counts</div>"
+            +"<div class=\"jpa-q-bar\">"+queries.map((q,i)=>`<button class="jpa-q-btn ${selQ===i?q.type:""}" id="jqb${i}">${q.label}</button>`).join("")+"</div>"
+            +"<div style=\"display:flex;gap:12px;align-items:center;margin-bottom:12px\">"
+            +`<div style="font-size:32px;font-weight:800;color:${queries[selQ].type==="bad"?"#f85149":"#3fb950"}">${queries[selQ].count}</div>`
+            +`<div><div style="font-size:11px;color:#8b949e;text-transform:uppercase">SQL queries</div><div style="font-size:13px;font-weight:700;color:${queries[selQ].type==="bad"?"#f85149":"#3fb950"}">${queries[selQ].type==="bad"?"N+1 Problem!":"Efficient"}</div></div>`
+            +`<div style="flex:1;background:#21262d;border-radius:6px;height:12px;overflow:hidden"><div style="height:100%;width:${Math.min(100,queries[selQ].count*16)}%;background:${queries[selQ].type==="bad"?"#f85149":"#3fb950"};transition:width .3s"></div></div>`
             +`</div><div class="jpa-info">${queries[selQ].detail}</div>`;
-          queries.forEach((_,i)=>{mount.querySelector('#jqb'+i).onclick=()=>{selQ=i;renderBody()}});
+          queries.forEach((_,i)=>{mount.querySelector("#jqb"+i).onclick=()=>{selQ=i;renderBody();};});
         } else if(S.tab===1){
           var states=[
-            {label:'new Order()',     color:'#8b949e', info:'Transient: just a Java object. JPA knows nothing. No DB row, no ID.'},
-            {label:'em.persist()',    color:'#1f6feb', info:'Managed: tracked in persistence context. Gets ID from DB sequence on flush.'},
-            {label:'flush/commit',    color:'#3fb950', info:'SQL generated: Hibernate diffs entity vs snapshot → INSERT/UPDATE. @Version incremented.'},
-            {label:'em.detach()',     color:'#f1b150', info:'Detached: changes ignored. Lazy collections throw LazyInitializationException if accessed.'},
-            {label:'em.merge()',      color:'#a371f7', info:'Re-managed: detached entity reattached. Returns new managed instance — use the returned object!'},
-            {label:'em.remove()',     color:'#f85149', info:'Removed: DELETE queued for next flush. entity transitions to transient after.'}
+            {label:"new Order()",     color:"#8b949e", info:"Transient: just a Java object. JPA knows nothing. No DB row, no ID."},
+            {label:"em.persist()",    color:"#1f6feb", info:"Managed: tracked in persistence context. Gets ID from DB sequence on flush."},
+            {label:"flush/commit",    color:"#3fb950", info:"SQL generated: Hibernate diffs entity vs snapshot → INSERT/UPDATE. @Version incremented."},
+            {label:"em.detach()",     color:"#f1b150", info:"Detached: changes ignored. Lazy collections throw LazyInitializationException if accessed."},
+            {label:"em.merge()",      color:"#a371f7", info:"Re-managed: detached entity reattached. Returns new managed instance — use the returned object!"},
+            {label:"em.remove()",     color:"#f85149", info:"Removed: DELETE queued for next flush. entity transitions to transient after."}
           ];
           var si=0;
-          function drawEL(){
-            b.innerHTML='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'+states.map((st,i)=>`<div style="padding:6px 10px;border-radius:5px;background:${si===i?st.color+'33':'#21262d'};border:2px solid ${si===i?st.color:'#30363d'};color:${si===i?st.color:'#8b949e'};font-size:11px;cursor:pointer;font-family:inherit;font-weight:600" id="els${i}">${st.label}</div>`).join('')+'</div>'
+          var drawEL = function(){
+            b.innerHTML="<div style=\"display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px\">"+states.map((st,i)=>`<div style="padding:6px 10px;border-radius:5px;background:${si===i?st.color+"33":"#21262d"};border:2px solid ${si===i?st.color:"#30363d"};color:${si===i?st.color:"#8b949e"};font-size:11px;cursor:pointer;font-family:inherit;font-weight:600" id="els${i}">${st.label}</div>`).join("")+"</div>"
               +`<div class="jpa-info">${states[si].info}</div>`
               +`<div style="margin-top:10px;display:flex;gap:8px"><button class="jpa-btn" id="elP">◀</button><button class="jpa-btn2" id="elN">Next ▶</button><span style="font-size:11px;color:#8b949e;margin-left:auto;align-self:center">${si+1}/${states.length}</span></div>`;
-            states.forEach((_,i)=>{mount.querySelector('#els'+i).onclick=()=>{si=i;drawEL()}});
-            mount.querySelector('#elP').onclick=()=>{si=Math.max(0,si-1);drawEL()};
-            mount.querySelector('#elN').onclick=()=>{si=Math.min(states.length-1,si+1);drawEL()};
-          }
+            states.forEach((_,i)=>{mount.querySelector("#els"+i).onclick=()=>{si=i;drawEL();};});
+            mount.querySelector("#elP").onclick=()=>{si=Math.max(0,si-1);drawEL();};
+            mount.querySelector("#elN").onclick=()=>{si=Math.min(states.length-1,si+1);drawEL();};
+          };
           drawEL();
         } else {
-          b.innerHTML='<div style="font-size:11px;color:#8b949e;font-weight:700;text-transform:uppercase;margin-bottom:10px">Common Mistakes</div>'
-            +TRICKS.map((t,i)=>`<div class="jpa-trick"><div style="font-size:10px;color:#8b949e;margin-bottom:5px">Trap ${i+1}</div><div class="jpa-bad">${t.wrong}</div><div class="jpa-good">${t.right}</div></div>`).join('')
-            +'<div style="font-size:11px;color:#8b949e;font-weight:700;text-transform:uppercase;margin:14px 0 10px">Interview Mode</div>'
+          b.innerHTML="<div style=\"font-size:11px;color:#8b949e;font-weight:700;text-transform:uppercase;margin-bottom:10px\">Common Mistakes</div>"
+            +TRICKS.map((t,i)=>`<div class="jpa-trick"><div style="font-size:10px;color:#8b949e;margin-bottom:5px">Trap ${i+1}</div><div class="jpa-bad">${t.wrong}</div><div class="jpa-good">${t.right}</div></div>`).join("")
+            +"<div style=\"font-size:11px;color:#8b949e;font-weight:700;text-transform:uppercase;margin:14px 0 10px\">Interview Mode</div>"
             +`<div class="jpa-qbox"><div class="jpa-qtext" id="jpa-qt">${QS[S.qi].q}</div><button class="jpa-btn" id="jpa-rev">Reveal Answer</button><button class="jpa-btn2" id="jpa-nxt">Next Q ▶</button><div class="jpa-ans" id="jpa-an">${QS[S.qi].a}</div></div>`;
-          mount.querySelector('#jpa-rev').onclick=()=>{mount.querySelector('#jpa-an').style.display='block'};
-          mount.querySelector('#jpa-nxt').onclick=()=>{S.qi=(S.qi+1)%QS.length;renderBody()};
+          mount.querySelector("#jpa-rev").onclick=()=>{mount.querySelector("#jpa-an").style.display="block";};
+          mount.querySelector("#jpa-nxt").onclick=()=>{S.qi=(S.qi+1)%QS.length;renderBody();};
         }
       }
       render();
@@ -250,7 +250,7 @@ class OrderService {
     tradeoffs: {
       pros:["Strong type safety","Repository abstraction is testable","Dirty tracking reduces boilerplate","readOnly transactions free performance gain"],
       cons:["N+1 and lazy loading traps","Schema migrations separate (Flyway/Liquibase)","Heavy reflection — cold start slower","MultipleBagFetchException surprises"],
-      when:`**JPA** for rich domain models with relationships. **jOOQ/MyBatis** when SQL ownership matters. **JDBI/JdbcClient** for thin services.`
+      when:"**JPA** for rich domain models with relationships. **jOOQ/MyBatis** when SQL ownership matters. **JDBI/JdbcClient** for thin services."
     }
   };
   window.JAVA_TOPICS = (window.JAVA_TOPICS || []).concat([topic]);

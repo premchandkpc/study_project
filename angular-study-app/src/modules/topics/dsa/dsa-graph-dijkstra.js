@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-graph-dijkstra",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** Routing engine — repeatedly lock the closest unfinished node and relax outgoing roads.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'graph.dijkstra',
-        time:  'O((V+E) log V)',
-        space: 'O(V)',
+        title: "graph.dijkstra",
+        time:  "O((V+E) log V)",
+        space: "O(V)",
         code: `function dijkstra(graph, start) {
   const dist = {};
   for (const node in graph) dist[node] = Infinity;

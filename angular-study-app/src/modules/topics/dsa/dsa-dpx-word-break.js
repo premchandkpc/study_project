@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dpx-word-break",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** NLP tokenizer — can a run-together string be split into valid dictionary words?`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'dpx.wordBreak',
-        time:  'O(n²)',
-        space: 'O(n)',
+        title: "dpx.wordBreak",
+        time:  "O(n²)",
+        space: "O(n)",
         code: `function wordBreak(s, wordDict) {
   const set = {};
   for (const w of wordDict) set[w] = true;

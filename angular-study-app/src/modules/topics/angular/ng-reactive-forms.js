@@ -7,7 +7,7 @@
     tags: ["angular","reactive-forms","formgroup","validators"],
     concept: "// TODO — coming soon",
     visual: function(mount) {
-      mount.innerHTML = '<div style="padding:20px;color:#768390;font-size:13px">⚙️ Angular Reactive Forms — interactive visual coming soon.</div>';
+      mount.innerHTML = "<div style=\"padding:20px;color:#768390;font-size:13px\">⚙️ Angular Reactive Forms — interactive visual coming soon.</div>";
     },
     gotchas: [],
     interview: [],

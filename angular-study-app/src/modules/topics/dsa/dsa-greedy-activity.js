@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-greedy-activity",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** Calendar optimizer — fit the most meetings into one room.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'greedy.activitySel',
-        time:  'O(n log n)',
-        space: 'O(1)',
+        title: "greedy.activitySel",
+        time:  "O(n log n)",
+        space: "O(1)",
         code: `function activitySelection(activities) {
   activities.sort((a, b) => a[1] - b[1]);
   let count = 1;

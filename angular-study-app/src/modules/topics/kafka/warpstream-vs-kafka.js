@@ -244,45 +244,45 @@
   </div>
 </div>`;
 
-      var tip = document.getElementById('wk-tip');
+      var tip = document.getElementById("wk-tip");
       function showTip(el, html) {
         if (!el) return;
-        el.addEventListener('mouseenter', function () { tip.innerHTML = html; tip.style.display = 'block'; });
-        el.addEventListener('mousemove', function (e) { tip.style.left = (e.clientX + 14) + 'px'; tip.style.top = (e.clientY - 10) + 'px'; });
-        el.addEventListener('mouseleave', function () { tip.style.display = 'none'; });
+        el.addEventListener("mouseenter", function () { tip.innerHTML = html; tip.style.display = "block"; });
+        el.addEventListener("mousemove", function (e) { tip.style.left = (e.clientX + 14) + "px"; tip.style.top = (e.clientY - 10) + "px"; });
+        el.addEventListener("mouseleave", function () { tip.style.display = "none"; });
       }
 
       // Tab switch
-      document.querySelectorAll('#wk-root .wk-tab').forEach(function (t) {
-        t.addEventListener('click', function () {
-          document.querySelectorAll('#wk-root .wk-tab').forEach(function (x) { x.classList.remove('on'); });
-          document.querySelectorAll('#wk-root .wk-panel').forEach(function (x) { x.classList.remove('on'); });
-          t.classList.add('on');
-          document.getElementById(t.dataset.tab).classList.add('on');
+      document.querySelectorAll("#wk-root .wk-tab").forEach(function (t) {
+        t.addEventListener("click", function () {
+          document.querySelectorAll("#wk-root .wk-tab").forEach(function (x) { x.classList.remove("on"); });
+          document.querySelectorAll("#wk-root .wk-panel").forEach(function (x) { x.classList.remove("on"); });
+          t.classList.add("on");
+          document.getElementById(t.dataset.tab).classList.add("on");
         });
       });
 
       // --- TAB 1: Arch animation ---
       var archSteps = [
         {
-          kProd: '#3fb950', ka0: false, kLeader: '#30363d', ka1: false, kR: '#30363d', ka2: false, kCons: '#30363d',
-          wProd: '#3fb950', wa0: false, wAgent: '#30363d', wa1: false, wS3: '#30363d', wa2: false, wCons: '#30363d',
-          info: 'Both producers ready. Same Kafka API surface — compatible clients.'
+          kProd: "#3fb950", ka0: false, kLeader: "#30363d", ka1: false, kR: "#30363d", ka2: false, kCons: "#30363d",
+          wProd: "#3fb950", wa0: false, wAgent: "#30363d", wa1: false, wS3: "#30363d", wa2: false, wCons: "#30363d",
+          info: "Both producers ready. Same Kafka API surface — compatible clients."
         },
         {
-          kProd: '#3fb950', ka0: true, kLeader: '#e8741a', ka1: false, kR: '#30363d', ka2: false, kCons: '#30363d',
-          wProd: '#3fb950', wa0: true, wAgent: '#38bdf8', wa1: false, wS3: '#30363d', wa2: false, wCons: '#30363d',
-          info: 'Kafka: message hits Leader Broker, written to local disk. WarpStream: message held in Agent RAM buffer.'
+          kProd: "#3fb950", ka0: true, kLeader: "#e8741a", ka1: false, kR: "#30363d", ka2: false, kCons: "#30363d",
+          wProd: "#3fb950", wa0: true, wAgent: "#38bdf8", wa1: false, wS3: "#30363d", wa2: false, wCons: "#30363d",
+          info: "Kafka: message hits Leader Broker, written to local disk. WarpStream: message held in Agent RAM buffer."
         },
         {
-          kProd: '#3fb950', ka0: true, kLeader: '#e8741a', ka1: true, kR: '#e8741a', ka2: false, kCons: '#30363d',
-          wProd: '#3fb950', wa0: true, wAgent: '#38bdf8', wa1: true, wS3: '#f0883e', wa2: false, wCons: '#30363d',
-          info: 'Kafka: Leader replicates to 2 followers (network + disk on each). WarpStream: Agent flushes to S3 (~250ms). No inter-agent replication!'
+          kProd: "#3fb950", ka0: true, kLeader: "#e8741a", ka1: true, kR: "#e8741a", ka2: false, kCons: "#30363d",
+          wProd: "#3fb950", wa0: true, wAgent: "#38bdf8", wa1: true, wS3: "#f0883e", wa2: false, wCons: "#30363d",
+          info: "Kafka: Leader replicates to 2 followers (network + disk on each). WarpStream: Agent flushes to S3 (~250ms). No inter-agent replication!"
         },
         {
-          kProd: '#3fb950', ka0: true, kLeader: '#e8741a', ka1: true, kR: '#3fb950', ka2: true, kCons: '#58a6ff',
-          wProd: '#3fb950', wa0: true, wAgent: '#38bdf8', wa1: true, wS3: '#f0883e', wa2: true, wCons: '#58a6ff',
-          info: 'Both consumers read. Kafka: ~5ms total. WarpStream: ~350ms total. Kafka wins latency; WarpStream wins cost + ops.'
+          kProd: "#3fb950", ka0: true, kLeader: "#e8741a", ka1: true, kR: "#3fb950", ka2: true, kCons: "#58a6ff",
+          wProd: "#3fb950", wa0: true, wAgent: "#38bdf8", wa1: true, wS3: "#f0883e", wa2: true, wCons: "#58a6ff",
+          info: "Both consumers read. Kafka: ~5ms total. WarpStream: ~350ms total. Kafka wins latency; WarpStream wins cost + ops."
         }
       ];
       var aStep = 0, aTimer = null, aPlaying = false;
@@ -293,223 +293,223 @@
           var el = document.getElementById(id);
           if (el) { el.style.borderColor = color; el.style.color = color; }
         };
-        set('wk-k-prod', s.kProd); set('wk-k-leader', s.kLeader); set('wk-k-cons', s.kCons);
-        set('wk-w-prod', s.wProd); set('wk-w-agent', s.wAgent); set('wk-w-s3', s.wS3); set('wk-w-cons', s.wCons);
-        ['wk-k-r1', 'wk-k-r2'].forEach(function (id) { set(id, s.kR); });
-        document.getElementById('wk-ka0').style.color = s.ka0 ? '#e8741a' : '#768390';
-        document.getElementById('wk-ka1').style.color = s.ka1 ? '#e8741a' : '#768390';
-        document.getElementById('wk-ka2').style.color = s.ka2 ? '#e8741a' : '#768390';
-        document.getElementById('wk-wa0').style.color = s.wa0 ? '#38bdf8' : '#768390';
-        document.getElementById('wk-wa1').style.color = s.wa1 ? '#38bdf8' : '#768390';
-        document.getElementById('wk-wa2').style.color = s.wa2 ? '#38bdf8' : '#768390';
-        document.getElementById('wk-arch-info').textContent = s.info;
+        set("wk-k-prod", s.kProd); set("wk-k-leader", s.kLeader); set("wk-k-cons", s.kCons);
+        set("wk-w-prod", s.wProd); set("wk-w-agent", s.wAgent); set("wk-w-s3", s.wS3); set("wk-w-cons", s.wCons);
+        ["wk-k-r1", "wk-k-r2"].forEach(function (id) { set(id, s.kR); });
+        document.getElementById("wk-ka0").style.color = s.ka0 ? "#e8741a" : "#768390";
+        document.getElementById("wk-ka1").style.color = s.ka1 ? "#e8741a" : "#768390";
+        document.getElementById("wk-ka2").style.color = s.ka2 ? "#e8741a" : "#768390";
+        document.getElementById("wk-wa0").style.color = s.wa0 ? "#38bdf8" : "#768390";
+        document.getElementById("wk-wa1").style.color = s.wa1 ? "#38bdf8" : "#768390";
+        document.getElementById("wk-wa2").style.color = s.wa2 ? "#38bdf8" : "#768390";
+        document.getElementById("wk-arch-info").textContent = s.info;
       }
 
-      document.getElementById('wk-a-play').addEventListener('click', function () {
+      document.getElementById("wk-a-play").addEventListener("click", function () {
         aPlaying = !aPlaying;
-        this.textContent = aPlaying ? '⏸ Pause' : '▶ Play';
+        this.textContent = aPlaying ? "⏸ Pause" : "▶ Play";
         if (aPlaying) { aTimer = setInterval(function () { aStep = (aStep + 1) % archSteps.length; renderArch(); }, 1600); }
         else clearInterval(aTimer);
       });
-      document.getElementById('wk-a-next').addEventListener('click', function () { aStep = Math.min(aStep + 1, archSteps.length - 1); renderArch(); });
-      document.getElementById('wk-a-prev').addEventListener('click', function () { aStep = Math.max(aStep - 1, 0); renderArch(); });
-      document.getElementById('wk-a-reset').addEventListener('click', function () {
+      document.getElementById("wk-a-next").addEventListener("click", function () { aStep = Math.min(aStep + 1, archSteps.length - 1); renderArch(); });
+      document.getElementById("wk-a-prev").addEventListener("click", function () { aStep = Math.max(aStep - 1, 0); renderArch(); });
+      document.getElementById("wk-a-reset").addEventListener("click", function () {
         clearInterval(aTimer); aPlaying = false;
-        document.getElementById('wk-a-play').textContent = '▶ Play';
+        document.getElementById("wk-a-play").textContent = "▶ Play";
         aStep = 0; renderArch();
       });
 
-      showTip(document.getElementById('wk-k-leader'), '<b>Kafka Leader Broker</b><br>Owns partition. Writes to local NVMe WAL.<br>Replicates to ISR followers.<br>HWM advances after all ISR acked.<br>Leader failure → ISR election (~10-30s).');
-      showTip(document.getElementById('wk-w-agent'), '<b>WarpStream Agent</b><br>No disk. All state in S3.<br>Buffers ~250ms → PUT to S3.<br>Any agent serves any consumer.<br>Crash → restart instantly, read S3.');
+      showTip(document.getElementById("wk-k-leader"), "<b>Kafka Leader Broker</b><br>Owns partition. Writes to local NVMe WAL.<br>Replicates to ISR followers.<br>HWM advances after all ISR acked.<br>Leader failure → ISR election (~10-30s).");
+      showTip(document.getElementById("wk-w-agent"), "<b>WarpStream Agent</b><br>No disk. All state in S3.<br>Buffers ~250ms → PUT to S3.<br>Any agent serves any consumer.<br>Crash → restart instantly, read S3.");
       renderArch();
 
       // --- TAB 2: Latency ---
       var latencyData = {
-        'kafka': {
-          label: 'Kafka acks=1',
-          color: '#e8741a',
+        "kafka": {
+          label: "Kafka acks=1",
+          color: "#e8741a",
           bars: [
-            { label: 'Network to broker', ms: 1, max: 350 },
-            { label: 'Leader disk write (WAL)', ms: 1, max: 350 },
-            { label: 'Consumer poll interval', ms: 3, max: 350 },
-            { label: 'Total end-to-end', ms: 5, max: 350, highlight: true }
+            { label: "Network to broker", ms: 1, max: 350 },
+            { label: "Leader disk write (WAL)", ms: 1, max: 350 },
+            { label: "Consumer poll interval", ms: 3, max: 350 },
+            { label: "Total end-to-end", ms: 5, max: 350, highlight: true }
           ]
         },
-        'kafkaall': {
-          label: 'Kafka acks=all',
-          color: '#da3633',
+        "kafkaall": {
+          label: "Kafka acks=all",
+          color: "#da3633",
           bars: [
-            { label: 'Network to broker', ms: 1, max: 350 },
-            { label: 'Leader disk write', ms: 1, max: 350 },
-            { label: 'Replication to ISR (2 followers)', ms: 10, max: 350 },
-            { label: 'Consumer poll', ms: 3, max: 350 },
-            { label: 'Total end-to-end', ms: 15, max: 350, highlight: true }
+            { label: "Network to broker", ms: 1, max: 350 },
+            { label: "Leader disk write", ms: 1, max: 350 },
+            { label: "Replication to ISR (2 followers)", ms: 10, max: 350 },
+            { label: "Consumer poll", ms: 3, max: 350 },
+            { label: "Total end-to-end", ms: 15, max: 350, highlight: true }
           ]
         },
-        'ws': {
-          label: 'WarpStream',
-          color: '#38bdf8',
+        "ws": {
+          label: "WarpStream",
+          color: "#38bdf8",
           bars: [
-            { label: 'Agent RAM buffer (flush interval)', ms: 250, max: 350 },
-            { label: 'S3 PUT (atomic write)', ms: 50, max: 350 },
-            { label: 'Consumer S3 GET + parse', ms: 50, max: 350 },
-            { label: 'Total end-to-end', ms: 350, max: 350, highlight: true }
+            { label: "Agent RAM buffer (flush interval)", ms: 250, max: 350 },
+            { label: "S3 PUT (atomic write)", ms: 50, max: 350 },
+            { label: "Consumer S3 GET + parse", ms: 50, max: 350 },
+            { label: "Total end-to-end", ms: 350, max: 350, highlight: true }
           ]
         }
       };
 
       function renderLatency(key) {
         var d = latencyData[key];
-        document.getElementById('wk-lat-viz').innerHTML = d.bars.map(function (b) {
+        document.getElementById("wk-lat-viz").innerHTML = d.bars.map(function (b) {
           var pct = Math.round((b.ms / b.max) * 100);
-          return '<div>' +
-            '<div style="display:flex;justify-content:space-between;margin-bottom:3px">' +
-            '<span style="font-size:11px;color:' + (b.highlight ? d.color : '#cdd9e5') + ';font-weight:' + (b.highlight ? 'bold' : 'normal') + '">' + b.label + '</span>' +
-            '<span style="font-size:11px;color:' + d.color + ';font-weight:bold">' + b.ms + 'ms</span></div>' +
-            '<div class="wk-bar-wrap"><div class="wk-bar" style="width:' + pct + '%;background:' + d.color + (b.highlight ? '' : '88') + '"></div></div></div>';
-        }).join('');
-        document.getElementById('wk-latency-info').textContent = d.label + ': ' + d.bars[d.bars.length - 1].ms + 'ms total. ' + (key === 'ws' ? 'Latency dominated by S3 flush interval. Not suitable for <100ms SLAs.' : 'Kafka wins latency. acks=all adds replication overhead.');
-        ['wk-lat-kafka', 'wk-lat-kafkaall', 'wk-lat-ws'].forEach(function (id) {
-          document.getElementById(id).classList.toggle('active', id === 'wk-lat-' + key);
+          return "<div>" +
+            "<div style=\"display:flex;justify-content:space-between;margin-bottom:3px\">" +
+            "<span style=\"font-size:11px;color:" + (b.highlight ? d.color : "#cdd9e5") + ";font-weight:" + (b.highlight ? "bold" : "normal") + "\">" + b.label + "</span>" +
+            "<span style=\"font-size:11px;color:" + d.color + ";font-weight:bold\">" + b.ms + "ms</span></div>" +
+            "<div class=\"wk-bar-wrap\"><div class=\"wk-bar\" style=\"width:" + pct + "%;background:" + d.color + (b.highlight ? "" : "88") + "\"></div></div></div>";
+        }).join("");
+        document.getElementById("wk-latency-info").textContent = d.label + ": " + d.bars[d.bars.length - 1].ms + "ms total. " + (key === "ws" ? "Latency dominated by S3 flush interval. Not suitable for <100ms SLAs." : "Kafka wins latency. acks=all adds replication overhead.");
+        ["wk-lat-kafka", "wk-lat-kafkaall", "wk-lat-ws"].forEach(function (id) {
+          document.getElementById(id).classList.toggle("active", id === "wk-lat-" + key);
         });
       }
 
-      ['kafka', 'kafkaall', 'ws'].forEach(function (k) {
-        document.getElementById('wk-lat-' + k).addEventListener('click', function () { renderLatency(k); });
+      ["kafka", "kafkaall", "ws"].forEach(function (k) {
+        document.getElementById("wk-lat-" + k).addEventListener("click", function () { renderLatency(k); });
       });
-      renderLatency('kafka');
+      renderLatency("kafka");
 
       // --- TAB 3: Cost ---
       var costData = {
-        'low': {
-          label: '1TB/month',
+        "low": {
+          label: "1TB/month",
           bars: [
-            { label: 'Self-hosted Kafka (3 brokers, EC2+EBS)', cost: 1200, max: 5000, color: '#e8741a' },
-            { label: 'Confluent Cloud', cost: 110, max: 5000, color: '#da3633' },
-            { label: 'WarpStream BYOC', cost: 35, max: 5000, color: '#38bdf8' }
+            { label: "Self-hosted Kafka (3 brokers, EC2+EBS)", cost: 1200, max: 5000, color: "#e8741a" },
+            { label: "Confluent Cloud", cost: 110, max: 5000, color: "#da3633" },
+            { label: "WarpStream BYOC", cost: 35, max: 5000, color: "#38bdf8" }
           ],
-          note: '1TB: Confluent charges ~$0.11/GB. WarpStream: S3 ($23) + agents ($12). Self-hosted: fixed cost dominates.'
+          note: "1TB: Confluent charges ~$0.11/GB. WarpStream: S3 ($23) + agents ($12). Self-hosted: fixed cost dominates."
         },
-        'mid': {
-          label: '10TB/month',
+        "mid": {
+          label: "10TB/month",
           bars: [
-            { label: 'Self-hosted Kafka (3 brokers, EC2+EBS)', cost: 1800, max: 5000, color: '#e8741a' },
-            { label: 'Confluent Cloud', cost: 1100, max: 5000, color: '#da3633' },
-            { label: 'WarpStream BYOC', cost: 350, max: 5000, color: '#38bdf8' }
+            { label: "Self-hosted Kafka (3 brokers, EC2+EBS)", cost: 1800, max: 5000, color: "#e8741a" },
+            { label: "Confluent Cloud", cost: 1100, max: 5000, color: "#da3633" },
+            { label: "WarpStream BYOC", cost: 350, max: 5000, color: "#38bdf8" }
           ],
-          note: '10TB: WarpStream 68% cheaper than Confluent. Self-hosted cheaper per-byte but ops costs not counted.'
+          note: "10TB: WarpStream 68% cheaper than Confluent. Self-hosted cheaper per-byte but ops costs not counted."
         },
-        'high': {
-          label: '100TB/month',
+        "high": {
+          label: "100TB/month",
           bars: [
-            { label: 'Self-hosted Kafka (scaled cluster)', cost: 4500, max: 15000, color: '#e8741a' },
-            { label: 'Confluent Cloud', cost: 11000, max: 15000, color: '#da3633' },
-            { label: 'WarpStream BYOC', cost: 3500, max: 15000, color: '#38bdf8' }
+            { label: "Self-hosted Kafka (scaled cluster)", cost: 4500, max: 15000, color: "#e8741a" },
+            { label: "Confluent Cloud", cost: 11000, max: 15000, color: "#da3633" },
+            { label: "WarpStream BYOC", cost: 3500, max: 15000, color: "#38bdf8" }
           ],
-          note: '100TB: Confluent very expensive. WarpStream and self-hosted competitive. S3 egress costs matter at this scale.'
+          note: "100TB: Confluent very expensive. WarpStream and self-hosted competitive. S3 egress costs matter at this scale."
         }
       };
 
       function renderCost(key) {
         var d = costData[key];
-        document.getElementById('wk-cost-bars').innerHTML = d.bars.map(function (b) {
+        document.getElementById("wk-cost-bars").innerHTML = d.bars.map(function (b) {
           var pct = Math.round((b.cost / b.max) * 100);
-          return '<div>' +
-            '<div style="display:flex;justify-content:space-between;margin-bottom:3px">' +
-            '<span style="font-size:11px;color:#cdd9e5">' + b.label + '</span>' +
-            '<span style="font-size:11px;color:' + b.color + ';font-weight:bold">$' + b.cost.toLocaleString() + '/mo</span></div>' +
-            '<div class="wk-bar-wrap"><div class="wk-bar" style="width:' + pct + '%;background:' + b.color + '"></div></div></div>';
-        }).join('');
-        document.getElementById('wk-cost-info').textContent = d.label + ': ' + d.note;
-        ['low', 'mid', 'high'].forEach(function (k) {
-          document.getElementById('wk-cost-' + k).classList.toggle('active', k === key);
+          return "<div>" +
+            "<div style=\"display:flex;justify-content:space-between;margin-bottom:3px\">" +
+            "<span style=\"font-size:11px;color:#cdd9e5\">" + b.label + "</span>" +
+            "<span style=\"font-size:11px;color:" + b.color + ";font-weight:bold\">$" + b.cost.toLocaleString() + "/mo</span></div>" +
+            "<div class=\"wk-bar-wrap\"><div class=\"wk-bar\" style=\"width:" + pct + "%;background:" + b.color + "\"></div></div></div>";
+        }).join("");
+        document.getElementById("wk-cost-info").textContent = d.label + ": " + d.note;
+        ["low", "mid", "high"].forEach(function (k) {
+          document.getElementById("wk-cost-" + k).classList.toggle("active", k === key);
         });
       }
 
-      ['low', 'mid', 'high'].forEach(function (k) {
-        document.getElementById('wk-cost-' + k).addEventListener('click', function () { renderCost(k); });
+      ["low", "mid", "high"].forEach(function (k) {
+        document.getElementById("wk-cost-" + k).addEventListener("click", function () { renderCost(k); });
       });
-      renderCost('mid');
+      renderCost("mid");
 
       // --- TAB 4: Ops ---
       var ops = [
-        ['Scale out', '⚠️ Partition reassign (hours, data copy)', '✅ Add pod (seconds, no data move)'],
-        ['Scale in', '⚠️ Remove broker, reassign first', '✅ Kill pod (no action needed)'],
-        ['Broker failure', '⚠️ Leader election + catch-up', '🆗 Pod restart, S3 safe'],
-        ['Disk failure', '⚠️ Replace + replicate from ISR', '✅ N/A — no local disk'],
-        ['Consumer lag', '🆗 Monitor via kafka-consumer-groups', '🆗 Same — offset-based'],
-        ['Schema Registry', '⚠️ Confluent SR (separate service)', '✅ Built-in compatible API'],
-        ['Auth / ACLs', '✅ SASL/SCRAM + ACLs mature', '🆗 IAM-based, maturing'],
-        ['Monitoring', '✅ JMX, Prometheus, rich metrics', '🆗 CloudWatch / custom metrics'],
-        ['Multi-region', '⚠️ MirrorMaker2 / Cluster Linking', '🆗 S3 cross-region replication']
+        ["Scale out", "⚠️ Partition reassign (hours, data copy)", "✅ Add pod (seconds, no data move)"],
+        ["Scale in", "⚠️ Remove broker, reassign first", "✅ Kill pod (no action needed)"],
+        ["Broker failure", "⚠️ Leader election + catch-up", "🆗 Pod restart, S3 safe"],
+        ["Disk failure", "⚠️ Replace + replicate from ISR", "✅ N/A — no local disk"],
+        ["Consumer lag", "🆗 Monitor via kafka-consumer-groups", "🆗 Same — offset-based"],
+        ["Schema Registry", "⚠️ Confluent SR (separate service)", "✅ Built-in compatible API"],
+        ["Auth / ACLs", "✅ SASL/SCRAM + ACLs mature", "🆗 IAM-based, maturing"],
+        ["Monitoring", "✅ JMX, Prometheus, rich metrics", "🆗 CloudWatch / custom metrics"],
+        ["Multi-region", "⚠️ MirrorMaker2 / Cluster Linking", "🆗 S3 cross-region replication"]
       ];
 
-      document.getElementById('wk-ops-tbody').innerHTML = ops.map(function (r) {
-        return '<tr style="border-bottom:1px solid #30363d">' +
-          '<td style="padding:7px 8px;color:#cdd9e5;font-weight:bold">' + r[0] + '</td>' +
-          '<td style="padding:7px 8px;color:#cdd9e5;text-align:center">' + r[1] + '</td>' +
-          '<td style="padding:7px 8px;color:#cdd9e5;text-align:center">' + r[2] + '</td></tr>';
-      }).join('');
+      document.getElementById("wk-ops-tbody").innerHTML = ops.map(function (r) {
+        return "<tr style=\"border-bottom:1px solid #30363d\">" +
+          "<td style=\"padding:7px 8px;color:#cdd9e5;font-weight:bold\">" + r[0] + "</td>" +
+          "<td style=\"padding:7px 8px;color:#cdd9e5;text-align:center\">" + r[1] + "</td>" +
+          "<td style=\"padding:7px 8px;color:#cdd9e5;text-align:center\">" + r[2] + "</td></tr>";
+      }).join("");
 
       // --- TAB 5: Interview ---
       var qas = [
-        { q: 'Is WarpStream really Kafka-compatible?', a: 'Wire protocol compatible (Produce/Fetch/Metadata/JoinGroup). Existing Kafka clients work. BUT: Kafka Streams, ksqlDB, MirrorMaker require Kafka internals not available via wire protocol. WarpStream ≠ Kafka ecosystem.' },
-        { q: 'What is the durability risk in WarpStream?', a: 'Messages in agent RAM buffer not yet flushed to S3 are lost on crash. Mitigations: producer retries with idempotency, reduce flush interval, use multiple agents. Default flush ~250ms = risk window.' },
-        { q: 'Why would a company choose WarpStream over Kafka?', a: '(1) Cost: S3 prices << Confluent Cloud. (2) Ops: stateless agents trivial to manage vs Kafka clusters. (3) Compliance: BYOC keeps data in own cloud. (4) Spiky traffic: scale pods in seconds.' },
-        { q: 'When would WarpStream be a bad choice?', a: 'Ultra-low latency (<100ms) requirements. Applications using Kafka Streams / ksqlDB (not compatible). Teams needing mature OSS tooling (KafkaJS, Sarama etc. work but rich Kafka Admin tools may not). High S3 egress (cross-AZ reads billed).' }
+        { q: "Is WarpStream really Kafka-compatible?", a: "Wire protocol compatible (Produce/Fetch/Metadata/JoinGroup). Existing Kafka clients work. BUT: Kafka Streams, ksqlDB, MirrorMaker require Kafka internals not available via wire protocol. WarpStream ≠ Kafka ecosystem." },
+        { q: "What is the durability risk in WarpStream?", a: "Messages in agent RAM buffer not yet flushed to S3 are lost on crash. Mitigations: producer retries with idempotency, reduce flush interval, use multiple agents. Default flush ~250ms = risk window." },
+        { q: "Why would a company choose WarpStream over Kafka?", a: "(1) Cost: S3 prices << Confluent Cloud. (2) Ops: stateless agents trivial to manage vs Kafka clusters. (3) Compliance: BYOC keeps data in own cloud. (4) Spiky traffic: scale pods in seconds." },
+        { q: "When would WarpStream be a bad choice?", a: "Ultra-low latency (<100ms) requirements. Applications using Kafka Streams / ksqlDB (not compatible). Teams needing mature OSS tooling (KafkaJS, Sarama etc. work but rich Kafka Admin tools may not). High S3 egress (cross-AZ reads billed)." }
       ];
-      document.getElementById('wk-qa-list').innerHTML = qas.map(function (qa, i) {
-        return '<div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;margin-bottom:8px;cursor:pointer" onclick="this.querySelector(\'.wk-ans\').style.display=this.querySelector(\'.wk-ans\').style.display===\'none\'?\'block\':\'none\'">' +
-          '<div style="color:#38bdf8;font-size:12px;font-weight:bold">Q' + (i + 1) + ': ' + qa.q + '</div>' +
-          '<div class="wk-ans" style="display:none;color:#cdd9e5;font-size:12px;margin-top:8px;line-height:1.6">' + qa.a + '</div></div>';
-      }).join('');
+      document.getElementById("wk-qa-list").innerHTML = qas.map(function (qa, i) {
+        return "<div style=\"background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;margin-bottom:8px;cursor:pointer\" onclick=\"this.querySelector('.wk-ans').style.display=this.querySelector('.wk-ans').style.display==='none'?'block':'none'\">" +
+          "<div style=\"color:#38bdf8;font-size:12px;font-weight:bold\">Q" + (i + 1) + ": " + qa.q + "</div>" +
+          "<div class=\"wk-ans\" style=\"display:none;color:#cdd9e5;font-size:12px;margin-top:8px;line-height:1.6\">" + qa.a + "</div></div>";
+      }).join("");
 
-      decisions = [
-        { q: 'Need <50ms latency?', k: 'Use Kafka', w: 'Avoid WarpStream' },
-        { q: 'Budget-sensitive (>10TB/mo)?', k: 'Self-hosted OK', w: 'WarpStream wins' },
-        { q: 'Kafka Streams / ksqlDB needed?', k: 'Must use Kafka', w: 'Not compatible' },
-        { q: 'Small team, no Kafka expertise?', k: 'Complex ops', w: 'WarpStream wins' },
-        { q: 'Compliance (data must stay in your cloud)?', k: 'Self-hosted only', w: 'WarpStream BYOC' },
-        { q: 'Event replay / audit log?', k: 'Both work', w: 'Both work' }
+      var decisions = [
+        { q: "Need <50ms latency?", k: "Use Kafka", w: "Avoid WarpStream" },
+        { q: "Budget-sensitive (>10TB/mo)?", k: "Self-hosted OK", w: "WarpStream wins" },
+        { q: "Kafka Streams / ksqlDB needed?", k: "Must use Kafka", w: "Not compatible" },
+        { q: "Small team, no Kafka expertise?", k: "Complex ops", w: "WarpStream wins" },
+        { q: "Compliance (data must stay in your cloud)?", k: "Self-hosted only", w: "WarpStream BYOC" },
+        { q: "Event replay / audit log?", k: "Both work", w: "Both work" }
       ];
-      document.getElementById('wk-decision').innerHTML = '<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;padding:5px 0;border-bottom:1px solid #30363d;font-size:10px;color:#768390"><div>SCENARIO</div><div style="text-align:center;color:#e8741a">KAFKA</div><div style="text-align:center;color:#38bdf8">WARPSTREAM</div></div>' +
+      document.getElementById("wk-decision").innerHTML = "<div style=\"display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;padding:5px 0;border-bottom:1px solid #30363d;font-size:10px;color:#768390\"><div>SCENARIO</div><div style=\"text-align:center;color:#e8741a\">KAFKA</div><div style=\"text-align:center;color:#38bdf8\">WARPSTREAM</div></div>" +
         decisions.map(function (d) {
-          return '<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;padding:7px 0;border-bottom:1px solid #30363d;font-size:11px">' +
-            '<div style="color:#cdd9e5">' + d.q + '</div>' +
-            '<div style="color:#e8741a;text-align:center">' + d.k + '</div>' +
-            '<div style="color:#38bdf8;text-align:center">' + d.w + '</div></div>';
-        }).join('');
+          return "<div style=\"display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;padding:7px 0;border-bottom:1px solid #30363d;font-size:11px\">" +
+            "<div style=\"color:#cdd9e5\">" + d.q + "</div>" +
+            "<div style=\"color:#e8741a;text-align:center\">" + d.k + "</div>" +
+            "<div style=\"color:#38bdf8;text-align:center\">" + d.w + "</div></div>";
+        }).join("");
 
       // WRONG vs CORRECT
       var wrongRight = [
         {
-          wrong: '// "WarpStream = same latency"\nprops.put("linger.ms", "0");\n// Kafka: ~5ms with linger.ms=0\n// WarpStream: ~250ms minimum\n// (S3 flush cannot be bypassed)\n// SLA breach in prod!',
-          right: '// Know your latency floor\n// WarpStream: 250-500ms p99\n// Only use when latency OK:\nif (useCase === "analytics" ||\n    useCase === "logging") {\n  // WarpStream fine\n} // NOT for payments/gaming',
-          label: 'Latency assumptions'
+          wrong: "// \"WarpStream = same latency\"\nprops.put(\"linger.ms\", \"0\");\n// Kafka: ~5ms with linger.ms=0\n// WarpStream: ~250ms minimum\n// (S3 flush cannot be bypassed)\n// SLA breach in prod!",
+          right: "// Know your latency floor\n// WarpStream: 250-500ms p99\n// Only use when latency OK:\nif (useCase === \"analytics\" ||\n    useCase === \"logging\") {\n  // WarpStream fine\n} // NOT for payments/gaming",
+          label: "Latency assumptions"
         },
         {
-          wrong: '// "Kafka Streams works on WarpStream"\nStreamsConfig cfg = new StreamsConfig();\ncfg.put(BOOTSTRAP_SERVERS_CONFIG,\n  "warpstream-agent:9092");\n// FAILS at runtime\n// Internal topics not supported\n// Admin API gaps',
-          right: '// Use Flink / Spark Structured Streaming\n// They use Fetch protocol only\nKafkaSource source = KafkaSource\n  .builder()\n  .setBootstrapServers(wsEndpoint)\n  .setTopics("events")\n  .build();\n// Reads via Fetch — WarpStream compatible',
-          label: 'Stream processing compat'
+          wrong: "// \"Kafka Streams works on WarpStream\"\nStreamsConfig cfg = new StreamsConfig();\ncfg.put(BOOTSTRAP_SERVERS_CONFIG,\n  \"warpstream-agent:9092\");\n// FAILS at runtime\n// Internal topics not supported\n// Admin API gaps",
+          right: "// Use Flink / Spark Structured Streaming\n// They use Fetch protocol only\nKafkaSource source = KafkaSource\n  .builder()\n  .setBootstrapServers(wsEndpoint)\n  .setTopics(\"events\")\n  .build();\n// Reads via Fetch — WarpStream compatible",
+          label: "Stream processing compat"
         }
       ];
 
-      var wcHtml = '<div style="color:#38bdf8;font-size:12px;font-weight:bold;margin-bottom:10px;margin-top:16px">⚠️ WRONG vs ✓ CORRECT</div>';
+      var wcHtml = "<div style=\"color:#38bdf8;font-size:12px;font-weight:bold;margin-bottom:10px;margin-top:16px\">⚠️ WRONG vs ✓ CORRECT</div>";
       wcHtml += wrongRight.map(function (item) {
-        return '<div style="margin-bottom:12px"><div style="color:#768390;font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">' + item.label + '</div>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
-          '<div style="background:#0d1117;border:2px solid #da3633;border-radius:6px;padding:10px"><div style="color:#da3633;font-size:10px;font-weight:bold;margin-bottom:6px">❌ WRONG</div><pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.wrong + '</pre></div>' +
-          '<div style="background:#0d1117;border:2px solid #3fb950;border-radius:6px;padding:10px"><div style="color:#3fb950;font-size:10px;font-weight:bold;margin-bottom:6px">✓ CORRECT</div><pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.right + '</pre></div>' +
-          '</div></div>';
-      }).join('');
-      document.getElementById('wk-decision').innerHTML += wcHtml;
+        return "<div style=\"margin-bottom:12px\"><div style=\"color:#768390;font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px\">" + item.label + "</div>" +
+          "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:8px\">" +
+          "<div style=\"background:#0d1117;border:2px solid #da3633;border-radius:6px;padding:10px\"><div style=\"color:#da3633;font-size:10px;font-weight:bold;margin-bottom:6px\">❌ WRONG</div><pre style=\"color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap\">" + item.wrong + "</pre></div>" +
+          "<div style=\"background:#0d1117;border:2px solid #3fb950;border-radius:6px;padding:10px\"><div style=\"color:#3fb950;font-size:10px;font-weight:bold;margin-bottom:6px\">✓ CORRECT</div><pre style=\"color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap\">" + item.right + "</pre></div>" +
+          "</div></div>";
+      }).join("");
+      document.getElementById("wk-decision").innerHTML += wcHtml;
 
       // Production story
-      var prodCard = document.createElement('div');
-      prodCard.style.cssText = 'background:#0d1117;border:1px solid #a371f7;border-radius:8px;padding:14px;margin-bottom:14px';
-      prodCard.innerHTML = '<div style="color:#a371f7;font-size:12px;font-weight:bold;margin-bottom:6px">🏭 Real Migration Story</div>' +
-        '<div style="color:#cdd9e5;font-size:12px;line-height:1.7">E-commerce: 2TB/day clickstream. Confluent Cloud bill: $8,400/mo. Migrated to WarpStream BYOC: S3 ($46) + agents ($180) = $226/mo. Saved $97K/year. Latency went 8ms → 280ms — clickstream analytics accepted 300ms. Kafka Streams pipeline (sessionization) replaced with Flink job. Migration took 2 engineers 3 weeks.</div>';
-      document.getElementById('wk-qa-list').parentNode.insertBefore(prodCard, document.getElementById('wk-qa-list'));
+      var prodCard = document.createElement("div");
+      prodCard.style.cssText = "background:#0d1117;border:1px solid #a371f7;border-radius:8px;padding:14px;margin-bottom:14px";
+      prodCard.innerHTML = "<div style=\"color:#a371f7;font-size:12px;font-weight:bold;margin-bottom:6px\">🏭 Real Migration Story</div>" +
+        "<div style=\"color:#cdd9e5;font-size:12px;line-height:1.7\">E-commerce: 2TB/day clickstream. Confluent Cloud bill: $8,400/mo. Migrated to WarpStream BYOC: S3 ($46) + agents ($180) = $226/mo. Saved $97K/year. Latency went 8ms → 280ms — clickstream analytics accepted 300ms. Kafka Streams pipeline (sessionization) replaced with Flink job. Migration took 2 engineers 3 weeks.</div>";
+      document.getElementById("wk-qa-list").parentNode.insertBefore(prodCard, document.getElementById("wk-qa-list"));
     },
 
     gotchas: [

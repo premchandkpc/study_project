@@ -1,9 +1,9 @@
 (function() {
   var topic = {
-  id:"sd-load-balancing", area:"sysdesign",
-  title:"Load Balancing — L4/L7, Algorithms & Health Checks",
-  tag:"Infrastructure", tags:["load balancer","round robin","least connections","consistent hashing","nlb","alb","nginx","ha proxy"],
-  concept:`A **load balancer** distributes incoming traffic across multiple backend instances to maximise throughput, minimise latency, and avoid overloading any single server.
+    id:"sd-load-balancing", area:"sysdesign",
+    title:"Load Balancing — L4/L7, Algorithms & Health Checks",
+    tag:"Infrastructure", tags:["load balancer","round robin","least connections","consistent hashing","nlb","alb","nginx","ha proxy"],
+    concept:`A **load balancer** distributes incoming traffic across multiple backend instances to maximise throughput, minimise latency, and avoid overloading any single server.
 
 **L4 vs L7:**
 - **L4 (Transport layer)** — routes by IP + TCP/UDP port. Doesn't inspect HTTP content. Very fast (< 0.1ms overhead). Example: AWS NLB.
@@ -24,10 +24,10 @@
 - **Passive** — detect failure from response codes/timeouts on real traffic
 - **Active** — probe /health endpoint on interval (e.g., 5s); remove from pool after N failures; re-add after M successes
 - **Graceful drain** — on scale-in, stop sending new requests but complete in-flight (connection draining, 30–60 s default in AWS)`,
-  why:`Load balancing is what makes horizontal scaling possible. Without it, you have one server. With it, you have unlimited theoretical throughput. Algorithm choice directly impacts p99 latency.`,
-  example:{
-    language:"yaml",
-    code:`# nginx L7 load balancer config
+    why:"Load balancing is what makes horizontal scaling possible. Without it, you have one server. With it, you have unlimited theoretical throughput. Algorithm choice directly impacts p99 latency.",
+    example:{
+      language:"yaml",
+      code:`# nginx L7 load balancer config
 upstream order_service {
     least_conn;  # algorithm: least active connections
 
@@ -59,65 +59,65 @@ server {
         proxy_next_upstream_tries 2;
     }
 }`,
-    notes:"keepalive 32 maintains 32 idle connections per worker to each upstream — eliminates TCP handshake on each request."
-  },
-  interview:[
-    {question:"Why use consistent hashing in a load balancer for a caching layer?",
-     answer:`When load balancing to a distributed cache (e.g. Memcached cluster), you want the same key to always go to the same node for maximum cache utilisation. Round-robin would send \`user:42\` to any of 10 nodes — the key would need to be in all 10 nodes or you'd get misses.\n\nConsistent hashing places servers on a hash ring. A request key is hashed and routes clockwise to the nearest server. On adding/removing a node, only ~K/N keys need to remapped (K=keys, N=nodes) — vs hash-mod which remaps nearly all keys.\n\n**Virtual nodes (vnodes)** — each physical server gets 150 virtual positions on the ring for uniform distribution.`,
-     followUps:["How do you handle hot spots in consistent hashing?","What is a bounded-load consistent hash?"]
+      notes:"keepalive 32 maintains 32 idle connections per worker to each upstream — eliminates TCP handshake on each request."
     },
-    {question:"What is connection draining and why is it important?",
-     answer:`When a server is removed from the LB pool (scale-in, deployment), in-flight requests must complete. Connection draining (AWS calls it "deregistration delay") tells the LB to stop sending new requests to the deregistering target but keep the existing connections alive until they complete or a timeout (30-60s) elapses.\n\nWithout draining: mid-flight requests receive TCP RST → user sees errors. With draining: zero-downtime deployments and scale-in events.`,
-     followUps:["How do you implement graceful shutdown in a Go/Java service?"]
+    interview:[
+      {question:"Why use consistent hashing in a load balancer for a caching layer?",
+        answer:"When load balancing to a distributed cache (e.g. Memcached cluster), you want the same key to always go to the same node for maximum cache utilisation. Round-robin would send `user:42` to any of 10 nodes — the key would need to be in all 10 nodes or you'd get misses.\n\nConsistent hashing places servers on a hash ring. A request key is hashed and routes clockwise to the nearest server. On adding/removing a node, only ~K/N keys need to remapped (K=keys, N=nodes) — vs hash-mod which remaps nearly all keys.\n\n**Virtual nodes (vnodes)** — each physical server gets 150 virtual positions on the ring for uniform distribution.",
+        followUps:["How do you handle hot spots in consistent hashing?","What is a bounded-load consistent hash?"]
+      },
+      {question:"What is connection draining and why is it important?",
+        answer:"When a server is removed from the LB pool (scale-in, deployment), in-flight requests must complete. Connection draining (AWS calls it \"deregistration delay\") tells the LB to stop sending new requests to the deregistering target but keep the existing connections alive until they complete or a timeout (30-60s) elapses.\n\nWithout draining: mid-flight requests receive TCP RST → user sees errors. With draining: zero-downtime deployments and scale-in events.",
+        followUps:["How do you implement graceful shutdown in a Go/Java service?"]
+      }
+    ],
+    tradeoffs:{
+      pros:["Enables horizontal scaling","Eliminates single points of failure","Algorithms can optimize for latency or fairness"],
+      cons:["L7 LB adds ~1-5ms per request","Sticky sessions complicate stateless design","Health check intervals introduce detection lag"],
+      when:"Always. L4 for raw TCP throughput (gaming, DB). L7 for HTTP APIs with routing/auth needs. Least-conn for WebSocket. Consistent hash for cache clusters."
+    },
+    flow:{
+      title:"L7 Load Balancing — Request Distribution",
+      caption:"LB routes requests based on algorithm; health checks maintain pool",
+      nodes:[
+        {id:"client",label:"Client",hint:"Browser / mobile / service"},
+        {id:"lb",label:"L7 Load Balancer",hint:"nginx / ALB — HTTP-aware"},
+        {id:"hc",label:"Health Checker",hint:"Active probe every 5s"},
+        {id:"s1",label:"App Server 1",hint:"weight=3, 3 connections"},
+        {id:"s2",label:"App Server 2",hint:"weight=1, 1 connection"},
+        {id:"s3",label:"App Server 3",hint:"UNHEALTHY — removed from pool"}
+      ],
+      steps:[
+        {path:["hc","s1"],label:"Active health check",detail:"LB probes GET /health on each upstream every 5s. 2 consecutive failures → removed from pool. 3 successes → re-added."},
+        {path:["hc","s3"],label:"Server 3 marked unhealthy",detail:"Server 3 returned 503 twice. Removed from upstream pool. No traffic sent until it recovers."},
+        {path:["client","lb"],label:"Client sends request",detail:"Client connects to LB virtual IP. TLS terminated here. HTTP/2 stream opened."},
+        {path:["lb","s1"],label:"Routed to Server 1 (least-conn)",detail:"Server 1 has fewest active connections. LB forwards request, increments connection counter."},
+        {path:["s1","client"],label:"Response returned",detail:"Server 1 responds. LB decrements connection counter. Result flows back to client."}
+      ]
+    },
+    visual: {
+      type: "flow",
+      title: "L7 Load Balancing — Request Distribution",
+      direction: "horizontal",
+      nodes: [
+        { id: "client",  label: "Client",         color: "#58a6ff", icon: "💻", sublabel: "Browser / Mobile" },
+        { id: "lb",      label: "Load Balancer",  color: "#ffa657", icon: "⚖",  sublabel: "L7 — nginx / ALB" },
+        { id: "server1", label: "Server 1",        color: "#3fb950", icon: "🖥",  sublabel: "weight=3, healthy" },
+        { id: "server2", label: "Server 2",        color: "#3fb950", icon: "🖥",  sublabel: "weight=1, healthy" },
+        { id: "server3", label: "Server 3",        color: "#f85149", icon: "🖥",  sublabel: "UNHEALTHY" }
+      ],
+      connections: [
+        { from: "client",  to: "lb",      label: "HTTP/2 request" },
+        { from: "lb",      to: "server1", label: "route" },
+        { from: "lb",      to: "server2", label: "route" },
+        { from: "lb",      to: "server3", label: "skipped", dashed: true }
+      ],
+      scenarios: [
+        { name: "Round Robin",       path: ["client", "lb", "server1", "server2"], result: "Cycles S1→S2→S1→S2 (S3 unhealthy, skipped)", resultColor: "#3fb950" },
+        { name: "Least Connections", path: ["client", "lb", "server1"],            result: "Routes to server with fewest active connections", resultColor: "#58a6ff" },
+        { name: "IP Hash",           path: ["client", "lb", "server2"],            result: "hash(client IP) → always same server (stable affinity)", resultColor: "#bc8cff" }
+      ]
     }
-  ],
-  tradeoffs:{
-    pros:["Enables horizontal scaling","Eliminates single points of failure","Algorithms can optimize for latency or fairness"],
-    cons:["L7 LB adds ~1-5ms per request","Sticky sessions complicate stateless design","Health check intervals introduce detection lag"],
-    when:"Always. L4 for raw TCP throughput (gaming, DB). L7 for HTTP APIs with routing/auth needs. Least-conn for WebSocket. Consistent hash for cache clusters."
-  },
-  flow:{
-    title:"L7 Load Balancing — Request Distribution",
-    caption:"LB routes requests based on algorithm; health checks maintain pool",
-    nodes:[
-      {id:"client",label:"Client",hint:"Browser / mobile / service"},
-      {id:"lb",label:"L7 Load Balancer",hint:"nginx / ALB — HTTP-aware"},
-      {id:"hc",label:"Health Checker",hint:"Active probe every 5s"},
-      {id:"s1",label:"App Server 1",hint:"weight=3, 3 connections"},
-      {id:"s2",label:"App Server 2",hint:"weight=1, 1 connection"},
-      {id:"s3",label:"App Server 3",hint:"UNHEALTHY — removed from pool"}
-    ],
-    steps:[
-      {path:["hc","s1"],label:"Active health check",detail:"LB probes GET /health on each upstream every 5s. 2 consecutive failures → removed from pool. 3 successes → re-added."},
-      {path:["hc","s3"],label:"Server 3 marked unhealthy",detail:"Server 3 returned 503 twice. Removed from upstream pool. No traffic sent until it recovers."},
-      {path:["client","lb"],label:"Client sends request",detail:"Client connects to LB virtual IP. TLS terminated here. HTTP/2 stream opened."},
-      {path:["lb","s1"],label:"Routed to Server 1 (least-conn)",detail:"Server 1 has fewest active connections. LB forwards request, increments connection counter."},
-      {path:["s1","client"],label:"Response returned",detail:"Server 1 responds. LB decrements connection counter. Result flows back to client."}
-    ]
-  },
-  visual: {
-    type: 'flow',
-    title: 'L7 Load Balancing — Request Distribution',
-    direction: 'horizontal',
-    nodes: [
-      { id: 'client',  label: 'Client',         color: '#58a6ff', icon: '💻', sublabel: 'Browser / Mobile' },
-      { id: 'lb',      label: 'Load Balancer',  color: '#ffa657', icon: '⚖',  sublabel: 'L7 — nginx / ALB' },
-      { id: 'server1', label: 'Server 1',        color: '#3fb950', icon: '🖥',  sublabel: 'weight=3, healthy' },
-      { id: 'server2', label: 'Server 2',        color: '#3fb950', icon: '🖥',  sublabel: 'weight=1, healthy' },
-      { id: 'server3', label: 'Server 3',        color: '#f85149', icon: '🖥',  sublabel: 'UNHEALTHY' }
-    ],
-    connections: [
-      { from: 'client',  to: 'lb',      label: 'HTTP/2 request' },
-      { from: 'lb',      to: 'server1', label: 'route' },
-      { from: 'lb',      to: 'server2', label: 'route' },
-      { from: 'lb',      to: 'server3', label: 'skipped', dashed: true }
-    ],
-    scenarios: [
-      { name: 'Round Robin',       path: ['client', 'lb', 'server1', 'server2'], result: 'Cycles S1→S2→S1→S2 (S3 unhealthy, skipped)', resultColor: '#3fb950' },
-      { name: 'Least Connections', path: ['client', 'lb', 'server1'],            result: 'Routes to server with fewest active connections', resultColor: '#58a6ff' },
-      { name: 'IP Hash',           path: ['client', 'lb', 'server2'],            result: 'hash(client IP) → always same server (stable affinity)', resultColor: '#bc8cff' }
-    ]
-  }
-};
+  };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);
 })();

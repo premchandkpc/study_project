@@ -4,15 +4,15 @@
  * Load after: core/signal.js, core/injector.js
  */
 (function () {
-  'use strict';
+  "use strict";
   const { Injector, signal } = window.App;
 
-  window.App.ProgressService = Injector.provide('ProgressService', () => {
-    const STORAGE_KEY = 'study-lab:done';
+  window.App.ProgressService = Injector.provide("ProgressService", () => {
+    const STORAGE_KEY = "study-lab:done";
 
     function load() {
       try {
-        return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+        return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
       } catch {
         return new Set();
       }

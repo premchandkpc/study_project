@@ -39,7 +39,7 @@ Monitor queue depth (ZCARD priority_queue). If depth > threshold (e.g., 10) → 
 - **Exactly-once**: use distributed lock (Redis SETNX) keyed on task_id before executing. If lock acquired → execute. Else → skip. Lock expires after task timeout.
 
 **Task lifecycle:** QUEUED → IN_FLIGHT → COMPLETED / FAILED → (retry) → DLQ`,
-    why: `Task queues are in every backend system — email sending, report generation, image processing, payment webhooks. Understanding retry, DLQ, and autoscaling shows production readiness. Celery is Python's most popular task queue; BullMQ is Node.js; Sidekiq is Ruby.`,
+    why: "Task queues are in every backend system — email sending, report generation, image processing, payment webhooks. Understanding retry, DLQ, and autoscaling shows production readiness. Celery is Python's most popular task queue; BullMQ is Node.js; Sidekiq is Ruby.",
     example: {
       language: "python",
       code: `# Minimal distributed task queue using Redis
@@ -135,7 +135,7 @@ enqueue("resize_image", {"url": "s3://bucket/img.jpg"}, priority=3, delay=5)
     interview: [
       {
         question: "How do you ensure a task runs exactly once?",
-        answer: `Exactly-once is hard. Default behavior is at-least-once (safe retries, idempotent tasks). For true exactly-once: use a distributed lock (Redis SETNX) keyed on task_id with TTL = task max execution time. Worker acquires lock before executing. If acquired → execute → delete lock. If not acquired → another worker has it → skip. This prevents two workers executing the same task concurrently. But: if a worker crashes after acquiring the lock but before completing, the task won't run until TTL expires. Design tasks to be idempotent as the primary defense.`,
+        answer: "Exactly-once is hard. Default behavior is at-least-once (safe retries, idempotent tasks). For true exactly-once: use a distributed lock (Redis SETNX) keyed on task_id with TTL = task max execution time. Worker acquires lock before executing. If acquired → execute → delete lock. If not acquired → another worker has it → skip. This prevents two workers executing the same task concurrently. But: if a worker crashes after acquiring the lock but before completing, the task won't run until TTL expires. Design tasks to be idempotent as the primary defense.",
         followUps: [
           "What if the worker crashes after the Redis SETNX but before task completion?",
           "How does Celery handle exactly-once with ACKS_LATE?",
@@ -144,7 +144,7 @@ enqueue("resize_image", {"url": "s3://bucket/img.jpg"}, priority=3, delay=5)
       },
       {
         question: "How do you handle long-running tasks (>30 minutes)?",
-        answer: `Several strategies: (1) Heartbeat: worker updates a Redis key every N seconds to signal it's still alive. If heartbeat expires, a watchdog process re-enqueues the task. (2) Chunking: break the long task into smaller subtasks, each queued independently. Parent task completes when all children complete (use a counter in Redis). (3) Celery approach: ACKS_LATE=True — task is not acknowledged until it completes. If worker dies, broker re-delivers the task. (4) Set task visibility timeout > expected task duration to prevent premature re-delivery. (5) Store progress checkpoints in Redis so a retried task resumes from last checkpoint.`,
+        answer: "Several strategies: (1) Heartbeat: worker updates a Redis key every N seconds to signal it's still alive. If heartbeat expires, a watchdog process re-enqueues the task. (2) Chunking: break the long task into smaller subtasks, each queued independently. Parent task completes when all children complete (use a counter in Redis). (3) Celery approach: ACKS_LATE=True — task is not acknowledged until it completes. If worker dies, broker re-delivers the task. (4) Set task visibility timeout > expected task duration to prevent premature re-delivery. (5) Store progress checkpoints in Redis so a retried task resumes from last checkpoint.",
         followUps: [
           "How do you implement a progress bar for long-running tasks?",
           "How do you cancel a long-running task that's already in progress?",
@@ -153,7 +153,7 @@ enqueue("resize_image", {"url": "s3://bucket/img.jpg"}, priority=3, delay=5)
       },
       {
         question: "How do you prioritize tasks?",
-        answer: `Use a Redis Sorted Set (ZADD) where the score is the priority value. ZPOPMAX fetches the highest-priority task first. Implement multiple named queues (high/medium/low) and have workers poll them in order: check high queue first, then medium, then low. This prevents high-priority tasks from being starved. For scheduling: use two sorted sets — active_queue (ready to run) and delayed_queue (score = future execution timestamp). A lightweight scheduler process runs every second and moves tasks from delayed → active when their timestamp arrives.`,
+        answer: "Use a Redis Sorted Set (ZADD) where the score is the priority value. ZPOPMAX fetches the highest-priority task first. Implement multiple named queues (high/medium/low) and have workers poll them in order: check high queue first, then medium, then low. This prevents high-priority tasks from being starved. For scheduling: use two sorted sets — active_queue (ready to run) and delayed_queue (score = future execution timestamp). A lightweight scheduler process runs every second and moves tasks from delayed → active when their timestamp arrives.",
         followUps: [
           "How do you prevent priority inversion (low-priority task blocking high-priority ones)?",
           "How do you handle priority escalation for tasks waiting too long?",
@@ -162,7 +162,7 @@ enqueue("resize_image", {"url": "s3://bucket/img.jpg"}, priority=3, delay=5)
       },
       {
         question: "Design Celery's architecture.",
-        answer: `Celery has 4 components: (1) Task producer — Python application that calls task.delay() or task.apply_async(). (2) Message broker — RabbitMQ (default) or Redis. Stores task messages in queues. (3) Worker — Python process that imports your code, subscribes to queues, executes tasks in a thread pool or prefork pool. (4) Result backend — Redis or DB that stores task results for the caller to retrieve. Key design decisions: workers are stateless — they reload the code on start. Prefork pool (default): each worker spawns N child processes (avoids GIL for CPU-bound tasks). Celery Beat: a scheduler process that triggers periodic tasks (like cron). Flower: real-time web UI for monitoring queue depth, worker status, task history.`,
+        answer: "Celery has 4 components: (1) Task producer — Python application that calls task.delay() or task.apply_async(). (2) Message broker — RabbitMQ (default) or Redis. Stores task messages in queues. (3) Worker — Python process that imports your code, subscribes to queues, executes tasks in a thread pool or prefork pool. (4) Result backend — Redis or DB that stores task results for the caller to retrieve. Key design decisions: workers are stateless — they reload the code on start. Prefork pool (default): each worker spawns N child processes (avoids GIL for CPU-bound tasks). Celery Beat: a scheduler process that triggers periodic tasks (like cron). Flower: real-time web UI for monitoring queue depth, worker status, task history.",
         followUps: [
           "Why does Celery use prefork instead of threads by default?",
           "How does Celery handle database connection pools across worker processes?",
@@ -194,55 +194,55 @@ enqueue("resize_image", {"url": "s3://bucket/img.jpg"}, priority=3, delay=5)
       "Queue depth autoscaling has lag — if 1000 tasks arrive simultaneously, it takes time to spin up workers. Pre-warm worker pool for known traffic spikes."
     ],
     visual: {
-      type: 'swimlane',
-      title: '⚙️ Distributed Task Queue (Celery / BullMQ / Sidekiq)',
+      type: "swimlane",
+      title: "⚙️ Distributed Task Queue (Celery / BullMQ / Sidekiq)",
       lanes: [
         {
-          id: 'l1',
-          label: 'Producer',
-          color: '#58a6ff',
-          badge: 'Async',
-          description: 'API servers enqueue tasks — fire-and-forget, decoupled from consumers',
+          id: "l1",
+          label: "Producer",
+          color: "#58a6ff",
+          badge: "Async",
+          description: "API servers enqueue tasks — fire-and-forget, decoupled from consumers",
           nodes: [
-            { id: 'n1', label: 'API Server',   sublabel: 'enqueue(task)',         icon: '🌐' },
-            { id: 'n2', label: 'Serializer',   sublabel: 'JSON encode + schema',  icon: '📦' },
-            { id: 'n3', label: 'Priority Tag', sublabel: 'score 0–10',            icon: '🏷️' }
+            { id: "n1", label: "API Server",   sublabel: "enqueue(task)",         icon: "🌐" },
+            { id: "n2", label: "Serializer",   sublabel: "JSON encode + schema",  icon: "📦" },
+            { id: "n3", label: "Priority Tag", sublabel: "score 0–10",            icon: "🏷️" }
           ]
         },
         {
-          id: 'l2',
-          label: 'Broker / Queue',
-          color: '#ffa657',
-          badge: 'Redis / Kafka',
-          description: 'Durable FIFO or priority queue — ZADD (priority score) · ZPOPMAX (consume)',
+          id: "l2",
+          label: "Broker / Queue",
+          color: "#ffa657",
+          badge: "Redis / Kafka",
+          description: "Durable FIFO or priority queue — ZADD (priority score) · ZPOPMAX (consume)",
           nodes: [
-            { id: 'n4', label: 'Active Queue',   sublabel: 'ZADD priority_queue', icon: '📋' },
-            { id: 'n5', label: 'Delayed Queue',  sublabel: 'score = future ts',   icon: '⏰' },
-            { id: 'n6', label: 'In-Flight Set',  sublabel: 'ACK on completion',   icon: '✈️' }
+            { id: "n4", label: "Active Queue",   sublabel: "ZADD priority_queue", icon: "📋" },
+            { id: "n5", label: "Delayed Queue",  sublabel: "score = future ts",   icon: "⏰" },
+            { id: "n6", label: "In-Flight Set",  sublabel: "ACK on completion",   icon: "✈️" }
           ]
         },
         {
-          id: 'l3',
-          label: 'Worker Pool',
-          color: '#3fb950',
-          badge: 'N workers',
-          description: 'Stateless workers — ZPOPMAX → execute → ACK · Heartbeat every 10s',
+          id: "l3",
+          label: "Worker Pool",
+          color: "#3fb950",
+          badge: "N workers",
+          description: "Stateless workers — ZPOPMAX → execute → ACK · Heartbeat every 10s",
           nodes: [
-            { id: 'n7', label: 'Worker 1', sublabel: 'dequeue + execute', icon: '🔧' },
-            { id: 'n8', label: 'Worker 2', sublabel: 'dequeue + execute', icon: '🔧' },
-            { id: 'n9', label: 'Worker N', sublabel: 'autoscaled pod',    icon: '🔧' }
+            { id: "n7", label: "Worker 1", sublabel: "dequeue + execute", icon: "🔧" },
+            { id: "n8", label: "Worker 2", sublabel: "dequeue + execute", icon: "🔧" },
+            { id: "n9", label: "Worker N", sublabel: "autoscaled pod",    icon: "🔧" }
           ]
         },
         {
-          id: 'l4',
-          label: 'Retry / DLQ',
-          color: '#f85149',
-          badge: 'Max 3 retries',
-          description: 'Exponential backoff: 1s → 2s → 4s · After max retries → Dead Letter Queue',
+          id: "l4",
+          label: "Retry / DLQ",
+          color: "#f85149",
+          badge: "Max 3 retries",
+          description: "Exponential backoff: 1s → 2s → 4s · After max retries → Dead Letter Queue",
           nodes: [
-            { id: 'n10', label: 'Retry Queue', sublabel: 'backoff: 2^n seconds', icon: '🔁' },
-            { id: 'n11', label: 'DLQ',         sublabel: 'ops inspect + replay', icon: '💀' },
-            { id: 'n12', label: 'Alerting',    sublabel: 'PagerDuty / Slack',    icon: '🚨' }
+            { id: "n10", label: "Retry Queue", sublabel: "backoff: 2^n seconds", icon: "🔁" },
+            { id: "n11", label: "DLQ",         sublabel: "ops inspect + replay", icon: "💀" },
+            { id: "n12", label: "Alerting",    sublabel: "PagerDuty / Slack",    icon: "🚨" }
           ]
         }
       ]

@@ -12,7 +12,7 @@
 - **Interface vs concrete type**: accept interfaces, return concrete types (Postel's law for Go).
 - **\`interface{}\` / \`any\`**: escape hatch; prefer generics (Go 1.18+) for typed collections.`,
     why:
-`Go's implicit interfaces eliminate the coupling between package A (defines the interface) and package B (implements it). Libraries define small interfaces consumers implement without depending on the library. This is the key to testability — swap real implementations with test doubles without a mocking framework.`,
+"Go's implicit interfaces eliminate the coupling between package A (defines the interface) and package B (implements it). Libraries define small interfaces consumers implement without depending on the library. This is the key to testability — swap real implementations with test doubles without a mocking framework.",
     example: {
       language: "go",
       code:
@@ -69,19 +69,19 @@ func main() {
     _ = ls.Save("k1", []byte("hello"))
     fmt.Println(strings.Join(ls.log, ", ")) // save:k1
 }`,
-      notes: `Interface satisfaction is checked at compile time when you assign a concrete type to an interface variable. Use \`var _ Storer = (*MemStore)(nil)\` as a compile-time assertion.`
+      notes: "Interface satisfaction is checked at compile time when you assign a concrete type to an interface variable. Use `var _ Storer = (*MemStore)(nil)` as a compile-time assertion."
     },
     interview: [
       {
         question: "What is an interface nil trap?",
         answer:
-`An interface value is nil only if both its **type** and **value** are nil. A \`(*MyErr)(nil)\` assigned to \`error\` is non-nil (type is set). Classic bug: returning a typed nil pointer as \`error\`. Fix: return \`nil\` directly, or use a helper \`if err != nil { return err }\` discipline.`,
+"An interface value is nil only if both its **type** and **value** are nil. A `(*MyErr)(nil)` assigned to `error` is non-nil (type is set). Classic bug: returning a typed nil pointer as `error`. Fix: return `nil` directly, or use a helper `if err != nil { return err }` discipline.",
         followUps: ["How do you introspect an interface's dynamic type?", "When would you use reflect vs type switch?"]
       },
       {
         question: "How do you test code that depends on external services in Go without a mock framework?",
         answer:
-`Define a small interface for the external dependency in the package that uses it, then provide a test double (fake struct) in the test file that satisfies the interface. No Mockery or gomock required for simple cases. For complex interaction verification, \`gomock\` generates mocks from interfaces; for HTTP, \`httptest.Server\` spins up a real server.`,
+"Define a small interface for the external dependency in the package that uses it, then provide a test double (fake struct) in the test file that satisfies the interface. No Mockery or gomock required for simple cases. For complex interaction verification, `gomock` generates mocks from interfaces; for HTTP, `httptest.Server` spins up a real server.",
         followUps: ["Fake vs mock vs stub?", "When does gomock add value over a hand-written fake?"]
       }
     ],
@@ -96,7 +96,7 @@ func main() {
         "Embedding can expose internal methods unintentionally.",
         "Large interfaces (many methods) are hard to satisfy and violate ISP."
       ],
-      when: `Define interfaces **at the consumer site**, not the implementation site. Keep them to 1–3 methods. Use embedding to compose behavior, not to reuse code (Go favors composition over inheritance).`
+      when: "Define interfaces **at the consumer site**, not the implementation site. Keep them to 1–3 methods. Use embedding to compose behavior, not to reuse code (Go favors composition over inheritance)."
     }
   };
   window.GO_TOPICS = (window.GO_TOPICS || []).concat([topic]);

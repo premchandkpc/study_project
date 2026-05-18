@@ -17,84 +17,84 @@
  * }
  */
 (function () {
-  'use strict';
+  "use strict";
   window.DSAViz = window.DSAViz || {};
 
   /* ── NARRATION TEMPLATES ──────────────────────────────────────── */
   function narrate(lineText, vars, prevVars) {
-    const t = (lineText || '').trim();
-    if (!t || t.startsWith('//')) return null;
+    const t = (lineText || "").trim();
+    if (!t || t.startsWith("//")) return null;
 
     const changed = Object.keys(vars).filter(
       k => JSON.stringify(vars[k]) !== JSON.stringify(prevVars[k])
     );
 
     if (/^\breturn\b/.test(t)) {
-      const val = t.replace(/^return\s*/, '').replace(/;$/, '');
+      const val = t.replace(/^return\s*/, "").replace(/;$/, "");
       return `Return ${val}`;
     }
     if (/^(let|const|var)\s/.test(t)) {
-      const name = t.match(/(?:let|const|var)\s+([a-zA-Z_$][\w$]*)/)?.[1] || '';
+      const name = t.match(/(?:let|const|var)\s+([a-zA-Z_$][\w$]*)/)?.[1] || "";
       const val = vars[name];
       return `Declare ${name} = ${JSON.stringify(val)}`;
     }
     if (/\.push\s*\(/.test(t)) {
       const m = t.match(/(\w+)\.push\s*\((.+)\)/);
-      return m ? `Push ${m[2]} onto ${m[1]}` : 'Push onto stack';
+      return m ? `Push ${m[2]} onto ${m[1]}` : "Push onto stack";
     }
     if (/\.pop\s*\(/.test(t)) {
       const m = t.match(/(\w+)\.pop\s*\(/);
-      return m ? `Pop from ${m[1]}` : 'Pop from stack';
+      return m ? `Pop from ${m[1]}` : "Pop from stack";
     }
     if (/\.shift\s*\(/.test(t)) {
       const m = t.match(/(\w+)\.shift\s*\(/);
-      return m ? `Dequeue from ${m[1]}` : 'Dequeue front';
+      return m ? `Dequeue from ${m[1]}` : "Dequeue front";
     }
     if (/\.unshift\s*\(/.test(t)) {
       const m = t.match(/(\w+)\.unshift\s*\((.+)\)/);
-      return m ? `Enqueue ${m[2]} to front of ${m[1]}` : 'Enqueue front';
+      return m ? `Enqueue ${m[2]} to front of ${m[1]}` : "Enqueue front";
     }
     if (/\.set\s*\(/.test(t)) {
       const m = t.match(/(\w+)\.set\s*\((.+),\s*(.+)\)/);
-      return m ? `Map ${m[1]}: set ${m[2]} → ${m[3]}` : 'Map set';
+      return m ? `Map ${m[1]}: set ${m[2]} → ${m[3]}` : "Map set";
     }
     if (/\.get\s*\(/.test(t)) {
       const m = t.match(/(\w+)\.get\s*\((.+)\)/);
-      return m ? `Map ${m[1]}: get(${m[2]})` : 'Map get';
+      return m ? `Map ${m[1]}: get(${m[2]})` : "Map get";
     }
     if (/\.has\s*\(/.test(t)) {
       const m = t.match(/(\w+)\.has\s*\((.+)\)/);
-      return m ? `Check if ${m[1]} has ${m[2]}` : 'Has check';
+      return m ? `Check if ${m[1]} has ${m[2]}` : "Has check";
     }
     if (/\.add\s*\(/.test(t)) {
       const m = t.match(/(\w+)\.add\s*\((.+)\)/);
-      return m ? `Add ${m[2]} to Set ${m[1]}` : 'Set add';
+      return m ? `Add ${m[2]} to Set ${m[1]}` : "Set add";
     }
     if (/\.delete\s*\(/.test(t)) {
       const m = t.match(/(\w+)\.delete\s*\((.+)\)/);
-      return m ? `Delete ${m[2]} from ${m[1]}` : 'Delete';
+      return m ? `Delete ${m[2]} from ${m[1]}` : "Delete";
     }
     if (/^for\s*\(/.test(t)) {
       if (/\bof\b/.test(t)) {
         const m = t.match(/for\s*\(.*?(\w+)\s+of\s+(\w+)/);
-        return m ? `Iterate ${m[1]} over ${m[2]}` : `Loop: ${t.replace(/[{].*$/, '').trim()}`;
+        return m ? `Iterate ${m[1]} over ${m[2]}` : `Loop: ${t.replace(/[{].*$/, "").trim()}`;
       }
       if (/\bin\b/.test(t)) {
         const m = t.match(/for\s*\(.*?(\w+)\s+in\s+(\w+)/);
-        return m ? `Iterate key ${m[1]} in ${m[2]}` : `Loop: ${t.replace(/[{].*$/, '').trim()}`;
+        return m ? `Iterate key ${m[1]} in ${m[2]}` : `Loop: ${t.replace(/[{].*$/, "").trim()}`;
       }
-      return `Loop: ${t.replace(/[{].*$/, '').trim()}`;
+      return `Loop: ${t.replace(/[{].*$/, "").trim()}`;
     }
-    if (/^while\s*\(/.test(t)) return 'While loop check';
+    if (/^while\s*\(/.test(t)) return "While loop check";
     if (/^if\s*\(/.test(t)) {
-      const cond = t.match(/^if\s*\((.+)\)/)?.[1] || '';
+      const cond = t.match(/^if\s*\((.+)\)/)?.[1] || "";
       return `Check: if (${cond})`;
     }
-    if (/^else/.test(t)) return 'else branch';
+    if (/^else/.test(t)) return "else branch";
     if (changed.length) {
-      return changed.map(k => `${k} = ${JSON.stringify(vars[k])}`).join(', ');
+      return changed.map(k => `${k} = ${JSON.stringify(vars[k])}`).join(", ");
     }
-    return t.length > 60 ? t.substring(0, 57) + '…' : t;
+    return t.length > 60 ? t.substring(0, 57) + "…" : t;
   }
 
   /* ── DATA STRUCTURE DETECTION ─────────────────────────────────── */
@@ -108,15 +108,15 @@
         const cfg = { arr: val.slice() };
         if (highlights?.arrays?.[name]) cfg.highlights = highlights.arrays[name];
         arrays[name] = cfg;
-      } else if (val instanceof Set || (val && val.__type === 'Set')) {
+      } else if (val instanceof Set || (val && val.__type === "Set")) {
         sets[name] = [...val];
-      } else if (val instanceof Map || (val && val.__type === 'Map')) {
+      } else if (val instanceof Map || (val && val.__type === "Map")) {
         const flat = {};
         val.forEach((v, k) => { flat[String(k)] = v; });
         if (Object.keys(flat).length > 0) maps[name] = flat;
       } else if (
         val !== null &&
-        typeof val === 'object' &&
+        typeof val === "object" &&
         !Array.isArray(val)
       ) {
         const flat = {};
@@ -130,9 +130,9 @@
 
   /* ── SAFE VALUE CLONE ─────────────────────────────────────────── */
   function safeClone(val, depth = 0) {
-    if (depth > 4) return '…';
+    if (depth > 4) return "…";
     if (val === null || val === undefined) return val;
-    if (typeof val === 'function') return '[function]';
+    if (typeof val === "function") return "[function]";
     if (Array.isArray(val)) return val.map(v => safeClone(v, depth + 1));
     if (val instanceof Map) {
       const o = {};
@@ -140,7 +140,7 @@
       return o;
     }
     if (val instanceof Set) return [...val].map(v => safeClone(v, depth + 1));
-    if (typeof val === 'object') {
+    if (typeof val === "object") {
       try {
         const o = {};
         Object.keys(val).slice(0, 20).forEach(k => { o[k] = safeClone(val[k], depth + 1); });
@@ -155,34 +155,34 @@
   /* track { } [ ] to know when we're inside object/array literals vs blocks */
   function updateBracketStack(line, stack) {
     let inStr = false;
-    let strChar = '';
+    let strChar = "";
     for (let ci = 0; ci < line.length; ci++) {
       const c = line[ci];
       if (inStr) {
-        if (c === strChar && line[ci - 1] !== '\\') inStr = false;
-      } else if (c === '"' || c === "'" || c === '`') {
+        if (c === strChar && line[ci - 1] !== "\\") inStr = false;
+      } else if (c === "\"" || c === "'" || c === "`") {
         inStr = true;
         strChar = c;
-      } else if (c === '{') {
+      } else if (c === "{") {
         /* look at preceding non-space char to decide block vs object literal */
         let j = ci - 1;
-        while (j >= 0 && line[j] === ' ') j--;
-        const prev = j >= 0 ? line[j] : '';
+        while (j >= 0 && line[j] === " ") j--;
+        const prev = j >= 0 ? line[j] : "";
         const isBlock =
-          prev === ')' || prev === '}' ||
+          prev === ")" || prev === "}" ||
           /=>\s*\{/.test(line.substring(0, ci + 1)) ||
           /\bfunction\b/.test(line.substring(0, ci + 1));
-        stack.push(isBlock ? 'block' : 'literal');
-      } else if (c === '[') {
-        stack.push('literal');
-      } else if ((c === '}' || c === ']') && stack.length) {
+        stack.push(isBlock ? "block" : "literal");
+      } else if (c === "[") {
+        stack.push("literal");
+      } else if ((c === "}" || c === "]") && stack.length) {
         stack.pop();
       }
     }
   }
 
   function instrument(code) {
-    const lines = code.split('\n');
+    const lines = code.split("\n");
     const output = [];
     const scopeVars = new Set();
     const blockTypeStack = []; /* 'block' | 'literal' for each open { or [ */
@@ -191,7 +191,7 @@
     const paramRe = /function\s*\w*\s*\(([^)]*)\)/g;
     let pm;
     while ((pm = paramRe.exec(code)) !== null) {
-      pm[1].split(',').map(s => s.trim().replace(/=.*$/, '').trim()).filter(Boolean)
+      pm[1].split(",").map(s => s.trim().replace(/=.*$/, "").trim()).filter(Boolean)
         .forEach(p => scopeVars.add(p));
     }
 
@@ -199,8 +199,8 @@
     const arrowRe = /(?:const|let|var)\s+\w+\s*=\s*(?:\(([^)]*)\)|(\w+))\s*=>/g;
     let am;
     while ((am = arrowRe.exec(code)) !== null) {
-      const paramStr = am[1] || am[2] || '';
-      paramStr.split(',').map(s => s.trim().replace(/=.*$/, '').trim()).filter(Boolean)
+      const paramStr = am[1] || am[2] || "";
+      paramStr.split(",").map(s => s.trim().replace(/=.*$/, "").trim()).filter(Boolean)
         .forEach(p => scopeVars.add(p));
     }
 
@@ -214,7 +214,7 @@
       /* check if currently inside an object/array literal (before this line updates stack) */
       const insideLiteral =
         blockTypeStack.length > 0 &&
-        blockTypeStack[blockTypeStack.length - 1] === 'literal';
+        blockTypeStack[blockTypeStack.length - 1] === "literal";
 
       /* track declared vars */
       let dm;
@@ -222,7 +222,7 @@
       while ((dm = declRe.exec(line)) !== null) scopeVars.add(dm[1]);
 
       const am2 = t.match(assignRe);
-      if (am2 && !['if', 'while', 'for', 'return', 'else'].includes(am2[1])) {
+      if (am2 && !["if", "while", "for", "return", "else"].includes(am2[1])) {
         scopeVars.add(am2[1]);
       }
 
@@ -237,19 +237,19 @@
       const depthAfter = blockTypeStack.length;
       const openedLiteral =
         depthAfter > depthBefore &&
-        blockTypeStack[blockTypeStack.length - 1] === 'literal';
+        blockTypeStack[blockTypeStack.length - 1] === "literal";
 
       const skip =
         insideLiteral ||   /* inside multi-line object/array literal */
         openedLiteral ||   /* this line opens an unclosed object/array literal */
         !t ||
-        t.startsWith('//') ||
-        t.startsWith('/*') ||
-        t.startsWith('*') ||
-        t === '{' ||
-        t === '}' ||
-        t === '};' ||
-        t.endsWith('{') ||
+        t.startsWith("//") ||
+        t.startsWith("/*") ||
+        t.startsWith("*") ||
+        t === "{" ||
+        t === "}" ||
+        t === "};" ||
+        t.endsWith("{") ||
         /^\s*$/.test(t);
 
       if (!skip) {
@@ -257,14 +257,14 @@
         const namesJson = JSON.stringify(vars);
         const captures = vars
           .map(v => `(function(){try{return ${v};}catch(_){return undefined;}})()`)
-          .join(',');
+          .join(",");
         output.push(
           `try{__t(${i},${namesJson},[${captures}]);}catch(__te){}`
         );
       }
     });
 
-    return output.join('\n');
+    return output.join("\n");
   }
 
   /* ── MAIN TRACER ──────────────────────────────────────────────── */
@@ -275,7 +275,7 @@
     let stepCount = 0;
     let recursionDepth = 0;
     const callStack = [];
-    const lines = code.split('\n');
+    const lines = code.split("\n");
     let prevVars = {};
 
     /* detect function entry/exit for call stack tracking */
@@ -296,12 +296,12 @@
       });
 
       const { arrays, maps, sets } = detectStructures(vars);
-      const lineText = lines[lineNum] || '';
+      const lineText = lines[lineNum] || "";
       const narr = narrate(lineText, vars, prevVars);
 
       /* heuristic: function call on this line → push frame */
       const calledFn = fnNames.find(n => new RegExp(`\\b${n}\\s*\\(`).test(lineText));
-      if (calledFn && lineText.trim().includes(calledFn + '(') && !lineText.trim().startsWith('function')) {
+      if (calledFn && lineText.trim().includes(calledFn + "(") && !lineText.trim().startsWith("function")) {
         if (callStack[callStack.length - 1] !== calledFn) {
           callStack.push(calledFn);
           recursionDepth = callStack.length;
@@ -336,13 +336,13 @@
 
     const inputPreamble = Object.entries(inputVars)
       .map(([k, v]) => `let ${k} = ${JSON.stringify(v)};`)
-      .join('\n');
+      .join("\n");
 
-    const fullCode = inputPreamble + '\n' + instrumented;
+    const fullCode = inputPreamble + "\n" + instrumented;
 
     try {
       /* eslint-disable no-new-func */
-      const fn = new Function('__t', fullCode);
+      const fn = new Function("__t", fullCode);
       fn(__t);
     } catch (err) {
       if (snapshots.length === 0) {
@@ -377,9 +377,9 @@
   /* ── PATTERN PRESETS ──────────────────────────────────────────── */
   const PRESETS = {
     twoSum: {
-      title: 'Two Sum — HashMap O(n)',
-      timeComplexity: 'O(n)',
-      spaceComplexity: 'O(n)',
+      title: "Two Sum — HashMap O(n)",
+      timeComplexity: "O(n)",
+      spaceComplexity: "O(n)",
       code: `function twoSum(nums, target) {
   const mp = {};
   for (let i = 0; i < nums.length; i++) {
@@ -398,9 +398,9 @@ const result = twoSum(nums, target);`,
     },
 
     binarySearch: {
-      title: 'Binary Search — O(log n)',
-      timeComplexity: 'O(log n)',
-      spaceComplexity: 'O(1)',
+      title: "Binary Search — O(log n)",
+      timeComplexity: "O(log n)",
+      spaceComplexity: "O(1)",
       code: `function binarySearch(arr, target) {
   let left = 0;
   let right = arr.length - 1;
@@ -418,9 +418,9 @@ const result = binarySearch(arr, target);`,
     },
 
     slidingWindow: {
-      title: 'Max Sum Subarray of size K — O(n)',
-      timeComplexity: 'O(n)',
-      spaceComplexity: 'O(1)',
+      title: "Max Sum Subarray of size K — O(n)",
+      timeComplexity: "O(n)",
+      spaceComplexity: "O(1)",
       code: `function maxSumSubarray(arr, k) {
   let maxSum = 0;
   let windowSum = 0;
@@ -440,9 +440,9 @@ const result = maxSumSubarray(arr, k);`,
     },
 
     fibonacci: {
-      title: 'Fibonacci — DP Tabulation O(n)',
-      timeComplexity: 'O(n)',
-      spaceComplexity: 'O(n)',
+      title: "Fibonacci — DP Tabulation O(n)",
+      timeComplexity: "O(n)",
+      spaceComplexity: "O(n)",
       code: `function fib(n) {
   const dp = [0, 1];
   for (let i = 2; i <= n; i++) {
@@ -455,9 +455,9 @@ const result = fib(n);`,
     },
 
     validParentheses: {
-      title: 'Valid Parentheses — Stack O(n)',
-      timeComplexity: 'O(n)',
-      spaceComplexity: 'O(n)',
+      title: "Valid Parentheses — Stack O(n)",
+      timeComplexity: "O(n)",
+      spaceComplexity: "O(n)",
       code: `function isValid(s) {
   const stack = [];
   const map = { ')': '(', '}': '{', ']': '[' };
@@ -477,9 +477,9 @@ const result = isValid(s);`,
     },
 
     bubbleSort: {
-      title: 'Bubble Sort — O(n²)',
-      timeComplexity: 'O(n²)',
-      spaceComplexity: 'O(1)',
+      title: "Bubble Sort — O(n²)",
+      timeComplexity: "O(n²)",
+      spaceComplexity: "O(1)",
       code: `function bubbleSort(arr) {
   const n = arr.length;
   for (let i = 0; i < n - 1; i++) {
@@ -498,9 +498,9 @@ const result = bubbleSort(arr);`,
     },
 
     mergeSort: {
-      title: 'Merge Sort — O(n log n)',
-      timeComplexity: 'O(n log n)',
-      spaceComplexity: 'O(n)',
+      title: "Merge Sort — O(n log n)",
+      timeComplexity: "O(n log n)",
+      spaceComplexity: "O(n)",
       code: `function mergeSort(arr) {
   if (arr.length <= 1) return arr;
   const mid = Math.floor(arr.length / 2);
@@ -530,9 +530,9 @@ const result = mergeSort(arr);`,
     },
 
     bfs: {
-      title: 'BFS — Level Order Traversal O(V+E)',
-      timeComplexity: 'O(V+E)',
-      spaceComplexity: 'O(V)',
+      title: "BFS — Level Order Traversal O(V+E)",
+      timeComplexity: "O(V+E)",
+      spaceComplexity: "O(V)",
       code: `function bfs(graph, start) {
   const visited = new Set();
   const queue = [start];
@@ -562,9 +562,9 @@ const result = bfs(graph, 0);`,
     },
 
     dfs: {
-      title: 'DFS — Recursive O(V+E)',
-      timeComplexity: 'O(V+E)',
-      spaceComplexity: 'O(V)',
+      title: "DFS — Recursive O(V+E)",
+      timeComplexity: "O(V+E)",
+      spaceComplexity: "O(V)",
       code: `const visited = new Set();
 const order = [];
 function dfs(graph, node) {
@@ -589,9 +589,9 @@ const result = order;`,
     },
 
     lcs: {
-      title: 'Longest Common Subsequence — DP O(mn)',
-      timeComplexity: 'O(mn)',
-      spaceComplexity: 'O(mn)',
+      title: "Longest Common Subsequence — DP O(mn)",
+      timeComplexity: "O(mn)",
+      spaceComplexity: "O(mn)",
       code: `function lcs(s1, s2) {
   const m = s1.length;
   const n = s2.length;

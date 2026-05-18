@@ -1,9 +1,9 @@
 (function() {
   var topic = {
-  id:"sd-cloud-aws", area:"sysdesign",
-  title:"AWS Cloud — Services by Layer & When to Use Each",
-  tag:"Cloud", tags:["aws","ec2","s3","rds","dynamodb","sqs","sns","lambda","cloudfront","route53","eks","elasticache","kinesis"],
-  concept:`**AWS services organised by system layer:**
+    id:"sd-cloud-aws", area:"sysdesign",
+    title:"AWS Cloud — Services by Layer & When to Use Each",
+    tag:"Cloud", tags:["aws","ec2","s3","rds","dynamodb","sqs","sns","lambda","cloudfront","route53","eks","elasticache","kinesis"],
+    concept:`**AWS services organised by system layer:**
 
 **Compute:**
 - **EC2** — virtual machines. Full control. Use for: DB servers, batch compute, custom OS requirements.
@@ -40,10 +40,10 @@
 - **CloudWatch** — metrics, logs, alarms, dashboards.
 - **CodePipeline + CodeBuild + CodeDeploy** — CI/CD.
 - **CDK / CloudFormation / Terraform** — infrastructure as code.`,
-  why:`AWS is asked in nearly every infrastructure design interview. Knowing which managed service to choose (and why) vs building yourself is a core senior architect skill.`,
-  example:{
-    language:"yaml",
-    code:`# AWS CDK (TypeScript concept in YAML pseudocode)
+    why:"AWS is asked in nearly every infrastructure design interview. Knowing which managed service to choose (and why) vs building yourself is a core senior architect skill.",
+    example:{
+      language:"yaml",
+      code:`# AWS CDK (TypeScript concept in YAML pseudocode)
 # Typical 3-tier web app stack
 
 # Networking
@@ -107,104 +107,104 @@ S3:
   lifecycleRules:
     - transition to Glacier after 90 days
   blockPublicAccess: true   # CloudFront OAC access only`,
-    notes:"Always use IAM roles (not access keys) for service-to-service auth in AWS. Least-privilege: each Lambda/ECS task gets only the permissions it needs."
-  },
-  interview:[
-    {question:"How would you design a highly available, multi-region AWS architecture?",
-     answer:`1. **Two regions** (us-east-1, eu-west-1) with Route 53 latency-based or failover routing.\n2. **Route 53 health checks** monitor ALB in each region. On failure, traffic automatically shifts to healthy region.\n3. **Aurora Global Database** — primary in us-east-1, read replica in eu-west-1. Replication lag < 1s. On failure, promote secondary in <1 minute.\n4. **DynamoDB Global Tables** — multi-active, automatic conflict resolution (last-write-wins).\n5. **S3 Cross-Region Replication** — static assets replicated to both regions. CloudFront serves from nearest PoP.\n6. **ElastiCache** — separate cluster per region. Cache warms up from DB after region failover.\n7. **Chaos testing** — periodic failover drills to validate RTO/RPO targets.\n\nRTO (Recovery Time Objective): < 5 minutes. RPO (Recovery Point Objective): < 1 second (Aurora Global).`,
-     followUps:["What is the difference between RTO and RPO?","How would you handle data residency requirements (EU data must stay in EU)?"]
-    }
-  ],
-  tradeoffs:{
-    pros:["Managed services reduce operational burden","Pay-as-you-go — no upfront hardware costs","Global infrastructure with 30+ regions"],
-    cons:["Vendor lock-in (especially DynamoDB, Aurora, EventBridge)","Cost can exceed on-prem at very large scale","Managed service limitations (DynamoDB 400KB item limit, Lambda 15min)"],
-    when:"Use managed services by default — the operational savings outweigh the lock-in risk. Only consider self-managed (e.g. self-hosted Kafka) at massive scale (>$1M/month cloud spend) where savings justify operational cost."
-  },
-  visual: {
-    type: 'layered',
-    title: 'AWS Cloud Architecture — Services by Layer',
-    layers: [
-      {
-        id: 'edge', label: 'Edge / CDN Layer', color: '#e3b341', protocols: 'DNS · HTTPS · TLS',
-        services: [
-          { id: 'cloudfront', label: 'CloudFront', icon: '🌐', sublabel: '400+ PoPs · CDN' },
-          { id: 'route53',    label: 'Route 53',   icon: '🔀', sublabel: 'DNS · Health Checks' },
-          { id: 'waf',        label: 'AWS WAF',     icon: '🛡️', sublabel: 'OWASP · Rate Limit' }
-        ]
-      },
-      {
-        id: 'gateway', label: 'Gateway / LB Layer', color: '#ffa657', protocols: 'HTTPS · HTTP/2',
-        services: [
-          { id: 'alb',         label: 'ALB',         icon: '⚖️', sublabel: 'L7 · Path Routing' },
-          { id: 'apigateway',  label: 'API Gateway', icon: '🚪', sublabel: 'REST · WebSocket' }
-        ]
-      },
-      {
-        id: 'compute', label: 'Compute Layer', color: '#58a6ff', protocols: 'gRPC · HTTP',
-        services: [
-          { id: 'ecs',    label: 'ECS Fargate', icon: '🐳', sublabel: 'Managed Containers' },
-          { id: 'eks',    label: 'EKS',         icon: '☸️', sublabel: 'Managed Kubernetes' },
-          { id: 'lambda', label: 'Lambda',      icon: '⚡', sublabel: 'Serverless · <15min' }
-        ]
-      },
-      {
-        id: 'data', label: 'Data Layer', color: '#bc8cff', protocols: 'TCP · TLS',
-        services: [
-          { id: 'rds',         label: 'Aurora RDS',   icon: '🗄️', sublabel: 'Multi-AZ · Failover' },
-          { id: 's3',          label: 'S3',            icon: '📦', sublabel: '11-9s Durability' },
-          { id: 'elasticache', label: 'ElastiCache',   icon: '⚡', sublabel: 'Redis · Sub-ms' },
-          { id: 'sqs',         label: 'SQS / SNS',     icon: '📨', sublabel: 'Queue · Fan-out' }
-        ]
-      },
-      {
-        id: 'observability', label: 'Observability Layer', color: '#3fb950', protocols: 'OTLP · Metrics',
-        services: [
-          { id: 'cloudwatch', label: 'CloudWatch', icon: '📊', sublabel: 'Logs · Metrics · Alarms' },
-          { id: 'xray',       label: 'X-Ray',      icon: '🔍', sublabel: 'Distributed Tracing' }
-        ]
+      notes:"Always use IAM roles (not access keys) for service-to-service auth in AWS. Least-privilege: each Lambda/ECS task gets only the permissions it needs."
+    },
+    interview:[
+      {question:"How would you design a highly available, multi-region AWS architecture?",
+        answer:"1. **Two regions** (us-east-1, eu-west-1) with Route 53 latency-based or failover routing.\n2. **Route 53 health checks** monitor ALB in each region. On failure, traffic automatically shifts to healthy region.\n3. **Aurora Global Database** — primary in us-east-1, read replica in eu-west-1. Replication lag < 1s. On failure, promote secondary in <1 minute.\n4. **DynamoDB Global Tables** — multi-active, automatic conflict resolution (last-write-wins).\n5. **S3 Cross-Region Replication** — static assets replicated to both regions. CloudFront serves from nearest PoP.\n6. **ElastiCache** — separate cluster per region. Cache warms up from DB after region failover.\n7. **Chaos testing** — periodic failover drills to validate RTO/RPO targets.\n\nRTO (Recovery Time Objective): < 5 minutes. RPO (Recovery Point Objective): < 1 second (Aurora Global).",
+        followUps:["What is the difference between RTO and RPO?","How would you handle data residency requirements (EU data must stay in EU)?"]
       }
     ],
-    flows: [
-      { name: 'Web Request',    path: ['cloudfront', 'alb', 'ecs', 'rds'],         color: '#58a6ff' },
-      { name: 'API Call',       path: ['apigateway', 'lambda', 'elasticache'],      color: '#ffa657' },
-      { name: 'Static Asset',   path: ['cloudfront', 's3'],                         color: '#e3b341' },
-      { name: 'Async Event',    path: ['ecs', 'sqs', 'lambda'],                     color: '#bc8cff' }
-    ]
-  },
-  architecture:{
-    title:"AWS 3-Tier Web Architecture",
-    caption:"CloudFront → ALB → ECS Fargate → Aurora + ElastiCache",
-    lanes:[
-      {label:"Edge",nodes:[
-        {id:"route53",label:"Route 53",hint:"DNS + health checks",detail:"Latency-based routing to nearest region. Health checks monitor ALB. Automatic failover if region unhealthy."},
-        {id:"cloudfront",label:"CloudFront",hint:"CDN — 400+ PoPs",detail:"Serves S3 static assets at edge. API requests forwarded to ALB. Lambda@Edge for auth at edge."}
-      ]},
-      {label:"Load Balancing",nodes:[
-        {id:"alb",label:"ALB",hint:"L7 load balancer",detail:"HTTPS termination. Path-based routing (/api → ECS, / → S3). Sticky sessions if needed. WAF integration."},
-        {id:"waf",label:"AWS WAF",hint:"SQL injection, XSS protection",detail:"Web Application Firewall. Block OWASP top 10, rate limit per IP, geo-block."}
-      ]},
-      {label:"Compute",nodes:[
-        {id:"ecs",label:"ECS Fargate",hint:"Auto-scaling containers",detail:"Serverless containers. Auto-scales on CPU/memory. Rolling deploys with zero downtime. Service Connect for service discovery."},
-        {id:"lambda",label:"Lambda",hint:"Event-driven functions",detail:"Triggered by SQS, SNS, EventBridge, S3. Scales to 0 when idle. 15min max."}
-      ]},
-      {label:"Data",nodes:[
-        {id:"aurora",label:"Aurora PostgreSQL",hint:"Multi-AZ relational DB",detail:"MySQL/Postgres-compatible. 3-6× standard RDS throughput. Multi-AZ automatic failover <30s. Performance Insights."},
-        {id:"elasticache",label:"ElastiCache Redis",hint:"Distributed cache",detail:"Redis Cluster mode. Session store, rate limiting, hot data cache. Sub-millisecond latency."},
-        {id:"s3",label:"S3",hint:"Object storage",detail:"11 nines durability. Static assets, user uploads, backups, data lake. Lifecycle rules to Glacier."},
-        {id:"sqs",label:"SQS + SNS",hint:"Async messaging",detail:"SQS for work queues (at-least-once). SNS for fan-out to multiple queues. DLQ for failed messages."}
-      ]}
-    ],
-    links:[
-      {from:"route53",to:"cloudfront",label:"DNS → CDN",detail:"All traffic enters via CloudFront for DDoS absorption and caching.",type:"sync"},
-      {from:"cloudfront",to:"alb",label:"Dynamic requests",detail:"Non-cacheable API requests forwarded to origin ALB.",type:"sync"},
-      {from:"cloudfront",to:"s3",label:"Static assets",detail:"JS/CSS/images served directly from S3 via CloudFront.",type:"sync"},
-      {from:"alb",to:"ecs",label:"HTTP/2 to containers",detail:"ALB distributes across healthy ECS tasks. Health check: /actuator/health.",type:"sync"},
-      {from:"ecs",to:"aurora",label:"Reads + writes",detail:"App connects via RDS Proxy (connection pooling). Read replicas for SELECT queries.",type:"sync"},
-      {from:"ecs",to:"elasticache",label:"Cache operations",detail:"Redis for session, rate limiting, hot data. Redis Cluster with read replicas.",type:"sync"},
-      {from:"ecs",to:"sqs",label:"Publish events",detail:"Async work published to SQS. Lambda or ECS worker drains queue.",type:"async"},
-      {from:"lambda",to:"aurora",label:"Event processing",detail:"Lambda processes SQS messages, writes results to DB.",type:"sync"}
-    ]
-  }
-};
+    tradeoffs:{
+      pros:["Managed services reduce operational burden","Pay-as-you-go — no upfront hardware costs","Global infrastructure with 30+ regions"],
+      cons:["Vendor lock-in (especially DynamoDB, Aurora, EventBridge)","Cost can exceed on-prem at very large scale","Managed service limitations (DynamoDB 400KB item limit, Lambda 15min)"],
+      when:"Use managed services by default — the operational savings outweigh the lock-in risk. Only consider self-managed (e.g. self-hosted Kafka) at massive scale (>$1M/month cloud spend) where savings justify operational cost."
+    },
+    visual: {
+      type: "layered",
+      title: "AWS Cloud Architecture — Services by Layer",
+      layers: [
+        {
+          id: "edge", label: "Edge / CDN Layer", color: "#e3b341", protocols: "DNS · HTTPS · TLS",
+          services: [
+            { id: "cloudfront", label: "CloudFront", icon: "🌐", sublabel: "400+ PoPs · CDN" },
+            { id: "route53",    label: "Route 53",   icon: "🔀", sublabel: "DNS · Health Checks" },
+            { id: "waf",        label: "AWS WAF",     icon: "🛡️", sublabel: "OWASP · Rate Limit" }
+          ]
+        },
+        {
+          id: "gateway", label: "Gateway / LB Layer", color: "#ffa657", protocols: "HTTPS · HTTP/2",
+          services: [
+            { id: "alb",         label: "ALB",         icon: "⚖️", sublabel: "L7 · Path Routing" },
+            { id: "apigateway",  label: "API Gateway", icon: "🚪", sublabel: "REST · WebSocket" }
+          ]
+        },
+        {
+          id: "compute", label: "Compute Layer", color: "#58a6ff", protocols: "gRPC · HTTP",
+          services: [
+            { id: "ecs",    label: "ECS Fargate", icon: "🐳", sublabel: "Managed Containers" },
+            { id: "eks",    label: "EKS",         icon: "☸️", sublabel: "Managed Kubernetes" },
+            { id: "lambda", label: "Lambda",      icon: "⚡", sublabel: "Serverless · <15min" }
+          ]
+        },
+        {
+          id: "data", label: "Data Layer", color: "#bc8cff", protocols: "TCP · TLS",
+          services: [
+            { id: "rds",         label: "Aurora RDS",   icon: "🗄️", sublabel: "Multi-AZ · Failover" },
+            { id: "s3",          label: "S3",            icon: "📦", sublabel: "11-9s Durability" },
+            { id: "elasticache", label: "ElastiCache",   icon: "⚡", sublabel: "Redis · Sub-ms" },
+            { id: "sqs",         label: "SQS / SNS",     icon: "📨", sublabel: "Queue · Fan-out" }
+          ]
+        },
+        {
+          id: "observability", label: "Observability Layer", color: "#3fb950", protocols: "OTLP · Metrics",
+          services: [
+            { id: "cloudwatch", label: "CloudWatch", icon: "📊", sublabel: "Logs · Metrics · Alarms" },
+            { id: "xray",       label: "X-Ray",      icon: "🔍", sublabel: "Distributed Tracing" }
+          ]
+        }
+      ],
+      flows: [
+        { name: "Web Request",    path: ["cloudfront", "alb", "ecs", "rds"],         color: "#58a6ff" },
+        { name: "API Call",       path: ["apigateway", "lambda", "elasticache"],      color: "#ffa657" },
+        { name: "Static Asset",   path: ["cloudfront", "s3"],                         color: "#e3b341" },
+        { name: "Async Event",    path: ["ecs", "sqs", "lambda"],                     color: "#bc8cff" }
+      ]
+    },
+    architecture:{
+      title:"AWS 3-Tier Web Architecture",
+      caption:"CloudFront → ALB → ECS Fargate → Aurora + ElastiCache",
+      lanes:[
+        {label:"Edge",nodes:[
+          {id:"route53",label:"Route 53",hint:"DNS + health checks",detail:"Latency-based routing to nearest region. Health checks monitor ALB. Automatic failover if region unhealthy."},
+          {id:"cloudfront",label:"CloudFront",hint:"CDN — 400+ PoPs",detail:"Serves S3 static assets at edge. API requests forwarded to ALB. Lambda@Edge for auth at edge."}
+        ]},
+        {label:"Load Balancing",nodes:[
+          {id:"alb",label:"ALB",hint:"L7 load balancer",detail:"HTTPS termination. Path-based routing (/api → ECS, / → S3). Sticky sessions if needed. WAF integration."},
+          {id:"waf",label:"AWS WAF",hint:"SQL injection, XSS protection",detail:"Web Application Firewall. Block OWASP top 10, rate limit per IP, geo-block."}
+        ]},
+        {label:"Compute",nodes:[
+          {id:"ecs",label:"ECS Fargate",hint:"Auto-scaling containers",detail:"Serverless containers. Auto-scales on CPU/memory. Rolling deploys with zero downtime. Service Connect for service discovery."},
+          {id:"lambda",label:"Lambda",hint:"Event-driven functions",detail:"Triggered by SQS, SNS, EventBridge, S3. Scales to 0 when idle. 15min max."}
+        ]},
+        {label:"Data",nodes:[
+          {id:"aurora",label:"Aurora PostgreSQL",hint:"Multi-AZ relational DB",detail:"MySQL/Postgres-compatible. 3-6× standard RDS throughput. Multi-AZ automatic failover <30s. Performance Insights."},
+          {id:"elasticache",label:"ElastiCache Redis",hint:"Distributed cache",detail:"Redis Cluster mode. Session store, rate limiting, hot data cache. Sub-millisecond latency."},
+          {id:"s3",label:"S3",hint:"Object storage",detail:"11 nines durability. Static assets, user uploads, backups, data lake. Lifecycle rules to Glacier."},
+          {id:"sqs",label:"SQS + SNS",hint:"Async messaging",detail:"SQS for work queues (at-least-once). SNS for fan-out to multiple queues. DLQ for failed messages."}
+        ]}
+      ],
+      links:[
+        {from:"route53",to:"cloudfront",label:"DNS → CDN",detail:"All traffic enters via CloudFront for DDoS absorption and caching.",type:"sync"},
+        {from:"cloudfront",to:"alb",label:"Dynamic requests",detail:"Non-cacheable API requests forwarded to origin ALB.",type:"sync"},
+        {from:"cloudfront",to:"s3",label:"Static assets",detail:"JS/CSS/images served directly from S3 via CloudFront.",type:"sync"},
+        {from:"alb",to:"ecs",label:"HTTP/2 to containers",detail:"ALB distributes across healthy ECS tasks. Health check: /actuator/health.",type:"sync"},
+        {from:"ecs",to:"aurora",label:"Reads + writes",detail:"App connects via RDS Proxy (connection pooling). Read replicas for SELECT queries.",type:"sync"},
+        {from:"ecs",to:"elasticache",label:"Cache operations",detail:"Redis for session, rate limiting, hot data. Redis Cluster with read replicas.",type:"sync"},
+        {from:"ecs",to:"sqs",label:"Publish events",detail:"Async work published to SQS. Lambda or ECS worker drains queue.",type:"async"},
+        {from:"lambda",to:"aurora",label:"Event processing",detail:"Lambda processes SQS messages, writes results to DB.",type:"sync"}
+      ]
+    }
+  };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);
 })();

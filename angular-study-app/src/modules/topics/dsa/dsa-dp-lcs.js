@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dp-lcs",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** Diff engines and DNA matching.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'dp.lcs',
-        time:  'O(mn)',
-        space: 'O(mn)',
+        title: "dp.lcs",
+        time:  "O(mn)",
+        space: "O(mn)",
         code: `function lcs(s1, s2) {
   const m = s1.length;
   const n = s2.length;

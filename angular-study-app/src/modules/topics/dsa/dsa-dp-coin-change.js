@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dp-coin-change",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** Payment engine — canonical greedy fails on many coin sets, so use DP.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'dp.coinChange',
-        time:  'O(n·m)',
-        space: 'O(n)',
+        title: "dp.coinChange",
+        time:  "O(n·m)",
+        space: "O(n)",
         code: `function coinChange(coins, amount) {
   const dp = new Array(amount + 1).fill(Infinity);
   dp[0] = 0;

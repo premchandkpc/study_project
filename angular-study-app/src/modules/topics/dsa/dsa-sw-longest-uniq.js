@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-sw-longest-uniq",
     area: "dsa",
@@ -13,9 +13,9 @@
 **Scenario:** Session-token scan — keep the longest contiguous clean segment.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'sliding.longestUniq',
-        time:  'O(n)',
-        space: 'O(k)',
+        title: "sliding.longestUniq",
+        time:  "O(n)",
+        space: "O(k)",
         code: `function lengthOfLongestSubstring(s) {
   const map = {};
   let left = 0;

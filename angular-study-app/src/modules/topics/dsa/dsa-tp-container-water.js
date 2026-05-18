@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-tp-container-water",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Tank designer — pick two walls to maximize water volume.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'twoptr.containerWater',
-        time:  'O(n)',
-        space: 'O(1)',
+        title: "twoptr.containerWater",
+        time:  "O(n)",
+        space: "O(1)",
         code: `function maxArea(height) {
   let left = 0;
   let right = height.length - 1;

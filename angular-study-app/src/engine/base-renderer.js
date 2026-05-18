@@ -13,25 +13,25 @@
  * Shared utilities live here — no duplication across subclasses.
  */
 (function () {
-  'use strict';
+  "use strict";
 
   // ── BaseRenderer ─────────────────────────────────────────────────────────
   // Abstract root. Defines the interface every renderer must satisfy.
   function BaseRenderer() {}
 
   // Abstract — must be overridden by each concrete renderer
-  BaseRenderer.prototype.render = function (mount, cfg) {
-    throw new Error('[BaseRenderer] render() is abstract — ' +
-      (this.constructor && this.constructor.name ? this.constructor.name : 'subclass') +
-      ' must override it');
+  BaseRenderer.prototype.render = function () {
+    throw new Error("[BaseRenderer] render() is abstract — " +
+      (this.constructor && this.constructor.name ? this.constructor.name : "subclass") +
+      " must override it");
   };
 
   // Shared error display — all subclasses call this._error(mount, msg)
   BaseRenderer.prototype._error = function (mount, msg) {
     if (!mount) return;
-    mount.innerHTML = '<div style="color:#f85149;padding:16px;' +
-      'font-family:monospace;font-size:12px;border-radius:8px;' +
-      'background:#1a0a0a;border:1px solid #f8514933">Renderer error: ' + msg + '</div>';
+    mount.innerHTML = "<div style=\"color:#f85149;padding:16px;" +
+      "font-family:monospace;font-size:12px;border-radius:8px;" +
+      "background:#1a0a0a;border:1px solid #f8514933\">Renderer error: " + msg + "</div>";
   };
 
   // ── CanvasRenderer ────────────────────────────────────────────────────────
@@ -47,7 +47,7 @@
   // Guard: returns CVU or displays an error and returns null
   CanvasRenderer.prototype._cvu = function (mount) {
     if (window.CVU) return window.CVU;
-    if (mount) this._error(mount, 'canvas-utils.js must load before renderers');
+    if (mount) this._error(mount, "canvas-utils.js must load before renderers");
     return null;
   };
 
@@ -76,7 +76,7 @@
   // Create a styled button via CVU.makeBtn
   CanvasRenderer.prototype._makeBtn = function (label, color) {
     var U = window.CVU;
-    if (!U) return document.createElement('button');
+    if (!U) return document.createElement("button");
     return U.makeBtn(label, color);
   };
 
@@ -101,16 +101,16 @@
       isRunning: function ()     { return playing; },
       setPlaying: function (v) {
         playing = !!v;
-        btn.textContent = playing ? '⏸ Pause' : '▶ Play';
+        btn.textContent = playing ? "⏸ Pause" : "▶ Play";
       },
       toggle: function () {
         playing = !playing;
-        btn.textContent = playing ? '⏸ Pause' : '▶ Play';
+        btn.textContent = playing ? "⏸ Pause" : "▶ Play";
         if (playing) { if (onPlay)  onPlay();  }
         else         { if (onStop)  onStop();  }
       },
     };
-    btn.addEventListener('click', function () { ctrl.toggle(); });
+    btn.addEventListener("click", function () { ctrl.toggle(); });
     return ctrl;
   };
 

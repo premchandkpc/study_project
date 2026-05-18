@@ -15,7 +15,7 @@ Core patterns:
 - **Natural unique constraints**: enforce business uniqueness at the database boundary, not only in application memory.
 - **TTL and replay policy**: keys cannot live forever; choose retention based on retry windows, refunds, and audit needs.`,
     why:
-`"Exactly once" is usually an interface promise built from **at-least-once delivery plus idempotent handlers**. Without idempotency, a timeout after a successful payment can lead the client to retry and charge twice. Without outbox, an order can commit but its event can be lost. Without inbox, one Kafka redelivery can reserve stock twice. These are the production bugs that make microservices painful during incidents.`,
+"\"Exactly once\" is usually an interface promise built from **at-least-once delivery plus idempotent handlers**. Without idempotency, a timeout after a successful payment can lead the client to retry and charge twice. Without outbox, an order can commit but its event can be lost. Without inbox, one Kafka redelivery can reserve stock twice. These are the production bugs that make microservices painful during incidents.",
     example: {
       language: "python",
       code:
@@ -134,19 +134,19 @@ async def consume_inventory_event(session: AsyncSession, event):
             set reserved = reserved + :quantity
             where sku = :sku and available - reserved >= :quantity
         """), event)`,
-      notes: `Create these constraints: \`unique(idempotency_keys.client_key)\`, \`unique(outbox_events.id)\`, and \`unique(inbox_messages.event_id, inbox_messages.consumer_name)\`. For payments, the idempotency key must also be sent to the payment provider so your boundary and the external provider share the same retry identity.`
+      notes: "Create these constraints: `unique(idempotency_keys.client_key)`, `unique(outbox_events.id)`, and `unique(inbox_messages.event_id, inbox_messages.consumer_name)`. For payments, the idempotency key must also be sent to the payment provider so your boundary and the external provider share the same retry identity."
     },
     interview: [
       {
         question: "Is idempotency the same as exactly-once processing?",
         answer:
-`No. Idempotency means repeated execution has the same externally visible result. Exactly-once is a stronger end-to-end claim and is rarely available across HTTP, databases, message brokers, and third-party APIs together. In practice, production systems use at-least-once delivery, durable dedupe records, unique constraints, and idempotent side effects to make retries safe.`,
+"No. Idempotency means repeated execution has the same externally visible result. Exactly-once is a stronger end-to-end claim and is rarely available across HTTP, databases, message brokers, and third-party APIs together. In practice, production systems use at-least-once delivery, durable dedupe records, unique constraints, and idempotent side effects to make retries safe.",
         followUps: ["Where should the idempotency key be generated?", "How long should keys be retained?"]
       },
       {
         question: "What happens if the outbox relay publishes to Kafka but crashes before marking the row sent?",
         answer:
-`The relay will publish the same event again after restart. That is expected. The event must have a stable event ID, and every consumer must dedupe through an inbox table or idempotent upsert. Outbox gives no-lost-events; inbox/idempotent consumers handle duplicate-events.`,
+"The relay will publish the same event again after restart. That is expected. The event must have a stable event ID, and every consumer must dedupe through an inbox table or idempotent upsert. Outbox gives no-lost-events; inbox/idempotent consumers handle duplicate-events.",
         followUps: ["How do you monitor stuck outbox rows?", "When is Debezium better than polling?"]
       }
     ],
@@ -161,7 +161,7 @@ async def consume_inventory_event(session: AsyncSession, event):
         "Long idempotency retention increases storage and privacy obligations.",
         "Returning cached responses can hide changed downstream state if keys are reused incorrectly."
       ],
-      when: `Use for **payments, checkout, provisioning, inventory, email sends, external API calls, and Kafka consumers**. Skip only for naturally read-only operations or commands that are already protected by a strong unique business key.`
+      when: "Use for **payments, checkout, provisioning, inventory, email sends, external API calls, and Kafka consumers**. Skip only for naturally read-only operations or commands that are already protected by a strong unique business key."
     }
   };
   window.MICRO_TOPICS = (window.MICRO_TOPICS || []).concat([topic]);

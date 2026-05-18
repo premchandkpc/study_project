@@ -169,50 +169,50 @@
       ];
       var KEEP_OFFSETS=[5,9,8,6,7]; // latest for each key
       var HSTEPS=[
-        {state:'before',info:"Before compaction: 10 records. Keys user:1,2,3 have multiple versions."},
-        {state:'scanning',info:"<b>Cleaner scans log:</b> builds map of key → latest offset. user:1→5, user:2→7, user:3→8, user:4→6, user:5→9."},
-        {state:'marking',info:"<b>Old versions marked for removal:</b> offsets 0,1,2,3,4 are older versions. Will be replaced with holes."},
-        {state:'compacting',info:"<b>Compaction in progress:</b> old versions removed. New clean segment written without holes."},
-        {state:'after',info:"<b>After compaction:</b> 5 records remain (one per key). 50% space saved. Offsets are kept but have gaps."},
+        {state:"before",info:"Before compaction: 10 records. Keys user:1,2,3 have multiple versions."},
+        {state:"scanning",info:"<b>Cleaner scans log:</b> builds map of key → latest offset. user:1→5, user:2→7, user:3→8, user:4→6, user:5→9."},
+        {state:"marking",info:"<b>Old versions marked for removal:</b> offsets 0,1,2,3,4 are older versions. Will be replaced with holes."},
+        {state:"compacting",info:"<b>Compaction in progress:</b> old versions removed. New clean segment written without holes."},
+        {state:"after",info:"<b>After compaction:</b> 5 records remain (one per key). 50% space saved. Offsets are kept but have gaps."},
       ];
       var hStep=0,hTimer=null;
       function recClass(r,state){
         var isLatest=KEEP_OFFSETS.indexOf(r.offset)>=0;
-        if(state==='before'||state==='scanning') return 'active';
-        if(state==='marking') return isLatest?'active':'old';
-        if(state==='compacting') return isLatest?'active':'deleted';
-        return 'active';
+        if(state==="before"||state==="scanning") return "active";
+        if(state==="marking") return isLatest?"active":"old";
+        if(state==="compacting") return isLatest?"active":"deleted";
+        return "active";
       }
       function renderCompaction(){
         var s=HSTEPS[hStep];
         var st=s.state;
-        mount.querySelector('#lc-before').innerHTML=BEFORE_DATA.map(function(r){
-          return '<div class="lc-record"><div class="lc-record-box '+recClass(r,st)+'"><div>'+r.key.replace('user:','U')+'</div><div>'+r.val.substring(0,6)+'</div></div><div class="lc-record-key">off:'+r.offset+'</div></div>';
-        }).join('');
-        var afterEl=mount.querySelector('#lc-after');
-        var arrowEl=mount.querySelector('#lc-compact-arrow');
-        if(st==='after'){
+        mount.querySelector("#lc-before").innerHTML=BEFORE_DATA.map(function(r){
+          return "<div class=\"lc-record\"><div class=\"lc-record-box "+recClass(r,st)+"\"><div>"+r.key.replace("user:","U")+"</div><div>"+r.val.substring(0,6)+"</div></div><div class=\"lc-record-key\">off:"+r.offset+"</div></div>";
+        }).join("");
+        var afterEl=mount.querySelector("#lc-after");
+        var arrowEl=mount.querySelector("#lc-compact-arrow");
+        if(st==="after"){
           var kept=BEFORE_DATA.filter(function(r){return KEEP_OFFSETS.indexOf(r.offset)>=0;}).sort(function(a,b){return a.offset-b.offset;});
-          afterEl.innerHTML=kept.map(function(r){return '<div class="lc-record"><div class="lc-record-box active"><div>'+r.key.replace('user:','U')+'</div><div>'+r.val.substring(0,6)+'</div></div><div class="lc-record-key">off:'+r.offset+'</div></div>';}).join('');
-          mount.querySelector('#lc-after-stat').innerHTML='After: <b>'+kept.length+'</b> records';
-          mount.querySelector('#lc-space-stat').innerHTML='Space saved: <b>50%</b>';
-          arrowEl.style.color='#3dd68c';
-          arrowEl.textContent='✓ Compaction complete';
+          afterEl.innerHTML=kept.map(function(r){return "<div class=\"lc-record\"><div class=\"lc-record-box active\"><div>"+r.key.replace("user:","U")+"</div><div>"+r.val.substring(0,6)+"</div></div><div class=\"lc-record-key\">off:"+r.offset+"</div></div>";}).join("");
+          mount.querySelector("#lc-after-stat").innerHTML="After: <b>"+kept.length+"</b> records";
+          mount.querySelector("#lc-space-stat").innerHTML="Space saved: <b>50%</b>";
+          arrowEl.style.color="#3dd68c";
+          arrowEl.textContent="✓ Compaction complete";
         } else {
-          afterEl.innerHTML='<div style="color:#8b949e;font-size:12px;padding:14px">...</div>';
-          mount.querySelector('#lc-after-stat').innerHTML='After: <b>?</b> records';
-          mount.querySelector('#lc-space-stat').innerHTML='Space saved: <b>?</b>';
-          arrowEl.style.color='#e8741a';
-          arrowEl.textContent='▼ Compaction runs...';
+          afterEl.innerHTML="<div style=\"color:#8b949e;font-size:12px;padding:14px\">...</div>";
+          mount.querySelector("#lc-after-stat").innerHTML="After: <b>?</b> records";
+          mount.querySelector("#lc-space-stat").innerHTML="Space saved: <b>?</b>";
+          arrowEl.style.color="#e8741a";
+          arrowEl.textContent="▼ Compaction runs...";
         }
-        mount.querySelector('#lc-hinfo').innerHTML=s.info;
-        mount.querySelector('#lc-hstep').textContent='Step '+(hStep+1)+'/'+HSTEPS.length;
+        mount.querySelector("#lc-hinfo").innerHTML=s.info;
+        mount.querySelector("#lc-hstep").textContent="Step "+(hStep+1)+"/"+HSTEPS.length;
       }
-      function hStop(){clearInterval(hTimer);hTimer=null;mount.querySelector('#lc-hplay').textContent='▶ Play';}
-      mount.querySelector('#lc-hplay').addEventListener('click',function(){if(hTimer){hStop();}else{hTimer=setInterval(function(){hStep=Math.min(hStep+1,HSTEPS.length-1);renderCompaction();if(hStep===HSTEPS.length-1)hStop();},1700);mount.querySelector('#lc-hplay').textContent='⏸ Pause';}});
-      mount.querySelector('#lc-hnext').addEventListener('click',function(){hStop();hStep=Math.min(hStep+1,HSTEPS.length-1);renderCompaction();});
-      mount.querySelector('#lc-hprev').addEventListener('click',function(){hStop();hStep=Math.max(hStep-1,0);renderCompaction();});
-      mount.querySelector('#lc-hreset').addEventListener('click',function(){hStop();hStep=0;renderCompaction();});
+      function hStop(){clearInterval(hTimer);hTimer=null;mount.querySelector("#lc-hplay").textContent="▶ Play";}
+      mount.querySelector("#lc-hplay").addEventListener("click",function(){if(hTimer){hStop();}else{hTimer=setInterval(function(){hStep=Math.min(hStep+1,HSTEPS.length-1);renderCompaction();if(hStep===HSTEPS.length-1)hStop();},1700);mount.querySelector("#lc-hplay").textContent="⏸ Pause";}});
+      mount.querySelector("#lc-hnext").addEventListener("click",function(){hStop();hStep=Math.min(hStep+1,HSTEPS.length-1);renderCompaction();});
+      mount.querySelector("#lc-hprev").addEventListener("click",function(){hStop();hStep=Math.max(hStep-1,0);renderCompaction();});
+      mount.querySelector("#lc-hreset").addEventListener("click",function(){hStop();hStep=0;renderCompaction();});
       renderCompaction();
 
       // TOMBSTONES
@@ -225,25 +225,25 @@
       ];
       var tStep=0,tTimer=null;
       function renderTomb(){
-        mount.querySelector('#lc-tomb-steps').innerHTML=TSTEPS.map(function(s,i){
-          return '<div style="background:#161b22;border:1px solid '+(i===tStep?s.color:'#30363d')+';border-radius:8px;padding:8px;opacity:'+(i<=tStep?1:0.4)+';transition:all .3s">'+
-            '<div style="font-size:11px;font-weight:700;color:'+s.color+';margin-bottom:4px">'+s.title+'</div>'+
-            '<div style="display:flex;flex-wrap:wrap;gap:3px;min-height:30px">'+
-            s.records.map(function(r){return '<div class="lc-record-box '+r.cls+'" style="width:40px;height:40px;font-size:9px"><div>'+r.k+'</div><div>'+r.v+'</div><div style="font-size:8px;opacity:.7">@'+r.off+'</div></div>';}).join('')+
-            (s.records.length===0?'<div style="color:#30363d;font-size:11px;padding:6px">key erased</div>':'')+'</div></div>';
-        }).join('');
-        mount.querySelector('#lc-tomb-info').innerHTML=TSTEPS[tStep].desc;
-        mount.querySelector('#lc-tstep').textContent='Step '+(tStep+1)+'/'+TSTEPS.length;
+        mount.querySelector("#lc-tomb-steps").innerHTML=TSTEPS.map(function(s,i){
+          return "<div style=\"background:#161b22;border:1px solid "+(i===tStep?s.color:"#30363d")+";border-radius:8px;padding:8px;opacity:"+(i<=tStep?1:0.4)+";transition:all .3s\">"+
+            "<div style=\"font-size:11px;font-weight:700;color:"+s.color+";margin-bottom:4px\">"+s.title+"</div>"+
+            "<div style=\"display:flex;flex-wrap:wrap;gap:3px;min-height:30px\">"+
+            s.records.map(function(r){return "<div class=\"lc-record-box "+r.cls+"\" style=\"width:40px;height:40px;font-size:9px\"><div>"+r.k+"</div><div>"+r.v+"</div><div style=\"font-size:8px;opacity:.7\">@"+r.off+"</div></div>";}).join("")+
+            (s.records.length===0?"<div style=\"color:#30363d;font-size:11px;padding:6px\">key erased</div>":"")+"</div></div>";
+        }).join("");
+        mount.querySelector("#lc-tomb-info").innerHTML=TSTEPS[tStep].desc;
+        mount.querySelector("#lc-tstep").textContent="Step "+(tStep+1)+"/"+TSTEPS.length;
       }
-      function tStop(){clearInterval(tTimer);tTimer=null;mount.querySelector('#lc-tplay').textContent='▶ Play';}
-      mount.querySelector('#lc-tplay').addEventListener('click',function(){if(tTimer){tStop();}else{tTimer=setInterval(function(){tStep=Math.min(tStep+1,TSTEPS.length-1);renderTomb();if(tStep===TSTEPS.length-1)tStop();},1700);mount.querySelector('#lc-tplay').textContent='⏸ Pause';}});
-      mount.querySelector('#lc-tnext').addEventListener('click',function(){tStop();tStep=Math.min(tStep+1,TSTEPS.length-1);renderTomb();});
-      mount.querySelector('#lc-tprev').addEventListener('click',function(){tStop();tStep=Math.max(tStep-1,0);renderTomb();});
-      mount.querySelector('#lc-treset').addEventListener('click',function(){tStop();tStep=0;renderTomb();});
+      function tStop(){clearInterval(tTimer);tTimer=null;mount.querySelector("#lc-tplay").textContent="▶ Play";}
+      mount.querySelector("#lc-tplay").addEventListener("click",function(){if(tTimer){tStop();}else{tTimer=setInterval(function(){tStep=Math.min(tStep+1,TSTEPS.length-1);renderTomb();if(tStep===TSTEPS.length-1)tStop();},1700);mount.querySelector("#lc-tplay").textContent="⏸ Pause";}});
+      mount.querySelector("#lc-tnext").addEventListener("click",function(){tStop();tStep=Math.min(tStep+1,TSTEPS.length-1);renderTomb();});
+      mount.querySelector("#lc-tprev").addEventListener("click",function(){tStop();tStep=Math.max(tStep-1,0);renderTomb();});
+      mount.querySelector("#lc-treset").addEventListener("click",function(){tStop();tStep=0;renderTomb();});
       renderTomb();
 
       // USE CASES
-      var ucMode='ktable';
+      var ucMode="ktable";
       var UC_DATA={
         ktable:{
           title:"KTable / Changelog Topic",color:"#3dd68c",
@@ -263,25 +263,25 @@
       };
       function renderUc(){
         var s=UC_DATA[ucMode];
-        var el=mount.querySelector('#lc-uc-content');
-        el.innerHTML='<div class="lc-box" style="border-color:'+s.color+'44"><div style="font-size:13px;font-weight:700;color:'+s.color+';margin-bottom:8px">'+s.title+'</div><div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.5">'+s.desc+'</div>'+
-          s.points.map(function(p){return '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:5px;font-size:12px"><span style="color:'+s.color+'">✓</span><span>'+p+'</span></div>';}).join('')+'</div>';
+        var el=mount.querySelector("#lc-uc-content");
+        el.innerHTML="<div class=\"lc-box\" style=\"border-color:"+s.color+"44\"><div style=\"font-size:13px;font-weight:700;color:"+s.color+";margin-bottom:8px\">"+s.title+"</div><div style=\"font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.5\">"+s.desc+"</div>"+
+          s.points.map(function(p){return "<div style=\"display:flex;gap:8px;align-items:flex-start;margin-bottom:5px;font-size:12px\"><span style=\"color:"+s.color+"\">✓</span><span>"+p+"</span></div>";}).join("")+"</div>";
       }
-      mount.querySelectorAll('.lc-stab[data-uc]').forEach(function(b){
-        b.addEventListener('click',function(){mount.querySelectorAll('.lc-stab[data-uc]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');ucMode=b.dataset.uc;renderUc();});
+      mount.querySelectorAll(".lc-stab[data-uc]").forEach(function(b){
+        b.addEventListener("click",function(){mount.querySelectorAll(".lc-stab[data-uc]").forEach(function(x){x.classList.remove("on");});b.classList.add("on");ucMode=b.dataset.uc;renderUc();});
       });
       renderUc();
 
       // TABS
-      mount.querySelectorAll('.lcbtn[data-tab]').forEach(function(btn){
-        btn.addEventListener('click',function(){
-          mount.querySelectorAll('.lcbtn[data-tab]').forEach(function(b){b.classList.remove('on');});
-          mount.querySelectorAll('.lcp').forEach(function(p){p.classList.remove('on');});
-          btn.classList.add('on');
-          mount.querySelector('#lc-'+btn.dataset.tab).classList.add('on');
+      mount.querySelectorAll(".lcbtn[data-tab]").forEach(function(btn){
+        btn.addEventListener("click",function(){
+          mount.querySelectorAll(".lcbtn[data-tab]").forEach(function(b){b.classList.remove("on");});
+          mount.querySelectorAll(".lcp").forEach(function(p){p.classList.remove("on");});
+          btn.classList.add("on");
+          mount.querySelector("#lc-"+btn.dataset.tab).classList.add("on");
         });
       });
-      mount.querySelectorAll('.lc-q-card').forEach(function(c){c.addEventListener('click',function(){c.classList.toggle('open');});});
+      mount.querySelectorAll(".lc-q-card").forEach(function(c){c.addEventListener("click",function(){c.classList.toggle("open");});});
     },
     concept: `**L1 (30s ELI5):** Log compaction = keep only the latest version of each key. Like a dictionary — old definitions overwritten by new ones. Delete a key by writing null (tombstone).
 
@@ -309,7 +309,7 @@ echo '{"name":"Alice"}' | kafka-console-producer.sh \\
   --property parse.key=true \\
   --property key.separator=: \\
   --broker-list localhost:9092 \\
-  <<< "user-1:{\"name\":\"Alice\"}"
+<<< 'user-1:{"name":"Alice"}'
 
 # Tombstone: delete user-1
 echo "user-1:" | kafka-console-producer.sh \\

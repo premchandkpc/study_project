@@ -11,7 +11,7 @@
 **L3 (10min):** Schedulers: \`boundedElastic\` for blocking calls (JDBC, files), \`parallel\` for CPU work. \`subscribeOn\` switches where the subscription runs; \`publishOn\` switches where downstream runs. Hot publishers (Sinks, SSE) share items regardless of subscribers. Cold publishers re-run for each subscriber.
 **L4 (30min):** Reactor backpressure internals use Reactive Streams spec — \`Publisher/Subscriber/Subscription/Processor\`. \`flatMap\` maintains an internal \`FluxFlatMap\` with configurable concurrency (default 256). Over-concurrency causes \`OutOfMemoryError\`. Context propagation replaces ThreadLocal for MDC trace IDs.`,
     why:
-`**Production case:** Ecommerce checkout aggregates 5 external APIs (shipping, inventory, pricing, fraud, loyalty). With MVC + virtual threads all 5 block a thread each. With WebFlux + WebClient, all 5 fly in parallel on 1 thread. Real perf: 1200 RPS on 2 cores, vs 180 RPS blocking equivalent.`,
+"**Production case:** Ecommerce checkout aggregates 5 external APIs (shipping, inventory, pricing, fraud, loyalty). With MVC + virtual threads all 5 block a thread each. With WebFlux + WebClient, all 5 fly in parallel on 1 thread. Real perf: 1200 RPS on 2 cores, vs 180 RPS blocking equivalent.",
     flow: {
       title: "Reactive Pipeline: request → operator chain → subscriber",
       caption: "Click each stage to see what executes and when",
@@ -113,8 +113,8 @@
       ];
       var qi = 0, revealed = false;
       function css(){
-        if(document.getElementById('wfx-style'))return;
-        var s=document.createElement('style');s.id='wfx-style';
+        if(document.getElementById("wfx-style"))return;
+        var s=document.createElement("style");s.id="wfx-style";
         s.textContent=`
 .wfx{font-family:'Courier New',monospace;background:#0d1117;color:#e6edf3;border-radius:10px;overflow:hidden}
 .wfx-tabs{display:flex;background:#161b22;border-bottom:1px solid #30363d}
@@ -139,11 +139,11 @@
         document.head.appendChild(s);
       }
       var NODES=[
-        {id:'src',label:'Mono.fromCallable',color:'#1f6feb',info:'Cold publisher — nothing runs until subscribe(). Wraps blocking code safely with .subscribeOn(Schedulers.boundedElastic())'},
-        {id:'map',label:'.flatMap()',        color:'#f0883e',info:'Fan-out: each item spawns a new Mono/Flux. Concurrency limit default=256. Use .flatMap(fn, maxConcurrency) to throttle.'},
-        {id:'zip',label:'.zip() / .merge()',  color:'#a371f7',info:'zip: wait for ALL streams to emit one item each. merge: take from whichever fires first. Use zip for aggregation, merge for racing.'},
-        {id:'pub',label:'.publishOn(pool)',   color:'#3fb950',info:'Thread handoff. publishOn(boundedElastic) for blocking I/O. publishOn(parallel) for CPU. subscribeOn affects source only.'},
-        {id:'sub',label:'.subscribe()',       color:'#f1b150',info:'Activates the chain. subscribe() is fire-and-forget — use block() in tests only, never in production reactive code.'}
+        {id:"src",label:"Mono.fromCallable",color:"#1f6feb",info:"Cold publisher — nothing runs until subscribe(). Wraps blocking code safely with .subscribeOn(Schedulers.boundedElastic())"},
+        {id:"map",label:".flatMap()",        color:"#f0883e",info:"Fan-out: each item spawns a new Mono/Flux. Concurrency limit default=256. Use .flatMap(fn, maxConcurrency) to throttle."},
+        {id:"zip",label:".zip() / .merge()",  color:"#a371f7",info:"zip: wait for ALL streams to emit one item each. merge: take from whichever fires first. Use zip for aggregation, merge for racing."},
+        {id:"pub",label:".publishOn(pool)",   color:"#3fb950",info:"Thread handoff. publishOn(boundedElastic) for blocking I/O. publishOn(parallel) for CPU. subscribeOn affects source only."},
+        {id:"sub",label:".subscribe()",       color:"#f1b150",info:"Activates the chain. subscribe() is fire-and-forget — use block() in tests only, never in production reactive code."}
       ];
       var active=0;
       function render(){
@@ -151,53 +151,53 @@
         mount.innerHTML=`
 <div class="wfx">
   <div class="wfx-tabs">
-    <button class="wfx-tab ${S.tab===0?'on':''}" id="wfx-t0">🔄 Pipeline Flow</button>
-    <button class="wfx-tab ${S.tab===1?'on':''}" id="wfx-t1">⚡ Backpressure</button>
-    <button class="wfx-tab ${S.tab===2?'on':''}" id="wfx-t2">⚠️ Tricky + Interview</button>
+    <button class="wfx-tab ${S.tab===0?"on":""}" id="wfx-t0">🔄 Pipeline Flow</button>
+    <button class="wfx-tab ${S.tab===1?"on":""}" id="wfx-t1">⚡ Backpressure</button>
+    <button class="wfx-tab ${S.tab===2?"on":""}" id="wfx-t2">⚠️ Tricky + Interview</button>
   </div>
   <div class="wfx-body" id="wfx-body"></div>
 </div>`;
-        mount.querySelector('#wfx-t0').onclick=()=>{S.tab=0;render()};
-        mount.querySelector('#wfx-t1').onclick=()=>{S.tab=1;render()};
-        mount.querySelector('#wfx-t2').onclick=()=>{S.tab=2;render()};
+        mount.querySelector("#wfx-t0").onclick=()=>{S.tab=0;render();};
+        mount.querySelector("#wfx-t1").onclick=()=>{S.tab=1;render();};
+        mount.querySelector("#wfx-t2").onclick=()=>{S.tab=2;render();};
         renderBody();
       }
       function renderBody(){
-        var b=mount.querySelector('#wfx-body');
+        var b=mount.querySelector("#wfx-body");
         if(S.tab===0){
-          b.innerHTML='<div style="font-size:11px;color:#8b949e;margin-bottom:12px">Click each operator to see its production gotcha</div>'
-            +'<div class="wfx-pipe">'+NODES.map((n,i)=>`<span class="wfx-node" id="wn${i}" style="background:${n.color}22;border-color:${active===i?n.color:'#30363d'};color:${n.color}">${n.label}</span>${i<NODES.length-1?'<span class="wfx-arrow">→</span>':''}`).join('')+'</div>'
+          b.innerHTML="<div style=\"font-size:11px;color:#8b949e;margin-bottom:12px\">Click each operator to see its production gotcha</div>"
+            +"<div class=\"wfx-pipe\">"+NODES.map((n,i)=>`<span class="wfx-node" id="wn${i}" style="background:${n.color}22;border-color:${active===i?n.color:"#30363d"};color:${n.color}">${n.label}</span>${i<NODES.length-1?"<span class=\"wfx-arrow\">→</span>":""}`).join("")+"</div>"
             +`<div class="wfx-info" id="wfx-info">${NODES[active].info}</div>`;
           NODES.forEach((_,i)=>{
-            mount.querySelector('#wn'+i).onclick=()=>{active=i;renderBody()};
+            mount.querySelector("#wn"+i).onclick=()=>{active=i;renderBody();};
           });
         } else if(S.tab===1){
           var stages=[
-            {label:'subscribe()',bg:'#1f6feb',info:'Consumer calls request(32) — pulls demand from source'},
-            {label:'request(32)',bg:'#f0883e',info:'Demand propagates UP the chain to producer'},
-            {label:'emit × 32',  bg:'#3fb950',info:'Producer emits EXACTLY 32 items, no more'},
-            {label:'buffer',      bg:'#a371f7',info:'Operator buffers pending transforms in bounded queue'},
-            {label:'onNext × 32',bg:'#f1b150',info:'32 processed items land at subscriber'},
-            {label:'request(32)',bg:'#1f6feb',info:'Consumer signals ready for next batch — pull-based!'}
+            {label:"subscribe()",bg:"#1f6feb",info:"Consumer calls request(32) — pulls demand from source"},
+            {label:"request(32)",bg:"#f0883e",info:"Demand propagates UP the chain to producer"},
+            {label:"emit × 32",  bg:"#3fb950",info:"Producer emits EXACTLY 32 items, no more"},
+            {label:"buffer",      bg:"#a371f7",info:"Operator buffers pending transforms in bounded queue"},
+            {label:"onNext × 32",bg:"#f1b150",info:"32 processed items land at subscriber"},
+            {label:"request(32)",bg:"#1f6feb",info:"Consumer signals ready for next batch — pull-based!"}
           ];
           var si=0;
-          function drawBP(){
-            b.innerHTML='<div style="font-size:12px;color:#8b949e;margin-bottom:12px">Backpressure = pull model. Subscriber controls rate — producer never overruns.</div>'
-              +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'+stages.map((st,i)=>`<div style="padding:8px 12px;border-radius:8px;background:${si===i?st.bg+'33':'#21262d'};border:2px solid ${si===i?st.bg:'#30363d'};color:${si===i?st.bg:'#8b949e'};font-size:11px;font-weight:700;cursor:pointer" id="bps${i}">${st.label}</div>`).join('')+'</div>'
+          var drawBP = function(){
+            b.innerHTML="<div style=\"font-size:12px;color:#8b949e;margin-bottom:12px\">Backpressure = pull model. Subscriber controls rate — producer never overruns.</div>"
+              +"<div style=\"display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px\">"+stages.map((st,i)=>`<div style="padding:8px 12px;border-radius:8px;background:${si===i?st.bg+"33":"#21262d"};border:2px solid ${si===i?st.bg:"#30363d"};color:${si===i?st.bg:"#8b949e"};font-size:11px;font-weight:700;cursor:pointer" id="bps${i}">${st.label}</div>`).join("")+"</div>"
               +`<div class="wfx-info">${stages[si].info}</div>`
               +`<div style="margin-top:10px;display:flex;gap:8px"><button class="wfx-btn" id="bpPrev">◀ Prev</button><button class="wfx-btn2" id="bpNext">Next ▶</button><span style="font-size:11px;color:#8b949e;margin-left:auto;align-self:center">${si+1}/${stages.length}</span></div>`;
-            stages.forEach((_,i)=>{mount.querySelector('#bps'+i).onclick=()=>{si=i;drawBP()};});
-            mount.querySelector('#bpPrev').onclick=()=>{si=Math.max(0,si-1);drawBP()};
-            mount.querySelector('#bpNext').onclick=()=>{si=Math.min(stages.length-1,si+1);drawBP()};
-          }
+            stages.forEach((_,i)=>{mount.querySelector("#bps"+i).onclick=()=>{si=i;drawBP();};});
+            mount.querySelector("#bpPrev").onclick=()=>{si=Math.max(0,si-1);drawBP();};
+            mount.querySelector("#bpNext").onclick=()=>{si=Math.min(stages.length-1,si+1);drawBP();};
+          };
           drawBP();
         } else {
-          var trickHtml=TRICKS.map((t,i)=>`<div class="wfx-trick-card"><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Trap ${i+1}</div><div class="wfx-bad">${t.wrong}</div><div class="wfx-good">${t.right}</div></div>`).join('');
+          var trickHtml=TRICKS.map((t,i)=>`<div class="wfx-trick-card"><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Trap ${i+1}</div><div class="wfx-bad">${t.wrong}</div><div class="wfx-good">${t.right}</div></div>`).join("");
           b.innerHTML=`<div style="font-size:11px;color:#8b949e;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Common Mistakes</div>${trickHtml}`
-            +`<div style="font-size:11px;color:#8b949e;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 10px">Interview Mode</div>`
+            +"<div style=\"font-size:11px;color:#8b949e;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 10px\">Interview Mode</div>"
             +`<div class="wfx-q"><div class="wfx-q-text" id="wfx-qtext">${QS[qi].q}</div><button class="wfx-btn" id="wfx-reveal">Reveal Answer</button><button class="wfx-btn2" id="wfx-next">Next Q ▶</button><div class="wfx-a" id="wfx-ans">${QS[qi].a}</div></div>`;
-          mount.querySelector('#wfx-reveal').onclick=()=>{revealed=true;mount.querySelector('#wfx-ans').style.display='block'};
-          mount.querySelector('#wfx-next').onclick=()=>{qi=(qi+1)%QS.length;revealed=false;renderBody()};
+          mount.querySelector("#wfx-reveal").onclick=()=>{revealed=true;mount.querySelector("#wfx-ans").style.display="block";};
+          mount.querySelector("#wfx-next").onclick=()=>{qi=(qi+1)%QS.length;revealed=false;renderBody();};
         }
       }
       render();
@@ -249,7 +249,7 @@ class QuoteController {
     tradeoffs: {
       pros:["Few threads handle massive connection counts","First-class backpressure","Composable streaming operators","WebClient supports connection pooling + timeouts"],
       cons:["Steep learning curve, noisy stack traces","ThreadLocal requires Context propagation","R2DBC ecosystem thinner than JPA","Debugging async chains is hard"],
-      when:`**Streaming, SSE, WebSocket, high-fanout aggregators.** For CRUD in Java 21+, virtual threads + MVC is simpler and equally scalable.`
+      when:"**Streaming, SSE, WebSocket, high-fanout aggregators.** For CRUD in Java 21+, virtual threads + MVC is simpler and equally scalable."
     }
   };
   window.JAVA_TOPICS = (window.JAVA_TOPICS || []).concat([topic]);

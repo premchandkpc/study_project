@@ -284,119 +284,119 @@ props.put("bootstrap.servers", "serverless.warpstream.com:9092");
   </div>
 </div>`;
 
-      var tip = document.getElementById('ws-tip');
+      var tip = document.getElementById("ws-tip");
       function showTip(el, html) {
         if (!el) return;
-        el.addEventListener('mouseenter', function () { tip.innerHTML = html; tip.style.display = 'block'; });
-        el.addEventListener('mousemove', function (e) { tip.style.left = (e.clientX + 14) + 'px'; tip.style.top = (e.clientY - 10) + 'px'; });
-        el.addEventListener('mouseleave', function () { tip.style.display = 'none'; });
+        el.addEventListener("mouseenter", function () { tip.innerHTML = html; tip.style.display = "block"; });
+        el.addEventListener("mousemove", function (e) { tip.style.left = (e.clientX + 14) + "px"; tip.style.top = (e.clientY - 10) + "px"; });
+        el.addEventListener("mouseleave", function () { tip.style.display = "none"; });
       }
 
       // Tab switch
-      document.querySelectorAll('#ws-root .ws-tab').forEach(function (t) {
-        t.addEventListener('click', function () {
-          document.querySelectorAll('#ws-root .ws-tab').forEach(function (x) { x.classList.remove('on'); });
-          document.querySelectorAll('#ws-root .ws-panel').forEach(function (x) { x.classList.remove('on'); });
-          t.classList.add('on');
-          document.getElementById(t.dataset.tab).classList.add('on');
+      document.querySelectorAll("#ws-root .ws-tab").forEach(function (t) {
+        t.addEventListener("click", function () {
+          document.querySelectorAll("#ws-root .ws-tab").forEach(function (x) { x.classList.remove("on"); });
+          document.querySelectorAll("#ws-root .ws-panel").forEach(function (x) { x.classList.remove("on"); });
+          t.classList.add("on");
+          document.getElementById(t.dataset.tab).classList.add("on");
         });
       });
 
       // --- TAB 1: Write Path animation ---
       var writeSteps = [
-        { prod: '#3fb950', a0: false, agent: '#38bdf8', buf: 0, a1: false, s3: '#30363d', a2: false, ctrl: '#30363d', info: 'Step 1 — Producer sends message via standard Kafka API. WarpStream is wire-compatible.' },
-        { prod: '#3fb950', a0: true, agent: '#38bdf8', buf: 1, a1: false, s3: '#30363d', a2: false, ctrl: '#30363d', info: 'Step 2 — Agent receives message, holds in memory buffer. Very fast — no disk I/O.' },
-        { prod: '#3fb950', a0: true, agent: '#38bdf8', buf: 5, a1: false, s3: '#30363d', a2: false, ctrl: '#30363d', info: 'Step 3 — Buffer grows. Agent accumulates ~250ms of messages before flushing. Batching = efficiency.' },
-        { prod: '#3fb950', a0: true, agent: '#38bdf8', buf: 0, a1: true, s3: '#f0883e', a2: false, ctrl: '#30363d', info: 'Step 4 — Flush! Agent writes buffered batch to S3 as single object. Atomic PUT. Now durable.' },
-        { prod: '#3fb950', a0: true, agent: '#38bdf8', buf: 0, a1: true, s3: '#f0883e', a2: true, ctrl: '#a371f7', info: 'Step 5 — Agent notifies Control Plane of new object location + offset range. Consumer discovery enabled.' }
+        { prod: "#3fb950", a0: false, agent: "#38bdf8", buf: 0, a1: false, s3: "#30363d", a2: false, ctrl: "#30363d", info: "Step 1 — Producer sends message via standard Kafka API. WarpStream is wire-compatible." },
+        { prod: "#3fb950", a0: true, agent: "#38bdf8", buf: 1, a1: false, s3: "#30363d", a2: false, ctrl: "#30363d", info: "Step 2 — Agent receives message, holds in memory buffer. Very fast — no disk I/O." },
+        { prod: "#3fb950", a0: true, agent: "#38bdf8", buf: 5, a1: false, s3: "#30363d", a2: false, ctrl: "#30363d", info: "Step 3 — Buffer grows. Agent accumulates ~250ms of messages before flushing. Batching = efficiency." },
+        { prod: "#3fb950", a0: true, agent: "#38bdf8", buf: 0, a1: true, s3: "#f0883e", a2: false, ctrl: "#30363d", info: "Step 4 — Flush! Agent writes buffered batch to S3 as single object. Atomic PUT. Now durable." },
+        { prod: "#3fb950", a0: true, agent: "#38bdf8", buf: 0, a1: true, s3: "#f0883e", a2: true, ctrl: "#a371f7", info: "Step 5 — Agent notifies Control Plane of new object location + offset range. Consumer discovery enabled." }
       ];
       var wStep = 0, wTimer = null, wPlaying = false;
 
       function renderWrite() {
         var s = writeSteps[wStep];
-        document.getElementById('ws-w-prod').style.borderColor = s.prod;
-        document.getElementById('ws-w-prod').style.color = s.prod;
-        document.getElementById('ws-wa0').classList.toggle('lit', s.a0);
-        document.getElementById('ws-w-agent').style.borderColor = s.agent;
-        document.getElementById('ws-w-agent').style.color = s.agent;
-        document.getElementById('ws-buf-count').textContent = s.buf + ' msgs';
-        document.getElementById('ws-w-buffer').style.borderColor = s.buf > 0 ? '#38bdf8' : '#30363d';
-        document.getElementById('ws-wa1').classList.toggle('lit', s.a1);
-        document.getElementById('ws-w-s3').style.borderColor = s.s3;
-        document.getElementById('ws-w-s3').style.color = s.s3;
-        document.getElementById('ws-wa2').classList.toggle('lit', s.a2);
-        document.getElementById('ws-w-ctrl').style.borderColor = s.ctrl;
-        document.getElementById('ws-w-ctrl').style.color = s.ctrl;
+        document.getElementById("ws-w-prod").style.borderColor = s.prod;
+        document.getElementById("ws-w-prod").style.color = s.prod;
+        document.getElementById("ws-wa0").classList.toggle("lit", s.a0);
+        document.getElementById("ws-w-agent").style.borderColor = s.agent;
+        document.getElementById("ws-w-agent").style.color = s.agent;
+        document.getElementById("ws-buf-count").textContent = s.buf + " msgs";
+        document.getElementById("ws-w-buffer").style.borderColor = s.buf > 0 ? "#38bdf8" : "#30363d";
+        document.getElementById("ws-wa1").classList.toggle("lit", s.a1);
+        document.getElementById("ws-w-s3").style.borderColor = s.s3;
+        document.getElementById("ws-w-s3").style.color = s.s3;
+        document.getElementById("ws-wa2").classList.toggle("lit", s.a2);
+        document.getElementById("ws-w-ctrl").style.borderColor = s.ctrl;
+        document.getElementById("ws-w-ctrl").style.color = s.ctrl;
         // Add packet visualization
         if (s.a0) {
-          document.getElementById('ws-w-packets').innerHTML = '<span class="ws-packet" style="background:#38bdf8;color:#0d1117">msg_' + (wStep * 3) + '</span>' +
-            (s.buf > 1 ? '<span class="ws-packet" style="background:#38bdf8;color:#0d1117">msg_' + (wStep * 3 + 1) + '</span>' : '') +
-            (s.buf > 3 ? '<span class="ws-packet" style="background:#38bdf8;color:#0d1117">msg_' + (wStep * 3 + 2) + '</span>' : '');
+          document.getElementById("ws-w-packets").innerHTML = "<span class=\"ws-packet\" style=\"background:#38bdf8;color:#0d1117\">msg_" + (wStep * 3) + "</span>" +
+            (s.buf > 1 ? "<span class=\"ws-packet\" style=\"background:#38bdf8;color:#0d1117\">msg_" + (wStep * 3 + 1) + "</span>" : "") +
+            (s.buf > 3 ? "<span class=\"ws-packet\" style=\"background:#38bdf8;color:#0d1117\">msg_" + (wStep * 3 + 2) + "</span>" : "");
         } else {
-          document.getElementById('ws-w-packets').innerHTML = '';
+          document.getElementById("ws-w-packets").innerHTML = "";
         }
-        document.getElementById('ws-write-info').textContent = s.info;
+        document.getElementById("ws-write-info").textContent = s.info;
       }
 
-      document.getElementById('ws-w-play').addEventListener('click', function () {
+      document.getElementById("ws-w-play").addEventListener("click", function () {
         wPlaying = !wPlaying;
-        this.textContent = wPlaying ? '⏸ Pause' : '▶ Play';
+        this.textContent = wPlaying ? "⏸ Pause" : "▶ Play";
         if (wPlaying) { wTimer = setInterval(function () { wStep = (wStep + 1) % writeSteps.length; renderWrite(); }, 1500); }
         else clearInterval(wTimer);
       });
-      document.getElementById('ws-w-next').addEventListener('click', function () { wStep = Math.min(wStep + 1, writeSteps.length - 1); renderWrite(); });
-      document.getElementById('ws-w-prev').addEventListener('click', function () { wStep = Math.max(wStep - 1, 0); renderWrite(); });
-      document.getElementById('ws-w-reset').addEventListener('click', function () {
+      document.getElementById("ws-w-next").addEventListener("click", function () { wStep = Math.min(wStep + 1, writeSteps.length - 1); renderWrite(); });
+      document.getElementById("ws-w-prev").addEventListener("click", function () { wStep = Math.max(wStep - 1, 0); renderWrite(); });
+      document.getElementById("ws-w-reset").addEventListener("click", function () {
         clearInterval(wTimer); wPlaying = false;
-        document.getElementById('ws-w-play').textContent = '▶ Play';
+        document.getElementById("ws-w-play").textContent = "▶ Play";
         wStep = 0; renderWrite();
       });
 
-      showTip(document.getElementById('ws-w-agent'), '<b>WarpStream Agent</b><br>Stateless Kafka-protocol server.<br>Buffers messages in RAM ~250ms.<br>Flushes to S3 as single PUT.<br>Can crash and restart — S3 has all data.');
-      showTip(document.getElementById('ws-w-s3'), '<b>S3 / Object Storage</b><br>Source of truth. All messages here.<br>Objects: ~1-4MB batches.<br>Retention: S3 lifecycle rules.<br>Cost: ~$0.023/GB/month (AWS S3)');
+      showTip(document.getElementById("ws-w-agent"), "<b>WarpStream Agent</b><br>Stateless Kafka-protocol server.<br>Buffers messages in RAM ~250ms.<br>Flushes to S3 as single PUT.<br>Can crash and restart — S3 has all data.");
+      showTip(document.getElementById("ws-w-s3"), "<b>S3 / Object Storage</b><br>Source of truth. All messages here.<br>Objects: ~1-4MB batches.<br>Retention: S3 lifecycle rules.<br>Cost: ~$0.023/GB/month (AWS S3)");
       renderWrite();
 
       // --- TAB 2: Read Path animation ---
       var readSteps = [
-        { cons: '#768390', ra0: false, agent: '#30363d', ra1: false, s3: '#30363d', ra2: false, ctrl: '#30363d', activeAgent: -1, info: 'Consumer idle. No fetch in progress.' },
-        { cons: '#58a6ff', ra0: true, agent: '#38bdf8', ra1: false, s3: '#30363d', ra2: true, ctrl: '#a371f7', activeAgent: 0, info: 'Consumer fetches from any Agent. Agent checks Control Plane: which S3 object holds offset 42?' },
-        { cons: '#58a6ff', ra0: true, agent: '#38bdf8', ra1: true, s3: '#f0883e', ra2: false, ctrl: '#30363d', activeAgent: 0, info: 'Agent issues S3 range GET for the specific object + byte offset. Efficient — no full object download.' },
-        { cons: '#3fb950', ra0: false, agent: '#38bdf8', ra1: false, s3: '#30363d', ra2: true, ctrl: '#a371f7', activeAgent: 1, info: 'Agent returns messages. Consumer commits offset to Control Plane. Complete! Next fetch → any agent.' }
+        { cons: "#768390", ra0: false, agent: "#30363d", ra1: false, s3: "#30363d", ra2: false, ctrl: "#30363d", activeAgent: -1, info: "Consumer idle. No fetch in progress." },
+        { cons: "#58a6ff", ra0: true, agent: "#38bdf8", ra1: false, s3: "#30363d", ra2: true, ctrl: "#a371f7", activeAgent: 0, info: "Consumer fetches from any Agent. Agent checks Control Plane: which S3 object holds offset 42?" },
+        { cons: "#58a6ff", ra0: true, agent: "#38bdf8", ra1: true, s3: "#f0883e", ra2: false, ctrl: "#30363d", activeAgent: 0, info: "Agent issues S3 range GET for the specific object + byte offset. Efficient — no full object download." },
+        { cons: "#3fb950", ra0: false, agent: "#38bdf8", ra1: false, s3: "#30363d", ra2: true, ctrl: "#a371f7", activeAgent: 1, info: "Agent returns messages. Consumer commits offset to Control Plane. Complete! Next fetch → any agent." }
       ];
       var rStep = 0, rTimer = null, rPlaying = false;
 
       function renderRead() {
         var s = readSteps[rStep];
-        document.getElementById('ws-r-cons').style.borderColor = s.cons;
-        document.getElementById('ws-r-cons').style.color = s.cons;
-        document.getElementById('ws-ra0').classList.toggle('lit', s.ra0);
-        document.getElementById('ws-r-agent').style.borderColor = s.agent;
-        document.getElementById('ws-r-agent').style.color = s.agent;
-        document.getElementById('ws-ra1').classList.toggle('lit', s.ra1);
-        document.getElementById('ws-r-s3').style.borderColor = s.s3;
-        document.getElementById('ws-r-s3').style.color = s.s3;
-        document.getElementById('ws-ra2').classList.toggle('lit', s.ra2);
-        document.getElementById('ws-r-ctrl').style.borderColor = s.ctrl;
-        document.getElementById('ws-r-ctrl').style.color = s.ctrl;
-        ['ws-r-a1', 'ws-r-a2', 'ws-r-a3'].forEach(function (id, i) {
+        document.getElementById("ws-r-cons").style.borderColor = s.cons;
+        document.getElementById("ws-r-cons").style.color = s.cons;
+        document.getElementById("ws-ra0").classList.toggle("lit", s.ra0);
+        document.getElementById("ws-r-agent").style.borderColor = s.agent;
+        document.getElementById("ws-r-agent").style.color = s.agent;
+        document.getElementById("ws-ra1").classList.toggle("lit", s.ra1);
+        document.getElementById("ws-r-s3").style.borderColor = s.s3;
+        document.getElementById("ws-r-s3").style.color = s.s3;
+        document.getElementById("ws-ra2").classList.toggle("lit", s.ra2);
+        document.getElementById("ws-r-ctrl").style.borderColor = s.ctrl;
+        document.getElementById("ws-r-ctrl").style.color = s.ctrl;
+        ["ws-r-a1", "ws-r-a2", "ws-r-a3"].forEach(function (id, i) {
           var el = document.getElementById(id);
-          el.style.background = s.activeAgent === i ? '#38bdf8' : '#161b22';
-          el.style.color = s.activeAgent === i ? '#0d1117' : '#768390';
+          el.style.background = s.activeAgent === i ? "#38bdf8" : "#161b22";
+          el.style.color = s.activeAgent === i ? "#0d1117" : "#768390";
         });
-        document.getElementById('ws-read-info').textContent = s.info;
+        document.getElementById("ws-read-info").textContent = s.info;
       }
 
-      document.getElementById('ws-r-play').addEventListener('click', function () {
+      document.getElementById("ws-r-play").addEventListener("click", function () {
         rPlaying = !rPlaying;
-        this.textContent = rPlaying ? '⏸ Pause' : '▶ Play';
+        this.textContent = rPlaying ? "⏸ Pause" : "▶ Play";
         if (rPlaying) { rTimer = setInterval(function () { rStep = (rStep + 1) % readSteps.length; renderRead(); }, 1500); }
         else clearInterval(rTimer);
       });
-      document.getElementById('ws-r-next').addEventListener('click', function () { rStep = Math.min(rStep + 1, readSteps.length - 1); renderRead(); });
-      document.getElementById('ws-r-prev').addEventListener('click', function () { rStep = Math.max(rStep - 1, 0); renderRead(); });
-      document.getElementById('ws-r-reset').addEventListener('click', function () {
+      document.getElementById("ws-r-next").addEventListener("click", function () { rStep = Math.min(rStep + 1, readSteps.length - 1); renderRead(); });
+      document.getElementById("ws-r-prev").addEventListener("click", function () { rStep = Math.max(rStep - 1, 0); renderRead(); });
+      document.getElementById("ws-r-reset").addEventListener("click", function () {
         clearInterval(rTimer); rPlaying = false;
-        document.getElementById('ws-r-play').textContent = '▶ Play';
+        document.getElementById("ws-r-play").textContent = "▶ Play";
         rStep = 0; renderRead();
       });
       renderRead();
@@ -404,86 +404,86 @@ props.put("bootstrap.servers", "serverless.warpstream.com:9092");
       // --- TAB 4: Scaling animation ---
       var agentCount = 2;
       function renderAgents() {
-        var grid = document.getElementById('ws-agent-grid');
-        grid.innerHTML = '';
+        var grid = document.getElementById("ws-agent-grid");
+        grid.innerHTML = "";
         for (var i = 0; i < agentCount; i++) {
-          var el = document.createElement('div');
-          el.className = 'ws-node';
-          el.style.cssText = 'border-color:#38bdf8;color:#38bdf8;background:#0d1117;width:80px;font-size:10px;padding:6px 8px';
-          el.textContent = 'Agent-' + (i + 1);
+          var el = document.createElement("div");
+          el.className = "ws-node";
+          el.style.cssText = "border-color:#38bdf8;color:#38bdf8;background:#0d1117;width:80px;font-size:10px;padding:6px 8px";
+          el.textContent = "Agent-" + (i + 1);
           grid.appendChild(el);
         }
         var tput = Math.min(100, agentCount * 15);
         var s3rate = Math.min(100, agentCount * 8);
-        document.getElementById('ws-tput-fill').style.width = tput + '%';
-        document.getElementById('ws-s3-fill').style.width = s3rate + '%';
-        document.getElementById('ws-tput-label').textContent = (agentCount * 150) + 'K msg/s';
-        document.getElementById('ws-s3-label').textContent = '~' + (agentCount * 20) + ' objects/s';
-        document.getElementById('ws-scaling-info').textContent = agentCount + ' agents running. ' + (agentCount * 150) + 'K msg/s throughput. Scale-out: just add pods — no partition rebalance needed.';
+        document.getElementById("ws-tput-fill").style.width = tput + "%";
+        document.getElementById("ws-s3-fill").style.width = s3rate + "%";
+        document.getElementById("ws-tput-label").textContent = (agentCount * 150) + "K msg/s";
+        document.getElementById("ws-s3-label").textContent = "~" + (agentCount * 20) + " objects/s";
+        document.getElementById("ws-scaling-info").textContent = agentCount + " agents running. " + (agentCount * 150) + "K msg/s throughput. Scale-out: just add pods — no partition rebalance needed.";
       }
 
       var sTimer = null, sPlaying = false;
-      document.getElementById('ws-s-play').addEventListener('click', function () {
+      document.getElementById("ws-s-play").addEventListener("click", function () {
         sPlaying = !sPlaying;
-        this.textContent = sPlaying ? '⏸ Stop' : '▶ Simulate Load Spike';
+        this.textContent = sPlaying ? "⏸ Stop" : "▶ Simulate Load Spike";
         if (sPlaying) {
           sTimer = setInterval(function () {
             agentCount = Math.min(agentCount + 1, 8);
             renderAgents();
-            if (agentCount >= 8) { clearInterval(sTimer); sPlaying = false; document.getElementById('ws-s-play').textContent = '▶ Simulate Load Spike'; }
+            if (agentCount >= 8) { clearInterval(sTimer); sPlaying = false; document.getElementById("ws-s-play").textContent = "▶ Simulate Load Spike"; }
           }, 900);
         } else clearInterval(sTimer);
       });
-      document.getElementById('ws-s-reset').addEventListener('click', function () {
+      document.getElementById("ws-s-reset").addEventListener("click", function () {
         clearInterval(sTimer); sPlaying = false; agentCount = 2;
-        document.getElementById('ws-s-play').textContent = '▶ Simulate Load Spike';
+        document.getElementById("ws-s-play").textContent = "▶ Simulate Load Spike";
         renderAgents();
       });
       renderAgents();
 
       // --- TAB 5: Interview ---
       var qas = [
-        { q: 'How does WarpStream achieve Kafka compatibility?', a: 'WarpStream implements the Kafka binary protocol (Produce/Fetch/Metadata/etc.). Existing Kafka clients connect unchanged — just point bootstrap.servers to WarpStream. Schema Registry API also compatible.' },
-        { q: 'What is the latency trade-off vs Kafka?', a: 'WarpStream has higher latency (~250ms flush to S3 + S3 GET latency). Kafka with acks=1 achieves ~5ms. WarpStream is not suitable for ultra-low-latency use cases. Best for analytics/logging where 500ms-1s is OK.' },
-        { q: 'How does BYOC protect data privacy?', a: 'Agents run in your VPC. Data written to your S3 bucket. WarpStream control plane only receives metadata (offsets, partition maps). Message content never leaves your account — HIPAA/PCI-friendly.' },
-        { q: 'What happens if an agent crashes?', a: 'Buffer lost if not flushed. Data already in S3 is safe. Consumer simply reconnects to another agent. Control plane tracks which S3 objects are committed. Recovery is instant — add pod, no rebalance.' }
+        { q: "How does WarpStream achieve Kafka compatibility?", a: "WarpStream implements the Kafka binary protocol (Produce/Fetch/Metadata/etc.). Existing Kafka clients connect unchanged — just point bootstrap.servers to WarpStream. Schema Registry API also compatible." },
+        { q: "What is the latency trade-off vs Kafka?", a: "WarpStream has higher latency (~250ms flush to S3 + S3 GET latency). Kafka with acks=1 achieves ~5ms. WarpStream is not suitable for ultra-low-latency use cases. Best for analytics/logging where 500ms-1s is OK." },
+        { q: "How does BYOC protect data privacy?", a: "Agents run in your VPC. Data written to your S3 bucket. WarpStream control plane only receives metadata (offsets, partition maps). Message content never leaves your account — HIPAA/PCI-friendly." },
+        { q: "What happens if an agent crashes?", a: "Buffer lost if not flushed. Data already in S3 is safe. Consumer simply reconnects to another agent. Control plane tracks which S3 objects are committed. Recovery is instant — add pod, no rebalance." }
       ];
-      document.getElementById('ws-qa-list').innerHTML = qas.map(function (qa, i) {
-        return '<div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;margin-bottom:8px;cursor:pointer" onclick="this.querySelector(\'.ws-ans\').style.display=this.querySelector(\'.ws-ans\').style.display===\'none\'?\'block\':\'none\'">' +
-          '<div style="color:#38bdf8;font-size:12px;font-weight:bold">Q' + (i + 1) + ': ' + qa.q + '</div>' +
-          '<div class="ws-ans" style="display:none;color:#cdd9e5;font-size:12px;margin-top:8px;line-height:1.6">' + qa.a + '</div></div>';
-      }).join('');
+      document.getElementById("ws-qa-list").innerHTML = qas.map(function (qa, i) {
+        return "<div style=\"background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;margin-bottom:8px;cursor:pointer\" onclick=\"this.querySelector('.ws-ans').style.display=this.querySelector('.ws-ans').style.display==='none'?'block':'none'\">" +
+          "<div style=\"color:#38bdf8;font-size:12px;font-weight:bold\">Q" + (i + 1) + ": " + qa.q + "</div>" +
+          "<div class=\"ws-ans\" style=\"display:none;color:#cdd9e5;font-size:12px;margin-top:8px;line-height:1.6\">" + qa.a + "</div></div>";
+      }).join("");
 
       // WRONG vs CORRECT
       var wrongRight = [
         {
-          wrong: '// "WarpStream = Kafka, just cheaper"\n// Use Kafka Streams on WarpStream\nKafkaStreams streams = new KafkaStreams(\n  topology, config);\n// FAILS — Kafka Streams needs\n// internal topics + admin APIs\n// not exposed by WarpStream',
-          right: '// WarpStream = Kafka PROTOCOL only\n// Use Flink or custom consumer\nFlinkKafkaConsumer consumer =\n  new FlinkKafkaConsumer(\n    "topic", schema, props);\n// Flink reads via fetch protocol\n// — compatible with WarpStream',
-          label: 'Stream processing'
+          wrong: "// \"WarpStream = Kafka, just cheaper\"\n// Use Kafka Streams on WarpStream\nKafkaStreams streams = new KafkaStreams(\n  topology, config);\n// FAILS — Kafka Streams needs\n// internal topics + admin APIs\n// not exposed by WarpStream",
+          right: "// WarpStream = Kafka PROTOCOL only\n// Use Flink or custom consumer\nFlinkKafkaConsumer consumer =\n  new FlinkKafkaConsumer(\n    \"topic\", schema, props);\n// Flink reads via fetch protocol\n// — compatible with WarpStream",
+          label: "Stream processing"
         },
         {
-          wrong: '// "Stateless = no data loss risk"\n// Agent crashes at 249ms\n// buffer not yet flushed to S3\nproducer.send(record);\n// Record LOST — no ack received',
-          right: '// Use idempotent producer + retries\nprops.put("enable.idempotence", "true");\nprops.put("retries", "5");\nprops.put("acks", "all");\n// On agent crash: producer retries\n// Next agent receives, flushes OK',
-          label: 'Agent crash durability'
+          wrong: "// \"Stateless = no data loss risk\"\n// Agent crashes at 249ms\n// buffer not yet flushed to S3\nproducer.send(record);\n// Record LOST — no ack received",
+          right: "// Use idempotent producer + retries\nprops.put(\"enable.idempotence\", \"true\");\nprops.put(\"retries\", \"5\");\nprops.put(\"acks\", \"all\");\n// On agent crash: producer retries\n// Next agent receives, flushes OK",
+          label: "Agent crash durability"
         }
       ];
 
-      var wcHtml = '<div style="color:#38bdf8;font-size:12px;font-weight:bold;margin-bottom:10px">⚠️ WRONG vs ✓ CORRECT</div>';
+      var wcHtml = "<div style=\"color:#38bdf8;font-size:12px;font-weight:bold;margin-bottom:10px\">⚠️ WRONG vs ✓ CORRECT</div>";
       wcHtml += wrongRight.map(function (item) {
-        return '<div style="margin-bottom:12px"><div style="color:#768390;font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">' + item.label + '</div>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
-          '<div style="background:#0d1117;border:2px solid #da3633;border-radius:6px;padding:10px"><div style="color:#da3633;font-size:10px;font-weight:bold;margin-bottom:6px">❌ WRONG</div><pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.wrong + '</pre></div>' +
-          '<div style="background:#0d1117;border:2px solid #3fb950;border-radius:6px;padding:10px"><div style="color:#3fb950;font-size:10px;font-weight:bold;margin-bottom:6px">✓ CORRECT</div><pre style="color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap">' + item.right + '</pre></div>' +
-          '</div></div>';
-      }).join('');
-      document.getElementById('ws-gotcha-list').innerHTML = wcHtml;
+        return "<div style=\"margin-bottom:12px\"><div style=\"color:#768390;font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px\">" + item.label + "</div>" +
+          "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:8px\">" +
+          "<div style=\"background:#0d1117;border:2px solid #da3633;border-radius:6px;padding:10px\"><div style=\"color:#da3633;font-size:10px;font-weight:bold;margin-bottom:6px\">❌ WRONG</div><pre style=\"color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap\">" + item.wrong + "</pre></div>" +
+          "<div style=\"background:#0d1117;border:2px solid #3fb950;border-radius:6px;padding:10px\"><div style=\"color:#3fb950;font-size:10px;font-weight:bold;margin-bottom:6px\">✓ CORRECT</div><pre style=\"color:#cdd9e5;font-size:10px;margin:0;white-space:pre-wrap\">" + item.right + "</pre></div>" +
+          "</div></div>";
+      }).join("");
+      document.getElementById("ws-gotcha-list").innerHTML = wcHtml;
 
       // Production story
-      var prodCard = document.createElement('div');
-      prodCard.style.cssText = 'background:#0d1117;border:1px solid #38bdf8;border-radius:8px;padding:14px;margin-bottom:14px';
-      prodCard.innerHTML = '<div style="color:#38bdf8;font-size:12px;font-weight:bold;margin-bottom:6px">🏭 Production Story: WarpStream at Scale</div>' +
-        '<div style="color:#cdd9e5;font-size:12px;line-height:1.7">SaaS analytics company: 500GB/day event ingestion. Self-hosted Kafka: 3 brokers × m5.4xlarge = $2,800/mo + 20% eng time ops. Migrated to WarpStream BYOC: S3 cost $350/mo + tiny pods ($200). 87% cost reduction. Trade-off accepted: p99 latency 300ms vs 8ms — acceptable for analytics pipeline. Kafka Streams replaced with Flink.</div>';
-      document.getElementById('ws-qa-list').parentNode.insertBefore(prodCard, document.getElementById('ws-qa-list'));
+      var prodCard = document.createElement("div");
+      prodCard.style.cssText = "background:#0d1117;border:1px solid #38bdf8;border-radius:8px;padding:14px;margin-bottom:14px";
+      prodCard.innerHTML = "<div style=\"color:#38bdf8;font-size:12px;font-weight:bold;margin-bottom:6px\">🏭 Production Story: WarpStream at Scale</div>" +
+        "<div style=\"color:#cdd9e5;font-size:12px;line-height:1.7\">SaaS analytics company: 500GB/day event ingestion. Self-hosted Kafka: 3 brokers × m5.4xlarge = $2,800/mo + 20% eng time ops. Migrated to WarpStream BYOC: S3 cost $350/mo + tiny pods ($200). 87% cost reduction. Trade-off accepted: p99 latency 300ms vs 8ms — acceptable for analytics pipeline. Kafka Streams replaced with Flink.</div>";
+      document.getElementById("ws-qa-list").parentNode.insertBefore(prodCard, document.getElementById("ws-qa-list"));
     },
 
     gotchas: [

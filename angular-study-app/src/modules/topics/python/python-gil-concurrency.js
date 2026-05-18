@@ -12,7 +12,7 @@
 - **asyncio**: single-threaded cooperative multitasking via an event loop. \`async/await\` switches on \`await\` points without the GIL overhead.
 - **No-GIL Python (3.13 experimental)**: free-threaded build — watch this space.`,
     why:
-`Misunderstanding the GIL is the #1 Python performance mistake in senior interviews. Running a CPU-bound task with threads gives you **single-core performance with multi-threading overhead**. The \`asyncio\` model gives massive I/O concurrency with a single thread — used in production at scale by AIOHTTP, FastAPI, and databases like asyncpg.`,
+"Misunderstanding the GIL is the #1 Python performance mistake in senior interviews. Running a CPU-bound task with threads gives you **single-core performance with multi-threading overhead**. The `asyncio` model gives massive I/O concurrency with a single thread — used in production at scale by AIOHTTP, FastAPI, and databases like asyncpg.",
     example: {
       language: "python",
       code:
@@ -52,19 +52,19 @@ async def main() -> None:
         r2 = await loop.run_in_executor(pool, time.sleep, 0.1)
 
 asyncio.run(main())`,
-      notes: `Use \`asyncio.gather\` for concurrent coroutines. Use \`loop.run_in_executor(ProcessPoolExecutor())\` to run CPU-bound code without blocking the event loop. Never call blocking code directly in a coroutine.`
+      notes: "Use `asyncio.gather` for concurrent coroutines. Use `loop.run_in_executor(ProcessPoolExecutor())` to run CPU-bound code without blocking the event loop. Never call blocking code directly in a coroutine."
     },
     interview: [
       {
         question: "Why does Python have the GIL and how do you work around it for CPU-bound tasks?",
         answer:
-`The GIL was introduced to simplify CPython's memory management (reference counting is not thread-safe without it). Workarounds: (1) **\`multiprocessing\`** — separate interpreter per process, no shared GIL; (2) **C extensions** like NumPy release the GIL during computation; (3) **asyncio** for I/O (not CPU); (4) experimental **no-GIL CPython 3.13** (PEP 703).`,
+"The GIL was introduced to simplify CPython's memory management (reference counting is not thread-safe without it). Workarounds: (1) **`multiprocessing`** — separate interpreter per process, no shared GIL; (2) **C extensions** like NumPy release the GIL during computation; (3) **asyncio** for I/O (not CPU); (4) experimental **no-GIL CPython 3.13** (PEP 703).",
         followUps: ["What is the GIL release interval?", "How does NumPy parallelise without Python threads?"]
       },
       {
         question: "What's the difference between asyncio.gather and asyncio.wait?",
         answer:
-`\`gather\` collects all results in order, raises on first exception by default (unless \`return_exceptions=True\`). \`wait\` returns two sets — done and pending — and gives you control over which exceptions to handle. Use \`gather\` for fan-out when you want all results; \`wait\` when you need first-completed or partial failure handling.`,
+"`gather` collects all results in order, raises on first exception by default (unless `return_exceptions=True`). `wait` returns two sets — done and pending — and gives you control over which exceptions to handle. Use `gather` for fan-out when you want all results; `wait` when you need first-completed or partial failure handling.",
         followUps: ["How does asyncio.TaskGroup (3.11) compare?", "What is asyncio.shield?"]
       }
     ],
@@ -79,7 +79,7 @@ asyncio.run(main())`,
         "ProcessPoolExecutor has IPC overhead — not free for small tasks.",
         "Debugging async stack traces is harder than synchronous code."
       ],
-      when: `**asyncio** for I/O-bound services (APIs, websockets, DB queries). **ProcessPoolExecutor** for CPU-bound work (ML inference, image processing). **ThreadPoolExecutor** only for blocking legacy I/O libraries that have no async counterpart.`
+      when: "**asyncio** for I/O-bound services (APIs, websockets, DB queries). **ProcessPoolExecutor** for CPU-bound work (ML inference, image processing). **ThreadPoolExecutor** only for blocking legacy I/O libraries that have no async counterpart."
     }
   };
   window.PYTHON_TOPICS = (window.PYTHON_TOPICS || []).concat([topic]);

@@ -3,7 +3,7 @@
  * Exposes: window.App.signal
  */
 (function () {
-  'use strict';
+  "use strict";
   window.App = window.App || {};
 
   window.App.signal = function signal(initial) {

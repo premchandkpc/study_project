@@ -9,7 +9,7 @@
  *   @Output() stateChange = new EventEmitter<'playing'|'paused'|'idle'>()
  */
 (function () {
-  'use strict';
+  "use strict";
   window.App = window.App || {};
 
   const { Animation } = window.App.Constants;
@@ -43,15 +43,15 @@
       </div>
     `;
 
-    const fillEl    = host.querySelector('[data-ctrl-fill]');
-    const counterEl = host.querySelector('[data-ctrl-counter]');
-    const playBtn   = host.querySelector('[data-ctrl-play]');
+    const fillEl    = host.querySelector("[data-ctrl-fill]");
+    const counterEl = host.querySelector("[data-ctrl-counter]");
+    const playBtn   = host.querySelector("[data-ctrl-play]");
 
     function updateUI() {
       const pct = total > 1 ? ((index + 1) / total) * 100 : 100;
-      fillEl.style.width = pct + '%';
-      counterEl.textContent = (index + 1) + ' / ' + total;
-      playBtn.textContent = playing ? '⏸ Pause' : '▶ Play';
+      fillEl.style.width = pct + "%";
+      counterEl.textContent = (index + 1) + " / " + total;
+      playBtn.textContent = playing ? "⏸ Pause" : "▶ Play";
     }
 
     function stop() {
@@ -59,7 +59,7 @@
       clearInterval(timer);
       timer = null;
       updateUI();
-      opts.onStateChange && opts.onStateChange('paused');
+      opts.onStateChange && opts.onStateChange("paused");
     }
 
     function goTo(nextIndex) {
@@ -72,21 +72,21 @@
     function play() {
       playing = true;
       updateUI();
-      opts.onStateChange && opts.onStateChange('playing');
+      opts.onStateChange && opts.onStateChange("playing");
       timer = setInterval(() => goTo(index + 1), interval);
     }
 
-    host.querySelector('[data-ctrl-prev]').addEventListener('click',  () => { stop(); goTo(index - 1); });
-    host.querySelector('[data-ctrl-next]').addEventListener('click',  () => { stop(); goTo(index + 1); });
-    host.querySelector('[data-ctrl-reset]').addEventListener('click', () => { stop(); goTo(0); });
-    playBtn.addEventListener('click', () => playing ? stop() : play());
+    host.querySelector("[data-ctrl-prev]").addEventListener("click",  () => { stop(); goTo(index - 1); });
+    host.querySelector("[data-ctrl-next]").addEventListener("click",  () => { stop(); goTo(index + 1); });
+    host.querySelector("[data-ctrl-reset]").addEventListener("click", () => { stop(); goTo(0); });
+    playBtn.addEventListener("click", () => playing ? stop() : play());
 
     goTo(0);
 
     return {
       setTotal(n)  { total = n; updateUI(); },
       setIndex(i)  { goTo(i); },
-      setProgress(pct) { fillEl.style.width = pct + '%'; },
+      setProgress(pct) { fillEl.style.width = pct + "%"; },
       destroy()    { stop(); },
     };
   };

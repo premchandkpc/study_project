@@ -4,10 +4,10 @@
  * Load after: core/injector.js, all topic data files (window.JAVA_TOPICS etc.)
  */
 (function () {
-  'use strict';
+  "use strict";
   const { Injector } = window.App;
 
-  window.App.TopicsService = Injector.provide('TopicsService', () => {
+  window.App.TopicsService = Injector.provide("TopicsService", () => {
     const all = []
       .concat(window.JAVA_TOPICS || [])
       .concat(window.GO_TOPICS || [])
@@ -30,8 +30,8 @@
         const s = q.toLowerCase();
         return all.filter(t =>
           t.title.toLowerCase().includes(s) ||
-          (t.concept || '').toLowerCase().includes(s) ||
-          (t.tags || []).join(' ').toLowerCase().includes(s)
+          (t.concept || "").toLowerCase().includes(s) ||
+          (t.tags || []).join(" ").toLowerCase().includes(s)
         );
       },
     };

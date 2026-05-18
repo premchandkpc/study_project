@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-dpx-decode-ways",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** SMS decoder — count how many English-word interpretations a compressed digit string has.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'dpx.decodeWays',
-        time:  'O(n)',
-        space: 'O(n)',
+        title: "dpx.decodeWays",
+        time:  "O(n)",
+        space: "O(n)",
         code: `function numDecodings(s) {
   if (!s || s[0] === '0') return 0;
   const n = s.length;

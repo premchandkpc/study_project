@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-bs-search-rotated",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Circular buffer lookup — data wrapped around a ring buffer.`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'bsearch.searchRotated',
-        time:  'O(log n)',
-        space: 'O(1)',
+        title: "bsearch.searchRotated",
+        time:  "O(log n)",
+        space: "O(1)",
         code: `function search(nums, target) {
   let left = 0;
   let right = nums.length - 1;

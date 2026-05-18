@@ -14,7 +14,7 @@
 - **Fallback**: cached result, degraded response, or queue for later.
 Libraries: **Resilience4j** (Java), **Polly** (.NET), **go-circuit** (Go).`,
     why:
-`In a 10-service call chain, if each service has 99.9% uptime, the composite uptime is 99% — a 10× amplification. Without circuit breakers, a slow database causes request threads to pile up behind the slow DB call, exhausting the thread pool and making the entire service unresponsive. The circuit breaker is the first line of defense.`,
+"In a 10-service call chain, if each service has 99.9% uptime, the composite uptime is 99% — a 10× amplification. Without circuit breakers, a slow database causes request threads to pile up behind the slow DB call, exhausting the thread pool and making the entire service unresponsive. The circuit breaker is the first line of defense.",
     example: {
       language: "java",
       code:
@@ -89,19 +89,19 @@ public class PaymentClient {
         return "PENDING";
     }
 }`,
-      notes: `Apply resilience decorators in the right order (outer to inner): TimeLimiter → CircuitBreaker → Retry → Bulkhead. Retry inside CircuitBreaker would reset the timeout. Add jitter to retry delays to prevent thundering herd: \`Duration.ofMillis(200 + random.nextInt(100))\`.`
+      notes: "Apply resilience decorators in the right order (outer to inner): TimeLimiter → CircuitBreaker → Retry → Bulkhead. Retry inside CircuitBreaker would reset the timeout. Add jitter to retry delays to prevent thundering herd: `Duration.ofMillis(200 + random.nextInt(100))`."
     },
     interview: [
       {
         question: "What is the difference between a circuit breaker and a retry?",
         answer:
-`**Retry** recovers from transient failures (brief network glitch) by re-attempting. **Circuit breaker** detects sustained failure and stops calling the service entirely, giving it time to recover. Retry without a circuit breaker can overwhelm a failing service with retried requests. Together: retry handles transient errors; circuit breaker handles sustained outages. The circuit breaker also gives callers fast failures instead of timeouts.`,
+"**Retry** recovers from transient failures (brief network glitch) by re-attempting. **Circuit breaker** detects sustained failure and stops calling the service entirely, giving it time to recover. Retry without a circuit breaker can overwhelm a failing service with retried requests. Together: retry handles transient errors; circuit breaker handles sustained outages. The circuit breaker also gives callers fast failures instead of timeouts.",
         followUps: ["What is the half-open state for?", "How do you tune circuit breaker thresholds?"]
       },
       {
         question: "What is a bulkhead and why does it matter?",
         answer:
-`A **bulkhead** isolates thread pools or semaphores per dependency (named after ship watertight compartments). Without it, a slow dependency fills your single thread pool, blocking all requests — even to healthy services. With bulkheads, the slow service gets at most N threads; healthy services are unaffected. In Java, use a separate \`ExecutorService\` per dependency or Resilience4j's \`Bulkhead\`.`,
+"A **bulkhead** isolates thread pools or semaphores per dependency (named after ship watertight compartments). Without it, a slow dependency fills your single thread pool, blocking all requests — even to healthy services. With bulkheads, the slow service gets at most N threads; healthy services are unaffected. In Java, use a separate `ExecutorService` per dependency or Resilience4j's `Bulkhead`.",
         followUps: ["Semaphore bulkhead vs thread pool bulkhead?", "How does Hystrix implement bulkheads?"]
       }
     ],
@@ -116,7 +116,7 @@ public class PaymentClient {
         "Retry amplifies load under real failure — must limit retries and add backoff.",
         "Distributed circuit breaker state (Envoy, Redis) adds complexity."
       ],
-      when: `Apply **timeout** everywhere. Apply **retry** for idempotent calls with transient errors. Apply **circuit breaker** for any synchronous call to external services. Apply **bulkhead** for shared thread pools serving multiple dependencies.`
+      when: "Apply **timeout** everywhere. Apply **retry** for idempotent calls with transient errors. Apply **circuit breaker** for any synchronous call to external services. Apply **bulkhead** for shared thread pools serving multiple dependencies."
     }
   };
   window.MICRO_TOPICS = (window.MICRO_TOPICS || []).concat([topic]);

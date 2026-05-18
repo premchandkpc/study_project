@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  "use strict";
   window.DSA_TOPICS = (window.DSA_TOPICS || []).concat([{
     id: "dsa-bt-comb-sum",
     area: "dsa",
@@ -15,9 +15,9 @@
 **Scenario:** Exact-change problem — which coins (reusable) sum to the exact target?`,
     visual: function(mount) {
       window.DSAViz.topic.render(mount, {
-        title: 'backtrack.combSum',
-        time:  'O(2^t)',
-        space: 'O(t)',
+        title: "backtrack.combSum",
+        time:  "O(2^t)",
+        space: "O(t)",
         code: `function combinationSum(candidates, target) {
   const result = [];
   function backtrack(start, current, remaining) {

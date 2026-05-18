@@ -1,9 +1,9 @@
 (function() {
   var topic = {
-  id:"sd-observability", area:"sysdesign",
-  title:"Observability — Metrics, Logs, Traces & Alerting",
-  tag:"Operations", tags:["observability","prometheus","grafana","jaeger","opentelemetry","structured logging","sre","slo","sla","red method"],
-  concept:`**The three pillars of observability:**
+    id:"sd-observability", area:"sysdesign",
+    title:"Observability — Metrics, Logs, Traces & Alerting",
+    tag:"Operations", tags:["observability","prometheus","grafana","jaeger","opentelemetry","structured logging","sre","slo","sla","red method"],
+    concept:`**The three pillars of observability:**
 
 **1. Metrics** — aggregated numerical measurements over time.
 - **RED method** (for services): Rate (requests/s), Errors (error rate %), Duration (latency p50/p95/p99)
@@ -29,10 +29,10 @@
 - **SLO** (Service Level Objective) — target (error rate < 0.1%, p99 < 200ms)
 - **SLA** (Service Level Agreement) — contractual commitment with penalty
 - **Error budget** = 100% - SLO availability. If consumed, freeze risky changes.`,
-  why:`You can't fix what you can't see. Observability is the difference between resolving incidents in 5 minutes and 5 hours. SLO/error budgets are used at Google, Netflix, Spotify to balance reliability vs velocity.`,
-  example:{
-    language:"java",
-    code:`// Spring Boot — Micrometer + OpenTelemetry + structured logging
+    why:"You can't fix what you can't see. Observability is the difference between resolving incidents in 5 minutes and 5 hours. SLO/error budgets are used at Google, Netflix, Spotify to balance reliability vs velocity.",
+    example:{
+      language:"java",
+      code:`// Spring Boot — Micrometer + OpenTelemetry + structured logging
 @RestController
 public class OrderController {
 
@@ -89,78 +89,78 @@ public class OrderController {
 //         labels: { severity: critical }
 //         annotations:
 //           summary: "Error rate {{ $value | humanizePercentage }}"`,
-    notes:"OpenTelemetry auto-instrumentation (Java agent: -javaagent:opentelemetry-javaagent.jar) adds traces to Spring, JDBC, Kafka without code changes."
-  },
-  interview:[
-    {question:"How do you find the root cause of a latency spike in a microservices system?",
-     answer:`Systematic approach:\n1. **Start with metrics (RED dashboard)** — which service has elevated p99 latency or error rate? Grafana alert fires.\n2. **Check SLO burn rate** — is error budget being consumed? How fast?\n3. **Find the service** — Grafana service map / dependency graph shows which service in the call chain is slow.\n4. **Drill into traces (Jaeger)** — filter traces for the time window. Find traces with p99 latency. Click the slowest trace — spans show exactly where time was spent.\n5. **Cross-reference logs** — use TraceId from Jaeger to find correlated logs in Kibana. Structured logs reveal the exact DB query, cache miss, or timeout.\n6. **Infrastructure metrics** — check CPU, memory, IO, network for the pod (Kubernetes dashboard, AWS CloudWatch).\n\nTotal time: 5-10 minutes with good observability vs hours without.`,
-     followUps:["What is an error budget and how do you use it to make decisions?","What is the difference between monitoring and observability?"]
+      notes:"OpenTelemetry auto-instrumentation (Java agent: -javaagent:opentelemetry-javaagent.jar) adds traces to Spring, JDBC, Kafka without code changes."
+    },
+    interview:[
+      {question:"How do you find the root cause of a latency spike in a microservices system?",
+        answer:"Systematic approach:\n1. **Start with metrics (RED dashboard)** — which service has elevated p99 latency or error rate? Grafana alert fires.\n2. **Check SLO burn rate** — is error budget being consumed? How fast?\n3. **Find the service** — Grafana service map / dependency graph shows which service in the call chain is slow.\n4. **Drill into traces (Jaeger)** — filter traces for the time window. Find traces with p99 latency. Click the slowest trace — spans show exactly where time was spent.\n5. **Cross-reference logs** — use TraceId from Jaeger to find correlated logs in Kibana. Structured logs reveal the exact DB query, cache miss, or timeout.\n6. **Infrastructure metrics** — check CPU, memory, IO, network for the pod (Kubernetes dashboard, AWS CloudWatch).\n\nTotal time: 5-10 minutes with good observability vs hours without.",
+        followUps:["What is an error budget and how do you use it to make decisions?","What is the difference between monitoring and observability?"]
+      }
+    ],
+    tradeoffs:{
+      pros:["Fast incident resolution — MTTR from hours to minutes","Data-driven capacity planning","SLO-based alerting reduces alert fatigue vs threshold alerting"],
+      cons:["Cardinality explosion in metrics if labels not controlled","Trace sampling needed at high volume (100% tracing = 10% overhead)","Storage costs for logs + traces at scale"],
+      when:"Instrument from day one. Retrofitting observability into production is painful. Use OpenTelemetry standard — avoids vendor lock-in. Set SLOs before you set alerts."
+    },
+    visual: {
+      type: "flow",
+      title: "Observability Pipeline — Three Pillars",
+      direction: "horizontal",
+      nodes: [
+        { id: "service",    label: "Service",         color: "#58a6ff", icon: "⚙",  sublabel: "OTel SDK auto-instrumented" },
+        { id: "otel",       label: "OTel Collector",  color: "#ffa657", icon: "📡", sublabel: "Fan-out router" },
+        { id: "prometheus", label: "Prometheus",       color: "#e6522c", icon: "📊", sublabel: "Metrics TSDB" },
+        { id: "jaeger",     label: "Jaeger",           color: "#60d0e4", icon: "🔍", sublabel: "Distributed traces" },
+        { id: "loki",       label: "Loki / ELK",       color: "#bc8cff", icon: "📋", sublabel: "Structured logs" },
+        { id: "grafana",    label: "Grafana",          color: "#3fb950", icon: "📈", sublabel: "Unified dashboards" }
+      ],
+      connections: [
+        { from: "service",    to: "otel",       label: "OTLP gRPC", protocol: "OTLP" },
+        { from: "otel",       to: "prometheus", label: "metrics" },
+        { from: "otel",       to: "jaeger",     label: "traces" },
+        { from: "otel",       to: "loki",       label: "logs" },
+        { from: "prometheus", to: "grafana",    label: "PromQL" },
+        { from: "jaeger",     to: "grafana",    label: "trace link" },
+        { from: "loki",       to: "grafana",    label: "LogQL" }
+      ],
+      scenarios: [
+        { name: "Traces",  path: ["service", "otel", "jaeger", "grafana"],    result: "TraceId links spans across 20 services — find root cause of 500ms tail latency in < 5min", resultColor: "#60d0e4" },
+        { name: "Metrics", path: ["service", "otel", "prometheus", "grafana"], result: "RED method: Rate, Errors, Duration per service — SLO dashboards + AlertManager rules", resultColor: "#e6522c" },
+        { name: "Logs",    path: ["service", "otel", "loki", "grafana"],       result: "Structured JSON logs — correlate with TraceId — 30-day hot retention, S3 cold", resultColor: "#bc8cff" }
+      ]
+    },
+    architecture:{
+      title:"Observability Stack",
+      caption:"Three pillars: metrics (Prometheus), logs (ELK), traces (Jaeger) unified by OpenTelemetry",
+      lanes:[
+        {label:"Application",nodes:[
+          {id:"app-otel",label:"App + OTel SDK",hint:"Auto-instrumented Java/Go/Python",detail:"OpenTelemetry SDK auto-instruments HTTP, DB, gRPC. Emits metrics, logs, and traces via OTLP protocol."}
+        ]},
+        {label:"Collection",nodes:[
+          {id:"otel-collector",label:"OTel Collector",hint:"Fan-out to multiple backends",detail:"Receives OTLP from apps. Routes metrics to Prometheus, logs to Elasticsearch, traces to Jaeger. One agent per node."},
+          {id:"fluent-bit",label:"Fluent Bit",hint:"Log collection from files",detail:"Lightweight log shipper. Reads stdout/file logs, enriches with pod metadata, forwards to Elasticsearch."}
+        ]},
+        {label:"Storage",nodes:[
+          {id:"prometheus",label:"Prometheus",hint:"Time-series metrics",detail:"Scrapes /metrics endpoints. Stores TSDB with 15-day retention. Fires alerts via AlertManager."},
+          {id:"elasticsearch",label:"Elasticsearch",hint:"Log indexing + search",detail:"Full-text log indexing. Kibana for ad-hoc query. 30-day hot retention → S3 for cold."},
+          {id:"jaeger",label:"Jaeger",hint:"Distributed traces",detail:"Stores spans. 7-day retention (traces are large). Cassandra or Elasticsearch backend."}
+        ]},
+        {label:"Visualization",nodes:[
+          {id:"grafana",label:"Grafana",hint:"Dashboards + alerts",detail:"Unified dashboard for all data sources (Prometheus, Elasticsearch, Jaeger, Loki). SLO dashboards, RED method panels."},
+          {id:"alertmanager",label:"AlertManager",hint:"Route alerts → PagerDuty / Slack",detail:"Deduplicates and routes Prometheus alerts to on-call engineer. Silence during maintenance windows."}
+        ]}
+      ],
+      links:[
+        {from:"app-otel",to:"otel-collector",label:"OTLP (gRPC)",detail:"App sends metrics + traces to local OTel Collector via gRPC port 4317.",type:"async"},
+        {from:"fluent-bit",to:"elasticsearch",label:"Logs (HTTP)",detail:"Fluent Bit ships JSON logs to Elasticsearch index.",type:"async"},
+        {from:"otel-collector",to:"prometheus",label:"Metrics",detail:"Collector exposes Prometheus scrape endpoint or remote_write.",type:"async"},
+        {from:"otel-collector",to:"jaeger",label:"Traces",detail:"OTLP trace spans forwarded to Jaeger collector.",type:"async"},
+        {from:"prometheus",to:"alertmanager",label:"Alert rules",detail:"PromQL alerting rules evaluated every 15s.",type:"sync"},
+        {from:"alertmanager",to:"grafana",label:"Alert state",detail:"Alert states displayed on Grafana dashboards.",type:"async"},
+        {from:"grafana",to:"prometheus",label:"PromQL queries",detail:"Grafana panels execute PromQL to render graphs.",type:"sync"},
+        {from:"grafana",to:"jaeger",label:"Trace link",detail:"Grafana links from metric anomaly to correlated trace in Jaeger.",type:"sync"}
+      ]
     }
-  ],
-  tradeoffs:{
-    pros:["Fast incident resolution — MTTR from hours to minutes","Data-driven capacity planning","SLO-based alerting reduces alert fatigue vs threshold alerting"],
-    cons:["Cardinality explosion in metrics if labels not controlled","Trace sampling needed at high volume (100% tracing = 10% overhead)","Storage costs for logs + traces at scale"],
-    when:"Instrument from day one. Retrofitting observability into production is painful. Use OpenTelemetry standard — avoids vendor lock-in. Set SLOs before you set alerts."
-  },
-  visual: {
-    type: 'flow',
-    title: 'Observability Pipeline — Three Pillars',
-    direction: 'horizontal',
-    nodes: [
-      { id: 'service',    label: 'Service',         color: '#58a6ff', icon: '⚙',  sublabel: 'OTel SDK auto-instrumented' },
-      { id: 'otel',       label: 'OTel Collector',  color: '#ffa657', icon: '📡', sublabel: 'Fan-out router' },
-      { id: 'prometheus', label: 'Prometheus',       color: '#e6522c', icon: '📊', sublabel: 'Metrics TSDB' },
-      { id: 'jaeger',     label: 'Jaeger',           color: '#60d0e4', icon: '🔍', sublabel: 'Distributed traces' },
-      { id: 'loki',       label: 'Loki / ELK',       color: '#bc8cff', icon: '📋', sublabel: 'Structured logs' },
-      { id: 'grafana',    label: 'Grafana',          color: '#3fb950', icon: '📈', sublabel: 'Unified dashboards' }
-    ],
-    connections: [
-      { from: 'service',    to: 'otel',       label: 'OTLP gRPC', protocol: 'OTLP' },
-      { from: 'otel',       to: 'prometheus', label: 'metrics' },
-      { from: 'otel',       to: 'jaeger',     label: 'traces' },
-      { from: 'otel',       to: 'loki',       label: 'logs' },
-      { from: 'prometheus', to: 'grafana',    label: 'PromQL' },
-      { from: 'jaeger',     to: 'grafana',    label: 'trace link' },
-      { from: 'loki',       to: 'grafana',    label: 'LogQL' }
-    ],
-    scenarios: [
-      { name: 'Traces',  path: ['service', 'otel', 'jaeger', 'grafana'],    result: 'TraceId links spans across 20 services — find root cause of 500ms tail latency in < 5min', resultColor: '#60d0e4' },
-      { name: 'Metrics', path: ['service', 'otel', 'prometheus', 'grafana'], result: 'RED method: Rate, Errors, Duration per service — SLO dashboards + AlertManager rules', resultColor: '#e6522c' },
-      { name: 'Logs',    path: ['service', 'otel', 'loki', 'grafana'],       result: 'Structured JSON logs — correlate with TraceId — 30-day hot retention, S3 cold', resultColor: '#bc8cff' }
-    ]
-  },
-  architecture:{
-    title:"Observability Stack",
-    caption:"Three pillars: metrics (Prometheus), logs (ELK), traces (Jaeger) unified by OpenTelemetry",
-    lanes:[
-      {label:"Application",nodes:[
-        {id:"app-otel",label:"App + OTel SDK",hint:"Auto-instrumented Java/Go/Python",detail:"OpenTelemetry SDK auto-instruments HTTP, DB, gRPC. Emits metrics, logs, and traces via OTLP protocol."}
-      ]},
-      {label:"Collection",nodes:[
-        {id:"otel-collector",label:"OTel Collector",hint:"Fan-out to multiple backends",detail:"Receives OTLP from apps. Routes metrics to Prometheus, logs to Elasticsearch, traces to Jaeger. One agent per node."},
-        {id:"fluent-bit",label:"Fluent Bit",hint:"Log collection from files",detail:"Lightweight log shipper. Reads stdout/file logs, enriches with pod metadata, forwards to Elasticsearch."}
-      ]},
-      {label:"Storage",nodes:[
-        {id:"prometheus",label:"Prometheus",hint:"Time-series metrics",detail:"Scrapes /metrics endpoints. Stores TSDB with 15-day retention. Fires alerts via AlertManager."},
-        {id:"elasticsearch",label:"Elasticsearch",hint:"Log indexing + search",detail:"Full-text log indexing. Kibana for ad-hoc query. 30-day hot retention → S3 for cold."},
-        {id:"jaeger",label:"Jaeger",hint:"Distributed traces",detail:"Stores spans. 7-day retention (traces are large). Cassandra or Elasticsearch backend."}
-      ]},
-      {label:"Visualization",nodes:[
-        {id:"grafana",label:"Grafana",hint:"Dashboards + alerts",detail:"Unified dashboard for all data sources (Prometheus, Elasticsearch, Jaeger, Loki). SLO dashboards, RED method panels."},
-        {id:"alertmanager",label:"AlertManager",hint:"Route alerts → PagerDuty / Slack",detail:"Deduplicates and routes Prometheus alerts to on-call engineer. Silence during maintenance windows."}
-      ]}
-    ],
-    links:[
-      {from:"app-otel",to:"otel-collector",label:"OTLP (gRPC)",detail:"App sends metrics + traces to local OTel Collector via gRPC port 4317.",type:"async"},
-      {from:"fluent-bit",to:"elasticsearch",label:"Logs (HTTP)",detail:"Fluent Bit ships JSON logs to Elasticsearch index.",type:"async"},
-      {from:"otel-collector",to:"prometheus",label:"Metrics",detail:"Collector exposes Prometheus scrape endpoint or remote_write.",type:"async"},
-      {from:"otel-collector",to:"jaeger",label:"Traces",detail:"OTLP trace spans forwarded to Jaeger collector.",type:"async"},
-      {from:"prometheus",to:"alertmanager",label:"Alert rules",detail:"PromQL alerting rules evaluated every 15s.",type:"sync"},
-      {from:"alertmanager",to:"grafana",label:"Alert state",detail:"Alert states displayed on Grafana dashboards.",type:"async"},
-      {from:"grafana",to:"prometheus",label:"PromQL queries",detail:"Grafana panels execute PromQL to render graphs.",type:"sync"},
-      {from:"grafana",to:"jaeger",label:"Trace link",detail:"Grafana links from metric anomaly to correlated trace in Jaeger.",type:"sync"}
-    ]
-  }
-};
+  };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);
 })();
