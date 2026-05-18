@@ -64,6 +64,9 @@
 <!-- VizEngine — declarative visualization engine -->
 <script src="src/engine/utils/canvas-utils.js"></script>
 <script src="src/engine/viz-engine.js"></script>
+<!-- base-renderer.js: BaseRenderer (abstract) + CanvasRenderer (parent).
+     MUST load before any concrete renderer (FlowRenderer, etc.) -->
+<script src="src/engine/base-renderer.js"></script>
 <script src="src/engine/renderers/flow-renderer.js"></script>
 <script src="src/engine/renderers/swimlane-renderer.js"></script>
 <script src="src/engine/renderers/layered-renderer.js"></script>

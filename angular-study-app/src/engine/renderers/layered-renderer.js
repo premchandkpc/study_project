@@ -21,11 +21,15 @@
    * }
    */
 
-  var U = window.CVU;
-
-  function LayeredRenderer() {}
+  // LayeredRenderer extends CanvasRenderer (defined in base-renderer.js)
+  function LayeredRenderer() { CanvasRenderer.call(this); }
+  LayeredRenderer.prototype = Object.create(CanvasRenderer.prototype);
+  LayeredRenderer.prototype.constructor = LayeredRenderer;
 
   LayeredRenderer.prototype.render = function (mount, cfg) {
+    var U = this._cvu(mount);
+    if (!U) return;
+    var self     = this;
     var mountWidth = Math.round(mount.clientWidth || mount.getBoundingClientRect().width || 460);
     var W        = Math.max(780, mountWidth);
     var layers   = cfg.layers || [];
@@ -33,8 +37,9 @@
     var padTop   = cfg.title ? 44 : 18;
     var H        = padTop + layers.length * (lH + 12) + 32;
 
-    var canvas   = U.makeCanvas(mount, W, H);
-    var ctrl     = U.makeCtrlRow(mount);
+    var canvas   = this._makeCanvas(mount, W, H);
+    var ctrl     = this._makeCtrlRow(mount);
+    if (!canvas) return;
     var ctx      = canvas.getContext('2d');
 
     var activeFlow     = null;
@@ -42,12 +47,12 @@
     var running        = false, rafId = null;
     var dotPos         = null, dotT  = 0;
 
-    var playBtn = U.makeBtn('▶ Play', U.C.blue);
+    var playBtn = this._makeBtn('▶ Play', U.C.blue);
     ctrl.appendChild(playBtn);
 
     // Flow buttons
     (cfg.flows || []).forEach(function (fl) {
-      var b = U.makeBtn(fl.name, fl.color || U.C.orange);
+      var b = self._makeBtn(fl.name, fl.color || U.C.orange);
       b.addEventListener('click', function () {
         stopAnimation();
         activeFlow = fl; activeStepIdx = -1; dotT = 0;
@@ -111,7 +116,7 @@
     }
 
     function raf() {
-      if (!running || !document.body.contains(canvas)) return;
+      if (!running || !self._alive(canvas)) return;
       if (!activeFlow || !activeFlow.path.length) return;
 
       rafId = requestAnimationFrame(function () {

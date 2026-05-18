@@ -19,11 +19,15 @@
    * }
    */
 
-  var U = window.CVU;
-
-  function SwimlaneRenderer() {}
+  // SwimlaneRenderer extends CanvasRenderer (defined in base-renderer.js)
+  function SwimlaneRenderer() { CanvasRenderer.call(this); }
+  SwimlaneRenderer.prototype = Object.create(CanvasRenderer.prototype);
+  SwimlaneRenderer.prototype.constructor = SwimlaneRenderer;
 
   SwimlaneRenderer.prototype.render = function (mount, cfg) {
+    var U = this._cvu(mount);
+    if (!U) return;
+    var self    = this;
     var lanes   = cfg.lanes || [];
     var laneH   = 108;
     var padTop  = cfg.title ? 48 : 18;
@@ -31,14 +35,15 @@
     var W       = Math.max(820, mountWidth);
     var H       = padTop + lanes.length * (laneH + 14) + 32;
 
-    var canvas  = U.makeCanvas(mount, W, H);
-    var ctrl    = U.makeCtrlRow(mount);
+    var canvas  = this._makeCanvas(mount, W, H);
+    var ctrl    = this._makeCtrlRow(mount);
+    if (!canvas) return;
     var ctx     = canvas.getContext('2d');
 
     var dots    = []; // animated packets per lane
     var running = false, rafId = null;
 
-    var playBtn = U.makeBtn('▶ Play', U.C.blue);
+    var playBtn = this._makeBtn('▶ Play', U.C.blue);
     ctrl.appendChild(playBtn);
 
     function laneTop(i) { return padTop + i * (laneH + 8); }
@@ -112,7 +117,7 @@
     }
 
     function raf() {
-      if (!running || !document.body.contains(canvas)) return;
+      if (!running || !self._alive(canvas)) return;
       rafId = requestAnimationFrame(function () {
         drawLanes();
         var allDone = true;

@@ -18,11 +18,14 @@
    * }
    */
 
-  var U = window.CVU;
-
-  function FlowRenderer() {}
+  // FlowRenderer extends CanvasRenderer (defined in base-renderer.js)
+  function FlowRenderer() { CanvasRenderer.call(this); }
+  FlowRenderer.prototype = Object.create(CanvasRenderer.prototype);
+  FlowRenderer.prototype.constructor = FlowRenderer;
 
   FlowRenderer.prototype.render = function (mount, cfg) {
+    var U = this._cvu(mount);
+    if (!U) return;
     var mountWidth = Math.round(mount.clientWidth || mount.getBoundingClientRect().width || 460);
     var nodes = cfg.nodes || [];
     var conns = cfg.connections || [];
@@ -31,9 +34,10 @@
     var W = Math.max(760, mountWidth, nodes.length * 160);
     var H = dir === 'vertical' ? Math.max(520, 150 + nodes.length * 116) : 440;
 
-    var ctrl   = U.makeCtrlRow(mount);
-    var canvas = U.makeCanvas(mount, W, H);
-    var status = U.makeStatus(mount);
+    var ctrl   = this._makeCtrlRow(mount);
+    var canvas = this._makeCanvas(mount, W, H);
+    var status = this._makeStatus(mount);
+    if (!canvas) return;
     var ctx    = canvas.getContext('2d');
 
     // Layout nodes
@@ -58,12 +62,13 @@
     var dotT = 0; // 0..activePath.length-1, fractional
 
     // Play/Pause
-    var playBtn = U.makeBtn('▶ Play', U.C.blue);
+    var playBtn = this._makeBtn('▶ Play', U.C.blue);
     ctrl.appendChild(playBtn);
 
     // Scenario buttons
+    var self = this;
     scenarios.forEach(function (sc) {
-      var b = U.makeBtn(sc.name, sc.resultColor || U.C.green);
+      var b = self._makeBtn(sc.name, sc.resultColor || U.C.green);
       b.addEventListener('click', function () {
         activePath = sc.path;
         activeScenario = sc;
@@ -75,7 +80,7 @@
     });
 
     // Step button
-    var stepBtn = U.makeBtn('Step ›', U.C.gray);
+    var stepBtn = this._makeBtn('Step ›', U.C.gray);
     ctrl.appendChild(stepBtn);
 
     function nodeById(id) { return nodes.find(function(n){return n.id===id;}); }
@@ -130,7 +135,7 @@
     }
 
     function raf() {
-      if (!running || !document.body.contains(canvas)) return;
+      if (!running || !self._alive(canvas)) return;
       rafId = requestAnimationFrame(function () {
         dotT += 0.02;
         var seg = Math.floor(dotT);

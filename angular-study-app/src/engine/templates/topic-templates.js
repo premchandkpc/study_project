@@ -230,6 +230,20 @@
     }
   );
 
+  /* 0.5 — Kid-friendly Analogy (ELI8 / CLAUDE.md Golden Rule) */
+  def('analogy', '🧒 Kid Analogy',
+    function (t) { return !!(t.analogy); },
+    function (t, U) {
+      return '<div class="section analogy">' +
+        '<h2>🧒 Kid Analogy — 8th-grade explanation</h2>' +
+        '<div class="analogy-card">' +
+          '<span class="analogy-icon">💡</span>' +
+          '<div class="prose">' + U.md(t.analogy) + '</div>' +
+        '</div>' +
+      '</div>';
+    }
+  );
+
   /* 1 — Concept */
   def('concept', '1 \xB7 Concept',
     function (t) { return !!(t.concept); },
@@ -305,6 +319,26 @@
     }
   );
 
+  /* 5.5 — Failure Scenarios (CLAUDE.md: BREAK systems intentionally) */
+  def('failure', '⚡ Failure Scenarios',
+    function (t) { return !!(t.failures && t.failures.length); },
+    function (t, U) {
+      var items = (t.failures || []).map(function (f) {
+        var name   = typeof f === 'string' ? f : (f.name   || f.scenario || '');
+        var cause  = typeof f === 'string' ? '' : (f.cause  || '');
+        var impact = typeof f === 'string' ? '' : (f.impact || '');
+        var fix    = typeof f === 'string' ? '' : (f.fix    || f.mitigation || '');
+        return '<div class="failure-card">' +
+          '<div class="failure-name">⚡ ' + U.esc(name) + '</div>' +
+          (cause  ? '<div class="failure-row"><strong>Cause:</strong> '    + U.md(cause)  + '</div>' : '') +
+          (impact ? '<div class="failure-row"><strong>Impact:</strong> '   + U.md(impact) + '</div>' : '') +
+          (fix    ? '<div class="failure-row fix"><strong>Fix:</strong> '  + U.md(fix)    + '</div>' : '') +
+        '</div>';
+      }).join('');
+      return '<div class="section failures"><h2>⚡ Failure Scenarios</h2>' + items + '</div>';
+    }
+  );
+
   /* 6 — Gotchas */
   def('gotchas', '6 \xB7 Gotchas',
     function (t) { return !!(t.gotchas && t.gotchas.length); },
@@ -320,19 +354,37 @@
    * Each area → ordered array of slot ids.
    * Slots whose condition() = false are skipped automatically.
    ──────────────────────────────────────────────────────────────── */
+  // Slot ordering convention (parent → child render order):
+  //   workbench → interactive labs (flow/uml/arch/viz) → analogy → concept → why
+  //   → code → interview → tradeoffs → failure → gotchas
+  //
+  // Slots are skipped automatically when their condition() returns false,
+  // so adding them to all areas costs nothing if the topic doesn't define that field.
+
+  var CORE_SLOTS    = ['flow', 'uml', 'arch', 'viz'];
+  var CONTENT_SLOTS = ['analogy', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'failure', 'gotchas'];
+  var ALL_SLOTS     = CORE_SLOTS.concat(CONTENT_SLOTS);
+
   var AREA_TEMPLATES = {
-    sysdesign:     ['workbench', 'flow', 'uml', 'arch', 'viz', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'gotchas'],
-    dsa:           ['viz', 'concept', 'why', 'code', 'interview', 'tradeoffs'],
-    java:          ['flow', 'uml', 'arch', 'viz', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'gotchas'],
-    golang:        ['flow', 'uml', 'arch', 'viz', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'gotchas'],
-    python:        ['flow', 'uml', 'arch', 'viz', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'gotchas'],
-    rust:          ['flow', 'uml', 'arch', 'viz', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'gotchas'],
-    angular:       ['flow', 'uml', 'arch', 'viz', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'gotchas'],
-    react:         ['flow', 'uml', 'arch', 'viz', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'gotchas'],
-    kafka:         ['flow', 'uml', 'arch', 'viz', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'gotchas'],
-    microservices: ['workbench', 'flow', 'uml', 'arch', 'viz', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'gotchas'],
-    databases:     ['flow', 'uml', 'arch', 'viz', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'gotchas'],
-    _default:      ['flow', 'uml', 'arch', 'viz', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'gotchas'],
+    // System design gets workbench overview card before everything
+    sysdesign:     ['workbench'].concat(ALL_SLOTS),
+    // Microservices mirrors sysdesign
+    microservices: ['workbench'].concat(ALL_SLOTS),
+    // DSA: viz first (array/dp/graph canvas), then content — no arch/uml needed by default
+    dsa:           ['viz', 'analogy', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'failure', 'gotchas'],
+    // All language/infra areas: same full slot set
+    java:          ALL_SLOTS,
+    golang:        ALL_SLOTS,
+    python:        ALL_SLOTS,
+    rust:          ALL_SLOTS,
+    angular:       ALL_SLOTS,
+    react:         ALL_SLOTS,
+    kafka:         ALL_SLOTS,
+    databases:     ALL_SLOTS,
+    // Agents area (new — was missing entirely)
+    agents:        ['viz', 'analogy', 'concept', 'why', 'code', 'interview', 'tradeoffs', 'gotchas'],
+    // Fallback for unregistered areas
+    _default:      ALL_SLOTS,
   };
 
   /* ── Public API ──────────────────────────────────────────────── */
