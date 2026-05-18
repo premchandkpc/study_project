@@ -66,27 +66,27 @@
   /* ── CONTROL BAR ────────────────────────────────────────────── */
   function makeControlBar(ctrl) {
     const bar = document.createElement('div');
-    bar.style.cssText = `display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 0;margin-top:8px;`;
+    bar.style.cssText = `display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin-top:8px;justify-content:center;`;
 
     const btn = (label, action, title='') => {
       const b = document.createElement('button');
       b.textContent = label;
       b.title = title;
-      b.style.cssText = `background:#21262d;color:#cdd9e5;border:1px solid #30363d;
-        padding:5px 12px;border-radius:6px;cursor:pointer;font-size:13px;
-        font-family:'JetBrains Mono',monospace;transition:background .15s;`;
-      b.onmouseenter = () => b.style.background = '#30363d';
-      b.onmouseleave = () => b.style.background = '#21262d';
+      b.style.cssText = `background:#1f2937;color:#e6edf3;border:1px solid #30363d;
+        padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;
+        font-family:'Inter','JetBrains Mono',system-ui,sans-serif;transition:background .15s,border-color .15s;`;
+      b.onmouseenter = () => { b.style.background = '#2d3748'; b.style.borderColor = '#58a6ff66'; };
+      b.onmouseleave = () => { b.style.background = '#1f2937'; b.style.borderColor = '#30363d'; };
       b.onclick = action;
       return b;
     };
 
     const ctr = document.createElement('span');
-    ctr.style.cssText = `margin-left:auto;font-size:12px;color:#768390;font-family:monospace;min-width:80px;text-align:right;`;
+    ctr.style.cssText = `margin-left:auto;font-size:12px;color:#8b949e;font-family:'Inter',system-ui,sans-serif;min-width:80px;text-align:right;font-weight:600;`;
     ctr.textContent = `0 / ${ctrl.total()}`;
 
     const speedSel = document.createElement('select');
-    speedSel.style.cssText = `background:#21262d;color:#cdd9e5;border:1px solid #30363d;border-radius:6px;padding:4px 6px;font-size:12px;cursor:pointer;`;
+    speedSel.style.cssText = `background:#1f2937;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:6px 8px;font-size:12px;cursor:pointer;font-family:'Inter',system-ui,sans-serif;`;
     [['Slow',2000],['Normal',1200],['Fast',500],['Turbo',150]].forEach(([l,v]) => {
       const o = document.createElement('option');
       o.value = v; o.textContent = l; if (v === 1200) o.selected = true;
@@ -112,9 +112,9 @@
   /* ── NARRATION BAR ──────────────────────────────────────────── */
   function makeNarration(text = '') {
     const el = document.createElement('div');
-    el.style.cssText = `background:#21262d;border-left:3px solid #1f6feb;padding:10px 14px;
-      font-size:14px;color:#cdd9e5;font-family:'Nunito',sans-serif;border-radius:0 6px 6px 0;
-      min-height:42px;margin:8px 0;line-height:1.5;transition:opacity .2s;`;
+    el.style.cssText = `background:#161b22;border-left:3px solid #58a6ff;padding:12px 16px;
+      font-size:14px;color:#e6edf3;font-family:'Inter','Nunito',system-ui,sans-serif;border-radius:0 8px 8px 0;
+      min-height:44px;margin:10px 0;line-height:1.6;transition:opacity .2s;border:1px solid #30363d;border-left:3px solid #58a6ff;`;
     el.textContent = text;
     el.update = (msg, color = '#1f6feb') => {
       el.style.borderLeftColor = color;
@@ -128,9 +128,9 @@
   /* ── COMPLEXITY BADGE ───────────────────────────────────────── */
   function makeComplexityBadge(timeStr, spaceStr) {
     const el = document.createElement('div');
-    el.style.cssText = `display:inline-flex;gap:10px;align-items:center;font-size:12px;
-      font-family:'JetBrains Mono',monospace;padding:4px 10px;background:#21262d;
-      border:1px solid #30363d;border-radius:6px;`;
+    el.style.cssText = `display:inline-flex;gap:12px;align-items:center;font-size:13px;
+      font-family:'Inter','JetBrains Mono',monospace;padding:6px 14px;background:#161b22;
+      border:1px solid #30363d;border-radius:8px;margin:8px 0;`;
     el.innerHTML = `<span style="color:#768390">Time:</span><span style="color:#e3b341">${timeStr}</span>
       <span style="color:#768390">Space:</span><span style="color:#56d364">${spaceStr}</span>`;
     el.update = (ops) => {
@@ -214,11 +214,12 @@
   /* ── CONTAINER BUILDER ──────────────────────────────────────── */
   function makeContainer(mount, title) {
     mount.innerHTML = '';
-    mount.style.cssText = `background:#161b22;border-radius:10px;padding:16px;
-      font-family:'JetBrains Mono',monospace;color:#cdd9e5;`;
+    mount.style.cssText = `background:#161b22;border-radius:14px;padding:20px;
+      font-family:'Inter','JetBrains Mono',system-ui,sans-serif;color:#e6edf3;
+      border:1px solid #30363d;box-shadow:0 8px 32px rgba(0,0,0,.24);`;
     if (title) {
       const h = document.createElement('div');
-      h.style.cssText = `font-size:15px;font-weight:700;color:#58a6ff;margin-bottom:12px;letter-spacing:.02em;`;
+      h.style.cssText = `font-size:17px;font-weight:700;color:#58a6ff;margin-bottom:14px;letter-spacing:.01em;font-family:'Inter',system-ui,sans-serif;`;
       h.textContent = title;
       mount.appendChild(h);
     }

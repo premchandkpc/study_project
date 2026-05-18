@@ -306,333 +306,77 @@ public FeedPage getFeed(String userId, String cursor) {
     ]
   },
 
-  visual: function(mount) {
-    var W = 520, H = 300;
-    var DARK = '#0a0a0f', CARD = '#12121a', BORDER = '#1e1e2e';
-    var PINK = '#e1306c', PURPLE = '#833ab4', ORANGE = '#fd5000';
-    var GREEN = '#3fb950', BLUE = '#58a6ff', GRAY = '#8b949e';
-    var GOLD = '#e3a008';
-
-    var modeBar = document.createElement('div');
-    modeBar.style.cssText = 'display:flex;gap:6px;margin-bottom:8px;justify-content:center;flex-wrap:wrap';
-    var modes = [
-      {key:'fanout',  label:'Fanout Flow',     color: PINK},
-      {key:'upload',  label:'Upload Pipeline', color: BLUE},
-      {key:'stories', label:'Stories Ring',    color: PURPLE}
-    ];
-    var activeMode = 'fanout';
-    var particles = [];
-    var storyAngle = 0;
-    var pipeStep = 0;
-    var pipeParticle = null;
-    var selectedStory = null;
-    var storyTimer = 0;
-    var running = false;
-    var rafId = null;
-    var intervalId = null;
-    var speed = 1;
-
-    var modeBtns = modes.map(function(m) {
-      var b = document.createElement('button');
-      b.textContent = (m.key === 'fanout' ? '📢 ' : m.key === 'upload' ? '📸 ' : '⭕ ') + m.label;
-      b.style.cssText = 'padding:4px 12px;border-radius:20px;border:1px solid ' + m.color + '55;background:' +
-        (m.key === activeMode ? m.color + '22' : 'transparent') +
-        ';color:' + m.color + ';cursor:pointer;font-size:12px;font-family:monospace;transition:all 0.2s';
-      b.addEventListener('click', function() {
-        if (running) { running = false; if (rafId) cancelAnimationFrame(rafId); if (intervalId) clearInterval(intervalId); }
-        activeMode = m.key;
-        modeBtns.forEach(function(btn, i) {
-          btn.style.background = modes[i].key === activeMode ? modes[i].color + '22' : 'transparent';
-        });
-        particles = []; storyAngle = 0; pipeStep = 0; pipeParticle = null; selectedStory = null;
-        playBtn.textContent = '► Play'; playBtn.style.color = PINK;
-        statusEl.textContent = '';
-        draw();
-      });
-      modeBar.appendChild(b);
-      return b;
-    });
-    mount.appendChild(modeBar);
-
-    var ctrl = document.createElement('div');
-    ctrl.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px;justify-content:center';
-    var playBtn = document.createElement('button');
-    playBtn.textContent = '► Play';
-    playBtn.style.cssText = 'padding:4px 14px;border-radius:6px;border:1px solid ' + PINK + '55;background:' + PINK + '18;color:' + PINK + ';cursor:pointer;font-size:12px;font-family:monospace';
-    var postBtn = document.createElement('button');
-    postBtn.textContent = '✦ Post Now';
-    postBtn.style.cssText = 'padding:4px 14px;border-radius:6px;border:1px solid ' + GREEN + '55;background:' + GREEN + '18;color:' + GREEN + ';cursor:pointer;font-size:12px;font-family:monospace';
-    var speedSel = document.createElement('select');
-    speedSel.style.cssText = 'padding:3px 8px;border-radius:6px;border:1px solid ' + BORDER + ';background:' + CARD + ';color:' + GRAY + ';font-size:11px;font-family:monospace';
-    ['1x','2x','0.5x'].forEach(function(s) { var o = document.createElement('option'); o.textContent = s; speedSel.appendChild(o); });
-    ctrl.appendChild(playBtn); ctrl.appendChild(postBtn); ctrl.appendChild(speedSel);
-    mount.appendChild(ctrl);
-
-    var canvas = document.createElement('canvas');
-    canvas.width = W; canvas.height = H;
-    canvas.style.cssText = 'width:100%;max-width:' + W + 'px;border-radius:10px;background:' + DARK + ';display:block;margin:0 auto;border:1px solid ' + BORDER;
-    mount.appendChild(canvas);
-    var ctx = canvas.getContext('2d');
-
-    var statusEl = document.createElement('div');
-    statusEl.style.cssText = 'text-align:center;font-size:11px;font-family:monospace;color:' + GRAY + ';margin-top:6px;min-height:18px';
-    mount.appendChild(statusEl);
-
-    speedSel.addEventListener('change', function() {
-      speed = speedSel.selectedIndex === 0 ? 1 : speedSel.selectedIndex === 1 ? 2 : 0.5;
-    });
-
-    // Followers in circle
-    var FOLLOWER_COUNT = 12;
-    var followers = [];
-    for (var fi = 0; fi < FOLLOWER_COUNT; fi++) {
-      var fa = (fi / FOLLOWER_COUNT) * Math.PI * 2 - Math.PI / 2;
-      followers.push({ x: W/2 + Math.cos(fa)*105, y: H/2 + Math.sin(fa)*82, lit: 0 });
-    }
-
-    var pipeStages = [
-      {label:'Client',    sub:'📱 compress', x:45,  color:BLUE},
-      {label:'API GW',    sub:'⚡ auth+limit',x:130, color:BLUE},
-      {label:'S3 Raw',    sub:'☁ store',     x:215, color:GOLD},
-      {label:'Kafka',     sub:'⚙ event bus', x:300, color:ORANGE},
-      {label:'Transcode', sub:'🎬 FFmpeg',    x:385, color:PURPLE},
-      {label:'CDN',       sub:'🌐 pre-warm',  x:470, color:GREEN}
-    ];
-
-    var storyUsers = [
-      {name:'You',   color:PINK,   hasStory:true,  viewed:false},
-      {name:'Alice', color:PURPLE, hasStory:true,  viewed:true},
-      {name:'Bob',   color:'#fd1d1d', hasStory:true,  viewed:false},
-      {name:'Carol', color:GOLD,   hasStory:false, viewed:false},
-      {name:'Dave',  color:BLUE,   hasStory:true,  viewed:true},
-      {name:'Eve',   color:GREEN,  hasStory:true,  viewed:false},
-      {name:'Frank', color:'#e3a008', hasStory:false, viewed:false},
-      {name:'Grace', color:'#f78166', hasStory:true,  viewed:false}
-    ];
-
-    function roundRect(x, y, w, h, r, fill, stroke) {
-      ctx.beginPath(); ctx.roundRect(x-w/2, y-h/2, w, h, r);
-      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
-      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.2; ctx.stroke(); }
-    }
-    function txt(t, x, y, col, sz, align) {
-      ctx.fillStyle = col || '#e6edf3'; ctx.font = (sz||11)+'px monospace';
-      ctx.textAlign = align||'center'; ctx.textBaseline = 'middle'; ctx.fillText(t,x,y);
-    }
-
-    function drawFanout() {
-      ctx.fillStyle = DARK; ctx.fillRect(0, 0, W, H);
-      var cx = W/2, cy = H/2;
-
-      // Kafka dashed ring
-      ctx.save(); ctx.strokeStyle = ORANGE+'44'; ctx.lineWidth=1; ctx.setLineDash([3,5]);
-      ctx.beginPath(); ctx.arc(cx,cy,62,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
-      txt('Kafka fanout', cx+60, cy-18, ORANGE+'99', 9);
-
-      // Connection lines
-      followers.forEach(function(f) {
-        ctx.save(); ctx.globalAlpha=0.1; ctx.strokeStyle=GRAY; ctx.lineWidth=0.8;
-        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(f.x,f.y); ctx.stroke(); ctx.restore();
-      });
-
-      // Author center
-      var g = ctx.createRadialGradient(cx,cy,0,cx,cy,36);
-      g.addColorStop(0,PINK+'dd'); g.addColorStop(1,PURPLE+'33');
-      ctx.beginPath(); ctx.arc(cx,cy,32,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
-      ctx.strokeStyle=PINK; ctx.lineWidth=2; ctx.stroke();
-      txt('📸',cx,cy-5,null,15); txt('Author',cx,cy+14,'#e6edf3',9);
-
-      // Followers
-      followers.forEach(function(f) {
-        if (f.lit > 0) {
-          var g2 = ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,20);
-          g2.addColorStop(0,GREEN+Math.round(f.lit*180).toString(16).padStart(2,'0'));
-          g2.addColorStop(1,'transparent');
-          ctx.beginPath(); ctx.arc(f.x,f.y,20,0,Math.PI*2); ctx.fillStyle=g2; ctx.fill();
-        }
-        roundRect(f.x,f.y,36,20,5,CARD,f.lit>0.3?GREEN:BORDER);
-        txt(f.lit>0.5?'✅':'👤',f.x,f.y,null,10);
-      });
-
-      // Particles
-      particles.forEach(function(p) {
-        ctx.globalAlpha = Math.max(0,p.alpha);
-        var gr = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
-        gr.addColorStop(0,p.color); gr.addColorStop(1,'transparent');
-        ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
-        ctx.globalAlpha=1;
-      });
-
-      var lit = followers.filter(function(f){return f.lit>0.1;}).length;
-      roundRect(52,18,96,22,5,CARD,BORDER);
-      txt('Reached: '+lit+'/'+FOLLOWER_COUNT, 52, 18, lit>0?GREEN:GRAY, 10);
-      txt('Redis ZADD feed:{userId} score postId', W/2, H-12, BLUE+'66', 9);
-      if (!running) txt('Press Play · Post Now to animate', W/2, H-26, GRAY+'88', 9);
-    }
-
-    function spawnPost() {
-      var cx=W/2, cy=H/2;
-      followers.forEach(function(f,i) {
-        setTimeout(function() {
-          if (!document.body.contains(canvas)) return;
-          particles.push({x:cx,y:cy,tx:f.x,ty:f.y,t:0,follower:i,color:PINK,r:7,alpha:1,done:false});
-          statusEl.textContent = '⚡ Kafka fanout → Redis ZADD feed:{follower'+i+'} score postId';
-        }, i*75);
-      });
-    }
-
-    function updateFanout() {
-      particles = particles.filter(function(p){
-        if (p.done) return p.alpha>0;
-        p.t = Math.min(1, p.t + 0.032*speed);
-        var e = 1-Math.pow(1-p.t,3);
-        p.x = W/2+(followers[p.follower].x-W/2)*e;
-        p.y = H/2+(followers[p.follower].y-H/2)*e;
-        p.r = 7-p.t*3.5;
-        if (p.t>=1){p.done=true;followers[p.follower].lit=1;}
-        return true;
-      });
-      followers.forEach(function(f){if(f.lit>0)f.lit=Math.max(0,f.lit-0.004*speed);});
-    }
-
-    function drawUpload() {
-      ctx.fillStyle=DARK; ctx.fillRect(0,0,W,H);
-      txt('Photo Upload Pipeline', W/2, 20, '#e6edf3', 12);
-      txt('Step '+Math.min(pipeStep+1,pipeStages.length)+' of '+pipeStages.length, W/2, 36, GRAY, 10);
-      var sy = H/2 - 10;
-      pipeStages.forEach(function(s,i) {
-        var active = pipeStep===i, done = i<pipeStep;
-        var bgCol = done ? GREEN+'18' : (active ? s.color+'22' : CARD);
-        var bdCol = done ? GREEN : (active ? s.color : BORDER);
-        roundRect(s.x, sy, 66, 44, 8, bgCol, bdCol);
-        txt(s.label, s.x, sy-8, active?s.color:done?GREEN:GRAY, 10);
-        txt(s.sub, s.x, sy+8, active?s.color+'cc':GRAY, 9);
-        if (done) { ctx.fillStyle=GREEN; ctx.font='11px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('✓',s.x+29,sy-14); }
-        if (i<pipeStages.length-1) {
-          var x1=s.x+33, x2=pipeStages[i+1].x-33;
-          ctx.strokeStyle = done?GREEN+'88':BORDER; ctx.lineWidth=1.5;
-          ctx.beginPath(); ctx.moveTo(x1,sy); ctx.lineTo(x2,sy); ctx.stroke();
-          ctx.fillStyle = done?GREEN+'88':BORDER;
-          ctx.beginPath(); ctx.moveTo(x2,sy); ctx.lineTo(x2-6,sy-4); ctx.lineTo(x2-6,sy+4); ctx.closePath(); ctx.fill();
-        }
-      });
-      if (pipeParticle) {
-        var pp=pipeParticle;
-        ctx.globalAlpha=pp.alpha;
-        var gr2=ctx.createRadialGradient(pp.x,sy,0,pp.x,sy,10);
-        gr2.addColorStop(0,BLUE); gr2.addColorStop(1,'transparent');
-        ctx.fillStyle=gr2; ctx.beginPath(); ctx.arc(pp.x,sy,10,0,Math.PI*2); ctx.fill();
-        ctx.globalAlpha=1;
+  visual: {
+    type: 'layered',
+    title: '📸 Instagram System Architecture',
+    layers: [
+      {
+        id: 'client-layer',
+        label: 'Client Layer',
+        color: '#e1306c',
+        protocols: 'HTTPS / GraphQL / REST',
+        services: [
+          { id: 'ios-app', label: 'iOS App', icon: '📱', sublabel: 'Swift / UIKit' },
+          { id: 'android-app', label: 'Android App', icon: '🤖', sublabel: 'Kotlin / Compose' },
+          { id: 'web-app', label: 'Web App', icon: '🌐', sublabel: 'React / PWA' }
+        ]
+      },
+      {
+        id: 'api-layer',
+        label: 'API Layer',
+        color: '#58a6ff',
+        protocols: 'REST / GraphQL / Auth JWT',
+        services: [
+          { id: 'api-gateway', label: 'API Gateway', icon: '🔀', sublabel: 'Nginx+ / Rate limit' },
+          { id: 'graphql-api', label: 'GraphQL API', icon: '⚡', sublabel: 'Feed & Stories' },
+          { id: 'upload-svc', label: 'Upload Service', icon: '⬆️', sublabel: 'Java / Spring' },
+          { id: 'auth-svc', label: 'Auth Service', icon: '🔒', sublabel: 'JWT / OAuth2' }
+        ]
+      },
+      {
+        id: 'processing-layer',
+        label: 'Processing Layer',
+        color: '#ffa657',
+        protocols: 'Kafka Topics / Async',
+        services: [
+          { id: 'kafka-bus', label: 'Kafka', icon: '⚙️', sublabel: 'Event backbone' },
+          { id: 'transcoder', label: 'Transcoder', icon: '🎬', sublabel: 'FFmpeg / K8s jobs' },
+          { id: 'feed-svc', label: 'Feed Service', icon: '📢', sublabel: 'Hybrid fanout' },
+          { id: 'notif-svc', label: 'Notification Svc', icon: '🔔', sublabel: 'APNs / FCM' },
+          { id: 'ranker', label: 'Ranking Service', icon: '🧠', sublabel: 'ML / TensorFlow' }
+        ]
+      },
+      {
+        id: 'storage-layer',
+        label: 'Storage Layer',
+        color: '#3fb950',
+        protocols: 'S3 / Redis / Cassandra / PG',
+        services: [
+          { id: 's3-cdn', label: 'S3 + CDN', icon: '☁️', sublabel: '300+ PoPs' },
+          { id: 'redis-feed', label: 'Redis Cluster', icon: '⚡', sublabel: 'Feed sorted sets' },
+          { id: 'cassandra', label: 'Cassandra', icon: '🗃️', sublabel: 'Stories TTL 24h' },
+          { id: 'postgres', label: 'Postgres', icon: '🐘', sublabel: 'Sharded metadata' },
+          { id: 'elastic', label: 'Elasticsearch', icon: '🔍', sublabel: 'Hashtag search' }
+        ]
       }
-      var stepDescs = [
-        'Client compresses JPEG 85% quality · attaches caption + hashtags',
-        'API Gateway validates auth token · rate-limit check passes (token bucket)',
-        'Raw media written to S3 ig-raw bucket · 202 Accepted returned to client',
-        'Kafka media.uploaded event published · transcoder + fanout workers notified',
-        'FFmpeg generates 360/720/1080p WebP variants in parallel Kubernetes jobs',
-        'CDN pre-warmed at 300+ PoPs · global first byte time < 50ms ✓'
-      ];
-      roundRect(W/2, H-26, W-20, 26, 6, CARD, BORDER);
-      txt(stepDescs[Math.min(pipeStep,stepDescs.length-1)], W/2, H-26, BLUE+'dd', 10);
-      txt('Press ✦ Post Now to advance each stage', W/2, H+10, GRAY+'66', 9);
-    }
-
-    function advancePipeline() {
-      if (pipeStep >= pipeStages.length-1) {
-        pipeStep=0; pipeParticle=null; statusEl.textContent='Pipeline complete — photo live on CDN ✓'; draw(); return;
+    ],
+    flows: [
+      {
+        name: 'Photo Upload',
+        path: ['ios-app', 'api-gateway', 'upload-svc', 'kafka-bus', 'transcoder', 's3-cdn'],
+        color: '#e1306c'
+      },
+      {
+        name: 'Feed Read',
+        path: ['android-app', 'api-gateway', 'graphql-api', 'feed-svc', 'redis-feed', 'ranker'],
+        color: '#58a6ff'
+      },
+      {
+        name: 'Fanout Write',
+        path: ['kafka-bus', 'feed-svc', 'redis-feed'],
+        color: '#ffa657'
       }
-      var from=pipeStages[pipeStep], to=pipeStages[pipeStep+1];
-      pipeParticle={x:from.x,alpha:1};
-      var dx=to.x-from.x, t0=Date.now(), dur=500/speed;
-      function ap(){
-        if(!document.body.contains(canvas))return;
-        var t=Math.min(1,(Date.now()-t0)/dur), e=1-Math.pow(1-t,2);
-        pipeParticle.x=from.x+dx*e; pipeParticle.alpha=t<0.8?1:(1-t)/0.2;
-        draw();
-        if(t<1) requestAnimationFrame(ap);
-        else { pipeStep++; pipeParticle=null; statusEl.textContent='→ '+pipeStages[Math.min(pipeStep,pipeStages.length-1)].label+' stage'; draw(); }
-      }
-      ap();
-    }
-
-    function drawStories() {
-      ctx.fillStyle=DARK; ctx.fillRect(0,0,W,H);
-      txt('Instagram Stories Ring', W/2, 20, '#e6edf3', 13);
-      txt('Cassandra TTL:86400s · Redis viewer ring · CDN signed URLs', W/2, 36, GRAY, 10);
-      var n=storyUsers.length, sx=48, gap=(W-96)/(n-1);
-      storyUsers.forEach(function(u,i) {
-        var x=sx+i*gap, y=H/2;
-        if (!u.hasStory) {
-          ctx.beginPath(); ctx.arc(x,y,20,0,Math.PI*2); ctx.fillStyle=CARD; ctx.fill();
-          ctx.strokeStyle=BORDER; ctx.lineWidth=1.5; ctx.stroke();
-          txt('👤',x,y,null,14); txt(u.name,x,y+30,GRAY,9); return;
-        }
-        ctx.save();
-        if (u.viewed) { ctx.strokeStyle=GRAY+'55'; ctx.lineWidth=2.5; }
-        else {
-          var rg=ctx.createLinearGradient(x-24,y-24,x+24,y+24);
-          rg.addColorStop(0,PINK); rg.addColorStop(0.5,PURPLE); rg.addColorStop(1,ORANGE);
-          ctx.strokeStyle=rg; ctx.lineWidth=3;
-        }
-        ctx.beginPath(); ctx.arc(x,y,24,-Math.PI/2+storyAngle,Math.PI*1.5+storyAngle); ctx.stroke();
-        ctx.restore();
-        ctx.beginPath(); ctx.arc(x,y,18,0,Math.PI*2);
-        ctx.fillStyle=u.color+'33'; ctx.fill();
-        txt('👤',x,y,null,13);
-        txt(u.name,x,y+30,u.viewed?GRAY:'#e6edf3',9);
-        if (u===selectedStory) {
-          ctx.fillStyle=CARD; ctx.fillRect(x-18,y+38,36,4);
-          ctx.fillStyle=u.color; ctx.fillRect(x-18,y+38,36*(1-storyTimer),4);
-        }
-      });
-      roundRect(W/2,H-16,W-20,20,5,CARD,BORDER);
-      if (selectedStory) txt('Viewing '+selectedStory.name+' · ZADD storyViews:'+selectedStory.name+' ts userId · TTL countdown active',W/2,H-16,selectedStory.color+'cc',9);
-      else txt('Click a gradient ring to view story · Colored ring = unviewed · Gray = seen',W/2,H-16,GRAY,9);
-    }
-
-    canvas.addEventListener('click', function(e) {
-      if (activeMode!=='stories') return;
-      var rect=canvas.getBoundingClientRect(), scaleX=W/rect.width, scaleY=H/rect.height;
-      var mx=(e.clientX-rect.left)*scaleX, my=(e.clientY-rect.top)*scaleY;
-      var n=storyUsers.length, sx=48, gap=(W-96)/(n-1);
-      storyUsers.forEach(function(u,i){
-        var x=sx+i*gap, y=H/2, dx=mx-x, dy=my-y;
-        if (dx*dx+dy*dy<28*28 && u.hasStory){ selectedStory=u; storyTimer=0; u.viewed=true; statusEl.textContent='Viewing '+u.name+' story · ZADD storyViews:'+u.name+' '+Date.now()+' userId → Cassandra viewer count++'; draw(); }
-      });
-    });
-
-    function draw() {
-      if (activeMode==='fanout') drawFanout();
-      else if (activeMode==='upload') drawUpload();
-      else drawStories();
-    }
-
-    function frame() {
-      if (!running || !document.body.contains(canvas)) return;
-      rafId=requestAnimationFrame(frame);
-      if (activeMode==='fanout'){ updateFanout(); drawFanout(); }
-      else if (activeMode==='stories'){ storyAngle+=0.018*speed; if(selectedStory){storyTimer=Math.min(1,storyTimer+0.004*speed);if(storyTimer>=1){selectedStory=null;storyTimer=0;}} drawStories(); }
-      else drawUpload();
-    }
-
-    function startLoop() {
-      running=true; playBtn.textContent='⏸ Pause'; playBtn.style.color=ORANGE;
-      if (activeMode==='fanout') intervalId=setInterval(function(){if(!document.body.contains(canvas)||!running){clearInterval(intervalId);return;}spawnPost();},3200/speed);
-      frame();
-    }
-    function pauseLoop() {
-      running=false; playBtn.textContent='► Play'; playBtn.style.color=PINK;
-      if(rafId)cancelAnimationFrame(rafId); if(intervalId)clearInterval(intervalId);
-    }
-
-    playBtn.addEventListener('click',function(){if(running)pauseLoop();else startLoop();});
-    postBtn.addEventListener('click',function(){
-      if(activeMode==='fanout'){spawnPost();statusEl.textContent='✦ Post published → Kafka fanout.workers consuming...';}
-      else if(activeMode==='upload') advancePipeline();
-      else statusEl.textContent='Click a story ring to view it';
-    });
-
-    draw();
+    ]
   }
 };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);

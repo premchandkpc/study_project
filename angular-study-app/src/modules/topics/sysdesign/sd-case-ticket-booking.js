@@ -194,247 +194,53 @@ async def confirm_booking(event_id: str, seat_id: str, user_id: str):
       "The virtual queue drainer is a SPOF — run multiple instances with leader election (Redis Redlock) to ensure only one drainer runs at a time.",
       "Payment timeout during seat hold: if payment gateway takes >5 min (your hold TTL), the seat is released while payment is in-flight. Set hold TTL > max expected payment time, or implement hold extension API."
     ],
-    visual: function(mount) {
-      mount.innerHTML = `
-        <div style="text-align:center;margin-bottom:8px;">
-          <button id="btnRace" style="padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;margin-right:6px;">Simulate Race</button>
-          <button id="btnQueue" style="padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;margin-right:6px;">Fill Virtual Queue</button>
-          <button id="btnReset" style="padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;">Reset</button>
-        </div>
-        <canvas id="tbCanvas" width="460" height="320" style="width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto;"></canvas>
-      `;
-
-      var canvas = mount.querySelector('#tbCanvas');
-      var ctx = canvas.getContext('2d');
-      var W = 460, H = 320;
-
-      var GREEN = '#3fb950', BLUE = '#58a6ff', ORANGE = '#ffa657';
-      var RED = '#f85149', GRAY = '#8b949e', TEXT = '#e6edf3';
-      var CARD = '#161b22', BORDER = '#30363d', PURPLE = '#bc8cff';
-
-      var COLS = 8, ROWS = 4;
-      var seatStatuses = [];
-      var queueCount = 0;
-      var admittedCount = 0;
-      var statusLabel = 'Choose a scenario — Simulate Race or Fill Virtual Queue';
-      var animating = false;
-      var raceMsg = '';
-      var raceMsgColor = TEXT;
-      var queueInterval = null;
-
-      function initSeats() {
-        seatStatuses = [];
-        for (var i = 0; i < ROWS * COLS; i++) seatStatuses.push('available');
-        // Pre-book some seats for visual interest
-        [2, 5, 10, 18, 25].forEach(function(i) { seatStatuses[i] = 'booked'; });
-      }
-      initSeats();
-
-      var SEAT_W = 30, SEAT_H = 22, SEAT_PAD = 6;
-      var GRID_X = 10, GRID_Y = 30;
-
-      function seatColor(status) {
-        if (status === 'available') return GREEN;
-        if (status === 'reserved') return ORANGE;
-        if (status === 'booked') return RED;
-        if (status === 'hold') return BLUE;
-        return GRAY;
-      }
-
-      function getSeatXY(idx) {
-        var col = idx % COLS, row = Math.floor(idx / COLS);
-        return {
-          x: GRID_X + col * (SEAT_W + SEAT_PAD),
-          y: GRID_Y + row * (SEAT_H + SEAT_PAD)
-        };
-      }
-
-      function draw() {
-        if (!document.body.contains(canvas)) return;
-        ctx.clearRect(0, 0, W, H);
-
-        ctx.fillStyle = GRAY;
-        ctx.font = '9px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText('Concert Hall — Seat Reservation', 10, 16);
-
-        // Legend
-        var legend = [['available', GREEN], ['reserved', ORANGE], ['booked', RED], ['hold', BLUE]];
-        legend.forEach(function(l, i) {
-          ctx.fillStyle = l[1];
-          ctx.fillRect(280 + i * 46, 8, 8, 8);
-          ctx.fillStyle = GRAY;
-          ctx.font = '7px monospace';
-          ctx.textAlign = 'left';
-          ctx.fillText(l[0], 290 + i * 46, 16);
-        });
-
-        // Draw seat grid
-        seatStatuses.forEach(function(status, idx) {
-          var pos = getSeatXY(idx);
-          ctx.fillStyle = status === 'available' ? '#0d2818' : (status === 'booked' ? '#1a0808' : (status === 'hold' ? '#080d1a' : '#1a1208'));
-          ctx.strokeStyle = seatColor(status);
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.roundRect(pos.x, pos.y, SEAT_W, SEAT_H, 3);
-          ctx.fill();
-          ctx.stroke();
-
-          // Seat label
-          var row = Math.floor(idx / COLS);
-          var col = idx % COLS;
-          var seatLabel = String.fromCharCode(65 + row) + (col + 1);
-          ctx.fillStyle = seatColor(status);
-          ctx.font = '7px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(seatLabel, pos.x + SEAT_W / 2, pos.y + SEAT_H / 2 + 3);
-        });
-
-        // Race condition message
-        if (raceMsg) {
-          ctx.fillStyle = CARD;
-          ctx.strokeStyle = raceMsgColor;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.roundRect(10, 145, 260, 40, 6);
-          ctx.fill();
-          ctx.stroke();
-          ctx.fillStyle = raceMsgColor;
-          ctx.font = 'bold 10px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(raceMsg, 140, 160);
-          ctx.fillStyle = GRAY;
-          ctx.font = '8px monospace';
-          ctx.fillText('CAS: UPDATE WHERE status=AVAILABLE', 140, 178);
+    visual: {
+      type: 'flow',
+      title: '🎟️ Ticket Booking System (BookMyShow / Ticketmaster)',
+      direction: 'horizontal',
+      nodes: [
+        { id: 'user',      label: 'User',           color: '#58a6ff', icon: '👤', sublabel: '100K concurrent' },
+        { id: 'waitroom',  label: 'Virtual Queue',  color: '#bc8cff', icon: '🪑', sublabel: 'Redis ZADD FIFO' },
+        { id: 'search',    label: 'Search / Browse', color: '#58a6ff', icon: '🔍', sublabel: 'Event + seat map' },
+        { id: 'hold',      label: 'Seat Hold',      color: '#ffa657', icon: '🔒', sublabel: 'Redis SETNX 5min' },
+        { id: 'payment',   label: 'Payment',        color: '#e3b341', icon: '💳', sublabel: 'Stripe + idem key' },
+        { id: 'db',        label: 'DB CAS Write',   color: '#3fb950', icon: '🗄️', sublabel: 'UPDATE WHERE AVAILABLE' },
+        { id: 'ticket',    label: 'Ticket Gen',     color: '#3fb950', icon: '🎫', sublabel: 'PDF + QR code' }
+      ],
+      connections: [
+        { from: 'user',     to: 'waitroom', label: 'join queue',       protocol: 'HTTPS' },
+        { from: 'waitroom', to: 'search',   label: 'admitted (JWT)',   protocol: 'Token' },
+        { from: 'search',   to: 'hold',     label: 'select seat',      protocol: 'REST' },
+        { from: 'hold',     to: 'payment',  label: 'hold confirmed',   protocol: 'REST' },
+        { from: 'payment',  to: 'db',       label: 'charge success',   protocol: 'REST' },
+        { from: 'db',       to: 'ticket',   label: 'booking.confirmed', protocol: 'Kafka' }
+      ],
+      scenarios: [
+        {
+          name: '✅ Book Ticket',
+          path: ['user', 'waitroom', 'search', 'hold', 'payment', 'db', 'ticket'],
+          result: '✓ Ticket confirmed — QR code emailed',
+          resultColor: '#3fb950'
+        },
+        {
+          name: '⚔️ Seat Conflict (Race)',
+          path: ['user', 'search', 'hold'],
+          result: '✗ 409 Conflict — seat held by another user, SETNX returned 0',
+          resultColor: '#f85149'
+        },
+        {
+          name: '⏰ Hold Expired',
+          path: ['user', 'hold', 'payment'],
+          result: '⟳ 410 Gone — hold TTL expired during payment, seat released',
+          resultColor: '#ffa657'
+        },
+        {
+          name: '🎪 Virtual Queue (Spike)',
+          path: ['user', 'waitroom', 'search'],
+          result: '⟳ Position 4,821 — est. wait 48 min. Throttling 100 users/sec.',
+          resultColor: '#bc8cff'
         }
-
-        // Virtual queue panel
-        ctx.fillStyle = CARD;
-        ctx.strokeStyle = PURPLE;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(280, 130, 170, 100, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = PURPLE;
-        ctx.font = 'bold 10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('Virtual Waiting Room', 365, 147);
-
-        ctx.fillStyle = TEXT;
-        ctx.font = '12px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText('In queue: ', 290, 170);
-        ctx.fillStyle = ORANGE;
-        ctx.font = 'bold 14px monospace';
-        ctx.fillText(queueCount, 355, 170);
-
-        ctx.fillStyle = TEXT;
-        ctx.font = '12px monospace';
-        ctx.fillText('Admitted: ', 290, 192);
-        ctx.fillStyle = GREEN;
-        ctx.font = 'bold 14px monospace';
-        ctx.fillText(admittedCount, 360, 192);
-
-        ctx.fillStyle = GRAY;
-        ctx.font = '8px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('throttle: 10 users/sec', 365, 212);
-        ctx.fillText(queueCount > 0 ? 'draining...' : (admittedCount > 0 ? 'queue empty' : 'idle'), 365, 224);
-
-        // Status bar
-        ctx.fillStyle = CARD;
-        ctx.strokeStyle = BORDER;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(10, 290, W - 20, 24, 6);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = TEXT;
-        ctx.font = '10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(statusLabel, W / 2, 306);
-      }
-
-      // Find D5 seat index (row D = row 3, col 5 = index 29)
-      var raceTargetIdx = 3 * COLS + 4; // D5
-
-      function simulateRace() {
-        if (animating) return;
-        animating = true;
-        seatStatuses[raceTargetIdx] = 'available';
-        raceMsg = '';
-        statusLabel = 'User A and User B both see D5 = AVAILABLE';
-        draw();
-
-        setTimeout(function() {
-          // Both "read" D5 as available
-          seatStatuses[raceTargetIdx] = 'reserved';
-          statusLabel = 'Both A and B submit booking for D5 simultaneously...';
-          draw();
-
-          setTimeout(function() {
-            // A wins the CAS
-            seatStatuses[raceTargetIdx] = 'booked';
-            raceMsg = 'User A wins CAS → D5 BOOKED';
-            raceMsgColor = GREEN;
-            statusLabel = 'User A: UPDATE WHERE status=AVAILABLE → 1 row updated (success!)';
-            draw();
-
-            setTimeout(function() {
-              // B's CAS fails
-              raceMsg = 'User B CAS fails → "Seat taken, pick another"';
-              raceMsgColor = RED;
-              statusLabel = 'User B: UPDATE WHERE status=AVAILABLE → 0 rows updated (row already BOOKED)';
-              animating = false;
-              draw();
-            }, 1200);
-          }, 900);
-        }, 800);
-      }
-
-      function fillVirtualQueue() {
-        if (queueInterval) clearInterval(queueInterval);
-        queueCount = 1000;
-        admittedCount = 0;
-        statusLabel = '1000 users in virtual queue — throttling 10/sec into booking flow';
-        draw();
-
-        queueInterval = setInterval(function() {
-          if (!document.body.contains(canvas)) { clearInterval(queueInterval); return; }
-          if (queueCount <= 0) {
-            clearInterval(queueInterval);
-            queueInterval = null;
-            statusLabel = 'Queue drained — all users admitted to booking flow';
-            draw();
-            return;
-          }
-          var batch = Math.min(10, queueCount);
-          queueCount -= batch;
-          admittedCount += batch;
-          statusLabel = 'Admitting ' + batch + '/sec — queue: ' + queueCount + ' remaining';
-          draw();
-        }, 200);
-      }
-
-      function resetAll() {
-        if (queueInterval) { clearInterval(queueInterval); queueInterval = null; }
-        initSeats();
-        queueCount = 0;
-        admittedCount = 0;
-        raceMsg = '';
-        raceMsgColor = TEXT;
-        animating = false;
-        statusLabel = 'Reset complete — choose a scenario';
-        draw();
-      }
-
-      mount.querySelector('#btnRace').addEventListener('click', simulateRace);
-      mount.querySelector('#btnQueue').addEventListener('click', fillVirtualQueue);
-      mount.querySelector('#btnReset').addEventListener('click', resetAll);
-
-      draw();
+      ]
     }
   };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);

@@ -93,105 +93,31 @@ ring.getServer("user:42:profile"); // may now route to "cache-4:11211" or still 
     cons:["More complex than mod-N","Vnodes add memory overhead (ring size = servers × vnodes entries)","Hot spots still possible if many popular keys hash to same region"],
     when:"Use consistent hashing for any distributed cache or storage system where nodes join/leave dynamically. Essential for Cassandra, DynamoDB, Redis Cluster, and CDN routing."
   },
-  visual: function(mount) {
-    var W = 380, H = 300;
-
-    var ctrl = document.createElement('div');
-    ctrl.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:8px;justify-content:center';
-
-    var playBtn = document.createElement('button');
-    playBtn.textContent = '▶ Play';
-    playBtn.style.cssText = 'padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:13px';
-
-    ctrl.appendChild(playBtn);
-    mount.appendChild(ctrl);
-
-    var canvas = document.createElement('canvas');
-    canvas.width = W; canvas.height = H;
-    canvas.style.cssText = 'width:100%;max-width:380px;border-radius:8px;background:#0d1117;display:block;margin:0 auto';
-    mount.appendChild(canvas);
-    var ctx = canvas.getContext('2d');
-
-    var cx = W/2, cy = H/2 - 10, R = 110;
-    var servers = [
-      {name:'S1', angle: 0,        color:'#3fb950'},
-      {name:'S2', angle: 2.1,      color:'#58a6ff'},
-      {name:'S3', angle: 4.0,      color:'#f0883e'},
-      {name:'S4', angle: 5.3,      color:'#bc8cff', vnode: true}
-    ];
-    var dotAngle = 0;
-    var running = false, rafId = null;
-
-    function serverAt(angle) {
-      var best = servers[0], bestDiff = Infinity;
-      servers.forEach(function(s) {
-        var diff = (s.angle - angle + Math.PI*2) % (Math.PI*2);
-        if (diff < bestDiff) { bestDiff = diff; best = s; }
-      });
-      return best;
-    }
-
-    function drawScene(movingDot) {
-      ctx.fillStyle = '#0d1117'; ctx.fillRect(0,0,W,H);
-
-      ctx.fillStyle = '#00e5ff'; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center';
-      ctx.fillText('Consistent Hash Ring', cx, 20);
-
-      ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
-      ctx.fillText('dot = request key · circles = servers', cx, 36);
-
-      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2);
-      ctx.strokeStyle = '#30363d'; ctx.lineWidth = 2; ctx.stroke();
-
-      servers.forEach(function(s) {
-        var x = cx + R * Math.cos(s.angle), y = cy + R * Math.sin(s.angle);
-        ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI*2);
-        ctx.fillStyle = s.vnode ? '#21262d' : s.color + '33'; ctx.fill();
-        ctx.strokeStyle = s.color; ctx.lineWidth = s.vnode ? 1.5 : 2.5; ctx.stroke();
-        ctx.fillStyle = s.color; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center';
-        ctx.fillText(s.name, x, y + 4);
-      });
-
-      if (movingDot) {
-        var dx = cx + R * Math.cos(dotAngle), dy = cy + R * Math.sin(dotAngle);
-        ctx.beginPath(); ctx.arc(dx, dy, 7, 0, Math.PI*2);
-        ctx.fillStyle = '#e6edf3'; ctx.fill();
-
-        var target = serverAt(dotAngle);
-        var tx = cx + R * Math.cos(target.angle), ty = cy + R * Math.sin(target.angle);
-        ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(tx, ty);
-        ctx.strokeStyle = target.color + 'aa'; ctx.lineWidth = 1.5;
-        ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
-
-        ctx.fillStyle = '#e6edf3'; ctx.font = '12px monospace'; ctx.textAlign = 'center';
-        ctx.fillText('→ routes to ' + target.name, cx, H - 18);
-      } else {
-        ctx.fillStyle = '#8b949e'; ctx.font = '11px monospace'; ctx.textAlign = 'center';
-        ctx.fillText('Press ▶ Play to animate request routing', cx, H - 18);
-      }
-    }
-
-    function frame() {
-      if (!running || !document.body.contains(canvas)) return;
-      dotAngle = (dotAngle + 0.018) % (Math.PI * 2);
-      drawScene(true);
-      rafId = requestAnimationFrame(frame);
-    }
-
-    function start() {
-      running = true; playBtn.textContent = '⏸ Pause';
-      rafId = requestAnimationFrame(frame);
-    }
-
-    function pause() {
-      running = false; playBtn.textContent = '▶ Play';
-      cancelAnimationFrame(rafId);
-      drawScene(true);
-    }
-
-    playBtn.addEventListener('click', function() { running ? pause() : start(); });
-
-    drawScene(false);
+  visual: {
+    type: 'flow',
+    title: 'Consistent Hashing — Request Routing Flow',
+    direction: 'horizontal',
+    nodes: [
+      { id: 'request',   label: 'Client Request',   icon: '💻', color: '#e6edf3', sublabel: 'GET user:42:profile' },
+      { id: 'hashfn',    label: 'Hash Function',    icon: '🔢', color: '#e3b341', sublabel: 'MD5 / xxHash → uint32' },
+      { id: 'ring',      label: 'Ring Lookup',      icon: '⭕', color: '#58a6ff', sublabel: 'TreeMap.ceilingEntry()' },
+      { id: 'vnodes',    label: 'Virtual Nodes',    icon: '🔵', color: '#bc8cff', sublabel: '150 vnodes / server' },
+      { id: 'nodeA',     label: 'Cache Node A',     icon: '🟢', color: '#3fb950', sublabel: 'Serves ~25% of keys' },
+      { id: 'replica',   label: 'Replica Node',     icon: '📋', color: '#ffa657', sublabel: 'N replicas clockwise' }
+    ],
+    connections: [
+      { from: 'request', to: 'hashfn',  label: 'key string',    protocol: 'hash(key)' },
+      { from: 'hashfn',  to: 'ring',    label: 'uint32 pos',    protocol: 'position' },
+      { from: 'ring',    to: 'vnodes',  label: 'vnode check',   protocol: 'lookup' },
+      { from: 'vnodes',  to: 'nodeA',   label: 'next CW node',  protocol: 'route' },
+      { from: 'nodeA',   to: 'replica', label: 'replicate',     protocol: 'async copy' }
+    ],
+    scenarios: [
+      { name: 'Normal Lookup',  path: ['request','hashfn','ring','nodeA'],                     result: '✓ O(log N) route',        resultColor: '#3fb950' },
+      { name: 'With Vnodes',    path: ['request','hashfn','ring','vnodes','nodeA'],             result: '✓ Uniform distribution',  resultColor: '#3fb950' },
+      { name: 'With Replication', path: ['request','hashfn','ring','nodeA','replica'],         result: '✓ N-way redundancy',      resultColor: '#58a6ff' },
+      { name: 'Node Removed',   path: ['request','hashfn','ring','vnodes','nodeA'],             result: '⚡ Only K/N keys remap',   resultColor: '#e3b341' }
+    ]
   }
 };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);

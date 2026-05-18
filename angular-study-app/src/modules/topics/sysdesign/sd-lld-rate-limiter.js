@@ -127,132 +127,31 @@ public boolean slidingWindowAllowed(String userId, int limit, int windowSeconds)
     cons:["Distributed clocks add complexity","Redis becomes a dependency — must be HA","Too strict limits frustrate legitimate users"],
     when:"Rate limit at: API gateway (global), per user, per IP. Use token bucket for API rate limiting. Leaky bucket for queue-based downstream protection."
   },
-  visual: function(mount) {
-    var W = 480, H = 220;
-
-    // Controls
-    var ctrl = document.createElement('div');
-    ctrl.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:8px;justify-content:center';
-    var playBtn = document.createElement('button');
-    playBtn.textContent = '▶ Play';
-    playBtn.style.cssText = 'padding:5px 16px;border-radius:6px;border:1px solid #4f8cff55;background:rgba(79,140,255,0.12);color:#4f8cff;cursor:pointer;font-size:13px;font-family:monospace';
-    var sendBtn = document.createElement('button');
-    sendBtn.textContent = '⊕ Send Request';
-    sendBtn.style.cssText = 'padding:5px 16px;border-radius:6px;border:1px solid #3fb95055;background:rgba(63,185,80,0.1);color:#3fb950;cursor:pointer;font-size:13px;font-family:monospace';
-    ctrl.appendChild(playBtn); ctrl.appendChild(sendBtn);
-    mount.appendChild(ctrl);
-
-    var canvas = document.createElement('canvas');
-    canvas.width = W; canvas.height = H;
-    canvas.style.cssText = 'width:100%;max-width:480px;border-radius:8px;background:#0d1117;display:block;margin:0 auto';
-    mount.appendChild(canvas);
-    var ctx = canvas.getContext('2d');
-
-    var CAPACITY = 10, tokens = 10, REFILL_RATE = 0.03;
-    var requests = [], lastReject = 0;
-    var running = false, rafId = null, intervalId = null;
-
-    function drawStatic() {
-      ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, W, H);
-      // Bucket outline
-      ctx.strokeStyle = '#30363d'; ctx.lineWidth = 2;
-      ctx.fillStyle = '#161b22';
-      ctx.beginPath(); ctx.roundRect(40, 40, 100, 140, 8); ctx.fill(); ctx.stroke();
-      // Fill
-      var fillH = (tokens / CAPACITY) * 128;
-      var grad = ctx.createLinearGradient(40, 180 - fillH, 40, 180);
-      grad.addColorStop(0, '#00e5ff88'); grad.addColorStop(1, '#00b8d4cc');
-      ctx.fillStyle = grad;
-      ctx.beginPath(); ctx.roundRect(44, 180 - fillH, 92, fillH, [0,0,6,6]); ctx.fill();
-      // Count
-      ctx.fillStyle = '#e6edf3'; ctx.font = 'bold 22px monospace'; ctx.textAlign = 'center';
-      ctx.fillText(tokens.toFixed(1), 90, 115);
-      ctx.font = '11px monospace'; ctx.fillStyle = '#8b949e';
-      ctx.fillText('tokens', 90, 130);
-      ctx.font = 'bold 12px monospace'; ctx.fillStyle = '#00e5ff';
-      ctx.fillText('Token Bucket', 90, 30);
-      ctx.fillStyle = '#3fb950'; ctx.font = '11px monospace'; ctx.textAlign = 'left';
-      ctx.fillText('↑ refill: ' + (REFILL_RATE * 60).toFixed(1) + '/s', 155, 50);
-      ctx.fillStyle = '#8b949e';
-      ctx.fillText('capacity: ' + CAPACITY, 155, 68);
-      // Legend
-      ctx.fillStyle = '#3fb950';
-      ctx.beginPath(); ctx.arc(155, 100, 5, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#e6edf3'; ctx.fillText('allowed', 165, 104);
-      ctx.fillStyle = '#f85149';
-      ctx.beginPath(); ctx.arc(155, 118, 5, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#e6edf3'; ctx.fillText('rejected', 165, 122);
-      // Hint when paused
-      if (!running) {
-        ctx.fillStyle = '#8b949e'; ctx.font = '11px monospace'; ctx.textAlign = 'center';
-        ctx.fillText('Press ▶ Play to animate · ⊕ Send Request to test', W/2, H - 10);
-      }
-    }
-
-    function addRequest() {
-      if (tokens >= 1) {
-        tokens -= 1;
-        requests.push({x: 420, y: 60, status: 'ok', alpha: 1.0});
-      } else {
-        lastReject = Date.now();
-        requests.push({x: 420, y: 60, status: 'reject', alpha: 1.0});
-      }
-    }
-
-    function frame() {
-      if (!running || !document.body.contains(canvas)) return;
-      rafId = requestAnimationFrame(frame);
-      tokens = Math.min(CAPACITY, tokens + REFILL_RATE);
-      drawStatic();
-      // Requests
-      requests = requests.filter(function(r) { return r.alpha > 0; });
-      requests.forEach(function(r) {
-        r.x -= 4; r.alpha -= 0.018;
-        var col = r.status === 'ok' ? '#3fb950' : '#f85149';
-        ctx.globalAlpha = Math.max(0, r.alpha);
-        ctx.fillStyle = col;
-        ctx.beginPath(); ctx.arc(r.x, r.y, 7, 0, Math.PI*2); ctx.fill();
-        ctx.globalAlpha = 1;
-      });
-      if (Date.now() - lastReject < 400) {
-        ctx.fillStyle = '#f8514933'; ctx.fillRect(0, 0, W, H);
-        ctx.fillStyle = '#f85149'; ctx.font = 'bold 14px monospace'; ctx.textAlign = 'center';
-        ctx.fillText('429 Too Many Requests', W/2, H - 20);
-      }
-    }
-
-    function start() {
-      running = true;
-      playBtn.textContent = '⏸ Pause';
-      playBtn.style.color = '#f0883e';
-      playBtn.style.borderColor = '#f0883e55';
-      intervalId = setInterval(function() {
-        if (document.body.contains(canvas) && running) addRequest();
-        else clearInterval(intervalId);
-      }, 900);
-      frame();
-    }
-
-    function pause() {
-      running = false;
-      playBtn.textContent = '▶ Play';
-      playBtn.style.color = '#4f8cff';
-      playBtn.style.borderColor = '#4f8cff55';
-      if (rafId) cancelAnimationFrame(rafId);
-      if (intervalId) clearInterval(intervalId);
-      drawStatic();
-    }
-
-    playBtn.addEventListener('click', function() {
-      running ? pause() : start();
-    });
-    sendBtn.addEventListener('click', function() {
-      addRequest();
-      if (!running) drawStatic();
-    });
-
-    // Draw initial static frame
-    drawStatic();
+  visual: {
+    type: 'flow',
+    title: 'Rate Limiter — Token Bucket Flow',
+    direction: 'horizontal',
+    autoPlay: false,
+    nodes: [
+      { id: 'request',  label: 'Incoming Request', icon: '📡', color: '#58a6ff',  sublabel: 'API call / HTTP req' },
+      { id: 'rl',       label: 'Rate Limiter',      icon: '🚦', color: '#ffa657',  sublabel: 'Middleware / Gateway' },
+      { id: 'redis',    label: 'Redis Counter',     icon: '⚡', color: '#e3b341',  sublabel: 'Lua: check + increment' },
+      { id: 'allow',    label: 'Allow',             icon: '✅', color: '#3fb950',  sublabel: '200 OK — tokens left' },
+      { id: 'reject',   label: 'Reject',            icon: '❌', color: '#f85149',  sublabel: '429 Too Many Requests' },
+      { id: 'service',  label: 'Upstream Service',  icon: '🖥️', color: '#58a6ff',  sublabel: 'Protected endpoint' },
+    ],
+    connections: [
+      { from: 'request', to: 'rl',      label: 'every request',            protocol: 'HTTP'  },
+      { from: 'rl',      to: 'redis',   label: 'HINCRBY / token check',    protocol: 'Redis' },
+      { from: 'redis',   to: 'allow',   label: 'tokens > 0 → decrement',   protocol: 'Redis' },
+      { from: 'redis',   to: 'reject',  label: 'tokens = 0 → deny',        protocol: 'Redis' },
+      { from: 'allow',   to: 'service', label: 'forward request',           protocol: 'HTTP'  },
+    ],
+    scenarios: [
+      { name: 'Allowed (Token Bucket)',   path: ['request','rl','redis','allow','service'], result: '✓ 200 OK — token consumed',    resultColor: '#3fb950' },
+      { name: 'Rejected (Bucket Empty)',  path: ['request','rl','redis','reject'],          result: '✗ 429 — retry after 1s',       resultColor: '#f85149' },
+      { name: 'Sliding Window Counter',   path: ['request','rl','redis','allow','service'], result: '✓ count < limit → forward',    resultColor: '#58a6ff' },
+    ],
   }
 };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);

@@ -40,51 +40,54 @@
       .dsa-arr-root {
         background: #161b22;
         border: 1px solid #30363d;
-        border-radius: 10px;
-        padding: 14px 16px;
+        border-radius: 14px;
+        padding: 18px 20px;
         overflow-x: auto;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: 'Inter', 'JetBrains Mono', system-ui, sans-serif;
+        box-shadow: 0 4px 16px rgba(0,0,0,.2);
       }
       .dsa-arr-row {
         display: flex;
         align-items: flex-end;
-        gap: 6px;
+        gap: 8px;
         flex-wrap: nowrap;
-        min-height: 100px;
-        padding: 16px 0 8px;
+        min-height: 110px;
+        padding: 20px 0 10px;
       }
       .dsa-arr-cell-wrap {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 4px;
+        gap: 5px;
       }
       .dsa-arr-ptr {
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 700;
         color: #e3b341;
         animation: dsa-bounce 1s ease-in-out infinite;
         white-space: nowrap;
+        font-family: 'Inter', system-ui, sans-serif;
       }
       .dsa-arr-cell {
-        width: 52px;
-        height: 52px;
+        width: 58px;
+        height: 58px;
         display: flex;
         align-items: center;
         justify-content: center;
         background: #21262d;
         border: 2px solid #30363d;
-        border-radius: 10px;
-        color: #cdd9e5;
+        border-radius: 12px;
+        color: #e6edf3;
         font-weight: 700;
-        font-size: 16px;
+        font-size: 17px;
+        font-family: 'Inter', 'JetBrains Mono', monospace;
         transition: background 200ms ease, border-color 200ms ease,
                     box-shadow 200ms ease, transform 200ms ease;
         will-change: transform;
         position: relative;
       }
       .dsa-arr-cell:hover {
-        transform: translateY(-4px) scale(1.05);
+        transform: translateY(-5px) scale(1.06);
       }
       .dsa-arr-cell.active {
         background: #1f3a5f;
@@ -123,9 +126,11 @@
         color: #d2a8ff;
       }
       .dsa-arr-idx {
-        font-size: 10px;
-        color: #768390;
-        margin-top: 2px;
+        font-size: 11px;
+        color: #8b949e;
+        margin-top: 3px;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 500;
       }
       .dsa-win-bracket {
         display: flex;
@@ -165,7 +170,7 @@
       /* optional title */
       if (this.state.title) {
         const t = document.createElement('div');
-        t.style.cssText = 'font-size:13px;font-weight:700;color:#58a6ff;margin-bottom:8px;';
+        t.style.cssText = 'font-size:15px;font-weight:700;color:#58a6ff;margin-bottom:10px;font-family:"Inter",system-ui,sans-serif;';
         t.textContent = this.state.title;
         root.appendChild(t);
       }
@@ -249,7 +254,7 @@
 
       if (steps[0]?.title) {
         const t = document.createElement('div');
-        t.style.cssText = 'font-size:13px;font-weight:700;color:#58a6ff;margin:6px 0 2px;font-family:monospace;';
+        t.style.cssText = 'font-size:16px;font-weight:700;color:#58a6ff;margin:8px 0 4px;font-family:"Inter",system-ui,sans-serif;letter-spacing:.01em;';
         t.textContent = steps[0].title;
         mount.insertBefore(t, nar);
       }

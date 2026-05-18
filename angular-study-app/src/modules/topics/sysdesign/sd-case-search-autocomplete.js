@@ -185,221 +185,76 @@ async def autocomplete(q: str, lang: str = "en", user_id: str = None):
       "Ranking matters more than completeness — a wrong top-3 frustrates users. Weight recency + click-through rate + query volume, not just raw count",
       "Filter offensive/illegal suggestions via a blocklist applied at Redis write time (not serve time — don't waste latency on filtering)"
     ],
-    visual: function(mount) {
-      mount.innerHTML = `
-        <div style="text-align:center;margin-bottom:8px;">
-          <button id="btnType" style="padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;">Type "app"</button>
-        </div>
-        <canvas id="acCanvas" width="460" height="320" style="width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto;"></canvas>
-      `;
-
-      var canvas = mount.querySelector('#acCanvas');
-      var ctx = canvas.getContext('2d');
-      var W = 460, H = 320;
-
-      var GREEN = '#3fb950', BLUE = '#58a6ff', ORANGE = '#ffa657';
-      var RED = '#f85149', GRAY = '#8b949e', TEXT = '#e6edf3';
-      var CARD = '#161b22', BORDER = '#30363d', PURPLE = '#bc8cff';
-
-      var typed = '';
-      var animating = false;
-      var suggestions = [];
-      var highlightNode = '';
-      var statusLabel = 'Click "Type app" to see prefix search in action';
-
-      // Trie nodes for visualization: a-p-p-l-e / a-p-p (branch)
-      var trieNodes = [
-        { id: 'root', label: '*', x: 230, y: 30 },
-        { id: 'a', label: 'a', x: 230, y: 80 },
-        { id: 'ap', label: 'p', x: 230, y: 130 },
-        { id: 'app', label: 'p', x: 190, y: 180, topK: ['app', 'apple', 'application'] },
-        { id: 'appl', label: 'l', x: 150, y: 230 },
-        { id: 'apple', label: 'e', x: 150, y: 280 },
-        { id: 'appli', label: 'i', x: 270, y: 230 },
-        { id: 'applic', label: 'c', x: 310, y: 260 },
-      ];
-      var trieEdges = [
-        ['root','a'], ['a','ap'], ['ap','app'], ['app','appl'],
-        ['appl','apple'], ['app','appli'], ['appli','applic']
-      ];
-
-      var suggestions_map = {
-        'a': ['amazon','apple','airbnb','amazon aws','adobe'],
-        'ap': ['apple','apple store','application','app store','api'],
-        'app': ['app store','apple','application','appstore','app design']
-      };
-
-      function getNode(id) {
-        return trieNodes.find(function(n) { return n.id === id; });
-      }
-
-      function draw() {
-        if (!document.body.contains(canvas)) return;
-        ctx.clearRect(0, 0, W, H);
-
-        // Title / typed prefix
-        ctx.fillStyle = GRAY;
-        ctx.font = '10px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText('Trie Traversal', 10, 14);
-
-        ctx.fillStyle = TEXT;
-        ctx.font = 'bold 13px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText('Typing: "' + typed + '"', 10, 32);
-
-        // Draw trie edges
-        trieEdges.forEach(function(e) {
-          var n1 = getNode(e[0]), n2 = getNode(e[1]);
-          if (!n1 || !n2) return;
-          ctx.strokeStyle = BORDER;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.moveTo(n1.x, n1.y);
-          ctx.lineTo(n2.x, n2.y);
-          ctx.stroke();
-        });
-
-        // Draw trie nodes
-        trieNodes.forEach(function(n) {
-          var isHighlighted = (highlightNode && (n.id === highlightNode || highlightNode.startsWith(n.id) && n.id !== 'root'));
-          var isActive = (typed && n.id !== 'root' && typed.endsWith(n.id.replace('root','')));
-          var color = isHighlighted ? GREEN : (isActive ? BLUE : GRAY);
-          var radius = n.id === typed ? 14 : 10;
-
-          ctx.beginPath();
-          ctx.arc(n.x, n.y, radius, 0, Math.PI * 2);
-          ctx.fillStyle = isHighlighted ? '#0d2818' : CARD;
-          ctx.fill();
-          ctx.strokeStyle = color;
-          ctx.lineWidth = isHighlighted ? 2 : 1;
-          ctx.stroke();
-          ctx.fillStyle = color;
-          ctx.font = 'bold 10px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(n.label, n.x, n.y + 4);
-
-          // Show topK badge
-          if (n.topK && n.id === typed) {
-            ctx.fillStyle = ORANGE;
-            ctx.font = '8px monospace';
-            ctx.textAlign = 'left';
-            n.topK.forEach(function(s, i) {
-              ctx.fillText('→ ' + s, n.x + 20, n.y - 10 + i * 14);
-            });
-          }
-        });
-
-        // Suggestions panel (right side)
-        ctx.fillStyle = CARD;
-        ctx.strokeStyle = BORDER;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(340, 20, 112, 180, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = GRAY;
-        ctx.font = '9px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('Redis top-10', 396, 36);
-        ctx.fillText('prefix: "' + (typed || '...') + '"', 396, 50);
-
-        ctx.fillStyle = TEXT;
-        ctx.font = '10px monospace';
-        ctx.textAlign = 'left';
-        (suggestions || []).slice(0, 7).forEach(function(s, i) {
-          ctx.fillStyle = i === 0 ? GREEN : TEXT;
-          ctx.fillText(s, 348, 66 + i * 18);
-        });
-
-        // Cache status
-        ctx.fillStyle = CARD;
-        ctx.strokeStyle = typed ? GREEN : BORDER;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(10, 240, 110, 36, 6);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = typed ? GREEN : GRAY;
-        ctx.font = '9px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(typed ? 'Redis HIT' : 'Redis MISS', 65, 255);
-        ctx.fillText(typed ? 'O(1) lookup' : 'cache empty', 65, 268);
-
-        // CDN box
-        ctx.fillStyle = CARD;
-        ctx.strokeStyle = ORANGE;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(130, 240, 100, 36, 6);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = ORANGE;
-        ctx.font = '9px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('CDN Cache', 180, 255);
-        ctx.fillText(typed.length <= 2 ? 'HIT (short pfx)' : 'MISS (>2 chars)', 180, 268);
-
-        // Status
-        if (statusLabel) {
-          ctx.fillStyle = GRAY;
-          ctx.font = '10px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(statusLabel, W / 2, 308);
+    visual: {
+      type: 'layered',
+      title: '🔍 Search Autocomplete Architecture (Google Typeahead)',
+      layers: [
+        {
+          id: 'l1',
+          label: 'Client Layer',
+          color: '#58a6ff',
+          protocols: 'HTTPS — keystroke triggers query per 150ms debounce',
+          services: [
+            { id: 's1', label: 'Browser',     icon: '🌐', sublabel: 'Debounce 150ms' },
+            { id: 's2', label: 'Mobile App',  icon: '📱', sublabel: 'Native typeahead' }
+          ]
+        },
+        {
+          id: 'l2',
+          label: 'Edge Layer',
+          color: '#3fb950',
+          protocols: 'CDN cached for 1–3 char prefixes · Rate limiter: 10 req/s per IP',
+          services: [
+            { id: 's3', label: 'CDN Cache',     icon: '🌍', sublabel: 'Short prefix HIT' },
+            { id: 's4', label: 'Rate Limiter',  icon: '🚦', sublabel: '10 req/s per IP' },
+            { id: 's5', label: 'API Gateway',   icon: '🔀', sublabel: 'Auth + routing' }
+          ]
+        },
+        {
+          id: 'l3',
+          label: 'Search Layer',
+          color: '#ffa657',
+          protocols: 'In-memory Trie · Redis O(1) prefix lookup · Personalization blend 70/30',
+          services: [
+            { id: 's6', label: 'Trie Server',       icon: '🌳', sublabel: 'In-memory Trie' },
+            { id: 's7', label: 'Suggestion Ranker', icon: '🏆', sublabel: '70% global + 30% personal' },
+            { id: 's8', label: 'Profile Service',   icon: '👤', sublabel: 'User history' }
+          ]
+        },
+        {
+          id: 'l4',
+          label: 'Data Layer',
+          color: '#bc8cff',
+          protocols: 'Redis key: autocomplete:{lang}:{prefix} · ElasticSearch for fallback fuzzy',
+          services: [
+            { id: 's9',  label: 'Redis Cache',    icon: '⚡', sublabel: 'O(1) prefix lookup' },
+            { id: 's10', label: 'ElasticSearch',  icon: '🔎', sublabel: 'Fuzzy + multilingual' },
+            { id: 's11', label: 'Spark / Hadoop', icon: '🔥', sublabel: 'Hourly batch top-K' }
+          ]
         }
-      }
-
-      var typeSequence = ['a', 'ap', 'app'];
-      var typeIdx = 0;
-
-      function typeNext() {
-        if (!document.body.contains(canvas) || animating) return;
-        if (typeIdx >= typeSequence.length) {
-          typeIdx = 0;
-          typed = '';
-          highlightNode = '';
-          suggestions = [];
-          statusLabel = 'Reset — click again to replay';
-          draw();
-          return;
+      ],
+      flows: [
+        {
+          name: '⚡ Cache Hit (1–2 chars)',
+          path: ['s1', 's3', 's7', 's9'],
+          color: '#3fb950'
+        },
+        {
+          name: '🌳 Trie Fallback',
+          path: ['s1', 's4', 's5', 's6', 's7', 's9'],
+          color: '#ffa657'
+        },
+        {
+          name: '👤 Personalized Query',
+          path: ['s1', 's5', 's7', 's8', 's9'],
+          color: '#bc8cff'
+        },
+        {
+          name: '🔄 Batch Index Update',
+          path: ['s11', 's9', 's6'],
+          color: '#58a6ff'
         }
-        animating = true;
-        var prefix = typeSequence[typeIdx++];
-        typed = prefix;
-        highlightNode = prefix;
-        suggestions = suggestions_map[prefix] || [];
-        statusLabel = 'Prefix "' + prefix + '" → Redis lookup → ' + suggestions.length + ' suggestions';
-
-        // Animate highlight traveling down trie
-        var path = ['root'];
-        for (var i = 0; i < prefix.length; i++) path.push(prefix.slice(0, i + 1));
-        var pathIdx = 0;
-        function animPath() {
-          if (!document.body.contains(canvas)) return;
-          if (pathIdx < path.length) {
-            highlightNode = path[pathIdx++];
-            draw();
-            setTimeout(animPath, 180);
-          } else {
-            highlightNode = prefix;
-            animating = false;
-            draw();
-            if (typeIdx < typeSequence.length) setTimeout(typeNext, 700);
-          }
-        }
-        animPath();
-      }
-
-      mount.querySelector('#btnType').addEventListener('click', function() {
-        if (animating) return;
-        typeIdx = 0; typed = ''; highlightNode = ''; suggestions = [];
-        statusLabel = 'Starting...';
-        draw();
-        setTimeout(typeNext, 300);
-      });
-
-      draw();
+      ]
     }
   };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);

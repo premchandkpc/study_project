@@ -107,180 +107,32 @@ public class UrlShortenerService {
     cons:["Analytics adds complexity (Kafka + stream processing)","Custom alias creates need for availability check + rate limiting","URL expiry requires cleanup job (DynamoDB TTL handles this natively)"],
     when:"This design pattern (hash/encode → cache → redirect) applies to: QR codes, invite links, payment links, affiliate tracking."
   },
-  visual: function(mount) {
-    mount.innerHTML = '';
-    var W = 460, H = 320;
-    var canvas = document.createElement('canvas');
-    canvas.width = W; canvas.height = H;
-    canvas.style.cssText = 'width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto';
-    var btnRow = document.createElement('div');
-    btnRow.style.cssText = 'display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px';
-    var btnStyle = 'padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px';
-    mount.appendChild(canvas);
-    mount.appendChild(btnRow);
-    var ctx = canvas.getContext('2d');
-
-    var mode = 'shorten'; // 'shorten' | 'redirect'
-    var step = 0;
-    var maxSteps = { shorten: 5, redirect: 5 };
-    var animT = 0, animDur = 30;
-    var raf = null;
-    var base62chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    var shortCode = 'abc123';
-    var charReveal = 0;
-    var cacheHit = true;
-
-    // Node positions for shorten flow
-    var S = {
-      client: {x:40, y:160, label:'Client', color:'#3fb950'},
-      api:    {x:140, y:120, label:'API Server', color:'#58a6ff'},
-      redis:  {x:280, y:80,  label:'Redis Cache', color:'#ffa657'},
-      db:     {x:280, y:160, label:'DB (DynamoDB)', color:'#bc8cff'},
-      lb:     {x:140, y:200, label:'Load Balancer', color:'#58a6ff'}
-    };
-
-    function box(x, y, w, h, fill, stroke, active) {
-      ctx.fillStyle = active ? fill.replace(')', ',0.25)').replace('rgb','rgba') : '#161b22';
-      ctx.strokeStyle = active ? fill : stroke || '#30363d';
-      ctx.lineWidth = active ? 2 : 1;
-      ctx.beginPath(); ctx.roundRect(x-w/2, y-h/2, w, h, 6); ctx.fill(); ctx.stroke();
-    }
-    function lbl(x, y, text, color, size) {
-      ctx.fillStyle = color||'#e6edf3'; ctx.font=(size||10)+'px monospace'; ctx.textAlign='center';
-      ctx.fillText(text, x, y);
-    }
-    function arw(x1,y1,x2,y2,color,dashed) {
-      ctx.strokeStyle=color||'#30363d'; ctx.lineWidth=1.5;
-      if(dashed) ctx.setLineDash([4,3]); else ctx.setLineDash([]);
-      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-      ctx.setLineDash([]);
-      var dx=x2-x1,dy=y2-y1,L=Math.sqrt(dx*dx+dy*dy); if(L<1)return;
-      var ux=dx/L,uy=dy/L;
-      ctx.fillStyle=color||'#30363d';
-      ctx.beginPath();
-      ctx.moveTo(x2,y2);
-      ctx.lineTo(x2-ux*7-uy*3,y2-uy*7+ux*3);
-      ctx.lineTo(x2-ux*7+uy*3,y2-uy*7-ux*3);
-      ctx.fill();
-    }
-
-    function drawShorten() {
-      ctx.clearRect(0,0,W,H); ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,W,H);
-      lbl(W/2, 18, 'URL SHORTEN FLOW', '#8b949e', 11);
-
-      var nodes = [
-        {id:'client', x:40,  y:160, w:62, h:36, label:'Client', color:'#3fb950'},
-        {id:'api',    x:150, y:120, w:80, h:36, label:'API Server', color:'#58a6ff'},
-        {id:'redis',  x:290, y:80,  w:88, h:36, label:'Redis Cache', color:'#ffa657'},
-        {id:'db',     x:290, y:160, w:88, h:36, label:'DB (Dynamo)', color:'#bc8cff'},
-        {id:'ret',    x:40,  y:240, w:80, h:36, label:'shortUrl', color:'#3fb950'}
-      ];
-      var active = [];
-      if (step>=1) active.push('client','api');
-      if (step>=2) active.push('api','redis');
-      if (step>=3) active.push('api','db');
-      if (step>=4) active.push('client','ret');
-
-      nodes.forEach(function(n){
-        var a = active.indexOf(n.id)!==-1;
-        box(n.x,n.y,n.w,n.h,'#58a6ff','#30363d',a);
-        lbl(n.x,n.y+1,n.label, a?n.color:'#8b949e',10);
-      });
-
-      // Arrows
-      if (step>=1) { arw(40+31,160-5,150-40,130,'#3fb950'); lbl(85,135,'POST longUrl','#3fb950',9); }
-      if (step>=2) { arw(150+40,110,290-44,88,'#ffa657',true); lbl(220,88,'cache store','#ffa657',9); }
-      if (step>=3) { arw(150+40,130,290-44,155,'#bc8cff',true); lbl(220,162,'DB write','#bc8cff',9); }
-      if (step>=4) { arw(150-40,138,40+40,235,'#3fb950'); lbl(88,185,'return shortUrl','#3fb950',9); }
-
-      // Base62 animation
-      if (step>=2) {
-        var cx2 = 150, cy2 = 70;
-        ctx.fillStyle='#161b22'; ctx.strokeStyle='#ffa657'; ctx.lineWidth=1;
-        ctx.beginPath(); ctx.roundRect(cx2-60,cy2-14,120,26,4); ctx.fill(); ctx.stroke();
-        var code = shortCode.substring(0, charReveal);
-        lbl(cx2, cy2+5, 'base62: ' + code + (charReveal<shortCode.length?'|':''), '#ffa657', 10);
-      }
-
-      // Status
-      var steps = ['Click [Shorten] to start','POST longUrl → API Server','Counter → base62 encoding: ' + shortCode,'Store in Redis + DB','Return https://short.ly/' + shortCode + ' ✓'];
-      lbl(W/2, H-10, steps[Math.min(step, steps.length-1)], '#58a6ff', 10);
-    }
-
-    function drawRedirect() {
-      ctx.clearRect(0,0,W,H); ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,W,H);
-      lbl(W/2, 18, 'URL REDIRECT FLOW  ' + (cacheHit?'[Redis HIT]':'[Redis MISS → DB]'), '#8b949e', 11);
-
-      var nodes = [
-        {id:'client', x:40,  y:160, w:62, h:36, label:'Client', color:'#3fb950'},
-        {id:'lb',     x:150, y:120, w:80, h:36, label:'Load Bal', color:'#58a6ff'},
-        {id:'redis',  x:290, y:80,  w:88, h:36, label:'Redis', color:'#ffa657'},
-        {id:'db',     x:290, y:160, w:88, h:36, label:'DB', color:'#bc8cff'},
-        {id:'dest',   x:40,  y:240, w:80, h:36, label:'Destination', color:'#3fb950'}
-      ];
-
-      nodes.forEach(function(n){
-        var a = step>=1;
-        box(n.x,n.y,n.w,n.h,'#58a6ff','#30363d',false);
-        lbl(n.x,n.y+1,n.label,'#8b949e',10);
-      });
-
-      if (step>=1) {
-        arw(40+31,155,150-40,128,'#3fb950'); lbl(87,132,'GET /abc123','#3fb950',9);
-        box(nodes[1].x,nodes[1].y,nodes[1].w,nodes[1].h,'#58a6ff','#30363d',true);
-        lbl(nodes[1].x,nodes[1].y+1,nodes[1].label,'#58a6ff',10);
-      }
-      if (step>=2) {
-        arw(150+40,112,290-44,88,'#ffa657'); lbl(220,90,'HGET url:abc123','#ffa657',9);
-        box(nodes[2].x,nodes[2].y,nodes[2].w,nodes[2].h,'#ffa657','#30363d',true);
-        lbl(nodes[2].x,nodes[2].y+1,nodes[2].label,'#ffa657',10);
-      }
-      if (step>=3 && !cacheHit) {
-        arw(150+40,130,290-44,155,'#bc8cff'); lbl(222,152,'DB lookup (miss)','#bc8cff',9);
-        box(nodes[3].x,nodes[3].y,nodes[3].w,nodes[3].h,'#bc8cff','#30363d',true);
-        lbl(nodes[3].x,nodes[3].y+1,nodes[3].label,'#bc8cff',10);
-      }
-      if (step>=4) {
-        arw(150-40,138,40+40,235,'#3fb950'); lbl(83,185,'302 → longUrl','#3fb950',9);
-        box(nodes[4].x,nodes[4].y,nodes[4].w,nodes[4].h,'#3fb950','#30363d',true);
-        lbl(nodes[4].x,nodes[4].y+1,nodes[4].label,'#3fb950',10);
-      }
-
-      // hit/miss badge
-      if (step>=2) {
-        var badge = cacheHit ? 'HIT ✓' : 'MISS ✗';
-        var bc = cacheHit ? '#3fb950' : '#f85149';
-        ctx.fillStyle=bc; ctx.font='bold 11px monospace'; ctx.textAlign='center';
-        ctx.fillText(badge, 290, 58);
-      }
-
-      var steps = ['Click [Redirect] to start','GET /abc123 → Load Balancer','Redis lookup...', cacheHit?'Cache HIT → 302':'Cache MISS → DB query','302 redirect to original URL ✓'];
-      lbl(W/2, H-10, steps[Math.min(step, steps.length-1)], '#58a6ff', 10);
-    }
-
-    function draw() {
-      if (!document.body.contains(canvas)) return;
-      if (mode==='shorten') drawShorten(); else drawRedirect();
-    }
-
-    function startFlow(m) {
-      mode = m; step=0; charReveal=0;
-      if (raf) cancelAnimationFrame(raf);
-      var interval = setInterval(function(){
-        if (!document.body.contains(canvas)) { clearInterval(interval); return; }
-        step++;
-        if (mode==='shorten' && step>=2 && charReveal<shortCode.length) charReveal++;
-        draw();
-        if (step >= maxSteps[mode]) clearInterval(interval);
-      }, 700);
-    }
-
-    draw();
-
-    [{label:'Shorten URL',fn:function(){startFlow('shorten');}},{label:'Redirect',fn:function(){cacheHit=true;startFlow('redirect');}},{label:'Redirect (miss)',fn:function(){cacheHit=false;startFlow('redirect');}}]
-    .forEach(function(op){
-      var b=document.createElement('button'); b.textContent=op.label; b.style.cssText=btnStyle; b.onclick=op.fn; btnRow.appendChild(b);
-    });
+  visual: {
+    type: 'flow',
+    title: 'URL Shortener — Request Flow',
+    direction: 'horizontal',
+    autoPlay: false,
+    nodes: [
+      { id: 'user',    label: 'User',           icon: '💻', color: '#3fb950', sublabel: 'Browser / App' },
+      { id: 'lb',      label: 'Load Balancer',  icon: '⚖️', color: '#58a6ff', sublabel: 'ALB / Nginx' },
+      { id: 'api',     label: 'API Server',     icon: '🖥️', color: '#58a6ff', sublabel: 'Stateless ECS' },
+      { id: 'hash',    label: 'Hash Service',   icon: '🔑', color: '#e3b341', sublabel: 'Snowflake + Base62' },
+      { id: 'redis',   label: 'Redis Cache',    icon: '⚡', color: '#ffa657', sublabel: 'TTL 24h · sub-ms' },
+      { id: 'db',      label: 'Cassandra DB',   icon: '🗄️', color: '#bc8cff', sublabel: 'shortCode → longUrl' },
+    ],
+    connections: [
+      { from: 'user',  to: 'lb',    label: 'HTTPS',         protocol: 'REST' },
+      { from: 'lb',    to: 'api',   label: 'HTTP',          protocol: 'REST' },
+      { from: 'api',   to: 'hash',  label: 'encode(id)',    protocol: 'RPC'  },
+      { from: 'api',   to: 'redis', label: 'HGET / HSET',  protocol: 'Redis' },
+      { from: 'api',   to: 'db',    label: 'GET / PUT',     protocol: 'CQL'  },
+      { from: 'redis', to: 'api',   label: 'longUrl',       protocol: 'Redis' },
+    ],
+    scenarios: [
+      { name: 'Shorten URL',   path: ['user','lb','api','hash','redis','db'],    result: '✓ short.ly/abc123 created',     resultColor: '#3fb950' },
+      { name: 'Redirect (Cache Hit)',  path: ['user','lb','api','redis'],        result: '✓ 302 → longUrl (0.5ms)',       resultColor: '#3fb950' },
+      { name: 'Redirect (Cache Miss)', path: ['user','lb','api','redis','db'],   result: '✓ 302 → longUrl (DB fallback)', resultColor: '#ffa657' },
+    ],
   },
   architecture:{
     title:"URL Shortener Architecture",

@@ -109,8 +109,8 @@
         const mx = (fn._x + tn._x) / 2 + ox * 2;
         const my = (fn._y + tn._y) / 2 + oy * 2 - 8;
         const wt = DSAViz.svgEl('text', {
-          x: mx, y: my, fill: eColor, 'font-size': '11',
-          'text-anchor': 'middle', 'font-family': 'monospace',
+          x: mx, y: my, fill: eColor, 'font-size': '13',
+          'text-anchor': 'middle', 'font-family': 'Inter,system-ui,sans-serif',
         });
         wt.textContent = e.weight;
         svg.appendChild(wt);
@@ -149,14 +149,14 @@
         fill: s.fill, stroke: s.stroke, 'stroke-width': 2 });
       const label = DSAViz.svgEl('text', { x: n._x, y: n._y,
         fill: s.text, 'font-size': '13', 'font-weight': '700',
-        'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-family': 'monospace' });
+        'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-family': 'Inter,JetBrains Mono,system-ui' });
       label.textContent = n.label ?? n.id;
       g.appendChild(circle); g.appendChild(label);
 
       /* distance label below */
       if (distances[n.id] !== undefined) {
         const dist = DSAViz.svgEl('text', { x: n._x, y: n._y + NODE_R + 14,
-          fill: '#e3b341', 'font-size': '11', 'text-anchor': 'middle', 'font-family': 'monospace' });
+          fill: '#e3b341', 'font-size': '13', 'text-anchor': 'middle', 'font-family': 'Inter,system-ui,sans-serif' });
         dist.textContent = `d:${distances[n.id]}`;
         g.appendChild(dist);
       }
@@ -185,7 +185,7 @@
     const wrap = document.createElement('div');
     wrap.style.cssText = `background:#21262d;border:1px solid #30363d;border-radius:8px;padding:8px 12px;`;
     const lbl = document.createElement('div');
-    lbl.style.cssText = `font-size:11px;color:${color};font-weight:700;margin-bottom:6px;`;
+    lbl.style.cssText = `font-size:13px;font-family:'Inter',system-ui,sans-serif;color:${color};font-weight:700;margin-bottom:6px;`;
     lbl.textContent = label;
     wrap.appendChild(lbl);
     const chips = document.createElement('div');
@@ -193,7 +193,7 @@
     items.forEach((v, i) => {
       const c = document.createElement('span');
       c.style.cssText = `background:${i===0?color+'33':'transparent'};border:1px solid ${color}66;
-        color:${color};font-size:12px;padding:2px 7px;border-radius:12px;font-family:monospace;`;
+        color:${color};font-size:13px;padding:2px 7px;border-radius:12px;font-family:'Inter',system-ui,sans-serif;`;
       c.textContent = v;
       chips.appendChild(c);
     });

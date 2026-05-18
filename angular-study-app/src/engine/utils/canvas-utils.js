@@ -116,12 +116,19 @@
 
     makeCanvas: function (mount, w, h) {
       var rect = mount.getBoundingClientRect();
-      var width = Math.round(rect.width || mount.clientWidth || w);
-      if (width < w) width = w;
+      var cssWidth = Math.round(rect.width || mount.clientWidth || w);
+      if (cssWidth < w) cssWidth = w;
+      var dpr = window.devicePixelRatio || 1;
       var c = document.createElement('canvas');
-      c.width = width;
-      c.height = h;
+      c.width  = Math.round(cssWidth * dpr);
+      c.height = Math.round(h * dpr);
       c.style.cssText = 'width:100%;height:' + h + 'px;max-width:none;border-radius:14px;background:#0d1117;display:block;margin:0 auto;box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 18px 50px rgba(0,0,0,.28);';
+      // store logical dimensions for renderers
+      c._logicalWidth  = cssWidth;
+      c._logicalHeight = h;
+      c._dpr           = dpr;
+      var ctx = c.getContext('2d');
+      ctx.scale(dpr, dpr);
       mount.appendChild(c);
       return c;
     },

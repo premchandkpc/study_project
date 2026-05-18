@@ -193,294 +193,59 @@ enqueue("resize_image", {"url": "s3://bucket/img.jpg"}, priority=3, delay=5)
       "Redis ZPOPMAX is not atomic with ZADD to in-flight — use Lua scripts or Redis transactions (MULTI/EXEC) for atomic dequeue + in-flight tracking",
       "Queue depth autoscaling has lag — if 1000 tasks arrive simultaneously, it takes time to spin up workers. Pre-warm worker pool for known traffic spikes."
     ],
-    visual: function(mount) {
-      mount.innerHTML = `
-        <div style="text-align:center;margin-bottom:8px;">
-          <button id="btnEnqueue" style="padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;margin-right:6px;">Enqueue Task</button>
-          <button id="btnFail" style="padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;margin-right:6px;">Simulate Failure</button>
-          <button id="btnDLQ" style="padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;">Show DLQ</button>
-        </div>
-        <canvas id="tqCanvas" width="460" height="320" style="width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto;"></canvas>
-      `;
-
-      var canvas = mount.querySelector('#tqCanvas');
-      var ctx = canvas.getContext('2d');
-      var W = 460, H = 320;
-
-      var GREEN = '#3fb950', BLUE = '#58a6ff', ORANGE = '#ffa657';
-      var RED = '#f85149', GRAY = '#8b949e', TEXT = '#e6edf3';
-      var CARD = '#161b22', BORDER = '#30363d', PURPLE = '#bc8cff';
-
-      var queueDepth = 0;
-      var workerStatuses = ['idle', 'idle', 'idle'];
-      var dlqCount = 0;
-      var retryCount = 0;
-      var statusLabel = 'Click Enqueue Task to add work to the queue';
-      var animating = false;
-      var packets = [];
-
-      var PROD = { x: 10, y: 130, w: 64, h: 40 };
-      var QUEUE = { x: 100, y: 100, w: 80, h: 100 };
-      var WORKERS = [
-        { x: 240, y: 60, w: 70, h: 36 },
-        { x: 240, y: 106, w: 70, h: 36 },
-        { x: 240, y: 152, w: 70, h: 36 }
-      ];
-      var DLQ_BOX = { x: 370, y: 200, w: 70, h: 40 };
-
-      function drawQueueBox() {
-        ctx.fillStyle = CARD;
-        ctx.strokeStyle = BORDER;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(QUEUE.x, QUEUE.y, QUEUE.w, QUEUE.h, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = TEXT;
-        ctx.font = 'bold 10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('Queue', QUEUE.x + QUEUE.w / 2, QUEUE.y + 14);
-
-        // Depth bar
-        var maxDepth = 15;
-        var barH = 60;
-        var fillH = Math.min((queueDepth / maxDepth) * barH, barH);
-        var barY = QUEUE.y + 25;
-        ctx.fillStyle = '#0d1117';
-        ctx.fillRect(QUEUE.x + 12, barY, QUEUE.w - 24, barH);
-        ctx.strokeStyle = BORDER;
-        ctx.lineWidth = 1;
-        ctx.strokeRect(QUEUE.x + 12, barY, QUEUE.w - 24, barH);
-
-        var barColor = queueDepth > 10 ? RED : (queueDepth > 5 ? ORANGE : GREEN);
-        ctx.fillStyle = barColor;
-        ctx.fillRect(QUEUE.x + 12, barY + barH - fillH, QUEUE.w - 24, fillH);
-
-        ctx.fillStyle = TEXT;
-        ctx.font = 'bold 11px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(queueDepth, QUEUE.x + QUEUE.w / 2, barY + barH / 2 + 4);
-
-        ctx.fillStyle = GRAY;
-        ctx.font = '8px monospace';
-        ctx.fillText('depth', QUEUE.x + QUEUE.w / 2, barY + barH + 12);
-
-        // Autoscale indicator
-        if (queueDepth > 10) {
-          ctx.fillStyle = RED;
-          ctx.font = '8px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText('► autoscale!', QUEUE.x + QUEUE.w / 2, QUEUE.y + QUEUE.h + 14);
+    visual: {
+      type: 'swimlane',
+      title: '⚙️ Distributed Task Queue (Celery / BullMQ / Sidekiq)',
+      lanes: [
+        {
+          id: 'l1',
+          label: 'Producer',
+          color: '#58a6ff',
+          badge: 'Async',
+          description: 'API servers enqueue tasks — fire-and-forget, decoupled from consumers',
+          nodes: [
+            { id: 'n1', label: 'API Server',   sublabel: 'enqueue(task)',         icon: '🌐' },
+            { id: 'n2', label: 'Serializer',   sublabel: 'JSON encode + schema',  icon: '📦' },
+            { id: 'n3', label: 'Priority Tag', sublabel: 'score 0–10',            icon: '🏷️' }
+          ]
+        },
+        {
+          id: 'l2',
+          label: 'Broker / Queue',
+          color: '#ffa657',
+          badge: 'Redis / Kafka',
+          description: 'Durable FIFO or priority queue — ZADD (priority score) · ZPOPMAX (consume)',
+          nodes: [
+            { id: 'n4', label: 'Active Queue',   sublabel: 'ZADD priority_queue', icon: '📋' },
+            { id: 'n5', label: 'Delayed Queue',  sublabel: 'score = future ts',   icon: '⏰' },
+            { id: 'n6', label: 'In-Flight Set',  sublabel: 'ACK on completion',   icon: '✈️' }
+          ]
+        },
+        {
+          id: 'l3',
+          label: 'Worker Pool',
+          color: '#3fb950',
+          badge: 'N workers',
+          description: 'Stateless workers — ZPOPMAX → execute → ACK · Heartbeat every 10s',
+          nodes: [
+            { id: 'n7', label: 'Worker 1', sublabel: 'dequeue + execute', icon: '🔧' },
+            { id: 'n8', label: 'Worker 2', sublabel: 'dequeue + execute', icon: '🔧' },
+            { id: 'n9', label: 'Worker N', sublabel: 'autoscaled pod',    icon: '🔧' }
+          ]
+        },
+        {
+          id: 'l4',
+          label: 'Retry / DLQ',
+          color: '#f85149',
+          badge: 'Max 3 retries',
+          description: 'Exponential backoff: 1s → 2s → 4s · After max retries → Dead Letter Queue',
+          nodes: [
+            { id: 'n10', label: 'Retry Queue', sublabel: 'backoff: 2^n seconds', icon: '🔁' },
+            { id: 'n11', label: 'DLQ',         sublabel: 'ops inspect + replay', icon: '💀' },
+            { id: 'n12', label: 'Alerting',    sublabel: 'PagerDuty / Slack',    icon: '🚨' }
+          ]
         }
-      }
-
-      function draw() {
-        if (!document.body.contains(canvas)) return;
-        ctx.clearRect(0, 0, W, H);
-
-        ctx.fillStyle = GRAY;
-        ctx.font = '10px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText('Distributed Task Queue — Retry + DLQ', 10, 14);
-
-        // Producer
-        ctx.fillStyle = CARD;
-        ctx.strokeStyle = GREEN;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(PROD.x, PROD.y, PROD.w, PROD.h, 6);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = TEXT;
-        ctx.font = 'bold 10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('Producer', PROD.x + PROD.w / 2, PROD.y + 15);
-        ctx.fillStyle = GRAY;
-        ctx.font = '8px monospace';
-        ctx.fillText('enqueue()', PROD.x + PROD.w / 2, PROD.y + 28);
-
-        drawQueueBox();
-
-        // Workers
-        WORKERS.forEach(function(w, i) {
-          var status = workerStatuses[i];
-          var color = status === 'running' ? ORANGE : (status === 'success' ? GREEN : (status === 'failed' ? RED : GRAY));
-          ctx.fillStyle = CARD;
-          ctx.strokeStyle = color;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.roundRect(w.x, w.y, w.w, w.h, 6);
-          ctx.fill();
-          ctx.stroke();
-          ctx.fillStyle = TEXT;
-          ctx.font = 'bold 10px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText('Worker ' + (i + 1), w.x + w.w / 2, w.y + 14);
-          ctx.fillStyle = color;
-          ctx.font = '8px monospace';
-          ctx.fillText(status, w.x + w.w / 2, w.y + 27);
-        });
-
-        // DLQ
-        ctx.fillStyle = '#1a0a0a';
-        ctx.strokeStyle = RED;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(DLQ_BOX.x, DLQ_BOX.y, DLQ_BOX.w, DLQ_BOX.h, 6);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = RED;
-        ctx.font = 'bold 10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('DLQ', DLQ_BOX.x + DLQ_BOX.w / 2, DLQ_BOX.y + 15);
-        ctx.fillStyle = TEXT;
-        ctx.font = '11px monospace';
-        ctx.fillText(dlqCount + ' tasks', DLQ_BOX.x + DLQ_BOX.w / 2, DLQ_BOX.y + 30);
-
-        // Retry counter
-        ctx.fillStyle = CARD;
-        ctx.strokeStyle = ORANGE;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(370, 130, 70, 60, 6);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = ORANGE;
-        ctx.font = 'bold 9px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('Retries', 405, 145);
-        ctx.fillStyle = TEXT;
-        ctx.font = 'bold 14px monospace';
-        ctx.fillText(retryCount + '/3', 405, 168);
-        ctx.fillStyle = GRAY;
-        ctx.font = '8px monospace';
-        ctx.fillText('exponential', 405, 182);
-
-        // Static arrows
-        ctx.strokeStyle = BORDER;
-        ctx.lineWidth = 1;
-        ctx.setLineDash([3, 3]);
-        WORKERS.forEach(function(w) {
-          ctx.beginPath();
-          ctx.moveTo(QUEUE.x + QUEUE.w, QUEUE.y + QUEUE.h / 2);
-          ctx.lineTo(w.x, w.y + w.h / 2);
-          ctx.stroke();
-        });
-        ctx.setLineDash([]);
-
-        packets.forEach(function(p) {
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-          ctx.fillStyle = p.color;
-          ctx.fill();
-        });
-
-        ctx.fillStyle = CARD;
-        ctx.strokeStyle = BORDER;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(10, 290, W - 20, 24, 6);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = TEXT;
-        ctx.font = '10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(statusLabel, W / 2, 306);
-      }
-
-      function animPkt(x1, y1, x2, y2, color, onDone) {
-        var frames = 0, total = 18;
-        var dx = (x2 - x1) / total, dy = (y2 - y1) / total;
-        var p = { x: x1, y: y1, color: color };
-        packets = [p];
-        function tick() {
-          if (!document.body.contains(canvas)) return;
-          p.x += dx; p.y += dy; frames++;
-          draw();
-          if (frames < total) requestAnimationFrame(tick);
-          else { packets = []; if (onDone) onDone(); }
-        }
-        requestAnimationFrame(tick);
-      }
-
-      mount.querySelector('#btnEnqueue').addEventListener('click', function() {
-        if (animating) return;
-        animating = true;
-        retryCount = 0;
-        statusLabel = 'Enqueueing task...';
-        animPkt(PROD.x + PROD.w, PROD.y + 20, QUEUE.x, QUEUE.y + QUEUE.h / 2, ORANGE, function() {
-          queueDepth = Math.min(queueDepth + 3, 15);
-          statusLabel = 'Task in queue (depth: ' + queueDepth + '). Worker picking up...';
-          draw();
-          setTimeout(function() {
-            workerStatuses[0] = 'running';
-            queueDepth = Math.max(0, queueDepth - 1);
-            animPkt(QUEUE.x + QUEUE.w, QUEUE.y + QUEUE.h / 2, WORKERS[0].x, WORKERS[0].y + 18, GREEN, function() {
-              statusLabel = 'Worker 1 executing task...';
-              draw();
-              setTimeout(function() {
-                workerStatuses[0] = 'success';
-                statusLabel = 'Task completed successfully!';
-                animating = false; draw();
-                setTimeout(function() { workerStatuses[0] = 'idle'; draw(); }, 1500);
-              }, 700);
-            });
-          }, 400);
-        });
-      });
-
-      mount.querySelector('#btnFail').addEventListener('click', function() {
-        if (animating) return;
-        animating = true;
-        retryCount = 0;
-        queueDepth = Math.min(queueDepth + 2, 15);
-        statusLabel = 'Task enqueued. Worker will fail...';
-        draw();
-        function runRetry() {
-          if (retryCount >= 3) {
-            workerStatuses[1] = 'failed';
-            statusLabel = 'Max retries (3/3) exceeded → moving to DLQ';
-            draw();
-            setTimeout(function() {
-              dlqCount++;
-              workerStatuses[1] = 'idle';
-              animating = false;
-              statusLabel = 'Task in DLQ (' + dlqCount + ' tasks). Ops team must investigate.';
-              draw();
-            }, 600);
-            return;
-          }
-          retryCount++;
-          workerStatuses[1] = 'running';
-          statusLabel = 'Worker 2 executing... (attempt ' + retryCount + '/3)';
-          draw();
-          setTimeout(function() {
-            workerStatuses[1] = 'failed';
-            statusLabel = 'FAILED! Retry ' + retryCount + '/3 — backoff: ' + Math.pow(2, retryCount - 1) + 's';
-            draw();
-            setTimeout(runRetry, 600);
-          }, 700);
-        }
-        runRetry();
-      });
-
-      mount.querySelector('#btnDLQ').addEventListener('click', function() {
-        if (animating) return;
-        statusLabel = 'DLQ has ' + dlqCount + ' failed tasks. Ops can inspect + re-enqueue manually.';
-        // Flash DLQ box
-        var flashes = 0;
-        function flash() {
-          if (!document.body.contains(canvas)) return;
-          flashes++;
-          dlqCount = flashes % 2 === 0 ? dlqCount : dlqCount;
-          draw();
-          if (flashes < 6) setTimeout(flash, 250);
-        }
-        flash();
-      });
-
-      draw();
+      ]
     }
   };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);

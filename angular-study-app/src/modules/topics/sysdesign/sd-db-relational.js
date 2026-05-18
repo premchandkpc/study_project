@@ -92,196 +92,74 @@ interface OrderSummary {
     cons:["Vertical scaling has ceiling","Schema migrations on large tables require downtime (use pg_repack / online DDL)","Joins across shards are expensive or impossible"],
     when:"Default choice for transactional data (orders, users, payments). Move to NoSQL only when you need horizontal write scaling, flexible schema, or specific access patterns (time-series, document, graph)."
   },
-  visual: function(mount) {
-    mount.innerHTML = '';
-    var wrap = document.createElement('div');
-    wrap.style.cssText = 'font-family:monospace;padding:10px;background:#0d1117;border-radius:8px;';
-
-    var btns = document.createElement('div');
-    btns.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-    var btnStyle = 'padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;';
-    var bTree = document.createElement('button'); bTree.textContent = 'Animate Insert'; bTree.style.cssText = btnStyle;
-    var bAcid = document.createElement('button'); bAcid.textContent = 'Show ACID'; bAcid.style.cssText = btnStyle;
-    btns.appendChild(bTree); btns.appendChild(bAcid);
-    wrap.appendChild(btns);
-
-    var canvas = document.createElement('canvas');
-    canvas.width = 460; canvas.height = 320;
-    canvas.style.cssText = 'width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto;';
-    wrap.appendChild(canvas);
-    mount.appendChild(wrap);
-
-    var ctx = canvas.getContext('2d');
-    var mode = 'btree';
-    var step = 0; // 0=initial, 1=insert highlight, 2=full split
-    var acidStep = 0; // 0-3
-    var raf;
-
-    function drawRoundRect(x, y, w, h, r, fill, stroke) {
-      ctx.beginPath();
-      ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.arcTo(x+w,y,x+w,y+r,r);
-      ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
-      ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
-      ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r); ctx.closePath();
-      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
-      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.5; ctx.stroke(); }
-    }
-
-    function drawNode(x, y, keys, highlight) {
-      var w = keys.length * 52 + 8;
-      drawRoundRect(x - w/2, y, w, 34, 5, '#161b22', highlight || '#30363d');
-      keys.forEach(function(k, i) {
-        var kx = x - w/2 + 8 + i * 52;
-        ctx.fillStyle = k === '25' ? '#ffa657' : '#58a6ff';
-        ctx.font = 'bold 14px monospace'; ctx.textAlign = 'center';
-        ctx.fillText(k, kx + 18, y + 22);
-        if (i < keys.length - 1) {
-          ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.moveTo(kx + 44, y + 4); ctx.lineTo(kx + 44, y + 30); ctx.stroke();
-        }
-      });
-    }
-
-    function drawBtree() {
-      ctx.clearRect(0, 0, 460, 320);
-      ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, 460, 320);
-
-      ctx.fillStyle = '#8b949e'; ctx.font = '12px monospace'; ctx.textAlign = 'center';
-
-      if (step === 0) {
-        // Initial node [10, 20, 30]
-        ctx.fillText('B-Tree Node (max 3 keys) — INSERT 25', 230, 24);
-        drawNode(230, 60, ['10','20','30'], '#30363d');
-        ctx.fillStyle = '#ffa657'; ctx.font = '12px monospace';
-        ctx.fillText('← Insert key 25: node is FULL → split needed', 230, 120);
-        ctx.fillStyle = '#8b949e'; ctx.font = '11px monospace';
-        ctx.fillText('Click "Animate Insert" to see B-tree split', 230, 145);
-      } else if (step === 1) {
-        ctx.fillStyle = '#ffa657';
-        ctx.fillText('Node FULL! Splitting: middle key 20 rises to parent', 230, 24);
-        drawNode(230, 55, ['10','20','25','30'], '#ffa657');
-        ctx.font = '11px monospace'; ctx.fillStyle = '#8b949e';
-        ctx.fillText('← All 4 keys temporarily in node before split →', 230, 112);
-      } else if (step === 2) {
-        ctx.fillStyle = '#3fb950';
-        ctx.fillText('Split complete! 20 → parent, [10] left, [25,30] right', 230, 24);
-        // Parent node
-        drawNode(230, 50, ['20'], '#3fb950');
-        // Left child
-        drawNode(120, 130, ['10'], '#58a6ff');
-        // Right child
-        drawNode(340, 130, ['25','30'], '#58a6ff');
-        // Lines from parent to children
-        ctx.strokeStyle = '#3fb950'; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.moveTo(210, 84); ctx.lineTo(140, 130); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(252, 84); ctx.lineTo(320, 130); ctx.stroke();
-        // Labels
-        ctx.fillStyle = '#58a6ff'; ctx.font = '11px monospace';
-        ctx.fillText('Left child', 120, 180);
-        ctx.fillText('Right child', 340, 180);
-        ctx.fillStyle = '#3fb950';
-        ctx.fillText('Parent', 230, 45);
+  visual: {
+    type: 'layered',
+    title: '🗄️ Relational DB Internals — Query to Disk',
+    layers: [
+      {
+        id: 'client',
+        label: '👤 Client Layer',
+        color: '#58a6ff',
+        protocols: 'JDBC / psql / HTTP',
+        services: [
+          { id: 'app',    label: 'Application',   icon: '💻', hint: 'Spring Boot / JDBC' },
+          { id: 'pool',   label: 'Conn Pool',      icon: '🔗', hint: 'HikariCP — max 20 conns' }
+        ]
+      },
+      {
+        id: 'query',
+        label: '🧠 Query Layer',
+        color: '#ffa657',
+        protocols: 'SQL → Logical Plan',
+        services: [
+          { id: 'parser',    label: 'Parser',     icon: '📝', hint: 'Tokenize & validate SQL' },
+          { id: 'rewriter',  label: 'Rewriter',   icon: '🔄', hint: 'Expand views, apply rules' },
+          { id: 'planner',   label: 'Optimizer',  icon: '⚡', hint: 'Cost-based: seq vs index scan' },
+          { id: 'executor',  label: 'Executor',   icon: '▶️',  hint: 'Execute chosen plan' }
+        ]
+      },
+      {
+        id: 'storage',
+        label: '📦 Storage Layer',
+        color: '#3fb950',
+        protocols: 'Page I/O (8KB)',
+        services: [
+          { id: 'bufpool',  label: 'Buffer Pool',  icon: '🏎️',  hint: 'LRU cache of 8KB pages in RAM' },
+          { id: 'btree',    label: 'B-Tree Index', icon: '🌳', hint: 'O(log N) lookup, range scan' },
+          { id: 'heap',     label: 'Heap Files',   icon: '📋', hint: 'Actual table rows (8KB pages)' },
+          { id: 'mvcc',     label: 'MVCC',         icon: '👁️',  hint: 'Snapshot isolation per txn' }
+        ]
+      },
+      {
+        id: 'durability',
+        label: '💾 Durability Layer',
+        color: '#bc8cff',
+        protocols: 'WAL streaming / fsync',
+        services: [
+          { id: 'wal',      label: 'WAL',          icon: '📜', hint: 'Write-Ahead Log — crash recovery' },
+          { id: 'primary',  label: 'Primary DB',   icon: '🗄️', hint: 'All writes land here' },
+          { id: 'replica',  label: 'Read Replica', icon: '📡', hint: 'Async WAL streaming ~10ms lag' },
+          { id: 'vacuum',   label: 'VACUUM',       icon: '🧹', hint: 'Reclaim dead MVCC tuples' }
+        ]
       }
-    }
-
-    var acidLabels = [
-      {name:'ATOMICITY', icon:'⚛', color:'#58a6ff', desc:'All ops commit or all rollback'},
-      {name:'CONSISTENCY', icon:'✓', color:'#3fb950', desc:'Valid state → valid state'},
-      {name:'ISOLATION', icon:'🔒', color:'#ffa657', desc:'Concurrent txns appear sequential'},
-      {name:'DURABILITY', icon:'💾', color:'#bc8cff', desc:'Committed data survives crash'}
-    ];
-
-    var acidAnimFrame = 0;
-
-    function drawAcid() {
-      if (!document.body.contains(canvas)) return;
-      ctx.clearRect(0, 0, 460, 320);
-      ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, 460, 320);
-
-      ctx.fillStyle = '#e6edf3'; ctx.font = 'bold 13px monospace'; ctx.textAlign = 'center';
-      ctx.fillText('INSERT Transaction — ACID Checks', 230, 22);
-
-      var boxW = 90, boxH = 70, startX = 20, gapX = 10, y = 50;
-      acidLabels.forEach(function(a, i) {
-        var x = startX + i * (boxW + gapX);
-        var active = i <= acidStep;
-        drawRoundRect(x, y, boxW, boxH, 6, active ? '#161b22' : '#0d1117', active ? a.color : '#30363d');
-        ctx.fillStyle = active ? a.color : '#30363d';
-        ctx.font = '20px monospace'; ctx.textAlign = 'center';
-        ctx.fillText(a.icon, x + boxW/2, y + 28);
-        ctx.font = 'bold 9px monospace';
-        ctx.fillText(a.name, x + boxW/2, y + 44);
-        if (i < acidLabels.length - 1) {
-          ctx.strokeStyle = active && i < acidStep ? '#3fb950' : '#30363d';
-          ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.moveTo(x + boxW + 1, y + boxH/2); ctx.lineTo(x + boxW + gapX - 1, y + boxH/2); ctx.stroke();
-          ctx.fillStyle = active && i < acidStep ? '#3fb950' : '#30363d';
-          ctx.font = '12px monospace';
-          ctx.fillText('→', x + boxW + gapX/2, y + boxH/2 + 5);
-        }
-        if (active) {
-          ctx.fillStyle = '#3fb950'; ctx.font = 'bold 16px monospace';
-          ctx.fillText('✓', x + boxW - 14, y + 14);
-        }
-      });
-
-      // Description of current step
-      if (acidStep < acidLabels.length) {
-        var cur = acidLabels[acidStep];
-        drawRoundRect(20, 138, 420, 44, 6, '#161b22', cur.color);
-        ctx.fillStyle = cur.color; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'left';
-        ctx.fillText(cur.name + ':', 32, 158);
-        ctx.fillStyle = '#e6edf3'; ctx.font = '11px monospace';
-        ctx.fillText(cur.desc, 32, 174);
-      } else {
-        drawRoundRect(20, 138, 420, 44, 6, '#161b22', '#3fb950');
-        ctx.fillStyle = '#3fb950'; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center';
-        ctx.fillText('All ACID checks passed — Transaction COMMITTED ✓', 230, 165);
+    ],
+    flows: [
+      {
+        name: '📖 Read Query',
+        path: ['app', 'pool', 'parser', 'planner', 'executor', 'bufpool', 'btree'],
+        color: '#58a6ff'
+      },
+      {
+        name: '✏️ Write Transaction',
+        path: ['app', 'pool', 'parser', 'executor', 'bufpool', 'wal', 'primary', 'replica'],
+        color: '#3fb950'
+      },
+      {
+        name: '🐢 Slow Query (seq scan)',
+        path: ['app', 'pool', 'parser', 'planner', 'executor', 'heap'],
+        color: '#f85149'
       }
-
-      // Animated INSERT packet travelling through boxes
-      acidAnimFrame++;
-      var progress = (acidAnimFrame % 90) / 90;
-      var totalW = 4 * (boxW + gapX) - gapX;
-      var px = startX + progress * totalW;
-      var activeBox = Math.min(3, Math.floor(progress * 4));
-      ctx.beginPath();
-      ctx.arc(px, y + boxH + 16, 7, 0, Math.PI*2);
-      ctx.fillStyle = acidLabels[activeBox].color; ctx.fill();
-      ctx.fillStyle = '#0d1117'; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
-      ctx.fillText('TX', px, y + boxH + 19);
-
-      ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace'; ctx.textAlign = 'center';
-      ctx.fillText('INSERT transaction packet flowing through ACID checks', 230, y + boxH + 40);
-
-      // Detailed descriptions
-      var details = [
-        'ATOMICITY: If any step fails, entire INSERT rolls back — no partial writes',
-        'CONSISTENCY: Foreign key constraints & NOT NULL checks enforced on commit',
-        'ISOLATION: Concurrent INSERTs cannot see each other (READ COMMITTED default)',
-        'DURABILITY: WAL flushed to disk (fsync) before commit ACK returned to app'
-      ];
-      ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace'; ctx.textAlign = 'left';
-      details.forEach(function(d, i) {
-        ctx.fillStyle = i <= acidStep ? '#e6edf3' : '#30363d';
-        ctx.fillText(d, 20, 210 + i * 16);
-      });
-
-      raf = requestAnimationFrame(drawAcid);
-    }
-
-    bTree.addEventListener('click', function() {
-      mode = 'btree';
-      if (raf) cancelAnimationFrame(raf);
-      step = (step + 1) % 3;
-      drawBtree();
-    });
-    bAcid.addEventListener('click', function() {
-      if (mode !== 'acid') { mode = 'acid'; acidStep = 0; acidAnimFrame = 0; drawAcid(); }
-      else { acidStep = (acidStep + 1) % (acidLabels.length + 1); }
-    });
-
-    drawBtree();
+    ]
   },
   architecture:{
     title:"Relational DB — Read/Write Architecture",

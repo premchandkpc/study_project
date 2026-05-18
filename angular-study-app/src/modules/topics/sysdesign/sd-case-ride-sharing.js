@@ -120,193 +120,56 @@ async def match_trip(rider_lat: float, rider_lng: float, trip_id: str):
     cons:["Redis is in-memory: 500K driver positions × 64 bytes = 32MB — easily fits but requires HA","WebSocket: sticky sessions or pub-sub backplane required","Matching race conditions: need atomic claim (ZREM) to prevent double-assignment"],
     when:"This pattern (Redis geo + WebSocket + event-driven matching) applies to any real-time location-aware service: food delivery, logistics tracking, peer-to-peer marketplace."
   },
-  visual: function(mount) {
-    mount.innerHTML = '';
-    var W = 460, H = 320;
-    var canvas = document.createElement('canvas');
-    canvas.width = W; canvas.height = H;
-    canvas.style.cssText = 'width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto';
-    var btnRow = document.createElement('div');
-    btnRow.style.cssText = 'display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px';
-    var btnStyle = 'padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px';
-    mount.appendChild(canvas);
-    mount.appendChild(btnRow);
-    var ctx = canvas.getContext('2d');
-
-    var GW = 9, GH = 8; // grid cells
-    var CW = W / GW, CH = (H - 54) / GH; // cell size
-    var GRIDTOP = 28;
-
-    // Drivers: {gx, gy, dx, dy (drift velocity), matched, highlight, route}
-    var drivers = [
-      {gx:1.5, gy:1.5, dx:0.004, dy:0.002, matched:false, highlight:false},
-      {gx:4.2, gy:2.1, dx:-0.003, dy:0.005, matched:false, highlight:false},
-      {gx:6.8, gy:1.8, dx:0.002, dy:-0.004, matched:false, highlight:false},
-      {gx:2.8, gy:5.5, dx:-0.002, dy:-0.003, matched:false, highlight:false},
-      {gx:7.2, gy:5.2, dx:0.003, dy:0.002, matched:false, highlight:false}
-    ];
-
-    var user = null; // {gx,gy}
-    var matchPhase = 0; // 0=idle,1=scanning,2=found,3=matched
-    var scanR = 0, scanMaxR = 0;
-    var statusMsg = 'Drivers updating live. Press [Request Ride] to match.';
-    var statusColor = '#8b949e';
-    var matchedIdx = -1;
-    var raf = null;
-    var running = false;
-
-    function gxToX(gx) { return gx * CW; }
-    function gyToY(gy) { return GRIDTOP + gy * CH; }
-
-    function draw() {
-      if (!document.body.contains(canvas)) return;
-      ctx.clearRect(0,0,W,H); ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,W,H);
-
-      // Grid overlay
-      ctx.strokeStyle='#161b22'; ctx.lineWidth=0.5;
-      for(var gx=0;gx<=GW;gx++) {
-        ctx.beginPath(); ctx.moveTo(gxToX(gx),GRIDTOP); ctx.lineTo(gxToX(gx),GRIDTOP+GH*CH); ctx.stroke();
+  visual: {
+    type: 'layered',
+    title: 'Ride Sharing Architecture (Uber/Lyft)',
+    layers: [
+      {
+        id: 'client', label: 'Client Layer', color: '#58a6ff', protocols: 'HTTPS · WebSocket',
+        services: [
+          { id: 'rider-app',  label: 'Rider App',   icon: '📱', sublabel: 'Request ride · Track driver' },
+          { id: 'driver-app', label: 'Driver App',  icon: '🚗', sublabel: 'GPS every 4s · Accept trips' }
+        ]
+      },
+      {
+        id: 'gateway', label: 'API Gateway Layer', color: '#e3b341', protocols: 'REST · WebSocket',
+        services: [
+          { id: 'api-gw', label: 'API Gateway', icon: '🚪', sublabel: 'Auth · Rate limit · Routing' }
+        ]
+      },
+      {
+        id: 'services', label: 'Core Services Layer', color: '#ffa657', protocols: 'gRPC · HTTP/2',
+        services: [
+          { id: 'trip-svc',     label: 'Trip Service',     icon: '🗺️', sublabel: 'State machine: REQ→DONE' },
+          { id: 'dispatch-svc', label: 'Dispatch Service', icon: '⚡', sublabel: 'Match rider ↔ driver' },
+          { id: 'location-svc', label: 'Location Service', icon: '📍', sublabel: 'GEOADD · 125K writes/s' },
+          { id: 'supply-svc',   label: 'Supply Service',   icon: '🔍', sublabel: 'GEORADIUS · 5km search' },
+          { id: 'pricing-svc',  label: 'Surge Pricing',    icon: '💰', sublabel: 'H3 hex · demand/supply' }
+        ]
+      },
+      {
+        id: 'data', label: 'Data Layer', color: '#bc8cff', protocols: 'TCP · TLS',
+        services: [
+          { id: 'redis-geo',  label: 'Redis Geo',    icon: '⚡', sublabel: 'Driver positions · GEORADIUS' },
+          { id: 'cassandra',  label: 'Cassandra',    icon: '🗄️', sublabel: 'Trip history · Time-series' },
+          { id: 'kafka',      label: 'Kafka',        icon: '📨', sublabel: 'Location events · Trip events' },
+          { id: 'postgres',   label: 'PostgreSQL',   icon: '🐘', sublabel: 'Users · Payments · Ratings' }
+        ]
+      },
+      {
+        id: 'realtime', label: 'Real-Time Push Layer', color: '#3fb950', protocols: 'WebSocket · SSE',
+        services: [
+          { id: 'ws-server',  label: 'WebSocket Server', icon: '🔌', sublabel: 'Driver location → Rider map' },
+          { id: 'push-svc',   label: 'Push Notifications', icon: '🔔', sublabel: 'FCM · APNs · Trip updates' }
+        ]
       }
-      for(var gy=0;gy<=GH;gy++) {
-        ctx.beginPath(); ctx.moveTo(0,gyToY(gy)); ctx.lineTo(W,gyToY(gy)); ctx.stroke();
-      }
-
-      // Geohash cell highlight (show a few cells as colored)
-      var cells=[{gx:1,gy:1},{gx:4,gy:2},{gx:6,gy:1},{gx:2,gy:5},{gx:7,gy:5}];
-      cells.forEach(function(c){
-        ctx.fillStyle='rgba(88,166,255,0.04)'; ctx.strokeStyle='rgba(88,166,255,0.15)'; ctx.lineWidth=0.5;
-        ctx.beginPath(); ctx.roundRect(gxToX(c.gx),gyToY(c.gy),CW,CH,2); ctx.fill(); ctx.stroke();
-      });
-
-      // Scan radius
-      if (matchPhase>=1 && user) {
-        var ux=gxToX(user.gx), uy=gyToY(user.gy);
-        var grad = ctx.createRadialGradient(ux,uy,0,ux,uy,scanR);
-        grad.addColorStop(0,'rgba(88,166,255,0.0)');
-        grad.addColorStop(0.7,'rgba(88,166,255,0.04)');
-        grad.addColorStop(1,'rgba(88,166,255,0.18)');
-        ctx.fillStyle=grad;
-        ctx.beginPath(); ctx.arc(ux,uy,scanR,0,Math.PI*2); ctx.fill();
-        ctx.strokeStyle='rgba(88,166,255,0.4)'; ctx.lineWidth=1.5;
-        ctx.setLineDash([4,3]);
-        ctx.beginPath(); ctx.arc(ux,uy,scanR,0,Math.PI*2); ctx.stroke();
-        ctx.setLineDash([]);
-      }
-
-      // Route line to matched driver
-      if (matchPhase===3 && user && matchedIdx>=0) {
-        var d=drivers[matchedIdx];
-        ctx.strokeStyle='#ffa657'; ctx.lineWidth=1.5; ctx.setLineDash([5,3]);
-        ctx.beginPath(); ctx.moveTo(gxToX(user.gx),gyToY(user.gy)); ctx.lineTo(gxToX(d.gx),gyToY(d.gy)); ctx.stroke();
-        ctx.setLineDash([]);
-      }
-
-      // Drivers
-      drivers.forEach(function(d,i){
-        var x=gxToX(d.gx), y=gyToY(d.gy);
-        var isMatched = (matchPhase===3 && i===matchedIdx);
-        var isHighlight = (matchPhase===2 && d.highlight);
-        ctx.fillStyle = isMatched?'#ffa657':isHighlight?'#ffa657':'#3fb950';
-        ctx.beginPath(); ctx.arc(x,y,isMatched?8:5,0,Math.PI*2); ctx.fill();
-        if (isMatched||isHighlight) {
-          ctx.strokeStyle=isMatched?'#ffa657':'rgba(255,166,87,0.5)'; ctx.lineWidth=1.5;
-          ctx.beginPath(); ctx.arc(x,y,isMatched?13:9,0,Math.PI*2); ctx.stroke();
-        }
-        ctx.fillStyle='#0d1117'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
-        ctx.fillText('D'+(i+1), x, y+3);
-      });
-
-      // User dot
-      if (user) {
-        var ux2=gxToX(user.gx), uy2=gyToY(user.gy);
-        var pulse = (Math.sin(Date.now()*0.008)+1)/2;
-        ctx.fillStyle='#58a6ff';
-        ctx.beginPath(); ctx.arc(ux2,uy2,7,0,Math.PI*2); ctx.fill();
-        ctx.strokeStyle='rgba(88,166,255,'+(0.3+0.4*pulse)+')'; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.arc(ux2,uy2,11+pulse*3,0,Math.PI*2); ctx.stroke();
-        ctx.fillStyle='#0d1117'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
-        ctx.fillText('U', ux2, uy2+3);
-      }
-
-      // Legend
-      ctx.fillStyle='#8b949e'; ctx.font='9px monospace'; ctx.textAlign='left';
-      ctx.fillText('■ Driver (live GPS)  ■ User  ■ Matched', 8, H-32);
-      ctx.fillStyle='#3fb950'; ctx.fillRect(8,H-28,7,7);
-      ctx.fillStyle='#58a6ff'; ctx.fillRect(72,H-28,7,7);
-      ctx.fillStyle='#ffa657'; ctx.fillRect(106,H-28,7,7);
-
-      // Status bar
-      ctx.fillStyle=statusColor; ctx.font='10px monospace'; ctx.textAlign='center';
-      ctx.fillText(statusMsg, W/2, H-10);
-
-      // Title
-      ctx.fillStyle='#8b949e'; ctx.font='11px monospace'; ctx.textAlign='left';
-      ctx.fillText('RIDE MATCHING  •  geohash grid  •  GEORADIUS', 8, 18);
-    }
-
-    var nearestDrivers = [];
-
-    function requestRide() {
-      // Place user at center-ish
-      user = {gx:4.5, gy:3.5};
-      matchPhase=1; scanR=0; matchedIdx=-1;
-      nearestDrivers=[];
-      drivers.forEach(function(d){d.highlight=false; d.matched=false;});
-      statusMsg='Scanning for nearby drivers...'; statusColor='#58a6ff';
-
-      var scanTarget = Math.min(W,H)*0.35;
-      // Find 3 nearest drivers
-      var dists = drivers.map(function(d,i){
-        var dx=d.gx-user.gx, dy=d.gy-user.gy;
-        return {i:i, dist:Math.sqrt(dx*dx+dy*dy)};
-      });
-      dists.sort(function(a,b){return a.dist-b.dist;});
-      nearestDrivers=[dists[0].i,dists[1].i,dists[2].i];
-
-      var scanStart=Date.now();
-      var scanDur=1200;
-      function scanStep(){
-        if(!document.body.contains(canvas)) return;
-        var t=(Date.now()-scanStart)/scanDur;
-        if(t>=1){
-          scanR=scanTarget;
-          matchPhase=2;
-          nearestDrivers.forEach(function(ni){drivers[ni].highlight=true;});
-          statusMsg='3 drivers found → calculating ETA...'; statusColor='#ffa657';
-          setTimeout(function(){
-            if(!document.body.contains(canvas)) return;
-            matchedIdx=dists[0].i;
-            matchPhase=3;
-            drivers[matchedIdx].matched=true;
-            drivers.forEach(function(d){d.highlight=false;});
-            statusMsg='Matched Driver-'+(matchedIdx+1)+' • ETA ~3min → Route shown'; statusColor='#ffa657';
-          }, 1000);
-        } else {
-          scanR=t*scanTarget;
-          raf=requestAnimationFrame(scanStep);
-        }
-      }
-      scanStep();
-    }
-
-    function animLoop(){
-      if(!document.body.contains(canvas)) return;
-      // Drift drivers
-      drivers.forEach(function(d){
-        d.gx+=d.dx; d.gy+=d.dy;
-        if(d.gx<0.3||d.gx>GW-0.3) d.dx*=-1;
-        if(d.gy<0.3||d.gy>GH-0.3) d.dy*=-1;
-      });
-      draw();
-      raf=requestAnimationFrame(animLoop);
-    }
-
-    animLoop();
-
-    var b=document.createElement('button'); b.textContent='Request Ride'; b.style.cssText=btnStyle; b.onclick=requestRide; btnRow.appendChild(b);
-    var b2=document.createElement('button'); b2.textContent='Reset'; b2.style.cssText=btnStyle;
-    b2.onclick=function(){user=null;matchPhase=0;scanR=0;matchedIdx=-1;nearestDrivers=[];drivers.forEach(function(d){d.highlight=false;d.matched=false;});statusMsg='Drivers updating live. Press [Request Ride] to match.';statusColor='#8b949e';};
-    btnRow.appendChild(b2);
+    ],
+    flows: [
+      { name: 'Ride Request',    path: ['rider-app', 'api-gw', 'trip-svc', 'dispatch-svc', 'redis-geo'],   color: '#58a6ff' },
+      { name: 'Driver Match',    path: ['dispatch-svc', 'supply-svc', 'redis-geo', 'dispatch-svc', 'driver-app'], color: '#ffa657' },
+      { name: 'Location Update', path: ['driver-app', 'location-svc', 'redis-geo', 'kafka'],                color: '#3fb950' },
+      { name: 'Surge Pricing',   path: ['pricing-svc', 'redis-geo', 'kafka', 'postgres'],                   color: '#bc8cff' }
+    ]
   },
   uml:{
     title:"Ride Request — Matching Flow",

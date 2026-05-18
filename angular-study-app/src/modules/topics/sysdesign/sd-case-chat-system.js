@@ -182,290 +182,71 @@ async def consume_messages():
       "Read receipts at scale: avoid per-message DB write on every read — batch ACKs every 5s instead",
       "Presence fan-out storm: user with 5000 contacts goes online → 5000 presence events → filter to only contacts who are also online"
     ],
-    visual: function(mount) {
-      mount.innerHTML = `
-        <div style="text-align:center;margin-bottom:8px;">
-          <button id="btnSend" style="padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;margin-right:6px;">Send Message</button>
-          <button id="btnOffline" style="padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;margin-right:6px;">User Goes Offline</button>
-          <button id="btnReconnect" style="padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;">User Reconnects</button>
-        </div>
-        <canvas id="chatCanvas" width="460" height="320" style="width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto;"></canvas>
-      `;
-
-      var canvas = mount.querySelector('#chatCanvas');
-      var ctx = canvas.getContext('2d');
-      var W = 460, H = 320;
-
-      var GREEN = '#3fb950', BLUE = '#58a6ff', ORANGE = '#ffa657';
-      var RED = '#f85149', GRAY = '#8b949e', TEXT = '#e6edf3';
-      var CARD = '#161b22', BORDER = '#30363d', PURPLE = '#bc8cff';
-
-      var state = {
-        userBOnline: true,
-        packets: [],
-        storedMsg: false,
-        phase: 'idle',
-        label: ''
-      };
-
-      function drawBox(x, y, w, h, label, color, sublabel) {
-        ctx.fillStyle = CARD;
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(x, y, w, h, 6);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = TEXT;
-        ctx.font = 'bold 11px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(label, x + w / 2, y + h / 2 - (sublabel ? 6 : 0));
-        if (sublabel) {
-          ctx.fillStyle = GRAY;
-          ctx.font = '9px monospace';
-          ctx.fillText(sublabel, x + w / 2, y + h / 2 + 8);
+    visual: {
+      type: 'layered',
+      title: '💬 Real-Time Chat System (WhatsApp Scale)',
+      layers: [
+        {
+          id: 'l1',
+          label: 'Client Layer',
+          color: '#58a6ff',
+          protocols: 'WebSocket / HTTPS',
+          services: [
+            { id: 's1', label: 'Mobile App', icon: '📱', sublabel: 'iOS / Android' },
+            { id: 's2', label: 'Web App', icon: '💻', sublabel: 'Browser / PWA' }
+          ]
+        },
+        {
+          id: 'l2',
+          label: 'Connection Layer',
+          color: '#3fb950',
+          protocols: 'WebSocket / TCP — sticky sessions by user_id hash',
+          services: [
+            { id: 's3', label: 'WS Server 1', icon: '🔌', sublabel: 'User A conn' },
+            { id: 's4', label: 'WS Server 2', icon: '🔌', sublabel: 'User B conn' },
+            { id: 's5', label: 'L4 Load Balancer', icon: '⚖️', sublabel: 'Consistent hash' }
+          ]
+        },
+        {
+          id: 'l3',
+          label: 'Messaging Layer',
+          color: '#ffa657',
+          protocols: 'Kafka topic: chat-messages — partitioned by conversation_id',
+          services: [
+            { id: 's6', label: 'Kafka', icon: '⚡', sublabel: 'chat-messages topic' },
+            { id: 's7', label: 'Message Router', icon: '🔀', sublabel: 'fan-out to servers' },
+            { id: 's8', label: 'Push Worker', icon: '📲', sublabel: 'APNs / FCM' }
+          ]
+        },
+        {
+          id: 'l4',
+          label: 'Storage Layer',
+          color: '#bc8cff',
+          protocols: 'CQL (Cassandra) / Redis — partition key: conversation_id',
+          services: [
+            { id: 's9', label: 'Cassandra', icon: '🗄️', sublabel: '100B msgs/day · TTL 1yr' },
+            { id: 's10', label: 'Redis Presence', icon: '🟢', sublabel: 'TTL 35s heartbeat' },
+            { id: 's11', label: 'S3 / CDN', icon: '🖼️', sublabel: 'Media storage' }
+          ]
         }
-      }
-
-      function drawArrow(x1, y1, x2, y2, color, label) {
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([4, 3]);
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        var angle = Math.atan2(y2 - y1, x2 - x1);
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.moveTo(x2, y2);
-        ctx.lineTo(x2 - 8 * Math.cos(angle - 0.4), y2 - 8 * Math.sin(angle - 0.4));
-        ctx.lineTo(x2 - 8 * Math.cos(angle + 0.4), y2 - 8 * Math.sin(angle + 0.4));
-        ctx.fill();
-        if (label) {
-          ctx.fillStyle = GRAY;
-          ctx.font = '9px monospace';
-          ctx.textAlign = 'center';
-          var mx = (x1 + x2) / 2, my = (y1 + y2) / 2 - 6;
-          ctx.fillText(label, mx, my);
+      ],
+      flows: [
+        {
+          name: '📨 Send Message',
+          path: ['s1', 's5', 's3', 's6', 's4', 's2'],
+          color: '#3fb950'
+        },
+        {
+          name: '📢 Group Chat Fan-out',
+          path: ['s1', 's5', 's3', 's6', 's7', 's4'],
+          color: '#ffa657'
+        },
+        {
+          name: '🔔 Offline Delivery',
+          path: ['s3', 's6', 's9', 's8', 's2'],
+          color: '#bc8cff'
         }
-      }
-
-      function draw() {
-        if (!document.body.contains(canvas)) return;
-        ctx.clearRect(0, 0, W, H);
-
-        // Title
-        ctx.fillStyle = GRAY;
-        ctx.font = '10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('Real-Time Chat Architecture', W / 2, 14);
-
-        // User A (left)
-        var userAColor = GREEN;
-        drawBox(12, 50, 70, 44, 'User A', userAColor, 'WS Server 1');
-
-        // WebSocket Server 1
-        drawBox(102, 50, 76, 44, 'WS Server 1', BLUE, 'user A conn');
-
-        // Kafka (center)
-        drawBox(202, 50, 56, 44, 'Kafka', ORANGE, 'chat-msgs');
-
-        // WebSocket Server 2
-        drawBox(278, 50, 76, 44, 'WS Server 2', BLUE, 'user B conn');
-
-        // User B (right)
-        var userBColor = state.userBOnline ? GREEN : RED;
-        drawBox(374, 50, 74, 44, 'User B', userBColor, state.userBOnline ? 'online' : 'OFFLINE');
-
-        // Cassandra (bottom left)
-        drawBox(60, 180, 100, 44, 'Cassandra', PURPLE, 'msg store');
-
-        // Redis Presence (bottom center)
-        drawBox(180, 180, 100, 44, 'Redis', ORANGE, 'presence TTL');
-
-        // Static architecture arrows
-        ctx.globalAlpha = 0.35;
-        drawArrow(82, 72, 102, 72, BLUE, '');
-        drawArrow(178, 72, 202, 72, ORANGE, '');
-        drawArrow(258, 72, 278, 72, ORANGE, '');
-        drawArrow(354, 72, 374, 72, BLUE, '');
-        ctx.globalAlpha = 1.0;
-
-        // Labels on static arrows
-        ctx.fillStyle = GRAY;
-        ctx.font = '8px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('WS', 92, 68);
-        ctx.fillText('publish', 190, 68);
-        ctx.fillText('consume', 268, 68);
-        ctx.fillText('push', 364, 68);
-
-        // Cassandra link
-        ctx.strokeStyle = BORDER;
-        ctx.lineWidth = 1;
-        ctx.setLineDash([3, 3]);
-        ctx.beginPath();
-        ctx.moveTo(140, 94);
-        ctx.lineTo(110, 180);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = GRAY;
-        ctx.font = '8px monospace';
-        ctx.fillText('persist', 118, 145);
-
-        // Redis presence link
-        ctx.strokeStyle = BORDER;
-        ctx.lineWidth = 1;
-        ctx.setLineDash([3, 3]);
-        ctx.beginPath();
-        ctx.moveTo(316, 94);
-        ctx.lineTo(230, 180);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = GRAY;
-        ctx.font = '8px monospace';
-        ctx.fillText('heartbeat', 268, 148);
-
-        // Offline: pull from Cassandra arrow
-        if (state.storedMsg) {
-          ctx.strokeStyle = PURPLE;
-          ctx.lineWidth = 1.5;
-          ctx.setLineDash([4, 3]);
-          ctx.beginPath();
-          ctx.moveTo(160, 202);
-          ctx.lineTo(316, 94);
-          ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.fillStyle = PURPLE;
-          ctx.font = '9px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText('pull on reconnect', 240, 160);
-        }
-
-        // Animated packets
-        state.packets.forEach(function(p) {
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-          ctx.fillStyle = p.color;
-          ctx.fill();
-          if (p.label) {
-            ctx.fillStyle = TEXT;
-            ctx.font = '8px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(p.label, p.x, p.y - 9);
-          }
-        });
-
-        // Status label
-        if (state.label) {
-          ctx.fillStyle = CARD;
-          ctx.strokeStyle = BORDER;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.roundRect(W / 2 - 140, 260, 280, 28, 6);
-          ctx.fill();
-          ctx.stroke();
-          ctx.fillStyle = TEXT;
-          ctx.font = '11px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(state.label, W / 2, 279);
-        }
-      }
-
-      function animatePackets(steps, onDone) {
-        var stepIdx = 0;
-        function runStep() {
-          if (!document.body.contains(canvas)) return;
-          if (stepIdx >= steps.length) {
-            if (onDone) onDone();
-            return;
-          }
-          var step = steps[stepIdx++];
-          state.label = step.label || '';
-          var p = { x: step.x1, y: step.y1, color: step.color || GREEN, label: step.pLabel || '' };
-          state.packets = [p];
-          var frames = 0, total = 22;
-          var dx = (step.x2 - step.x1) / total;
-          var dy = (step.y2 - step.y1) / total;
-          function tick() {
-            if (!document.body.contains(canvas)) return;
-            p.x += dx; p.y += dy;
-            frames++;
-            draw();
-            if (frames < total) requestAnimationFrame(tick);
-            else {
-              state.packets = [];
-              setTimeout(runStep, 200);
-            }
-          }
-          requestAnimationFrame(tick);
-        }
-        runStep();
-      }
-
-      function sendMessage() {
-        if (state.phase !== 'idle') return;
-        state.phase = 'sending';
-        state.storedMsg = false;
-        state.userBOnline = true;
-        var steps = [
-          { x1: 82, y1: 72, x2: 102, y2: 72, color: GREEN, label: 'A sends message via WebSocket', pLabel: 'msg' },
-          { x1: 178, y1: 72, x2: 202, y2: 72, color: ORANGE, label: 'Server 1 publishes to Kafka', pLabel: 'kafka' },
-          { x1: 140, y1: 72, x2: 110, y2: 180, color: PURPLE, label: 'Message persisted to Cassandra', pLabel: 'persist' },
-          { x1: 258, y1: 72, x2: 278, y2: 72, color: ORANGE, label: 'Server 2 consumes from Kafka', pLabel: 'msg' },
-          { x1: 354, y1: 72, x2: 374, y2: 72, color: GREEN, label: 'Delivered to User B via WebSocket!', pLabel: 'deliver' }
-        ];
-        animatePackets(steps, function() {
-          state.phase = 'idle';
-          state.label = 'Message delivered successfully';
-          draw();
-        });
-      }
-
-      function goOffline() {
-        if (state.phase !== 'idle') return;
-        state.phase = 'offline';
-        state.userBOnline = false;
-        state.label = 'User B went offline — message stored in Cassandra';
-        state.storedMsg = true;
-        var steps = [
-          { x1: 82, y1: 72, x2: 102, y2: 72, color: GREEN, label: 'A sends message...', pLabel: 'msg' },
-          { x1: 178, y1: 72, x2: 202, y2: 72, color: ORANGE, label: 'Published to Kafka', pLabel: 'kafka' },
-          { x1: 140, y1: 72, x2: 110, y2: 180, color: PURPLE, label: 'Stored in Cassandra (B is offline)', pLabel: 'store' }
-        ];
-        animatePackets(steps, function() {
-          state.phase = 'idle';
-          state.label = 'B is offline — message queued in Cassandra';
-          draw();
-        });
-      }
-
-      function reconnect() {
-        if (state.phase !== 'idle') return;
-        if (!state.storedMsg) { state.label = 'No offline messages — send message first then go offline'; draw(); return; }
-        state.phase = 'reconnect';
-        state.userBOnline = true;
-        var steps = [
-          { x1: 374, y1: 72, x2: 278, y2: 72, color: BLUE, label: 'User B reconnects to WS Server 2', pLabel: 'reconnect' },
-          { x1: 278, y1: 94, x2: 160, y2: 200, color: PURPLE, label: 'Server queries Cassandra for missed msgs', pLabel: 'query' },
-          { x1: 160, y1: 200, x2: 278, y2: 94, color: PURPLE, label: 'Cassandra returns stored messages', pLabel: 'msgs' },
-          { x1: 354, y1: 72, x2: 374, y2: 72, color: GREEN, label: 'Missed messages delivered to B!', pLabel: 'deliver' }
-        ];
-        animatePackets(steps, function() {
-          state.phase = 'idle';
-          state.storedMsg = false;
-          state.label = 'All offline messages delivered on reconnect';
-          draw();
-        });
-      }
-
-      mount.querySelector('#btnSend').addEventListener('click', sendMessage);
-      mount.querySelector('#btnOffline').addEventListener('click', goOffline);
-      mount.querySelector('#btnReconnect').addEventListener('click', reconnect);
-
-      draw();
+      ]
     }
   };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);

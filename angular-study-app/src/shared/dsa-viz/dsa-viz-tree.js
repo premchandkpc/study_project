@@ -122,7 +122,7 @@
         x: node._x, y: node._y,
         fill: s.text, 'font-size': '13', 'font-weight': '700',
         'text-anchor': 'middle', 'dominant-baseline': 'central',
-        'font-family': 'monospace',
+        'font-family': "'Inter','JetBrains Mono',system-ui,sans-serif",
       });
       label.textContent = node.val;
 
@@ -171,7 +171,7 @@
     const wrap = document.createElement('div');
     wrap.style.cssText = `background:#21262d;border:1px solid #30363d;border-radius:8px;padding:8px 12px;min-width:120px;`;
     const lbl = document.createElement('div');
-    lbl.style.cssText = `font-size:11px;color:${color};font-weight:700;margin-bottom:6px;letter-spacing:.05em;`;
+    lbl.style.cssText = `font-size:13px;font-family:'Inter',system-ui,sans-serif;color:${color};font-weight:700;margin-bottom:6px;letter-spacing:.05em;`;
     lbl.textContent = label;
     wrap.appendChild(lbl);
     items.forEach((v, i) => {
@@ -183,7 +183,7 @@
     });
     if (!items.length) {
       const empty = document.createElement('div');
-      empty.style.cssText = `font-size:11px;color:#768390;`;
+      empty.style.cssText = `font-size:13px;font-family:'Inter',system-ui,sans-serif;color:#768390;`;
       empty.textContent = 'empty';
       wrap.appendChild(empty);
     }

@@ -193,245 +193,54 @@ async def call_stripe(amount, currency, customer_id, idempotency_key):
       "Test your failure scenarios with chaos engineering: kill the network after Stripe responds but before your DB write — ensure reconciliation catches it",
       "Currency is an integer (cents) not a float — floating point arithmetic loses money at scale (0.1 + 0.2 ≠ 0.3 in IEEE 754)"
     ],
-    visual: function(mount) {
-      mount.innerHTML = `
-        <div style="text-align:center;margin-bottom:8px;">
-          <button id="btnHappy" style="padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;margin-right:6px;">Happy Path</button>
-          <button id="btnTimeout" style="padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;margin-right:6px;">Network Timeout Retry</button>
-          <button id="btnIdem" style="padding:5px 14px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;cursor:pointer;font-size:12px;">Show Idempotency</button>
-        </div>
-        <canvas id="payCanvas" width="460" height="320" style="width:100%;max-width:460px;border-radius:8px;background:#0d1117;display:block;margin:0 auto;"></canvas>
-      `;
-
-      var canvas = mount.querySelector('#payCanvas');
-      var ctx = canvas.getContext('2d');
-      var W = 460, H = 320;
-
-      var GREEN = '#3fb950', BLUE = '#58a6ff', ORANGE = '#ffa657';
-      var RED = '#f85149', GRAY = '#8b949e', TEXT = '#e6edf3';
-      var CARD = '#161b22', BORDER = '#30363d', PURPLE = '#bc8cff';
-
-      var packets = [];
-      var statusLabel = 'Choose a scenario to animate';
-      var idemKeyColor = GRAY;
-      var idemStatus = '—';
-      var stripeStatus = '—';
-      var dbStatus = '—';
-      var animating = false;
-
-      // Component positions
-      var CLIENT = { x: 20, y: 120, w: 64, h: 40, label: 'Client', sub: 'idem key' };
-      var PAYSERV = { x: 110, y: 120, w: 80, h: 40, label: 'Payment', sub: 'Service' };
-      var STRIPE = { x: 310, y: 60, w: 70, h: 40, label: 'Stripe', sub: 'API' };
-      var OUTBOX = { x: 310, y: 160, w: 70, h: 40, label: 'Outbox', sub: 'DB table' };
-      var KAFKA = { x: 310, y: 240, w: 70, h: 40, label: 'Kafka', sub: 'events' };
-      var IDEM = { x: 110, y: 230, w: 80, h: 40, label: 'Idem', sub: 'Store' };
-
-      function drawBox(b, color, highlight) {
-        ctx.fillStyle = highlight ? '#0d1f0d' : CARD;
-        ctx.strokeStyle = color;
-        ctx.lineWidth = highlight ? 2 : 1.5;
-        ctx.beginPath();
-        ctx.roundRect(b.x, b.y, b.w, b.h, 6);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = TEXT;
-        ctx.font = 'bold 10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(b.label, b.x + b.w / 2, b.y + b.h / 2 - 5);
-        ctx.fillStyle = GRAY;
-        ctx.font = '8px monospace';
-        ctx.fillText(b.sub, b.x + b.w / 2, b.y + b.h / 2 + 8);
-      }
-
-      function drawPacket(x, y, color, label) {
-        ctx.beginPath();
-        ctx.arc(x, y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
-        if (label) {
-          ctx.fillStyle = TEXT;
-          ctx.font = '8px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(label, x, y - 9);
+    visual: {
+      type: 'flow',
+      title: '💳 Payment System Flow (Stripe / PayPal)',
+      direction: 'horizontal',
+      nodes: [
+        { id: 'client',   label: 'Client',        color: '#58a6ff', icon: '💳', sublabel: 'Web / Mobile' },
+        { id: 'gateway',  label: 'API Gateway',   color: '#ffa657', icon: '🔀', sublabel: 'Auth + Rate limit' },
+        { id: 'payserv',  label: 'Payment Svc',   color: '#bc8cff', icon: '⚙️', sublabel: 'Idempotency check' },
+        { id: 'outbox',   label: 'Outbox DB',     color: '#e3b341', icon: '📦', sublabel: 'Atomic write' },
+        { id: 'stripe',   label: 'Stripe / PSP',  color: '#ffa657', icon: '🏦', sublabel: 'Card network' },
+        { id: 'kafka',    label: 'Kafka',          color: '#3fb950', icon: '⚡', sublabel: 'Outbox relay' },
+        { id: 'merchant', label: 'Merchant Svc',  color: '#58a6ff', icon: '🏪', sublabel: 'Order + inventory' }
+      ],
+      connections: [
+        { from: 'client',   to: 'gateway',  label: 'POST /payments',      protocol: 'HTTPS' },
+        { from: 'gateway',  to: 'payserv',  label: 'idempotency key',      protocol: 'REST' },
+        { from: 'payserv',  to: 'outbox',   label: 'atomic DB txn',        protocol: 'SQL' },
+        { from: 'payserv',  to: 'stripe',   label: 'charge request',       protocol: 'REST' },
+        { from: 'stripe',   to: 'payserv',  label: 'authorized / declined', protocol: 'REST' },
+        { from: 'outbox',   to: 'kafka',    label: 'outbox relay poll',    protocol: 'CDC' },
+        { from: 'kafka',    to: 'merchant', label: 'payment.completed',    protocol: 'Kafka' }
+      ],
+      scenarios: [
+        {
+          name: '✅ Card Success',
+          path: ['client', 'gateway', 'payserv', 'outbox', 'stripe', 'kafka', 'merchant'],
+          result: '✓ Payment captured — order confirmed',
+          resultColor: '#3fb950'
+        },
+        {
+          name: '🔐 3DS Challenge',
+          path: ['client', 'gateway', 'payserv', 'stripe'],
+          result: '⟳ 3DS redirect — awaiting customer auth',
+          resultColor: '#e3b341'
+        },
+        {
+          name: '✗ Card Declined',
+          path: ['client', 'gateway', 'payserv', 'stripe'],
+          result: '✗ Declined — 402 Insufficient Funds',
+          resultColor: '#f85149'
+        },
+        {
+          name: '🔁 Timeout Retry',
+          path: ['client', 'gateway', 'payserv', 'stripe'],
+          result: '⟳ Same idempotency key — Stripe deduplicates, no double charge',
+          resultColor: '#ffa657'
         }
-      }
-
-      function draw() {
-        if (!document.body.contains(canvas)) return;
-        ctx.clearRect(0, 0, W, H);
-
-        // Title
-        ctx.fillStyle = GRAY;
-        ctx.font = '10px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText('Payment System — Idempotency + Outbox', 10, 14);
-
-        drawBox(CLIENT, GREEN, false);
-        drawBox(PAYSERV, BLUE, false);
-        drawBox(STRIPE, idemKeyColor === RED ? RED : ORANGE, stripeStatus === 'OK' ? true : false);
-        drawBox(OUTBOX, PURPLE, false);
-        drawBox(KAFKA, ORANGE, false);
-        drawBox(IDEM, idemKeyColor, idemStatus !== '—');
-
-        // Idem status
-        ctx.fillStyle = idemKeyColor;
-        ctx.font = '9px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(idemStatus, IDEM.x + IDEM.w / 2, IDEM.y + IDEM.h + 12);
-
-        // Stripe status
-        ctx.fillStyle = stripeStatus === 'OK' ? GREEN : (stripeStatus === 'TIMEOUT' ? RED : GRAY);
-        ctx.font = '9px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(stripeStatus, STRIPE.x + STRIPE.w / 2, STRIPE.y + STRIPE.h + 12);
-
-        // DB status
-        ctx.fillStyle = dbStatus === 'COMMITTED' ? GREEN : GRAY;
-        ctx.font = '9px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(dbStatus, OUTBOX.x + OUTBOX.w / 2, OUTBOX.y + OUTBOX.h + 12);
-
-        // Static connectors
-        ctx.strokeStyle = BORDER;
-        ctx.lineWidth = 1;
-        ctx.setLineDash([3, 3]);
-        // Pay service to Stripe
-        ctx.beginPath();
-        ctx.moveTo(PAYSERV.x + PAYSERV.w, PAYSERV.y + 10);
-        ctx.lineTo(STRIPE.x, STRIPE.y + 20);
-        ctx.stroke();
-        // Pay service to Outbox
-        ctx.beginPath();
-        ctx.moveTo(PAYSERV.x + PAYSERV.w, PAYSERV.y + 30);
-        ctx.lineTo(OUTBOX.x, OUTBOX.y + 20);
-        ctx.stroke();
-        // Outbox to Kafka
-        ctx.beginPath();
-        ctx.moveTo(OUTBOX.x + OUTBOX.w / 2, OUTBOX.y + OUTBOX.h);
-        ctx.lineTo(KAFKA.x + KAFKA.w / 2, KAFKA.y);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // Animate packets
-        packets.forEach(function(p) { drawPacket(p.x, p.y, p.color, p.label); });
-
-        // Status
-        ctx.fillStyle = CARD;
-        ctx.strokeStyle = BORDER;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(10, 290, W - 20, 24, 6);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = TEXT;
-        ctx.font = '10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(statusLabel, W / 2, 306);
-      }
-
-      function animatePacket(x1, y1, x2, y2, color, label, onDone) {
-        var frames = 0, total = 20;
-        var dx = (x2 - x1) / total, dy = (y2 - y1) / total;
-        var p = { x: x1, y: y1, color: color, label: label };
-        packets = [p];
-        function tick() {
-          if (!document.body.contains(canvas)) return;
-          p.x += dx; p.y += dy;
-          frames++;
-          draw();
-          if (frames < total) requestAnimationFrame(tick);
-          else { packets = []; if (onDone) onDone(); }
-        }
-        requestAnimationFrame(tick);
-      }
-
-      function runHappyPath() {
-        if (animating) return;
-        animating = true;
-        idemKeyColor = GRAY; idemStatus = '—'; stripeStatus = '—'; dbStatus = '—';
-        statusLabel = 'Client sends payment with idempotency key: abc-123';
-        draw();
-        var cx = CLIENT.x + CLIENT.w, cy = CLIENT.y + 20;
-        var px = PAYSERV.x, py = PAYSERV.y + 20;
-        animatePacket(cx, cy, px, py, GREEN, 'idem:abc-123', function() {
-          idemStatus = 'NEW KEY'; idemKeyColor = ORANGE;
-          statusLabel = 'Idem key not seen before — proceed';
-          draw();
-          setTimeout(function() {
-            statusLabel = 'Write payment(PENDING) + outbox atomically to DB';
-            animatePacket(PAYSERV.x + PAYSERV.w, PAYSERV.y + 30, OUTBOX.x, OUTBOX.y + 20, PURPLE, 'DB txn', function() {
-              dbStatus = 'COMMITTED'; draw();
-              setTimeout(function() {
-                statusLabel = 'Call Stripe API (with same idempotency key)';
-                animatePacket(PAYSERV.x + PAYSERV.w, PAYSERV.y + 10, STRIPE.x, STRIPE.y + 20, ORANGE, 'idem:abc-123', function() {
-                  stripeStatus = 'OK'; statusLabel = 'Stripe charged! Update DB → COMPLETED. Publish to Kafka.';
-                  draw();
-                  setTimeout(function() {
-                    animatePacket(OUTBOX.x + OUTBOX.w / 2, OUTBOX.y + OUTBOX.h, KAFKA.x + KAFKA.w / 2, KAFKA.y, GREEN, 'payment.done', function() {
-                      statusLabel = 'Happy path complete — payment success!';
-                      animating = false; draw();
-                    });
-                  }, 400);
-                });
-              }, 500);
-            });
-          }, 500);
-        });
-      }
-
-      function runTimeoutRetry() {
-        if (animating) return;
-        animating = true;
-        idemKeyColor = GRAY; idemStatus = '—'; stripeStatus = '—'; dbStatus = '—';
-        statusLabel = 'Attempt 1: client sends idem key xyz-789';
-        draw();
-        animatePacket(CLIENT.x + CLIENT.w, CLIENT.y + 20, PAYSERV.x, PAYSERV.y + 20, GREEN, 'idem:xyz-789', function() {
-          animatePacket(PAYSERV.x + PAYSERV.w, PAYSERV.y + 10, STRIPE.x, STRIPE.y + 20, ORANGE, 'call Stripe', function() {
-            stripeStatus = 'TIMEOUT'; statusLabel = 'Stripe TIMEOUT — no response received. DB still PENDING.';
-            draw();
-            setTimeout(function() {
-              statusLabel = 'Attempt 2: client retries with SAME idem key xyz-789';
-              stripeStatus = '—';
-              animatePacket(CLIENT.x + CLIENT.w, CLIENT.y + 20, PAYSERV.x, PAYSERV.y + 20, GREEN, 'RETRY xyz-789', function() {
-                animatePacket(PAYSERV.x + PAYSERV.w, PAYSERV.y + 10, STRIPE.x, STRIPE.y + 20, ORANGE, 'idem:xyz-789', function() {
-                  stripeStatus = 'OK (deduped)'; idemStatus = 'KEY EXISTS'; idemKeyColor = GREEN;
-                  statusLabel = 'Stripe: already processed! Returns cached result — NO double charge!';
-                  animating = false; draw();
-                });
-              });
-            }, 1200);
-          });
-        });
-      }
-
-      function showIdempotency() {
-        if (animating) return;
-        animating = true;
-        idemKeyColor = GRAY; idemStatus = '—'; stripeStatus = '—'; dbStatus = '—';
-        statusLabel = 'Request 1: key=AAA → not in store → process payment';
-        draw();
-        animatePacket(PAYSERV.x + PAYSERV.w / 2, PAYSERV.y + PAYSERV.h, IDEM.x + IDEM.w / 2, IDEM.y, BLUE, 'store AAA', function() {
-          idemStatus = 'STORED'; idemKeyColor = GREEN; stripeStatus = 'OK'; dbStatus = 'COMMITTED';
-          statusLabel = 'Key AAA stored with result: {status: success}';
-          draw();
-          setTimeout(function() {
-            statusLabel = 'Request 2 (retry): key=AAA → FOUND in store → return cached result';
-            animatePacket(CLIENT.x + CLIENT.w, CLIENT.y + 20, PAYSERV.x, PAYSERV.y + 20, RED, 'retry AAA', function() {
-              animatePacket(PAYSERV.x + PAYSERV.w / 2, PAYSERV.y + PAYSERV.h, IDEM.x + IDEM.w / 2, IDEM.y, GREEN, 'lookup AAA', function() {
-                statusLabel = 'Cache HIT — return stored result. Stripe NOT called again. Safe!';
-                animating = false; draw();
-              });
-            });
-          }, 1000);
-        });
-      }
-
-      mount.querySelector('#btnHappy').addEventListener('click', runHappyPath);
-      mount.querySelector('#btnTimeout').addEventListener('click', runTimeoutRetry);
-      mount.querySelector('#btnIdem').addEventListener('click', showIdempotency);
-
-      draw();
+      ]
     }
   };
   window.SYSDESIGN_TOPICS = (window.SYSDESIGN_TOPICS || []).concat([topic]);

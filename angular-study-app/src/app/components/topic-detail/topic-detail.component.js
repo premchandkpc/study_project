@@ -6,186 +6,10 @@
 (function () {
   'use strict';
 
-  /* ── Flow Lab renderer ──────────────────────────────────────── */
-  function renderFlowLab(topic, esc) {
-    const flow = topic.flow;
-    if (!flow || !flow.nodes || !flow.nodes.length || !flow.steps || !flow.steps.length) return '';
-    const first = flow.steps[0];
-    const nodes = flow.nodes.map((node, i) => `
-      <button type="button" class="flow-node" data-node="${esc(node.id)}" style="--i:${i}">
-        <span class="node-index">${i + 1}</span>
-        <span class="node-label">${esc(node.label)}</span>
-        ${node.hint ? `<span class="node-hint">${esc(node.hint)}</span>` : ''}
-      </button>
-      ${i < flow.nodes.length - 1
-        ? `<div class="flow-edge" data-edge="${esc(node.id)}-${esc(flow.nodes[i + 1].id)}" style="--i:${i}"><span></span></div>`
-        : ''}`
-    ).join('');
-    return `
-      <div class="section flow-section">
-        <h2 id="interactive-flow">0 · Interactive flow</h2>
-        <div class="flow-lab" data-flow-lab>
-          <div class="flow-title">
-            <strong>${esc(flow.title || topic.title)}</strong>
-            ${flow.caption ? `<span>${esc(flow.caption)}</span>` : ''}
-          </div>
-          <div class="flow-stage" role="group" aria-label="${esc(flow.title || topic.title)}">${nodes}</div>
-          <div class="flow-controls">
-            <button class="flow-btn" type="button" data-flow-prev>Prev</button>
-            <button class="flow-btn primary" type="button" data-flow-play>Play</button>
-            <button class="flow-btn" type="button" data-flow-next>Next</button>
-            <div class="flow-progress" aria-hidden="true"><div data-flow-progress></div></div>
-          </div>
-          <div class="flow-readout">
-            <strong data-flow-step-label>${esc(first.label || 'Step 1')}</strong>
-            <span data-flow-step-detail>${esc(first.detail || '')}</span>
-          </div>
-        </div>
-      </div>`;
-  }
-
-  /* ── UML Lab renderer ───────────────────────────────────────── */
-  function renderUmlLab(topic, esc) {
-    const uml = topic.uml;
-    if (!uml || !uml.actors || !uml.actors.length || !uml.messages || !uml.messages.length) return '';
-    const actorIndex = new Map(uml.actors.map((a, i) => [a.id, i]));
-    const first = uml.messages[0];
-    const actors = uml.actors.map(a => `
-      <button type="button" class="uml-actor" data-uml-actor="${esc(a.id)}">
-        <span>${esc(a.label)}</span>
-        ${a.hint ? `<small>${esc(a.hint)}</small>` : ''}
-      </button>`).join('');
-    const rows = uml.messages.map((msg, idx) => {
-      const from = actorIndex.has(msg.from) ? actorIndex.get(msg.from) : 0;
-      const to = actorIndex.has(msg.to) ? actorIndex.get(msg.to) : from;
-      const start = Math.min(from, to) + 1;
-      const end = Math.max(from, to) + 2;
-      const rev = from > to ? ' reverse' : '';
-      const async = msg.type === 'async' ? ' async' : '';
-      return `
-        <div class="uml-row" data-uml-row="${idx}">
-          ${uml.actors.map(a => `<span class="uml-lifeline" data-uml-life="${esc(a.id)}"></span>`).join('')}
-          <button type="button" class="uml-message${rev}${async}"
-            data-uml-message="${idx}" style="grid-column:${start} / ${end}">
-            <span>${idx + 1}. ${esc(msg.label)}</span>
-          </button>
-        </div>`;
-    }).join('');
-    return `
-      <div class="section uml-section">
-        <h2 id="uml-sequence">0.1 · UML sequence simulation</h2>
-        <div class="uml-lab" data-uml-lab>
-          <div class="uml-title">
-            <strong>${esc(uml.title || topic.title)}</strong>
-            ${uml.scenario ? `<span>${esc(uml.scenario)}</span>` : ''}
-          </div>
-          <div class="uml-board" style="--uml-cols:${uml.actors.length}">
-            <div class="uml-actors">${actors}</div>
-            <div class="uml-timeline">${rows}</div>
-          </div>
-          <div class="flow-controls">
-            <button class="flow-btn" type="button" data-uml-prev>Prev</button>
-            <button class="flow-btn primary" type="button" data-uml-play>Play</button>
-            <button class="flow-btn" type="button" data-uml-next>Next</button>
-            <div class="flow-progress" aria-hidden="true"><div data-uml-progress></div></div>
-          </div>
-          <div class="uml-readout">
-            <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
-              <strong data-uml-label style="font-size:14px;">${esc(first.label || 'Message 1')}</strong>
-              <span class="uml-type-badge ${first.async ? 'async' : 'sync'}" data-uml-type-badge>${first.async ? 'async' : 'sync'}</span>
-            </div>
-            <span data-uml-detail style="font-size:13px;color:#d3dcea;line-height:1.6;">${esc(first.detail || '')}</span>
-          </div>
-        </div>
-      </div>`;
-  }
-
-  /* ── Architecture Lab renderer ──────────────────────────────── */
-  function renderArchitectureLab(topic, esc) {
-    const arch = topic.architecture;
-    if (!arch || !arch.lanes || !arch.lanes.length) return '';
-    const firstNode = arch.lanes.flatMap(l => l.nodes || [])[0] || {};
-    const lanes = arch.lanes.map((lane, li) => `
-      <div class="arch-lane" style="--lane:${li}">
-        <div class="arch-lane-title">
-          <span>${esc(lane.label || `Lane ${li + 1}`)}</span>
-          ${lane.hint ? `<small>${esc(lane.hint)}</small>` : ''}
-        </div>
-        <div class="arch-node-stack">
-          ${(lane.nodes || []).map(n => `
-            <button type="button" class="arch-node" data-arch-node="${esc(n.id)}">
-              <span class="arch-node-label">${esc(n.label)}</span>
-              ${n.badge ? `<span class="arch-badge">${esc(n.badge)}</span>` : ''}
-              ${n.hint ? `<small>${esc(n.hint)}</small>` : ''}
-            </button>`).join('')}
-        </div>
-      </div>`).join('');
-    const linkItems = (arch.links || []).map((link, idx) => `
-      <button type="button" class="arch-link ${link.type === 'async' ? 'async' : 'sync'}"
-        data-arch-link="${idx}" data-arch-from="${esc(link.from)}" data-arch-to="${esc(link.to)}">
-        <span>${esc(link.label || `${link.from} to ${link.to}`)}</span>
-        <small>${esc(link.type === 'async' ? 'event/async' : 'request/sync')}</small>
-      </button>`).join('');
-    return `
-      <div class="section arch-section">
-        <h2 id="architecture-map">0.2 · Architecture map</h2>
-        <div class="arch-lab" data-arch-lab>
-          <div class="arch-title">
-            <strong>${esc(arch.title || topic.title)}</strong>
-            ${arch.caption ? `<span>${esc(arch.caption)}</span>` : ''}
-          </div>
-          <div class="arch-board">
-            <div class="arch-lanes" role="group" aria-label="${esc(arch.title || topic.title)}">${lanes}</div>
-            <div class="arch-links">
-              <strong>Paths</strong>
-              ${linkItems || `<span class="arch-empty">No paths configured.</span>`}
-            </div>
-          </div>
-          <div class="arch-readout">
-            <strong data-arch-label>${esc(firstNode.label || 'Architecture node')}</strong>
-            <span data-arch-detail>${esc(firstNode.detail || firstNode.hint || 'Click a node or path to inspect.')}</span>
-          </div>
-        </div>
-      </div>`;
-  }
 
   function docsPath(topic) {
     if (!topic || !topic.id || !topic.area) return null;
     return topic.docs || `docs/topics/${topic.area}/${topic.id}.md`;
-  }
-
-  function renderSystemDesignOverview(topic, esc) {
-    if (topic.area !== 'sysdesign') return '';
-    const flowCount = topic.flow?.steps?.length || 0;
-    const actorCount = topic.uml?.actors?.length || 0;
-    const archCount = topic.architecture?.lanes?.reduce((sum, lane) => sum + (lane.nodes || []).length, 0) || 0;
-    const docs = docsPath(topic);
-    return `
-      <div class="section sysdesign-overview">
-        <h2 id="system-design-workbench">0 · System design workbench</h2>
-        <div class="sysdesign-grid">
-          <a class="sysdesign-card" href="#interactive-flow">
-            <span class="sysdesign-kicker">Runtime</span>
-            <strong>${flowCount || 'Ready'} flow steps</strong>
-            <small>Play request path, async handoff, persistence, and recovery.</small>
-          </a>
-          <a class="sysdesign-card" href="#uml-sequence">
-            <span class="sysdesign-kicker">UML</span>
-            <strong>${actorCount || 'Ready'} actors</strong>
-            <small>Step through service-to-service messages in sequence.</small>
-          </a>
-          <a class="sysdesign-card" href="#architecture-map">
-            <span class="sysdesign-kicker">Architecture</span>
-            <strong>${archCount || 'Ready'} nodes</strong>
-            <small>Inspect lanes, ownership, sync paths, and async paths.</small>
-          </a>
-          <a class="sysdesign-card docs" href="${esc(docs)}" target="_blank" rel="noreferrer">
-            <span class="sysdesign-kicker">Docs</span>
-            <strong>Open Markdown</strong>
-            <small>Full concept notes, Mermaid diagrams, drills, trade-offs, and gotchas.</small>
-          </a>
-        </div>
-      </div>`;
   }
 
   /* ── Interactive lab setup ──────────────────────────────────── */
@@ -661,57 +485,24 @@
       const done = ProgressService.isDone(topic.id);
       const isTopicChange = topic.id !== lastTopicId;
 
-      const interviewHtml = (topic.interview || []).map(qa => {
-        var q = typeof qa === 'string' ? qa : (qa.question || '');
-        var a = typeof qa === 'string' ? '' : (qa.answer || '');
-        var fu = typeof qa === 'object' && qa.followUps ? qa.followUps : [];
-        return `<div class="qa">
-          <div class="q">Q. ${esc(q)}</div>
-          ${a ? `<div class="a">${md(a)}</div>` : ''}
-          ${fu.length ? `<div class="followups"><strong>Follow-ups:</strong> ${fu.map(esc).join(' · ')}</div>` : ''}
-        </div>`;
-      }).join('');
-
-      const tradeHtml = topic.tradeoffs && typeof topic.tradeoffs === 'object'
-        ? `<div class="tradeoff-grid">
-             <div class="trade-card pro"><h4>Pros</h4>${md((topic.tradeoffs.pros || []).map(x => '- ' + x).join('\n'))}</div>
-             <div class="trade-card con"><h4>Cons</h4>${md((topic.tradeoffs.cons || []).map(x => '- ' + x).join('\n'))}</div>
-             ${topic.tradeoffs.when ? `<div class="trade-card" style="grid-column:1/-1"><h4>When to use</h4>${md(topic.tradeoffs.when)}</div>` : ''}
-           </div>`
-        : md(topic.tradeoffs || '');
       const docsHref = docsPath(topic);
+      const utils = { esc, md, codeBlock };
+      const sectionBody = window.TopicTemplates
+        ? TopicTemplates.buildHTML(topic, utils)
+        : '';
 
-      host.innerHTML = `
-        <div class="crumbs">${esc(areaLabel)} <span class="sep">›</span> ${esc(topic.tag || 'Topic')}</div>
-        <div class="title-row">
-          <h1 class="topic-title">${esc(topic.title)}</h1>
-          <span class="tag area-${topic.area}">${esc(areaLabel)}</span>
-        </div>
-        <div class="toolbar">
-          <button class="btn primary" data-mark>${done ? '✓ Completed' : 'Mark as completed'}</button>
-          ${docsHref ? `<a class="btn docs-btn" href="${esc(docsHref)}" target="_blank" rel="noreferrer">Open docs</a>` : ''}
-          <span class="meta">${esc(topic.id)}</span>
-        </div>
-        ${renderSystemDesignOverview(topic, esc)}
-        ${renderFlowLab(topic, esc)}
-        ${renderUmlLab(topic, esc)}
-        ${renderArchitectureLab(topic, esc)}
-        ${topic.visual ? `<div class="section visual-section"><h2 id="live-diagram">0.3 · Live Canvas Diagram</h2><div class="viz-mount"></div></div>` : ''}
-        <div class="section concept"><h2 id="concept">1 · Concept</h2><div class="prose">${md(topic.concept || '')}</div></div>
-        <div class="section why"><h2 id="production-notes">2 · Why it matters (production)</h2><div class="prose">${md(topic.why || '')}</div></div>
-        ${topic.example ? `
-          <div class="section code">
-            <h2>3 · Example — ${esc(topic.example.language || 'code')}</h2>
-            ${codeBlock(topic.example.language, topic.example.code)}
-            ${topic.example.notes ? `<div class="prose" style="margin-top:8px">${md(topic.example.notes)}</div>` : ''}
-          </div>` : ''}
-        ${interviewHtml ? `<div class="section interview"><h2>4 · Interview drills</h2>${interviewHtml}</div>` : ''}
-        ${topic.tradeoffs ? `<div class="section tradeoffs"><h2>5 · Trade-offs</h2>${tradeHtml}</div>` : ''}
-        ${topic.gotchas?.length ? `
-          <div class="section gotchas"><h2>6 · Gotchas</h2>
-            ${topic.gotchas.map(g => `<div class="gotcha-item">⚠️ ${esc(g)}</div>`).join('')}
-          </div>` : ''}
-      `;
+      host.innerHTML =
+        '<div class="crumbs">' + esc(areaLabel) + ' <span class="sep">›</span> ' + esc(topic.tag || 'Topic') + '</div>' +
+        '<div class="title-row">' +
+          '<h1 class="topic-title">' + esc(topic.title) + '</h1>' +
+          '<span class="tag area-' + topic.area + '">' + esc(areaLabel) + '</span>' +
+        '</div>' +
+        '<div class="toolbar">' +
+          '<button class="btn primary" data-mark>' + (done ? '✓ Completed' : 'Mark as completed') + '</button>' +
+          (docsHref ? '<a class="btn docs-btn" href="' + esc(docsHref) + '" target="_blank" rel="noreferrer">Open docs</a>' : '') +
+          '<span class="meta">' + esc(topic.id) + '</span>' +
+        '</div>' +
+        sectionBody;
 
       host.querySelectorAll('[data-copy]').forEach(btn => {
         btn.addEventListener('click', () => {

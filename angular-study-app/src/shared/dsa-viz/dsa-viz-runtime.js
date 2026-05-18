@@ -47,32 +47,34 @@
     s.textContent = `
       /* ── layout ── */
       .rt-root {
-        font-family: 'JetBrains Mono', monospace;
-        background: #161b22;
-        border-radius: 12px;
+        font-family: 'Inter', 'JetBrains Mono', system-ui, sans-serif;
+        background: #0d1117;
+        border-radius: 14px;
         overflow: hidden;
         border: 1px solid #30363d;
+        box-shadow: 0 8px 32px rgba(0,0,0,.32);
       }
       .rt-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 10px 16px;
-        background: #21262d;
+        padding: 12px 20px;
+        background: #161b22;
         border-bottom: 1px solid #30363d;
         gap: 12px;
       }
       .rt-title {
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 700;
         color: #58a6ff;
         letter-spacing: .02em;
         white-space: nowrap;
+        font-family: 'Inter', system-ui, sans-serif;
       }
       /* ── two-column body ── */
       .rt-body {
         display: flex;
-        height: 520px;
+        height: 540px;
         border-bottom: 1px solid #30363d;
       }
       /* ── left column: code top, narration + tabs bottom ── */
@@ -153,18 +155,19 @@
       .rt-viz-block {
         background: #21262d;
         border: 1px solid #30363d;
-        border-radius: 8px;
-        padding: 8px 12px;
+        border-radius: 10px;
+        padding: 10px 14px;
         width: 100%;
         box-sizing: border-box;
       }
       .rt-viz-label {
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 700;
-        color: #768390;
+        color: #8b949e;
         text-transform: uppercase;
-        letter-spacing: .05em;
-        margin-bottom: 6px;
+        letter-spacing: .06em;
+        margin-bottom: 8px;
+        font-family: 'Inter', system-ui, sans-serif;
       }
       .rt-map-chips {
         display: flex;
@@ -174,12 +177,13 @@
       .rt-map-chip {
         background: #161b22;
         border: 1px solid #30363d;
-        border-radius: 6px;
-        padding: 3px 10px;
-        font-size: 12px;
+        border-radius: 8px;
+        padding: 4px 12px;
+        font-size: 13px;
         display: flex;
-        gap: 4px;
+        gap: 5px;
         align-items: center;
+        font-family: 'Inter', system-ui, sans-serif;
       }
       /* ── narration (inside left col) ── */
       .rt-nar-wrap {
@@ -203,7 +207,7 @@
         border: none;
         border-bottom: 2px solid transparent;
         color: #768390;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: 'Inter', 'JetBrains Mono', system-ui, sans-serif;
         font-size: 12px;
         padding: 5px 12px;
         cursor: pointer;
