@@ -2,19 +2,20 @@
   "use strict";
 
   window.CVU = {
-    // Colors
+    // Colors — ByteByteGo palette
     C: {
-      bg:     "#0d1117",
-      card:   "#161b22",
-      border: "#30363d",
-      text:   "#e6edf3",
-      gray:   "#8b949e",
-      green:  "#3fb950",
-      blue:   "#58a6ff",
-      orange: "#ffa657",
-      red:    "#f85149",
-      purple: "#bc8cff",
-      yellow: "#e3b341",
+      bg:        "#0d1117",
+      card:      "#161b22",
+      border:    "#30363d",
+      text:      "#e6edf3",
+      gray:      "#8b949e",
+      green:     "#3fb950",
+      blue:      "#58a6ff",
+      lightBlue: "#79c0ff",
+      orange:    "#ffa657",
+      red:       "#f85149",
+      purple:    "#d2a8ff",
+      yellow:    "#e3b341",
     },
 
     // Protocol → color
@@ -22,7 +23,7 @@
       REST:      "#58a6ff",
       HTTP:      "#58a6ff",
       HTTPS:     "#58a6ff",
-      gRPC:      "#bc8cff",
+      gRPC:      "#d2a8ff",
       GraphQL:   "#f78166",
       WebSocket: "#3fb950",
       Kafka:     "#ffa657",
@@ -30,6 +31,11 @@
       SNS:       "#e3b341",
       TCP:       "#8b949e",
       UDP:       "#8b949e",
+      mTLS:      "#d2a8ff",
+      NATS:      "#79c0ff",
+      RabbitMQ:  "#ffa657",
+      Redis:     "#f85149",
+      gRPCStream:"#d2a8ff",
     },
 
     roundRect: function (ctx, x, y, w, h, r, fill, stroke, lw) {
