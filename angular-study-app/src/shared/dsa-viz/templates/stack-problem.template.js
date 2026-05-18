@@ -34,7 +34,7 @@
 
     postProcess(steps) {
       return steps.map(step => {
-        const vars = step.variables || {};
+        const _vars = step.variables || {};
 
         // Phase detection
         if (!step.phase) {

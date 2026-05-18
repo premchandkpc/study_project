@@ -25,7 +25,7 @@
       renderNum   = renderNum   || 1;
 
       var PHASES = ["render", "commit", "effect", "cleanup"];
-      var self = this;
+      var _self = this;
 
       var headerCells = PHASES.map(function (p) {
         var active = p === renderPhase;

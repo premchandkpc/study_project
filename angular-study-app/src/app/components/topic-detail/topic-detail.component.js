@@ -458,16 +458,26 @@
       const markBtn = host.querySelector("[data-mark]");
       if (markBtn) markBtn.addEventListener("click", () => ProgressService.toggle(topic.id));
 
+      host.querySelectorAll("[data-scroll-to]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const targetId = btn.getAttribute("data-scroll-to");
+          const target = host.querySelector("#" + targetId);
+          if (target) {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      });
+
       stopFlow = setupFlowLab(host, topic);
       stopUml = setupUmlLab(host, topic);
       setupArchitectureLab(host, topic);
 
-      if (topic.visual) {
-        const mount = host.querySelector(".viz-mount");
-        if (mount) {
-          if (topic.area === "sysdesign" && topic.architecture) {
-            stopVisual = setupSystemDesignCanvas(mount, topic);
-          } else if (typeof topic.visual === "function") {
+      const mount = host.querySelector(".viz-mount");
+      if (mount) {
+        if (topic.area === "sysdesign" && topic.architecture) {
+          stopVisual = setupSystemDesignCanvas(mount, topic);
+        } else if (topic.visual) {
+          if (typeof topic.visual === "function") {
             // Legacy imperative Canvas
             try { topic.visual(mount); }
             catch (e) { mount.innerHTML = `<div style="color:#f85149;padding:16px;font-family:monospace;font-size:12px">Visualizer error: ${e.message}</div>`; }

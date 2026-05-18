@@ -38,7 +38,7 @@
   function render(mount, cfg) {
     const { DSAViz } = window;
     const grid = cfg.grid || [[]];
-    const rows = grid.length;
+    const _rows = grid.length;
     const cols = grid[0]?.length || 0;
     const hi = cfg.highlights || {};
     const ptr = cfg.pointer;

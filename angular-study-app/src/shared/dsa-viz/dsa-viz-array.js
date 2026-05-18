@@ -20,7 +20,7 @@
   window.DSAViz = window.DSAViz || {};
 
   /* color aliases from core palette */
-  const STATE_STYLE = {
+  const _STATE_STYLE = {
     active:  { bg: "#1f3a5f", border: "#58a6ff", text: "#58a6ff" },
     success: { bg: "#0d2818", border: "#56d364", text: "#56d364" },
     error:   { bg: "#2d0f0f", border: "#f78166", text: "#f78166" },

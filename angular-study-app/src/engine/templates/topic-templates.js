@@ -36,26 +36,26 @@
       return "<div class=\"section sysdesign-overview\">" +
         "<h2 id=\"system-design-workbench\">0 \xB7 System design workbench</h2>" +
         "<div class=\"sysdesign-grid\">" +
-          "<a class=\"sysdesign-card\" href=\"#interactive-flow\">" +
+          "<button type=\"button\" class=\"sysdesign-card\" data-scroll-to=\"interactive-flow\">" +
             "<span class=\"sysdesign-kicker\">Runtime</span>" +
             "<strong>" + (flowCount || "Ready") + " flow steps</strong>" +
             "<small>Play request path, async handoff, persistence, and recovery.</small>" +
-          "</a>" +
-          "<a class=\"sysdesign-card\" href=\"#uml-sequence\">" +
+          "</button>" +
+          "<button type=\"button\" class=\"sysdesign-card\" data-scroll-to=\"uml-sequence\">" +
             "<span class=\"sysdesign-kicker\">UML</span>" +
             "<strong>" + (actorCount || "Ready") + " actors</strong>" +
             "<small>Step through service-to-service messages in sequence.</small>" +
-          "</a>" +
-          "<a class=\"sysdesign-card\" href=\"#architecture-map\">" +
+          "</button>" +
+          "<button type=\"button\" class=\"sysdesign-card\" data-scroll-to=\"architecture-map\">" +
             "<span class=\"sysdesign-kicker\">Architecture</span>" +
             "<strong>" + (archCount || "Ready") + " nodes</strong>" +
             "<small>Inspect lanes, ownership, sync paths, and async paths.</small>" +
-          "</a>" +
-          (t.visual ? "<a class=\"sysdesign-card\" href=\"#live-diagram\">" +
+          "</button>" +
+          (((t.visual || (t.area === "sysdesign" && t.architecture) || (t.area === "microservices" && t.architecture)) ? "<button type=\"button\" class=\"sysdesign-card\" data-scroll-to=\"live-diagram\">" +
             "<span class=\"sysdesign-kicker\">Canvas</span>" +
             "<strong>Live Diagram</strong>" +
             "<small>Animated VizEngine canvas — flow, layered, or swimlane view.</small>" +
-          "</a>" : "") +
+          "</button>" : "")) +
           "<a class=\"sysdesign-card docs\" href=\"" + U.esc(docs) + "\" target=\"_blank\" rel=\"noreferrer\">" +
             "<span class=\"sysdesign-kicker\">Docs</span>" +
             "<strong>Open Markdown</strong>" +
@@ -221,7 +221,7 @@
 
   /* 0.3 — Live Canvas Diagram (VizEngine) */
   def("viz", "0.3 \xB7 Live Canvas Diagram",
-    function (t) { return !!t.visual; },
+    function (t) { return !!(t.visual || ((t.area === "sysdesign" || t.area === "microservices") && t.architecture)); },
     function () {
       return "<div class=\"section visual-section\">" +
         "<h2 id=\"live-diagram\">0.3 \xB7 Live Canvas Diagram</h2>" +

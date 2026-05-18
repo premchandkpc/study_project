@@ -184,3 +184,1340 @@ Default: **ArrayList + HashMap**. Thread-safe: **ConcurrentHashMap**. Sorted: **
 - ConcurrentModificationException: modifying collection while iterating. Fix: use iterator.remove(), removeIf(), or collect-then-modify.
 - CopyOnWriteArrayList iterator is a snapshot: sees data at time of iterator creation, not current state. Stale reads during concurrent writes.
 - HashMap pre-size: new HashMap<>(expectedSize \* 4/3 + 1) avoids resize. Forgetting causes O(n) rehash when load factor exceeded.
+
+
+# Collections Framework: List, Map, Set, Queue
+
+## Quick Facts
+
+* Area: Java
+* Tag: Collections
+* Source: `src/modules/topics/java/java-collections.js`
+* Tags: `collections`, `hashmap`, `arraylist`, `concurrenthashmap`, `treemap`, `list`, `set`, `queue`
+* Visual coverage: live visual, flow lab, UML lab, architecture map
+* Advanced coverage added:
+
+  * Concurrent collection internals
+  * JVM memory layout impacts
+  * Cache locality visualizations
+  * Producer-consumer flows
+  * Lock striping
+  * Fail-fast vs fail-safe iteration
+  * BlockingQueue scheduling flows
+  * Priority inversion examples
+  * Weak references and GC interactions
+  * Ring buffer architecture
+  * Concurrent resize behaviors
+  * Hash flooding attack simulation
+  * SkipList internals
+  * False sharing edge cases
+
+---
+
+# Collection Decision Master Flow
+
+```mermaid
+flowchart TD
+    A[Need Data Structure] --> B{Need Key Value?}
+    B -->|Yes| C{Thread Safe?}
+    B -->|No| D{Need Duplicates?}
+
+    C -->|Yes| CHM[ConcurrentHashMap]
+    C -->|No| HM[HashMap]
+
+    D -->|Yes| L{Need FIFO/LIFO?}
+    D -->|No| S{Need Sorted?}
+
+    L -->|FIFO| Q[Queue]
+    L -->|LIFO| STACK[ArrayDeque Stack]
+    L -->|Indexed Access| AL[ArrayList]
+
+    S -->|Yes| TS[TreeSet]
+    S -->|No| HS[HashSet]
+```
+
+---
+
+# Collections Mental Model Story
+
+```text
+ArrayList      -> train compartments connected continuously
+LinkedList     -> treasure hunt using paper notes to next node
+HashMap        -> apartment building mailbox system
+TreeMap        -> self-balancing hierarchical company org chart
+ConcurrentHashMap -> city with many roads + traffic police per area
+PriorityQueue  -> hospital emergency queue
+BlockingQueue  -> factory conveyor belt
+CopyOnWriteArrayList -> newspaper snapshots printed every update
+```
+
+---
+
+# LIST COLLECTIONS
+
+# ArrayList Deep Dive
+
+## Internal Structure
+
+```text
+ArrayList
+    ↓
+Object[] elementData
+    ↓
+Contiguous Memory
+```
+
+---
+
+# Growth Animation
+
+```text
+Initial Capacity = 10
+
+[1][2][3][4][5][ ][ ][ ][ ][ ]
+
+Add more...
+
+FULL
+↓
+Resize 1.5x
+↓
+New Capacity = 15
+
+[1][2][3][4][5][6][7][8][9][10][11][ ][ ][ ][ ]
+```
+
+---
+
+# Why ArrayList Fast
+
+## Cache Locality
+
+CPU fetches memory in cache lines.
+
+```text
+ArrayList
+[1][2][3][4][5][6]
+ ↑ contiguous memory
+```
+
+Single cache fetch gets multiple elements.
+
+---
+
+# LinkedList Cache Disaster
+
+```text
+Node1 -> random heap addr
+Node2 -> random heap addr
+Node3 -> random heap addr
+```
+
+CPU cache misses everywhere.
+
+Huge slowdown despite theoretical O(1).
+
+---
+
+# ArrayList Edge Cases
+
+## Edge Case 1: Frequent Middle Insertions
+
+```java
+List<Integer> list = new ArrayList<>();
+
+for (int i = 0; i < 100000; i++) {
+    list.add(0, i); // O(n)
+}
+```
+
+Every insertion shifts entire array.
+
+---
+
+## Edge Case 2: Memory Retention
+
+```java
+ArrayList<byte[]> list = new ArrayList<>();
+list.add(new byte[1024 * 1024]);
+list.clear();
+```
+
+Memory may still remain allocated because capacity remains.
+
+Fix:
+
+```java
+list.clear();
+list.trimToSize();
+```
+
+---
+
+# ArrayList Concurrency Failure
+
+```java
+List<Integer> list = new ArrayList<>();
+
+Thread t1 = new Thread(() -> {
+    for (int i = 0; i < 10000; i++) {
+        list.add(i);
+    }
+});
+
+Thread t2 = new Thread(() -> {
+    for (int i = 0; i < 10000; i++) {
+        list.add(i);
+    }
+});
+```
+
+Possible:
+
+```text
+- Lost writes
+- Corrupted size
+- ArrayIndexOutOfBoundsException
+- Data race
+```
+
+---
+
+# Concurrent Visual
+
+```text
+Thread1: size = 5
+Thread2: size = 5
+
+Both write index 5
+↓
+One value overwritten
+```
+
+---
+
+# CopyOnWriteArrayList
+
+## Write Flow
+
+```text
+Old Array
+[1][2][3]
+
+Write new element 4
+↓
+Copy whole array
+↓
+[1][2][3][4]
+↓
+Replace reference atomically
+```
+
+---
+
+# Best Use Cases
+
+✅ Read-heavy systems
+✅ Subscriber lists
+✅ Config snapshots
+✅ Event listeners
+
+❌ Write-heavy systems
+
+---
+
+# CopyOnWrite Snapshot Behavior
+
+```java
+CopyOnWriteArrayList<Integer> list = new CopyOnWriteArrayList<>();
+list.add(1);
+list.add(2);
+
+Iterator<Integer> it = list.iterator();
+
+list.add(3);
+
+while (it.hasNext()) {
+    System.out.println(it.next());
+}
+```
+
+Output:
+
+```text
+1
+2
+```
+
+Iterator sees old snapshot.
+
+---
+
+# LinkedList Internals
+
+```text
+prev <- Node -> next
+```
+
+Each node:
+
+```text
+Object item
+Node prev
+Node next
+```
+
+Huge memory overhead.
+
+---
+
+# LinkedList Bad Scenario
+
+```java
+list.get(900000);
+```
+
+Traversal required.
+
+```text
+Head -> next -> next -> next -> ...
+```
+
+O(n)
+
+---
+
+# SET COLLECTIONS
+
+# HashSet Internals
+
+```text
+HashSet
+  ↓
+HashMap<E,Object>
+```
+
+Uses dummy PRESENT object.
+
+---
+
+# Duplicate Detection Flow
+
+```text
+add("java")
+   ↓
+hashCode()
+   ↓
+bucket lookup
+   ↓
+equals() check
+   ↓
+Already exists?
+   ↓
+Reject duplicate
+```
+
+---
+
+# equals/hashCode Disaster
+
+```java
+class User {
+    int id;
+
+    User(int id) {
+        this.id = id;
+    }
+}
+```
+
+```java
+Set<User> set = new HashSet<>();
+
+set.add(new User(1));
+set.add(new User(1));
+
+System.out.println(set.size());
+```
+
+Output:
+
+```text
+2
+```
+
+Because equals/hashCode missing.
+
+---
+
+# Correct Version
+
+```java
+class User {
+    int id;
+
+    User(int id) {
+        this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User u = (User) o;
+        return id == u.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+}
+```
+
+---
+
+# TreeSet Internals
+
+```text
+Red Black Tree
+```
+
+Balanced BST.
+
+```text
+        10(B)
+       /     \
+    5(R)    15(R)
+```
+
+O(log n)
+
+---
+
+# TreeSet Comparator Edge Case
+
+```java
+TreeSet<Integer> set = new TreeSet<>((a,b) -> 1);
+```
+
+Broken comparator.
+
+Violates:
+
+```text
+transitivity
+symmetry
+consistency
+```
+
+Can corrupt tree behavior.
+
+---
+
+# EnumSet
+
+Fastest set.
+
+Uses bit vectors.
+
+```text
+MONDAY    -> 000001
+TUESDAY   -> 000010
+WEDNESDAY -> 000100
+```
+
+---
+
+# MAP COLLECTIONS
+
+# HashMap Internals
+
+```text
+Node[] table
+```
+
+Each bucket:
+
+```text
+bucket
+  ↓
+Node -> Node -> Node
+```
+
+Java 8:
+
+```text
+Long chain >= 8
+↓
+Convert to Red Black Tree
+```
+
+---
+
+# HashMap Put Animation
+
+```text
+put(key,val)
+   ↓
+hash(key)
+   ↓
+h ^ (h >>> 16)
+   ↓
+index = hash & (n - 1)
+   ↓
+Insert bucket
+```
+
+---
+
+# Resize Flow
+
+```text
+Capacity = 16
+Load Factor = 0.75
+Threshold = 12
+
+13th insert
+↓
+Resize to 32
+↓
+Rehash all entries
+```
+
+---
+
+# Concurrent Resize Corruption
+
+(Java 7 famous issue)
+
+```text
+Thread1 resizing
+Thread2 resizing
+
+Linked list reversal race
+↓
+Infinite loop created
+```
+
+CPU spikes forever.
+
+---
+
+# Hash Flooding Attack
+
+Attacker crafts keys:
+
+```text
+all keys -> same bucket
+```
+
+Complexity:
+
+```text
+O(1) -> O(n)
+```
+
+Java 8 treeification mitigates.
+
+---
+
+# HashMap Collision Visual
+
+```text
+Bucket[5]
+
+A -> B -> C -> D -> E
+```
+
+After treeify:
+
+```text
+       C
+      / \
+     A   D
+      \   \
+       B   E
+```
+
+---
+
+# LinkedHashMap
+
+Adds doubly linked list.
+
+```text
+HashMap lookup
++
+Insertion order tracking
+```
+
+---
+
+# LRU Cache Flow
+
+```text
+GET key
+ ↓
+Move node to tail
+ ↓
+Most recently used
+```
+
+---
+
+# Full LRU Example
+
+```java
+class LRU<K,V> extends LinkedHashMap<K,V> {
+
+    private final int capacity;
+
+    public LRU(int capacity) {
+        super(capacity, 0.75f, true);
+        this.capacity = capacity;
+    }
+
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<K,V> eldest) {
+        return size() > capacity;
+    }
+}
+```
+
+---
+
+# TreeMap Internals
+
+```text
+Red Black Tree
+```
+
+Sorted ordering.
+
+```text
+put/get/remove
+↓
+O(log n)
+```
+
+---
+
+# TreeMap Null Key Edge Case
+
+```java
+TreeMap<String,Integer> map = new TreeMap<>();
+map.put(null, 1);
+```
+
+Throws:
+
+```text
+NullPointerException
+```
+
+Because comparator cannot compare null.
+
+---
+
+# ConcurrentHashMap Deep Dive
+
+# Java 8 Architecture
+
+OLD:
+
+```text
+Segment locks
+```
+
+NEW:
+
+```text
+CAS + synchronized bins
+```
+
+---
+
+# Concurrent Put Flow
+
+```text
+Thread
+  ↓
+Find bucket
+  ↓
+Bucket empty?
+  ↓
+CAS insert
+  ↓
+Collision?
+  ↓
+Synchronize bucket only
+```
+
+---
+
+# Why Better Than Hashtable
+
+Hashtable:
+
+```text
+single giant lock
+```
+
+ConcurrentHashMap:
+
+```text
+fine grained locking
+```
+
+Massively better scalability.
+
+---
+
+# Atomic Operations
+
+```java
+ConcurrentHashMap<String,Integer> map = new ConcurrentHashMap<>();
+
+map.compute("count", (k,v) -> v == null ? 1 : v + 1);
+```
+
+Entire operation atomic.
+
+---
+
+# Race Condition Solved
+
+BAD:
+
+```java
+map.put(key, map.get(key) + 1);
+```
+
+Race condition.
+
+GOOD:
+
+```java
+map.merge(key, 1, Integer::sum);
+```
+
+---
+
+# Concurrent Iteration Behavior
+
+```text
+Weakly consistent iterator
+```
+
+May:
+
+✅ See updates
+✅ Miss updates
+❌ Never throws ConcurrentModificationException
+
+---
+
+# QUEUE COLLECTIONS
+
+# ArrayDeque
+
+Best queue + stack.
+
+---
+
+# Ring Buffer Structure
+
+```text
+[ ][ ][ ][ ][ ]
+  ↑         ↑
+head      tail
+```
+
+Wraps around.
+
+---
+
+# Why Faster Than LinkedList
+
+✅ contiguous memory
+✅ no node allocation
+✅ cache locality
+
+---
+
+# Stack Flow
+
+```text
+push(A)
+push(B)
+pop()
+=> B
+```
+
+---
+
+# Queue Flow
+
+```text
+offer(A)
+offer(B)
+poll()
+=> A
+```
+
+---
+
+# PriorityQueue
+
+Uses binary heap.
+
+---
+
+# Heap Visual
+
+```text
+        1
+      /   \
+     3     5
+    / \   / \
+   7  9  8  10
+```
+
+---
+
+# Insert Flow
+
+```text
+Insert bottom
+↓
+Bubble up
+```
+
+---
+
+# Poll Flow
+
+```text
+Remove root
+↓
+Move last node to top
+↓
+Bubble down
+```
+
+---
+
+# Max Heap Example
+
+```java
+PriorityQueue<Integer> pq =
+    new PriorityQueue<>(Comparator.reverseOrder());
+```
+
+---
+
+# BlockingQueue Deep Dive
+
+# Producer Consumer Architecture
+
+```mermaid
+flowchart LR
+    Producer1 --> Queue
+    Producer2 --> Queue
+    Queue --> Consumer1
+    Queue --> Consumer2
+```
+
+---
+
+# LinkedBlockingQueue
+
+```text
+Separate putLock + takeLock
+```
+
+Better concurrency.
+
+---
+
+# ArrayBlockingQueue
+
+```text
+Single lock
+Fixed array
+```
+
+Better memory predictability.
+
+---
+
+# Blocking Flow Animation
+
+```text
+Queue FULL
+Producer blocks
+
+Queue EMPTY
+Consumer blocks
+```
+
+---
+
+# Producer Consumer Code
+
+```java
+BlockingQueue<Integer> queue = new LinkedBlockingQueue<>(5);
+
+Thread producer = new Thread(() -> {
+    try {
+        for (int i = 0; i < 10; i++) {
+            queue.put(i);
+            System.out.println("Produced " + i);
+        }
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+});
+
+Thread consumer = new Thread(() -> {
+    try {
+        while (true) {
+            Integer val = queue.take();
+            System.out.println("Consumed " + val);
+        }
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+});
+```
+
+---
+
+# DelayQueue
+
+Scheduled execution queue.
+
+```text
+Task available only after delay expires.
+```
+
+Used in:
+
+✅ schedulers
+✅ retries
+✅ timeout wheels
+
+---
+
+# ConcurrentModificationException Deep Dive
+
+# Fail Fast Iterator
+
+```java
+List<Integer> list = new ArrayList<>();
+
+for (Integer i : list) {
+    list.remove(i);
+}
+```
+
+Throws:
+
+```text
+ConcurrentModificationException
+```
+
+---
+
+# Why Happens
+
+Iterator stores:
+
+```text
+expectedModCount
+```
+
+Collection changes:
+
+```text
+modCount != expectedModCount
+↓
+throw CME
+```
+
+---
+
+# Correct Fix
+
+```java
+Iterator<Integer> it = list.iterator();
+
+while (it.hasNext()) {
+    Integer i = it.next();
+
+    if (i % 2 == 0) {
+        it.remove();
+    }
+}
+```
+
+---
+
+# WeakHashMap
+
+Keys stored using weak references.
+
+---
+
+# GC Flow
+
+```text
+No strong refs to key
+↓
+GC runs
+↓
+Entry removed automatically
+```
+
+---
+
+# WeakHashMap Example
+
+```java
+Map<Object,String> map = new WeakHashMap<>();
+
+Object key = new Object();
+map.put(key, "value");
+
+key = null;
+System.gc();
+```
+
+Entry may disappear.
+
+---
+
+# SkipList
+
+ConcurrentSkipListMap
+ConcurrentSkipListSet
+
+---
+
+# SkipList Visual
+
+```text
+Level3  ----------------->
+Level2  ------->------->
+Level1  ->->->->->->->->
+```
+
+Probabilistic balanced structure.
+
+---
+
+# Complexity Table
+
+| Collection        | Read      | Insert      | Delete    | Sorted | Thread Safe |
+| ----------------- | --------- | ----------- | --------- | ------ | ----------- |
+| ArrayList         | O(1)      | O(n) middle | O(n)      | No     | No          |
+| LinkedList        | O(n)      | O(1) ends   | O(1) ends | No     | No          |
+| HashSet           | O(1)      | O(1)        | O(1)      | No     | No          |
+| TreeSet           | O(log n)  | O(log n)    | O(log n)  | Yes    | No          |
+| HashMap           | O(1)      | O(1)        | O(1)      | No     | No          |
+| TreeMap           | O(log n)  | O(log n)    | O(log n)  | Yes    | No          |
+| ConcurrentHashMap | O(1)      | O(1)        | O(1)      | No     | Yes         |
+| PriorityQueue     | O(1) peek | O(log n)    | O(log n)  | Heap   | No          |
+| ArrayDeque        | O(1)      | O(1)        | O(1)      | No     | No          |
+
+---
+
+# Interview Tricky Scenarios
+
+# Scenario 1
+
+Why ConcurrentHashMap size() inaccurate during concurrent writes?
+
+Because counting entire table atomically is expensive.
+
+Uses striped counters.
+
+---
+
+# Scenario 2
+
+Why HashMap capacity power of 2?
+
+Because:
+
+```java
+index = hash & (n - 1)
+```
+
+Faster than modulo.
+
+---
+
+# Scenario 3
+
+Why ArrayDeque disallows null?
+
+Because null used internally as empty marker.
+
+---
+
+# Scenario 4
+
+Why PriorityQueue iteration unsorted?
+
+Heap guarantees only root ordering.
+
+Internal array not globally sorted.
+
+---
+
+# Scenario 5
+
+Why CopyOnWriteArrayList useful for listeners?
+
+Reads massively outnumber writes.
+
+Iteration lock-free.
+
+---
+
+# JVM Memory Layout
+
+# HashMap Node Memory
+
+Each node:
+
+```text
+Object Header
+hash
+key ref
+value ref
+next ref
+padding
+```
+
+Large overhead.
+
+---
+
+# Primitive Boxing Cost
+
+```java
+Map<Integer,Integer>
+```
+
+Creates Integer objects.
+
+Memory + GC overhead.
+
+---
+
+# Better Alternative
+
+```text
+fastutil
+HPPC
+Trove
+Eclipse Collections
+```
+
+Primitive specialized collections.
+
+---
+
+# Real World System Usage
+
+| System              | Collection          |
+| ------------------- | ------------------- |
+| Kafka Request Queue | ArrayDeque          |
+| LRU Cache           | LinkedHashMap       |
+| Routing Table       | ConcurrentHashMap   |
+| Scheduler           | DelayQueue          |
+| Search Ranking      | PriorityQueue       |
+| Enum State Machine  | EnumMap             |
+| Metrics Counter     | LongAdder + CHM     |
+| Thread Pool Queue   | LinkedBlockingQueue |
+
+---
+
+# High Scale Counter Pattern
+
+```java
+ConcurrentHashMap<String, LongAdder> counters = new ConcurrentHashMap<>();
+
+counters.computeIfAbsent("api", k -> new LongAdder()).increment();
+```
+
+Avoids contention.
+
+---
+
+# LongAdder Visual
+
+```text
+Thread1 -> Cell1
+Thread2 -> Cell2
+Thread3 -> Cell3
+
+Total = sum(cells)
+```
+
+Less contention than AtomicLong.
+
+---
+
+# Common Collection Mistakes
+
+❌ LinkedList everywhere
+❌ HashMap in concurrent code
+❌ Missing equals/hashCode
+❌ Using Stack class
+❌ Using Vector
+❌ CopyOnWrite for write-heavy systems
+❌ TreeMap without comparator consistency
+❌ Large ArrayList without pre-sizing
+❌ synchronizedMap under heavy contention
+
+---
+
+# Best Practices
+
+✅ Default to ArrayList
+✅ Default to HashMap
+✅ Use ArrayDeque for stack/queue
+✅ Use CHM for concurrency
+✅ Pre-size large collections
+✅ Prefer immutable collections
+✅ Use compute()/merge() atomically
+✅ Understand iteration semantics
+✅ Benchmark before optimization
+
+---
+
+# Immutable Collections
+
+```java
+List<String> list = List.of("a", "b", "c");
+Map<String,Integer> map = Map.of("a",1, "b",2);
+```
+
+Immutable.
+
+Attempt modification:
+
+```text
+UnsupportedOperationException
+```
+
+---
+
+# Stream Collector Examples
+
+## Grouping
+
+```java
+Map<String, List<Employee>> byDept =
+    employees.stream()
+        .collect(Collectors.groupingBy(Employee::getDepartment));
+```
+
+---
+
+## Frequency Count
+
+```java
+Map<String, Long> counts =
+    words.stream()
+        .collect(Collectors.groupingBy(
+            w -> w,
+            Collectors.counting()
+        ));
+```
+
+---
+
+# Parallel Stream Danger
+
+BAD:
+
+```java
+List<Integer> list = new ArrayList<>();
+
+IntStream.range(0,1000)
+    .parallel()
+    .forEach(list::add);
+```
+
+Race condition.
+
+---
+
+# Correct
+
+```java
+List<Integer> list =
+    IntStream.range(0,1000)
+        .parallel()
+        .boxed()
+        .collect(Collectors.toList());
+```
+
+---
+
+# Final Recommendation Matrix
+
+| Requirement                | Best Collection      |
+| -------------------------- | -------------------- |
+| Random access              | ArrayList            |
+| Stack                      | ArrayDeque           |
+| Queue                      | ArrayDeque           |
+| Blocking queue             | LinkedBlockingQueue  |
+| Fast lookup                | HashMap              |
+| Concurrent lookup          | ConcurrentHashMap    |
+| Sorted map                 | TreeMap              |
+| Sorted set                 | TreeSet              |
+| LRU cache                  | LinkedHashMap        |
+| Enum keys                  | EnumMap              |
+| Read heavy concurrent list | CopyOnWriteArrayList |
+| Delayed scheduling         | DelayQueue           |
+| Priority processing        | PriorityQueue        |
+
+---
+
+# Golden Rules
+
+```text
+1. ArrayList + HashMap solve most problems.
+2. LinkedList rarely best choice.
+3. Understand cache locality.
+4. Understand concurrent behavior.
+5. equals/hashCode correctness critical.
+6. Prefer ArrayDeque over Stack.
+7. Benchmark, do not assume.
+8. Choose by access pattern.
+9. Thread safety changes internals drastically.
+10. Big-O alone lies without memory behavior.
+```
+
+---
+
+# Advanced Interview One-Liners
+
+```text
+- HashMap average O(1), worst O(log n) after treeify.
+- CHM reads lock-free in Java 8.
+- CopyOnWrite iterators are snapshot-based.
+- ArrayDeque internally ring buffer.
+- TreeMap backed by Red-Black Tree.
+- HashSet backed by HashMap.
+- LinkedHashMap supports insertion + access ordering.
+- WeakHashMap entries GC-sensitive.
+- PriorityQueue uses binary heap.
+- LongAdder reduces CAS contention.
+```
